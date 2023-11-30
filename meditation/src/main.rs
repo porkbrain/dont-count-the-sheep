@@ -13,7 +13,13 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(
             FixedUpdate,
-            (control_weather, apply_acceleration, apply_velocity).chain(),
+            (
+                control_normal,
+                control_loading_special,
+                apply_acceleration,
+                apply_velocity,
+            )
+                .chain(),
         )
         .run();
 }
@@ -22,8 +28,6 @@ fn main() {
 struct Acceleration(Vec2);
 #[derive(Component, Default, Deref, DerefMut)]
 struct Velocity(Vec2);
-#[derive(Component)]
-struct Weather;
 
 #[derive(Bundle, Default)]
 struct BodyBundle {
@@ -40,8 +44,7 @@ fn setup(
     commands.spawn(Camera2dBundle { ..default() });
 
     commands.spawn((
-        Weather,
-        State::default(),
+        mode::Normal::default(),
         BodyBundle {
             mesh: MaterialMesh2dBundle {
                 mesh: meshes.add(shape::RegularPolygon::new(16., 6).into()).into(),
@@ -56,137 +59,161 @@ fn setup(
     ));
 }
 
-#[derive(Component)]
-enum State {
-    Normal {
+pub(crate) mod mode {
+    use std::time::Duration;
+
+    use bevy::{ecs::component::Component, time::Stopwatch};
+
+    pub(crate) trait Mode {
+        fn tick(&mut self, elapsed: Duration);
+    }
+
+    #[derive(Component, Default)]
+    pub(crate) struct Normal {
         // weather has a limited number of jumps before it must reset
         // via the [`Climate`]
-        jumps: u8,
+        pub(crate) jumps: u8,
         // there's a minimum delay between jumps
-        last_jump: Stopwatch,
+        pub(crate) last_jump: Stopwatch,
         // weather can only use its special ability once per reset
-        has_used_special: bool,
-    },
-    LoadingSpecial {
+        pub(crate) has_used_special: bool,
+    }
+
+    #[derive(Component, Default)]
+    pub(crate) struct LoadingSpecial {
         // while special is loading, the player can control an angle in which
         // it fires
-        angle: f32,
+        pub(crate) angle: f32,
         // special mode has a set duration after which it fires
-        activated: Stopwatch,
+        pub(crate) activated: Stopwatch,
         // once special is fired, weather can only do the same amount of jumps
         // as it had before
-        jumps: u8,
-    },
+        pub(crate) jumps: u8,
+    }
+
+    impl Mode for Normal {
+        fn tick(&mut self, elapsed: Duration) {
+            self.last_jump.tick(elapsed);
+        }
+    }
+
+    impl Mode for LoadingSpecial {
+        fn tick(&mut self, elapsed: Duration) {
+            self.activated.tick(elapsed);
+        }
+    }
 }
 
-fn control_weather(
-    mut query: Query<(&mut State, &mut Velocity, &mut Acceleration), With<Weather>>,
-    keyboard_input: Res<Input<KeyCode>>,
+use mode::Mode;
+
+fn control_loading_special(
+    mut weather: Query<(
+        Entity,
+        &mut mode::LoadingSpecial,
+        &mut Velocity,
+        &mut Acceleration,
+    )>,
+    mut commands: Commands,
+    keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
 ) {
-    let pressed_left = keyboard_input.pressed(KeyCode::Left) || keyboard_input.pressed(KeyCode::A);
-    let pressed_right =
-        keyboard_input.pressed(KeyCode::Right) || keyboard_input.pressed(KeyCode::D);
-    let pressed_space = keyboard_input.pressed(KeyCode::Space);
+    let Ok((entity, mut mode, mut vel, mut acc)) = weather.get_single_mut() else {
+        return;
+    };
+    mode.tick(time.delta());
 
-    let (mut state, mut vel, mut acc) = query.single_mut();
+    let pressed_space = keyboard.pressed(KeyCode::Space);
+    let pressed_left = keyboard.pressed(KeyCode::Left) || keyboard.pressed(KeyCode::A);
+    let pressed_right = keyboard.pressed(KeyCode::Right) || keyboard.pressed(KeyCode::D);
 
-    let new_state = match &mut *state {
-        State::Normal {
-            jumps,
-            has_used_special,
-            ..
-        } if !*has_used_special && pressed_space => Some(State::LoadingSpecial {
+    if !pressed_space || mode.activated.elapsed() > consts::weather::SPECIAL_LOADING_TIME {
+        commands.entity(entity).insert(mode::Normal {
+            jumps: mode.jumps,
+            last_jump: Stopwatch::default(),
+            has_used_special: true,
+        });
+        // TODO
+        commands.entity(entity).remove::<mode::LoadingSpecial>();
+    } else {
+        // set velocity and acceleration to 0 each frame
+        // this means that the weather will slowly move down due to gravity
+        vel.0 = Vec2::ZERO;
+        acc.0 = Vec2::ZERO;
+
+        if pressed_left {
+            mode.angle = mode.angle - 0.1; // TODO
+        }
+
+        if pressed_right {
+            mode.angle = mode.angle + 0.1; // TODO
+        }
+    }
+}
+
+fn control_normal(
+    mut weather: Query<(Entity, &mut mode::Normal, &mut Velocity, &mut Acceleration)>,
+    mut commands: Commands,
+    keyboard: Res<Input<KeyCode>>,
+    time: Res<Time>,
+) {
+    let Ok((entity, mut mode, mut vel, mut acc)) = weather.get_single_mut() else {
+        return;
+    };
+    mode.tick(time.delta());
+
+    let pressed_space = keyboard.pressed(KeyCode::Space);
+
+    if !mode.has_used_special && pressed_space {
+        commands.entity(entity).insert(mode::LoadingSpecial {
             angle: 0.0, // TODO
             activated: Stopwatch::default(),
-            jumps: *jumps,
-        }),
-        &mut State::Normal {
-            ref mut jumps,
-            ref mut last_jump,
-            ..
-        } => {
-            last_jump.tick(time.elapsed());
+            jumps: mode.jumps,
+        });
+        // TODO
+        commands.entity(entity).remove::<mode::Normal>();
+    } else {
+        let pressed_left = keyboard.pressed(KeyCode::Left) || keyboard.pressed(KeyCode::A);
+        let pressed_right = keyboard.pressed(KeyCode::Right) || keyboard.pressed(KeyCode::D);
+        let pressed_down = keyboard.pressed(KeyCode::Down) || keyboard.pressed(KeyCode::S);
+        let just_pressed_up =
+            keyboard.just_pressed(KeyCode::Up) || keyboard.just_pressed(KeyCode::W);
 
-            let pressed_down =
-                keyboard_input.pressed(KeyCode::Down) || keyboard_input.pressed(KeyCode::S);
-            let just_pressed_up =
-                keyboard_input.just_pressed(KeyCode::Up) || keyboard_input.just_pressed(KeyCode::W);
+        if pressed_left {
+            acc.0.x = -8.0;
+            vel.0.x = vel.0.x.min(0.) - 25.0;
+        }
+
+        if pressed_right {
+            acc.0.x = 8.0;
+            vel.0.x = vel.0.x.max(0.) + 25.0;
+        }
+
+        // when down is pressed, the weather should fall faster
+        if pressed_down {
+            acc.0.y -= 2.0;
+            vel.0.y = vel.0.y.min(0.) - 50.0;
+        }
+
+        if just_pressed_up
+            && mode.jumps < consts::weather::MAX_JUMPS
+            && mode.last_jump.elapsed() > consts::weather::MIN_JUMP_DELAY
+        {
+            let jump_boost = (consts::weather::MAX_JUMPS + 1 - mode.jumps) as f32;
+
+            mode.last_jump = Stopwatch::new();
+            mode.jumps = mode.jumps + 1;
+
+            acc.0.y = consts::weather::JUMP_ACCELERATION;
+            vel.0.y = (vel.0.y.max(0.) + consts::weather::JUMP_ACCELERATION * jump_boost)
+                .min(consts::GRAVITY_PER_SECOND * jump_boost);
 
             if pressed_left {
-                acc.0.x = -8.0;
-                vel.0.x = vel.0.x.min(0.) - 25.0;
+                vel.0.x -= 15.0;
             }
-
             if pressed_right {
-                acc.0.x = 8.0;
-                vel.0.x = vel.0.x.max(0.) + 25.0;
+                vel.0.x += 15.0;
             }
-
-            // when down is pressed, the weather should fall faster
-            if pressed_down {
-                acc.0.y -= 2.0;
-                vel.0.y = vel.0.y.min(0.) - 50.0;
-            }
-
-            if just_pressed_up
-                && *jumps < consts::weather::MAX_JUMPS
-                && last_jump.elapsed() > consts::weather::MIN_JUMP_DELAY
-            {
-                let jump_boost = (consts::weather::MAX_JUMPS + 1 - *jumps) as f32;
-
-                *last_jump = Stopwatch::new();
-                *jumps += 1;
-
-                acc.0.y = consts::weather::JUMP_ACCELERATION;
-                vel.0.y = (vel.0.y.max(0.) + consts::weather::JUMP_ACCELERATION * jump_boost)
-                    .min(consts::GRAVITY_PER_SECOND * jump_boost);
-
-                if pressed_left {
-                    vel.0.x -= 15.0;
-                }
-                if pressed_right {
-                    vel.0.x += 15.0;
-                }
-            }
-
-            None
         }
-        State::LoadingSpecial {
-            activated, jumps, ..
-        } if !pressed_space || activated.elapsed() > consts::weather::SPECIAL_LOADING_TIME => {
-            Some(State::Normal {
-                jumps: *jumps,
-                last_jump: Stopwatch::default(),
-                has_used_special: true,
-            })
-        }
-        &mut State::LoadingSpecial {
-            ref mut angle,
-            ref mut activated,
-            ..
-        } => {
-            activated.tick(time.elapsed());
-
-            // set velocity and acceleration to 0 each frame
-            // this means that the weather will slowly move down due to gravity
-            vel.0 = Vec2::ZERO;
-            acc.0 = Vec2::ZERO;
-
-            if pressed_left {
-                *angle -= 0.1;
-            }
-
-            if pressed_right {
-                *angle += 0.1;
-            }
-
-            None
-        }
-    };
-
-    if let Some(new_state) = new_state {
-        *state = new_state;
     }
 }
 
@@ -218,15 +245,5 @@ fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>
     for (mut transform, vel) in &mut query {
         transform.translation.x += vel.x * time.delta_seconds();
         transform.translation.y += vel.y * time.delta_seconds();
-    }
-}
-
-impl Default for State {
-    fn default() -> Self {
-        Self::Normal {
-            jumps: 0,
-            has_used_special: false,
-            last_jump: Stopwatch::default(),
-        }
     }
 }
