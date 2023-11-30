@@ -12,12 +12,20 @@ pub(crate) fn spawn(
         BodyBundle {
             // TODO: use a sprite
             mesh: MaterialMesh2dBundle {
-                mesh: meshes.add(shape::RegularPolygon::new(16., 6).into()).into(),
-                material: materials.add(ColorMaterial::from(Color::rgb(7.5, 0.0, 7.5))),
-                transform: Transform::from_translation(Vec3::new(-200., 0., 0.)),
+                mesh: meshes
+                    .add(shape::RegularPolygon::new(16., 6).into())
+                    .into(),
+                material: materials
+                    .add(ColorMaterial::from(Color::rgb(7.5, 0.0, 7.5))),
+                transform: Transform::from_translation(Vec3::new(
+                    -200., 0., 0.,
+                )),
                 ..default()
             },
-            acceleration: Acceleration::new(Vec2::new(0., consts::GRAVITY_PER_SECOND)),
+            acceleration: Acceleration::new(Vec2::new(
+                0.,
+                consts::GRAVITY_PER_SECOND,
+            )),
             ..Default::default()
         },
     ));
@@ -80,16 +88,21 @@ pub(crate) fn control_loading_special(
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
 ) {
-    let Ok((entity, mut mode, mut vel, mut acc)) = weather.get_single_mut() else {
+    let Ok((entity, mut mode, mut vel, mut acc)) = weather.get_single_mut()
+    else {
         return;
     };
     mode.tick(&time);
 
     let pressed_space = keyboard.pressed(KeyCode::Space);
-    let pressed_left = keyboard.pressed(KeyCode::Left) || keyboard.pressed(KeyCode::A);
-    let pressed_right = keyboard.pressed(KeyCode::Right) || keyboard.pressed(KeyCode::D);
+    let pressed_left =
+        keyboard.pressed(KeyCode::Left) || keyboard.pressed(KeyCode::A);
+    let pressed_right =
+        keyboard.pressed(KeyCode::Right) || keyboard.pressed(KeyCode::D);
 
-    if !pressed_space || mode.activated.elapsed() > consts::weather::SPECIAL_LOADING_TIME {
+    if !pressed_space
+        || mode.activated.elapsed() > consts::weather::SPECIAL_LOADING_TIME
+    {
         commands.entity(entity).remove::<mode::LoadingSpecial>();
         commands.entity(entity).insert(mode::Normal {
             jumps: mode.jumps,
@@ -115,12 +128,18 @@ pub(crate) fn control_loading_special(
 }
 
 pub(crate) fn control_normal(
-    mut weather: Query<(Entity, &mut mode::Normal, &mut Velocity, &mut Acceleration)>,
+    mut weather: Query<(
+        Entity,
+        &mut mode::Normal,
+        &mut Velocity,
+        &mut Acceleration,
+    )>,
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
 ) {
-    let Ok((entity, mut mode, mut vel, mut acc)) = weather.get_single_mut() else {
+    let Ok((entity, mut mode, mut vel, mut acc)) = weather.get_single_mut()
+    else {
         return;
     };
     mode.tick(&time);
@@ -143,10 +162,14 @@ pub(crate) fn control_normal(
     // slow down horizontal movement over time
     vel.x -= vel.x * d;
 
-    let pressed_left = keyboard.pressed(KeyCode::Left) || keyboard.pressed(KeyCode::A);
-    let pressed_right = keyboard.pressed(KeyCode::Right) || keyboard.pressed(KeyCode::D);
-    let pressed_down = keyboard.pressed(KeyCode::Down) || keyboard.pressed(KeyCode::S);
-    let just_pressed_up = keyboard.just_pressed(KeyCode::Up) || keyboard.just_pressed(KeyCode::W);
+    let pressed_left =
+        keyboard.pressed(KeyCode::Left) || keyboard.pressed(KeyCode::A);
+    let pressed_right =
+        keyboard.pressed(KeyCode::Right) || keyboard.pressed(KeyCode::D);
+    let pressed_down =
+        keyboard.pressed(KeyCode::Down) || keyboard.pressed(KeyCode::S);
+    let just_pressed_up =
+        keyboard.just_pressed(KeyCode::Up) || keyboard.just_pressed(KeyCode::W);
 
     if pressed_left {
         acc.x = -8.0;
@@ -175,7 +198,8 @@ pub(crate) fn control_normal(
         mode.jumps = mode.jumps + 1;
 
         acc.y = consts::weather::JUMP_ACCELERATION;
-        vel.y = (vel.y.max(0.) + consts::weather::JUMP_ACCELERATION * jump_boost)
+        vel.y = (vel.y.max(0.)
+            + consts::weather::JUMP_ACCELERATION * jump_boost)
             .min(consts::GRAVITY_PER_SECOND * jump_boost);
 
         if pressed_left {

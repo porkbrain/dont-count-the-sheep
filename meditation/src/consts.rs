@@ -10,7 +10,8 @@ pub(crate) mod weather {
     pub(crate) const MIN_JUMP_DELAY: Duration = Duration::from_millis(150);
     /// Maximum amount of time weather can be selecting the angle of its special
     /// before it fires.
-    pub(crate) const SPECIAL_LOADING_TIME: Duration = Duration::from_millis(1500);
+    pub(crate) const SPECIAL_LOADING_TIME: Duration =
+        Duration::from_millis(1500);
     /// Cannot jump more times in a row than this before resetting.
     pub(crate) const MAX_JUMPS: u8 = 4;
     /// When left/right is pressed while jumping weather gets an extra kick

@@ -36,7 +36,10 @@ fn setup(
     weather::spawn(&mut commands, &mut meshes, &mut materials);
 }
 
-fn apply_acceleration(mut query: Query<(&mut Velocity, &Acceleration)>, time: Res<Time>) {
+fn apply_acceleration(
+    mut query: Query<(&mut Velocity, &Acceleration)>,
+    time: Res<Time>,
+) {
     let d = time.delta_seconds();
 
     for (mut vel, acc) in &mut query {
@@ -45,7 +48,10 @@ fn apply_acceleration(mut query: Query<(&mut Velocity, &Acceleration)>, time: Re
     }
 }
 
-fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
+fn apply_velocity(
+    mut query: Query<(&mut Transform, &Velocity)>,
+    time: Res<Time>,
+) {
     let d = time.delta_seconds();
 
     for (mut transform, vel) in &mut query {
