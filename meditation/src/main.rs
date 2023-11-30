@@ -1,6 +1,6 @@
 //! Illustrates bloom post-processing in 2d.
 
-use std::time::Duration;
+mod consts;
 
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle, time::Stopwatch};
 
@@ -50,17 +50,11 @@ fn setup(
                 transform: Transform::from_translation(Vec3::new(-200., 0., 0.)),
                 ..default()
             },
-            acceleration: Acceleration(Vec2::new(0., GRAVITY_PER_SECOND)),
+            acceleration: Acceleration(Vec2::new(0., consts::GRAVITY_PER_SECOND)),
             ..Default::default()
         },
     ));
 }
-
-const GRAVITY_PER_SECOND: f32 = 256.0;
-const JUMP_ACCELERATION: f32 = GRAVITY_PER_SECOND / 4.0;
-const MAX_JUMPS: u8 = 4;
-const MIN_JUMP_DELAY: Duration = Duration::from_millis(100);
-const SPECIAL_LOADING_TIME: Duration = Duration::from_millis(1500);
 
 #[derive(Component)]
 enum State {
@@ -135,15 +129,18 @@ fn control_weather(
                 vel.0.y = vel.0.y.min(0.) - 50.0;
             }
 
-            if just_pressed_up && *jumps < MAX_JUMPS && last_jump.elapsed() > MIN_JUMP_DELAY {
-                let jump_boost = (MAX_JUMPS + 1 - *jumps) as f32;
+            if just_pressed_up
+                && *jumps < consts::weather::MAX_JUMPS
+                && last_jump.elapsed() > consts::weather::MIN_JUMP_DELAY
+            {
+                let jump_boost = (consts::weather::MAX_JUMPS + 1 - *jumps) as f32;
 
                 *last_jump = Stopwatch::new();
                 *jumps += 1;
 
-                acc.0.y = JUMP_ACCELERATION;
-                vel.0.y = (vel.0.y.max(0.) + JUMP_ACCELERATION * jump_boost)
-                    .min(GRAVITY_PER_SECOND * jump_boost);
+                acc.0.y = consts::weather::JUMP_ACCELERATION;
+                vel.0.y = (vel.0.y.max(0.) + consts::weather::JUMP_ACCELERATION * jump_boost)
+                    .min(consts::GRAVITY_PER_SECOND * jump_boost);
 
                 if pressed_left {
                     vel.0.x -= 15.0;
@@ -157,11 +154,13 @@ fn control_weather(
         }
         State::LoadingSpecial {
             activated, jumps, ..
-        } if !pressed_space || activated.elapsed() > SPECIAL_LOADING_TIME => Some(State::Normal {
-            jumps: *jumps,
-            last_jump: Stopwatch::default(),
-            has_used_special: true,
-        }),
+        } if !pressed_space || activated.elapsed() > consts::weather::SPECIAL_LOADING_TIME => {
+            Some(State::Normal {
+                jumps: *jumps,
+                last_jump: Stopwatch::default(),
+                has_used_special: true,
+            })
+        }
         &mut State::LoadingSpecial {
             ref mut angle,
             ref mut activated,
@@ -196,7 +195,7 @@ fn apply_acceleration(mut query: Query<(&mut Velocity, &mut Acceleration)>, time
 
     for (mut vel, mut acc) in &mut query {
         // apply gravity
-        acc.0.y -= GRAVITY_PER_SECOND * d;
+        acc.0.y -= consts::GRAVITY_PER_SECOND * d;
 
         // TODO
         vel.0.x -= vel.0.x * 0.75 * d;
