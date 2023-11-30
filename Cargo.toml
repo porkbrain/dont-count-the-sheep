@@ -1,0 +1,7 @@
+[workspace]
+
+resolver = "2"
+members = ["meditation"]
+
+[workspace.dependencies]
+bevy = "0.12"
