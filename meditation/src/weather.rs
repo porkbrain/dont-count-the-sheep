@@ -17,19 +17,20 @@ pub(crate) fn spawn(
                 transform: Transform::from_translation(Vec3::new(-200., 0., 0.)),
                 ..default()
             },
-            acceleration: Acceleration(Vec2::new(0., consts::GRAVITY_PER_SECOND)),
+            acceleration: Acceleration::new(Vec2::new(0., consts::GRAVITY_PER_SECOND)),
             ..Default::default()
         },
     ));
 }
 
 pub(crate) mod mode {
-    use std::time::Duration;
-
-    use bevy::{ecs::component::Component, time::Stopwatch};
+    use bevy::{
+        ecs::component::Component,
+        time::{Stopwatch, Time},
+    };
 
     pub(crate) trait Mode {
-        fn tick(&mut self, elapsed: Duration);
+        fn tick(&mut self, time: &Time);
     }
 
     #[derive(Component, Default)]
@@ -56,14 +57,14 @@ pub(crate) mod mode {
     }
 
     impl Mode for Normal {
-        fn tick(&mut self, elapsed: Duration) {
-            self.last_jump.tick(elapsed);
+        fn tick(&mut self, time: &Time) {
+            self.last_jump.tick(time.delta());
         }
     }
 
     impl Mode for LoadingSpecial {
-        fn tick(&mut self, elapsed: Duration) {
-            self.activated.tick(elapsed);
+        fn tick(&mut self, time: &Time) {
+            self.activated.tick(time.delta());
         }
     }
 }
@@ -82,7 +83,7 @@ pub(crate) fn control_loading_special(
     let Ok((entity, mut mode, mut vel, mut acc)) = weather.get_single_mut() else {
         return;
     };
-    mode.tick(time.delta());
+    mode.tick(&time);
 
     let pressed_space = keyboard.pressed(KeyCode::Space);
     let pressed_left = keyboard.pressed(KeyCode::Left) || keyboard.pressed(KeyCode::A);
@@ -101,8 +102,8 @@ pub(crate) fn control_loading_special(
 
     // set velocity and acceleration to 0 each frame
     // this means that the weather will slowly move down due to gravity
-    vel.0 = Vec2::ZERO;
-    acc.0 = Vec2::ZERO;
+    *vel = Default::default();
+    *acc = Default::default();
 
     if pressed_left {
         mode.angle = mode.angle - 0.1; // TODO
@@ -122,7 +123,7 @@ pub(crate) fn control_normal(
     let Ok((entity, mut mode, mut vel, mut acc)) = weather.get_single_mut() else {
         return;
     };
-    mode.tick(time.delta());
+    mode.tick(&time);
 
     let pressed_space = keyboard.pressed(KeyCode::Space);
 
@@ -136,45 +137,60 @@ pub(crate) fn control_normal(
         return;
     }
 
+    let d = time.delta_seconds();
+    // apply gravity
+    acc.y -= consts::GRAVITY_PER_SECOND * d;
+    // slow down horizontal movement over time
+    vel.x -= vel.x * d;
+
     let pressed_left = keyboard.pressed(KeyCode::Left) || keyboard.pressed(KeyCode::A);
     let pressed_right = keyboard.pressed(KeyCode::Right) || keyboard.pressed(KeyCode::D);
     let pressed_down = keyboard.pressed(KeyCode::Down) || keyboard.pressed(KeyCode::S);
     let just_pressed_up = keyboard.just_pressed(KeyCode::Up) || keyboard.just_pressed(KeyCode::W);
 
     if pressed_left {
-        acc.0.x = -8.0;
-        vel.0.x = vel.0.x.min(0.) - 25.0;
+        acc.x = -8.0;
+        vel.x = vel.x.min(0.) - 25.0;
     }
 
     if pressed_right {
-        acc.0.x = 8.0;
-        vel.0.x = vel.0.x.max(0.) + 25.0;
+        acc.x = 8.0;
+        vel.x = vel.x.max(0.) + 25.0;
     }
 
     // when down is pressed, the weather should fall faster
     if pressed_down {
-        acc.0.y -= 2.0;
-        vel.0.y = vel.0.y.min(0.) - 50.0;
+        acc.y -= 2.0;
+        vel.y = vel.y.min(0.) - 50.0;
     }
 
     if just_pressed_up
         && mode.jumps < consts::weather::MAX_JUMPS
         && mode.last_jump.elapsed() > consts::weather::MIN_JUMP_DELAY
     {
+        // each jump is less and less strong until reset
         let jump_boost = (consts::weather::MAX_JUMPS + 1 - mode.jumps) as f32;
 
         mode.last_jump = Stopwatch::new();
         mode.jumps = mode.jumps + 1;
 
-        acc.0.y = consts::weather::JUMP_ACCELERATION;
-        vel.0.y = (vel.0.y.max(0.) + consts::weather::JUMP_ACCELERATION * jump_boost)
+        acc.y = consts::weather::JUMP_ACCELERATION;
+        vel.y = (vel.y.max(0.) + consts::weather::JUMP_ACCELERATION * jump_boost)
             .min(consts::GRAVITY_PER_SECOND * jump_boost);
 
         if pressed_left {
-            vel.0.x -= 15.0;
+            vel.x -= consts::weather::HORIZONTAL_VELOCITY_BOOST_WHEN_JUMPING;
         }
         if pressed_right {
-            vel.0.x += 15.0;
+            vel.x += consts::weather::HORIZONTAL_VELOCITY_BOOST_WHEN_JUMPING;
         }
     }
+
+    // TODO
+    // clamp acceleration
+    // acc.x = acc.x.clamp(-1000.0, 1000.0);
+    acc.y = acc.y.clamp(-1000.0, f32::MAX);
+    // // clamp velocity
+    // vel.x = vel.x.clamp(-4000.0, 4000.0);
+    vel.y = vel.y.clamp(-600.0, f32::MAX);
 }
