@@ -1,4 +1,3 @@
-pub(crate) use crate::consts;
 pub(crate) use bevy::prelude::*;
 
 use bevy::sprite::MaterialMesh2dBundle;
