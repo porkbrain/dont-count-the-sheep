@@ -1,8 +1,8 @@
-mod camera;
+mod background;
 mod prelude;
 mod weather;
 
-use bevy_pixel_camera::PixelCameraPlugin;
+use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
 
 fn main() {
@@ -22,23 +22,34 @@ fn main() {
         .add_event::<weather::event::StartLoadingSpecial>()
         .add_systems(Startup, setup)
         .add_systems(
-            Update,
-            (apply_velocity, weather::anim::rotate, camera::twinkle),
-        )
-        .add_systems(
             FixedUpdate,
             (
                 weather::controls::normal,
                 weather::controls::loading_special,
-                weather::anim::apply_bloom,
             )
-                .chain(), // important for events
+                .chain(),
+        )
+        .add_systems(
+            Update,
+            (
+                apply_velocity,
+                weather::anim::rotate,
+                background::twinkle,
+                weather::anim::apply_bloom,
+            ),
         )
         .run();
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    camera::spawn_main(&mut commands, &asset_server);
+    commands.spawn((
+        Camera2dBundle::default(),
+        weather::anim::CameraState::default(),
+        PixelZoom::Fixed(3),
+        PixelViewport,
+    ));
+
+    background::spawn(&mut commands, &asset_server);
     weather::spawn(&mut commands, &asset_server);
 }
 

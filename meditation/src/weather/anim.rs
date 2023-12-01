@@ -1,13 +1,20 @@
 use super::{consts, controls, event};
-use crate::{
-    camera::{self, MainCamera},
-    prelude::*,
-};
+use crate::prelude::*;
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     utils::Instant,
 };
 use std::f32::consts::PI;
+
+#[derive(Component, Default, Clone, Copy)]
+pub(crate) enum CameraState {
+    #[default]
+    Normal,
+    BloomGoingDown {
+        until: Instant,
+    },
+    BloomGoingUp,
+}
 
 pub(crate) fn rotate(
     mut weather: Query<
@@ -68,16 +75,13 @@ pub(crate) fn rotate(
 pub(crate) fn apply_bloom(
     mut loading: EventReader<event::StartLoadingSpecial>,
     mut loaded: EventReader<event::LoadedSpecial>,
-    mut camera: Query<
-        (
-            Entity,
-            &mut Camera,
-            &mut camera::State,
-            &mut Tonemapping,
-            Option<&mut BloomSettings>,
-        ),
-        With<MainCamera>,
-    >,
+    mut camera: Query<(
+        Entity,
+        &mut Camera,
+        &mut CameraState,
+        &mut Tonemapping,
+        Option<&mut BloomSettings>,
+    )>,
     mut commands: Commands,
     time: Res<Time>,
 ) {
@@ -87,8 +91,8 @@ pub(crate) fn apply_bloom(
     if let Some(event::LoadedSpecial { fired }) = loaded.read().last() {
         debug!("Special finished loading. Fired? {fired}");
 
-        if matches!(*state, camera::State::BloomGoingUp) {
-            *state = camera::State::BloomGoingDown {
+        if matches!(*state, CameraState::BloomGoingUp) {
+            *state = CameraState::BloomGoingDown {
                 until: Instant::now()
                     + if *fired {
                         consts::BLOOM_FADE_OUT_ON_FIRED
@@ -106,10 +110,10 @@ pub(crate) fn apply_bloom(
     if recvd_loading {
         debug!("Special loading started yy");
     }
-    if recvd_loading && !matches!(*state, camera::State::BloomGoingUp) {
+    if recvd_loading && !matches!(*state, CameraState::BloomGoingUp) {
         debug!("Special has just been triggered");
 
-        *state = camera::State::BloomGoingUp;
+        *state = CameraState::BloomGoingUp;
 
         camera.hdr = true;
         *tonemapping = Tonemapping::TonyMcMapface;
@@ -124,13 +128,13 @@ pub(crate) fn apply_bloom(
         let mut remove_bloom = || {
             debug!("Removing bloom");
             commands.entity(entity).remove::<BloomSettings>();
-            *state = camera::State::Normal;
+            *state = CameraState::Normal;
             camera.hdr = true;
             *tonemapping = Tonemapping::TonyMcMapface;
         };
 
         match state_clone {
-            camera::State::BloomGoingDown { until } => {
+            CameraState::BloomGoingDown { until } => {
                 let now = Instant::now();
                 if until < now {
                     remove_bloom();
@@ -158,7 +162,7 @@ pub(crate) fn apply_bloom(
                     }
                 }
             }
-            camera::State::BloomGoingUp => {
+            CameraState::BloomGoingUp => {
                 let mut settings = settings.expect("Bloom settings missing");
 
                 settings.intensity = (settings.intensity
@@ -170,7 +174,7 @@ pub(crate) fn apply_bloom(
                         * time.delta_seconds())
                 .min(0.75);
             }
-            camera::State::Normal => debug_assert!(settings.is_none()),
+            CameraState::Normal => debug_assert!(settings.is_none()),
         }
     }
 }

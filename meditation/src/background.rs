@@ -1,6 +1,5 @@
 use crate::prelude::*;
 use bevy::utils::Instant;
-use bevy_pixel_camera::{PixelViewport, PixelZoom};
 
 mod consts {
     use std::time::Duration;
@@ -10,15 +9,11 @@ mod consts {
     pub(crate) const TWINKLE_COUNT: usize = 4;
 }
 
-pub(crate) fn spawn_main(
-    commands: &mut Commands,
-    asset_server: &Res<AssetServer>,
-) {
-    commands.spawn((MainCamera, State::default(), MainCamera::bundle()));
-    commands.spawn(SpriteBundle {
+pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
+    commands.spawn((SpriteBundle {
         texture: asset_server.load("textures/bg/default.png"),
         ..Default::default()
-    });
+    },));
 
     for i in 1..=consts::TWINKLE_COUNT {
         commands.spawn((
@@ -32,32 +27,9 @@ pub(crate) fn spawn_main(
     }
 }
 
-#[derive(Component)]
-pub(crate) struct MainCamera;
-
 /// When did the twinkle start?
 #[derive(Component, Deref)]
 pub(crate) struct Twinkle(Instant);
-
-#[derive(Component, Default, Clone, Copy)]
-pub(crate) enum State {
-    #[default]
-    Normal,
-    BloomGoingDown {
-        until: Instant,
-    },
-    BloomGoingUp,
-}
-
-impl MainCamera {
-    fn bundle() -> impl Bundle {
-        (
-            Camera2dBundle::default(),
-            PixelZoom::Fixed(3),
-            PixelViewport,
-        )
-    }
-}
 
 pub(crate) fn twinkle(
     mut query: Query<(&mut Twinkle, &mut Visibility)>,
