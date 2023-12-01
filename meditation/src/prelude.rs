@@ -1,12 +1,16 @@
 pub(crate) use bevy::prelude::*;
 
-use bevy::sprite::MaterialMesh2dBundle;
+#[derive(Default, Deref, DerefMut, Debug, Clone, Copy, PartialEq)]
+pub(crate) struct Radians(f32);
 
 #[derive(Component, Default, Deref, DerefMut)]
 pub(crate) struct Velocity(Vec2);
 
-#[derive(Bundle, Default)]
-pub(crate) struct BodyBundle {
-    pub(crate) mesh: MaterialMesh2dBundle<ColorMaterial>,
-    pub(crate) velocity: Velocity,
+#[derive(Component, Default, Deref, DerefMut)]
+pub(crate) struct AngularVelocity(pub f32);
+
+impl Radians {
+    pub(crate) fn new(radians: f32) -> Self {
+        Self(radians)
+    }
 }
