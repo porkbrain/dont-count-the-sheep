@@ -1,3 +1,8 @@
+//! Player controls weather sprite.
+//!
+//! The controls are WASD (or arrow keys) to move and space to activate special.
+//! The sprite should feel floaty as if you were playing Puff in Smashbros.
+
 mod background;
 mod prelude;
 mod weather;
