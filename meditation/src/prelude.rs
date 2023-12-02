@@ -28,6 +28,7 @@ pub(crate) enum Direction {
 }
 
 impl Direction {
+    #[inline]
     pub(crate) fn sign(&self) -> f32 {
         match self {
             Direction::Left => -1.0,
@@ -36,6 +37,7 @@ impl Direction {
         }
     }
 
+    #[inline]
     pub(crate) fn is_aligned(&self, point: f32) -> bool {
         match self {
             Self::Left => point < 0.0,

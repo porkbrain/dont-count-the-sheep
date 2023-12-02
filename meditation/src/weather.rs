@@ -15,24 +15,24 @@ pub(crate) fn spawn(
     asset_server: &Res<AssetServer>,
     texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
 ) {
-    let texture_handle = asset_server.load("textures/weather/atlas.png");
-    let texture_atlas = TextureAtlas::from_grid(
-        texture_handle,
-        Vec2::new(35.0, 35.0),
-        consts::SPRITE_ATLAS_COLS,
-        consts::SPRITE_ATLAS_ROWS,
-        None,
-        None,
-    );
-    let texture_atlas_handle = texture_atlases.add(texture_atlas);
     commands.spawn((
         controls::Normal::default(),
         Velocity::default(),
         AngularVelocity::default(), // for animation
         sprite::Transition::default(),
         SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
-            sprite: TextureAtlasSprite::new(sprite::Kind::default().index()),
+            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                asset_server.load("textures/weather/atlas.png"),
+                Vec2::new(consts::SPRITE_WIDTH, consts::SPRITE_HEIGHT),
+                consts::SPRITE_ATLAS_COLS,
+                consts::SPRITE_ATLAS_ROWS,
+                Some(consts::SPRITE_ATLAS_PADDING),
+                None,
+            )),
+            sprite: TextureAtlasSprite {
+                index: sprite::Kind::default().index(),
+                ..default()
+            },
             ..default()
         },
     ));

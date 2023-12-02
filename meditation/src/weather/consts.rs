@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use bevy::math::Vec2;
+
 /// How many pixels per second pulls weather down
 pub(crate) const GRAVITY: f32 = 512.0;
 /// Caps gravity effect.
@@ -55,3 +57,6 @@ pub(crate) const SHOW_DEFAULT_SPRITE_AFTER: Duration =
 
 pub(crate) const SPRITE_ATLAS_ROWS: usize = 10;
 pub(crate) const SPRITE_ATLAS_COLS: usize = 10;
+pub(crate) const SPRITE_ATLAS_PADDING: Vec2 = Vec2::new(3.0, 3.0);
+pub(crate) const SPRITE_WIDTH: f32 = 35.0;
+pub(crate) const SPRITE_HEIGHT: f32 = 35.0;

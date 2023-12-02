@@ -19,6 +19,8 @@ pub(crate) enum Kind {
     Plunging,
     BootyDanceLeft,
     BootyDanceRight,
+    SpearingTowards,
+    SlowingSpearingTowards,
 }
 
 impl Kind {
@@ -35,16 +37,21 @@ impl Kind {
             // third row
             BootyDanceLeft => COLS * 2,
             BootyDanceRight => COLS * 2 + 1,
+            // fourth row
+            SpearingTowards => COLS * 3,
+            SlowingSpearingTowards => COLS * 3 + 1,
         }
     }
 }
 
 impl Transition {
+    #[inline]
     pub(crate) fn current_sprite(&self) -> Kind {
         self.current
     }
 
     /// Does nothing if the current sprite is already the same.
+    #[inline]
     pub(crate) fn update_sprite(&mut self, kind: Kind) {
         if kind == self.current {
             return;
@@ -56,12 +63,14 @@ impl Transition {
     }
 
     /// Does not check if the current sprite is already the same.
+    #[inline]
     pub(crate) fn force_update_sprite(&mut self, kind: Kind) {
         trace!("Force updating sprite to {kind:?}");
         self.current = kind;
         self.at = Instant::now();
     }
 
+    #[inline]
     pub(crate) fn has_elapsed_since_sprite_change(
         &self,
         duration: Duration,
@@ -69,6 +78,7 @@ impl Transition {
         self.at.elapsed() >= duration
     }
 
+    #[inline]
     pub(crate) fn current_sprite_index(&self) -> usize {
         self.current.index()
     }
@@ -80,6 +90,7 @@ impl Transition {
 }
 
 impl Transition {
+    #[inline]
     pub(crate) fn last_action_within(
         &self,
         within: Duration,
@@ -90,6 +101,7 @@ impl Transition {
             .map(|(action, _)| *action)
     }
 
+    #[inline]
     pub(crate) fn update_action(&mut self, action: ActionEvent) {
         self.last_action = Some((action, Instant::now()));
     }

@@ -19,6 +19,8 @@ pub(crate) enum CameraState {
 /// Deciding on what sprite to use is a bit complicated.
 /// The sprite is changed based on the last action and the current velocity.
 /// Additionally there's a cooldown on the sprite change.
+///
+/// TODO: condition on rotation and direction of motion
 pub(crate) fn sprite(
     mut broadcast: EventReader<ActionEvent>,
     mut weather: Query<
@@ -63,23 +65,48 @@ pub(crate) fn sprite(
         }
         // nothing imminent to do, so check the environment
         _ => {
-            let should_be_at_least_falling =
-                vel.y < consts::TERMINAL_VELOCITY / 2.0;
-            if should_be_at_least_falling {
-                let min_wait = match transition.current_sprite() {
-                    sprite::Kind::Default | sprite::Kind::Plunging => {
-                        consts::SHOW_FALLING_SPRITE_AFTER
+            match transition.current_sprite() {
+                sprite::Kind::SpearingTowards => {
+                    let should_be_slowing_down = vel.y
+                        < consts::BASIS_VELOCITY_ON_JUMP
+                        && transition.has_elapsed_since_sprite_change(
+                            std::time::Duration::from_millis(500),
+                        );
+                    if should_be_slowing_down {
+                        transition.update_sprite(
+                            sprite::Kind::SlowingSpearingTowards,
+                        );
                     }
-                    _ => consts::SHOW_FALLING_SPRITE_AFTER * 2,
-                };
-                if transition.has_elapsed_since_sprite_change(min_wait) {
-                    transition.update_sprite(sprite::Kind::Falling);
                 }
-            } else if transition.has_elapsed_since_sprite_change(
-                consts::SHOW_DEFAULT_SPRITE_AFTER,
-            ) {
-                transition.update_sprite(sprite::Kind::default());
-            }
+                current_sprite => {
+                    let should_be_at_least_falling =
+                        vel.y < consts::TERMINAL_VELOCITY / 2.0;
+                    let should_be_spearing_towards = vel.y
+                        >= consts::BASIS_VELOCITY_ON_JUMP
+                        && transition.has_elapsed_since_sprite_change(
+                            std::time::Duration::from_millis(250),
+                        );
+
+                    if should_be_at_least_falling {
+                        let min_wait = match current_sprite {
+                            sprite::Kind::Default | sprite::Kind::Plunging => {
+                                consts::SHOW_FALLING_SPRITE_AFTER
+                            }
+                            _ => consts::SHOW_FALLING_SPRITE_AFTER * 2,
+                        };
+                        if transition.has_elapsed_since_sprite_change(min_wait)
+                        {
+                            transition.update_sprite(sprite::Kind::Falling);
+                        }
+                    } else if should_be_spearing_towards {
+                        transition.update_sprite(sprite::Kind::SpearingTowards);
+                    } else if transition.has_elapsed_since_sprite_change(
+                        consts::SHOW_DEFAULT_SPRITE_AFTER,
+                    ) {
+                        transition.update_sprite(sprite::Kind::default());
+                    }
+                }
+            };
         }
     }
 
@@ -122,7 +149,7 @@ pub(crate) fn rotate(
         // if a positive ~ PI => alpha is zero
         // if a negative ~ -PI => alpha is zero
         // if a positive ~ PI/2 => alpha is PI/2
-        // if a negavite ~ -PI/2 => alpha is PI/2
+        // if a negative ~ -PI/2 => alpha is PI/2
         let unsign_alpha = PI / 2.0 - (a.abs() - PI / 2.0).abs();
         let alpha = unsign_alpha * -a.signum();
 
