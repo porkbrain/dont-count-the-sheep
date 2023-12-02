@@ -55,8 +55,14 @@ pub(crate) const SHOW_FALLING_SPRITE_AFTER: Duration =
 pub(crate) const SHOW_DEFAULT_SPRITE_AFTER: Duration =
     Duration::from_millis(1000);
 
-pub(crate) const SPRITE_ATLAS_ROWS: usize = 10;
-pub(crate) const SPRITE_ATLAS_COLS: usize = 10;
-pub(crate) const SPRITE_ATLAS_PADDING: Vec2 = Vec2::new(3.0, 3.0);
-pub(crate) const SPRITE_WIDTH: f32 = 35.0;
-pub(crate) const SPRITE_HEIGHT: f32 = 35.0;
+pub(crate) const BODY_ATLAS_ROWS: usize = 10;
+pub(crate) const BODY_ATLAS_COLS: usize = 10;
+pub(crate) const BODY_ATLAS_PADDING: Vec2 = Vec2::new(3.0, 3.0);
+pub(crate) const BODY_WIDTH: f32 = 35.0;
+pub(crate) const BODY_HEIGHT: f32 = 35.0;
+
+pub(crate) const FACE_WIDTH: f32 = BODY_WIDTH;
+pub(crate) const FACE_HEIGHT: f32 = BODY_HEIGHT;
+pub(crate) const FACE_ATLAS_PADDING: Vec2 = BODY_ATLAS_PADDING;
+pub(crate) const FACE_ATLAS_ROWS: usize = 5;
+pub(crate) const FACE_ATLAS_COLS: usize = 5;

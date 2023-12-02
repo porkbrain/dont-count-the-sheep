@@ -1,4 +1,4 @@
-use super::{consts, controls, sprite, ActionEvent};
+use super::{consts, controls, sprite, ActionEvent, WeatherBody, WeatherFace};
 use crate::prelude::*;
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
@@ -24,11 +24,25 @@ pub(crate) enum CameraState {
 pub(crate) fn sprite(
     mut broadcast: EventReader<ActionEvent>,
     mut weather: Query<
-        (&Velocity, &mut TextureAtlasSprite, &mut sprite::Transition),
+        (&Velocity, &mut sprite::Transition),
         With<controls::Normal>,
     >,
+    mut body: Query<
+        &mut TextureAtlasSprite,
+        (With<WeatherBody>, Without<WeatherFace>),
+    >,
+    mut face: Query<
+        (&mut Visibility, &mut TextureAtlasSprite),
+        (With<WeatherFace>, Without<WeatherBody>),
+    >,
 ) {
-    let Ok((vel, mut sprite, mut transition)) = weather.get_single_mut() else {
+    let Ok((vel, mut transition)) = weather.get_single_mut() else {
+        return;
+    };
+    let Ok(mut body) = body.get_single_mut() else {
+        return;
+    };
+    let Ok((mut face_visibility, mut face)) = face.get_single_mut() else {
         return;
     };
 
@@ -36,7 +50,10 @@ pub(crate) fn sprite(
     match latest_action {
         Some(ActionEvent::Dipped) => {
             // force? if dips twice in a row, reset timer
-            transition.force_update_sprite(sprite::Kind::Plunging);
+            transition.force_update_body(sprite::BodyKind::Plunging);
+            // but don't reset face cause you catch me once shame on you
+            // catch me twice shame on me
+            transition.update_face(sprite::FaceKind::Surprised);
         }
         Some(ActionEvent::DashedAgainstVelocity { towards }) => {
             // I want the booty dance to be shown only if the direction changes
@@ -50,31 +67,31 @@ pub(crate) fn sprite(
             {
                 if *towards != last_towards {
                     match towards {
-                        Direction::Left => {
+                        MotionDirection::Left => {
                             transition
-                                .update_sprite(sprite::Kind::BootyDanceLeft);
+                                .update_body(sprite::BodyKind::BootyDanceLeft);
                         }
-                        Direction::Right => {
+                        MotionDirection::Right => {
                             transition
-                                .update_sprite(sprite::Kind::BootyDanceRight);
+                                .update_body(sprite::BodyKind::BootyDanceRight);
                         }
-                        Direction::None => {}
+                        MotionDirection::None => {}
                     }
                 }
             }
         }
         // nothing imminent to do, so check the environment
         _ => {
-            match transition.current_sprite() {
-                sprite::Kind::SpearingTowards => {
+            match transition.current_body() {
+                sprite::BodyKind::SpearingTowards => {
                     let should_be_slowing_down = vel.y
                         < consts::BASIS_VELOCITY_ON_JUMP
-                        && transition.has_elapsed_since_sprite_change(
+                        && transition.has_elapsed_since_body_change(
                             std::time::Duration::from_millis(500),
                         );
                     if should_be_slowing_down {
-                        transition.update_sprite(
-                            sprite::Kind::SlowingSpearingTowards,
+                        transition.update_body(
+                            sprite::BodyKind::SlowingSpearingTowards,
                         );
                     }
                 }
@@ -83,27 +100,31 @@ pub(crate) fn sprite(
                         vel.y < consts::TERMINAL_VELOCITY / 2.0;
                     let should_be_spearing_towards = vel.y
                         >= consts::BASIS_VELOCITY_ON_JUMP
-                        && transition.has_elapsed_since_sprite_change(
+                        && transition.has_elapsed_since_body_change(
                             std::time::Duration::from_millis(250),
                         );
 
                     if should_be_at_least_falling {
                         let min_wait = match current_sprite {
-                            sprite::Kind::Default | sprite::Kind::Plunging => {
+                            sprite::BodyKind::Default
+                            | sprite::BodyKind::Plunging => {
                                 consts::SHOW_FALLING_SPRITE_AFTER
                             }
                             _ => consts::SHOW_FALLING_SPRITE_AFTER * 2,
                         };
-                        if transition.has_elapsed_since_sprite_change(min_wait)
-                        {
-                            transition.update_sprite(sprite::Kind::Falling);
+                        if transition.has_elapsed_since_body_change(min_wait) {
+                            transition.update_body(sprite::BodyKind::Falling);
+                            transition.update_face(sprite::FaceKind::Intense);
                         }
                     } else if should_be_spearing_towards {
-                        transition.update_sprite(sprite::Kind::SpearingTowards);
-                    } else if transition.has_elapsed_since_sprite_change(
+                        transition
+                            .update_body(sprite::BodyKind::SpearingTowards);
+                        transition.update_face(sprite::FaceKind::Happy);
+                    } else if transition.has_elapsed_since_body_change(
                         consts::SHOW_DEFAULT_SPRITE_AFTER,
                     ) {
-                        transition.update_sprite(sprite::Kind::default());
+                        transition.update_body(sprite::BodyKind::default());
+                        transition.update_face(sprite::FaceKind::default());
                     }
                 }
             };
@@ -114,7 +135,14 @@ pub(crate) fn sprite(
         transition.update_action(*latest_action);
     }
 
-    sprite.index = transition.current_sprite_index();
+    body.index = transition.current_body_index();
+    face.index = transition.current_face_index();
+
+    *face_visibility = if transition.current_body().should_hide_face() {
+        Visibility::Hidden
+    } else {
+        Visibility::Visible
+    };
 }
 
 pub(crate) fn rotate(

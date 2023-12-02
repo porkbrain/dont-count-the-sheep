@@ -12,8 +12,14 @@ mod consts {
     pub(crate) const SHOOTING_STAR_FRAMES: usize = 4;
     pub(crate) const SHOOTING_STAR_FRAME_TIME: Duration =
         Duration::from_millis(50);
-    pub(crate) const SHOOTING_START_WIDTH: f32 = 35.0;
-    pub(crate) const SHOOTING_START_HEIGHT: f32 = 35.0;
+    pub(crate) const SHOOTING_STAR_WIDTH: f32 = 35.0;
+    pub(crate) const SHOOTING_STAR_HEIGHT: f32 = 35.0;
+
+    // pub(crate) const SWIRL_FRAMES: usize = 15;
+    // pub(crate) const SWIRL_FRAME_TIME: Duration = Duration::from_millis(100);
+    // pub(crate) const SWIRL_WIDTH: f32 = 100.0;
+    // pub(crate) const SWIRL_HEIGHT: f32 = 100.0;
+    // pub(crate) const SWIRL_FLICKER_CHANCE_PER_SECOND: f32 = 1.0 / 8.0;
 }
 
 pub(crate) fn spawn(
@@ -21,6 +27,12 @@ pub(crate) fn spawn(
     asset_server: &Res<AssetServer>,
     texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
 ) {
+    commands.spawn((SpriteBundle {
+        texture: asset_server.load("textures/bg/default.png"),
+        transform: Transform::from_translation(Vec3::new(0.0, 0.0, -10.0)),
+        ..Default::default()
+    },));
+
     for i in 1..=consts::TWINKLE_COUNT {
         commands.spawn((
             Twinkle(Instant::now()),
@@ -32,34 +44,9 @@ pub(crate) fn spawn(
         ));
     }
 
-    let animation = Animation {
-        should_repeat_when_played: false, // we schedule it at random
-        first: 0,
-        last: consts::SHOOTING_STAR_FRAMES - 1,
-    };
-    commands.spawn((
-        ShootingStar,
-        SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load("textures/bg/shootingstar_atlas.png"),
-                Vec2::new(
-                    consts::SHOOTING_START_WIDTH,
-                    consts::SHOOTING_START_HEIGHT,
-                ),
-                consts::SHOOTING_STAR_FRAMES,
-                1,
-                None,
-                None,
-            )),
-            sprite: TextureAtlasSprite::new(animation.first),
-            visibility: Visibility::Hidden,
-            transform: Transform::from_translation(Vec3::new(
-                -180.0, 50.0, 0.0,
-            )),
-            ..default()
-        },
-        animation,
-    ));
+    ShootingStar::spawn(commands, asset_server, texture_atlases);
+
+    // spawn_swirl(commands, asset_server, texture_atlases);
 }
 
 /// When did the twinkle start?
@@ -87,6 +74,44 @@ pub(crate) fn twinkle(
 #[derive(Component)]
 pub(crate) struct ShootingStar;
 
+impl ShootingStar {
+    fn spawn(
+        commands: &mut Commands,
+        asset_server: &Res<AssetServer>,
+        texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+    ) {
+        let animation = Animation {
+            // we schedule it at random
+            on_last_frame: AnimationEnd::RemoveTimer,
+            first: 0,
+            last: consts::SHOOTING_STAR_FRAMES - 1,
+        };
+        commands.spawn((
+            ShootingStar,
+            SpriteSheetBundle {
+                texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                    asset_server.load("textures/bg/shootingstar_atlas.png"),
+                    Vec2::new(
+                        consts::SHOOTING_STAR_WIDTH,
+                        consts::SHOOTING_STAR_HEIGHT,
+                    ),
+                    consts::SHOOTING_STAR_FRAMES,
+                    1,
+                    None,
+                    None,
+                )),
+                sprite: TextureAtlasSprite::new(animation.first),
+                visibility: Visibility::Hidden,
+                transform: Transform::from_translation(Vec3::new(
+                    -180.0, 50.0, 0.0,
+                )),
+                ..default()
+            },
+            animation,
+        ));
+    }
+}
+
 pub(crate) fn shooting_star(
     mut query: Query<
         (Entity, &mut Visibility),
@@ -108,3 +133,51 @@ pub(crate) fn shooting_star(
         }
     }
 }
+
+// fn spawn_swirl(
+//     commands: &mut Commands,
+//     asset_server: &Res<AssetServer>,
+//     texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+// ) {
+//     let animation = Animation {
+//         // it is then set to flicker
+//         on_last_frame: AnimationEnd::Custom(Box::new(
+//             |entity, _animation, timer, atlas, _visibility, commands, _time| {
+//                 timer.reset();
+//                 timer.pause();
+//                 atlas.index = consts::SWIRL_FRAMES - 1 - 2;
+//                 commands.entity(entity).insert(ChangeFrameAtRandom::new(
+//                     consts::SWIRL_FLICKER_CHANCE_PER_SECOND,
+//                     &[
+//                         consts::SWIRL_FRAMES - 1,
+//                         consts::SWIRL_FRAMES - 2,
+//                         consts::SWIRL_FRAMES - 3,
+//                     ],
+//                 ));
+//             },
+//         )),
+//         first: 0,
+//         // last three frames are for flicker
+//         last: consts::SWIRL_FRAMES - 1,
+//     };
+//     commands.spawn((
+//         AnimationTimer(Timer::new(
+//             consts::SWIRL_FRAME_TIME,
+//             TimerMode::Repeating,
+//         )),
+//         SpriteSheetBundle {
+//             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+//                 asset_server.load("textures/bg/swirl_atlas.png"),
+//                 Vec2::new(consts::SWIRL_WIDTH, consts::SWIRL_HEIGHT),
+//                 consts::SWIRL_FRAMES,
+//                 1,
+//                 None,
+//                 None,
+//             )),
+//             sprite: TextureAtlasSprite::new(animation.first),
+//             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+//             ..default()
+//         },
+//         animation,
+//     ));
+// }

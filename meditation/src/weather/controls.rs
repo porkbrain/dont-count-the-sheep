@@ -71,7 +71,7 @@ pub(crate) fn normal(
 
     let d = time.delta_seconds();
 
-    let mut update_horizontal = |dir: Direction| {
+    let mut update_horizontal = |dir: MotionDirection| {
         let is_moving_in_opposite_direction = !dir.is_aligned(vel.x);
 
         if mode.last_dash.elapsed() > consts::MIN_DASH_DELAY
@@ -89,9 +89,9 @@ pub(crate) fn normal(
             };
 
             let vel_cap = match dir {
-                Direction::Left => vel.x.min(0.0),
-                Direction::Right => vel.x.max(0.0),
-                Direction::None => unreachable!(),
+                MotionDirection::Left => vel.x.min(0.0),
+                MotionDirection::Right => vel.x.max(0.0),
+                MotionDirection::None => unreachable!(),
             };
 
             vel.x = vel_cap
@@ -107,10 +107,10 @@ pub(crate) fn normal(
     };
 
     if pressed_left && !pressed_right {
-        update_horizontal(Direction::Left);
+        update_horizontal(MotionDirection::Left);
     }
     if pressed_right && !pressed_left {
-        update_horizontal(Direction::Right);
+        update_horizontal(MotionDirection::Right);
     }
 
     if pressed_down && mode.last_dip.elapsed() > consts::MIN_DIP_DELAY {

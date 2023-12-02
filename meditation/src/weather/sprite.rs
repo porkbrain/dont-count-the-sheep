@@ -4,15 +4,17 @@ use std::time::{Duration, Instant};
 
 #[derive(Component)]
 pub(crate) struct Transition {
-    current: Kind,
-    at: Instant,
+    current_body: BodyKind,
+    current_body_set_at: Instant,
+    current_face: FaceKind,
+    current_face_set_at: Instant,
     /// This is updated each time an action is received in
     /// [`crate::weather::anim::sprite`].
     last_action: Option<(ActionEvent, Instant)>,
 }
 
 #[derive(Copy, Clone, Default, PartialEq, Eq, Debug)]
-pub(crate) enum Kind {
+pub(crate) enum BodyKind {
     #[default]
     Default,
     Falling,
@@ -23,14 +25,23 @@ pub(crate) enum Kind {
     SlowingSpearingTowards,
 }
 
-impl Kind {
+#[derive(Copy, Clone, Default, PartialEq, Eq, Debug)]
+pub(crate) enum FaceKind {
+    #[default]
+    Default,
+    Happy,
+    Surprised,
+    Intense,
+}
+
+impl BodyKind {
     pub(crate) fn index(&self) -> usize {
-        use consts::SPRITE_ATLAS_COLS as COLS;
-        use Kind::*;
+        use consts::BODY_ATLAS_COLS as COLS;
+        use BodyKind::*;
 
         match self {
             // first row
-            Kind::Default => 0,
+            BodyKind::Default => 0,
             // second row
             Falling => COLS,
             Plunging => COLS + 1,
@@ -42,50 +53,87 @@ impl Kind {
             SlowingSpearingTowards => COLS * 3 + 1,
         }
     }
+
+    pub(crate) fn should_hide_face(&self) -> bool {
+        matches!(self, Self::BootyDanceLeft | Self::BootyDanceRight)
+    }
+}
+
+impl FaceKind {
+    pub(crate) fn index(&self) -> usize {
+        use consts::FACE_ATLAS_COLS as COLS;
+        use FaceKind::*;
+
+        match self {
+            // first row
+            Surprised => 3,
+            // second row
+            Happy => COLS,
+            Default => COLS + 2,
+            // third row
+            Intense => COLS * 2,
+        }
+    }
 }
 
 impl Transition {
     #[inline]
-    pub(crate) fn current_sprite(&self) -> Kind {
-        self.current
+    pub(crate) fn current_body(&self) -> BodyKind {
+        self.current_body
     }
 
-    /// Does nothing if the current sprite is already the same.
+    /// Does nothing if the current body is already the same.
     #[inline]
-    pub(crate) fn update_sprite(&mut self, kind: Kind) {
-        if kind == self.current {
+    pub(crate) fn update_body(&mut self, kind: BodyKind) {
+        if kind == self.current_body {
             return;
         }
 
-        trace!("Updating sprite to {kind:?}");
-        self.current = kind;
-        self.at = Instant::now();
+        trace!("Updating body to {kind:?}");
+        self.current_body = kind;
+        self.current_body_set_at = Instant::now();
     }
 
-    /// Does not check if the current sprite is already the same.
+    /// Does not check if the current body is already the same.
     #[inline]
-    pub(crate) fn force_update_sprite(&mut self, kind: Kind) {
-        trace!("Force updating sprite to {kind:?}");
-        self.current = kind;
-        self.at = Instant::now();
+    pub(crate) fn force_update_body(&mut self, kind: BodyKind) {
+        trace!("Force updating body to {kind:?}");
+        self.current_body = kind;
+        self.current_body_set_at = Instant::now();
     }
 
     #[inline]
-    pub(crate) fn has_elapsed_since_sprite_change(
+    pub(crate) fn has_elapsed_since_body_change(
         &self,
         duration: Duration,
     ) -> bool {
-        self.at.elapsed() >= duration
+        self.current_body_set_at.elapsed() >= duration
     }
 
     #[inline]
-    pub(crate) fn current_sprite_index(&self) -> usize {
-        self.current.index()
+    pub(crate) fn current_body_index(&self) -> usize {
+        self.current_body.index()
     }
 
     #[allow(dead_code)]
-    pub(crate) fn is_current_sprite(&self, kind: Kind) -> bool {
-        self.current == kind
+    pub(crate) fn is_current_body(&self, kind: BodyKind) -> bool {
+        self.current_body == kind
+    }
+}
+
+impl Transition {
+    pub(crate) fn update_face(&mut self, kind: FaceKind) {
+        if kind == self.current_face {
+            return;
+        }
+
+        trace!("Updating face to {kind:?}");
+        self.current_face = kind;
+        self.current_face_set_at = Instant::now();
+    }
+
+    pub(crate) fn current_face_index(&self) -> usize {
+        self.current_face.index()
     }
 }
 
@@ -110,8 +158,10 @@ impl Transition {
 impl Default for Transition {
     fn default() -> Self {
         Self {
-            current: Kind::default(),
-            at: Instant::now(),
+            current_body: BodyKind::default(),
+            current_body_set_at: Instant::now(),
+            current_face: FaceKind::default(),
+            current_face_set_at: Instant::now(),
             last_action: None,
         }
     }
