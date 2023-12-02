@@ -40,11 +40,19 @@ pub(crate) const BLOOM_LFB_INCREASE_PER_SECOND: f32 = 0.5;
 /// How fast does weather rotate towards its velocity vector
 pub(crate) const ROTATION_SPEED: f32 = 2.0;
 
-/// Show the falling sprite if appropriate at least after this long since the
-/// last sprite change.
+/// Show the falling body sprite if appropriate at least after this long since
+/// the last body sprite change.
 /// This is override if dipped.
-pub(crate) const SHOW_FALLING_SPRITE_AFTER: Duration = from_millis(400);
-pub(crate) const SHOW_DEFAULT_SPRITE_AFTER: Duration = from_millis(1000);
+pub(crate) const SHOW_FALLING_BODY_AFTER: Duration = from_millis(800);
+/// Show the falling face sprite if appropriate at least this long after the
+/// last the last face sprite change.
+pub(crate) const SHOW_FALLING_FACE_AFTER: Duration = from_millis(800);
+/// Set body to default values if no body change in at least
+/// this long after the last change sprite change
+pub(crate) const SHOW_DEFAULT_BODY_AFTER: Duration = from_millis(1000);
+/// Set face to default values if no _body_ change in at least
+/// this long after the last change sprite change
+pub(crate) const SHOW_DEFAULT_FACE_AFTER: Duration = from_millis(500);
 
 pub(crate) const BODY_ATLAS_ROWS: usize = 10;
 pub(crate) const BODY_ATLAS_COLS: usize = 10;

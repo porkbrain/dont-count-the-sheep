@@ -122,6 +122,15 @@ impl Transition {
 }
 
 impl Transition {
+    #[inline]
+    pub(crate) fn has_elapsed_since_face_change(
+        &self,
+        duration: Duration,
+    ) -> bool {
+        self.current_face_set_at.elapsed() >= duration
+    }
+
+    #[inline]
     pub(crate) fn update_face(&mut self, kind: FaceKind) {
         if kind == self.current_face {
             return;
@@ -132,6 +141,7 @@ impl Transition {
         self.current_face_set_at = Instant::now();
     }
 
+    #[inline]
     pub(crate) fn current_face_index(&self) -> usize {
         self.current_face.index()
     }

@@ -21,7 +21,6 @@ pub(crate) enum CameraState {
 /// Additionally there's a cooldown on the sprite change.
 ///
 /// TODO: condition on rotation and direction of motion
-/// TODO: intense face when falling only after a certain time
 pub(crate) fn sprite(
     mut broadcast: EventReader<ActionEvent>,
     mut weather: Query<
@@ -97,35 +96,56 @@ pub(crate) fn sprite(
                     }
                 }
                 current_sprite => {
-                    let should_be_at_least_falling =
-                        vel.y < consts::TERMINAL_VELOCITY / 2.0;
+                    let should_be_falling =
+                        vel.y <= consts::TERMINAL_VELOCITY + 5.0; // some tolerance
                     let should_be_spearing_towards = vel.y
                         >= consts::BASIS_VELOCITY_ON_JUMP
                         && transition.has_elapsed_since_body_change(
                             std::time::Duration::from_millis(250), // TODO
                         );
 
-                    if should_be_at_least_falling {
-                        let min_wait = match current_sprite {
+                    if should_be_falling {
+                        let min_wait_for_body = match current_sprite {
                             sprite::BodyKind::Default
                             | sprite::BodyKind::Plunging => {
-                                consts::SHOW_FALLING_SPRITE_AFTER
+                                consts::SHOW_FALLING_BODY_AFTER / 2
                             }
-                            _ => consts::SHOW_FALLING_SPRITE_AFTER * 2,
+                            _ => consts::SHOW_FALLING_BODY_AFTER,
                         };
-                        if transition.has_elapsed_since_body_change(min_wait) {
+                        if transition
+                            .has_elapsed_since_body_change(min_wait_for_body)
+                        {
                             transition.update_body(sprite::BodyKind::Falling);
-                            transition.update_face(sprite::FaceKind::Intense);
+
+                            let min_wait_for_face = match current_sprite {
+                                sprite::BodyKind::Plunging => {
+                                    consts::SHOW_FALLING_FACE_AFTER / 2
+                                }
+                                _ => consts::SHOW_FALLING_FACE_AFTER,
+                            };
+
+                            if transition.has_elapsed_since_face_change(
+                                min_wait_for_face,
+                            ) {
+                                transition
+                                    .update_face(sprite::FaceKind::Intense);
+                            }
                         }
                     } else if should_be_spearing_towards {
                         transition
                             .update_body(sprite::BodyKind::SpearingTowards);
                         transition.update_face(sprite::FaceKind::Happy);
-                    } else if transition.has_elapsed_since_body_change(
-                        consts::SHOW_DEFAULT_SPRITE_AFTER,
-                    ) {
-                        transition.update_body(sprite::BodyKind::default());
-                        transition.update_face(sprite::FaceKind::default());
+                    } else {
+                        if transition.has_elapsed_since_body_change(
+                            consts::SHOW_DEFAULT_BODY_AFTER,
+                        ) {
+                            transition.update_body(sprite::BodyKind::default());
+                        }
+                        if transition.has_elapsed_since_body_change(
+                            consts::SHOW_DEFAULT_FACE_AFTER,
+                        ) {
+                            transition.update_face(sprite::FaceKind::default());
+                        }
                     }
                 }
             };
