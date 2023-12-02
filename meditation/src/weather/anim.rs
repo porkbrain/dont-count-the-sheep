@@ -195,7 +195,7 @@ pub(crate) fn apply_bloom(
         }
     }
 
-    let state_clone = state.clone();
+    let state_clone = *state;
 
     let mut remove_bloom = || {
         debug!("Removing bloom");

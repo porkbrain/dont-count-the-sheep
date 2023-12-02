@@ -3,6 +3,8 @@
 //! The controls are WASD (or arrow keys) to move and space to activate special.
 //! The sprite should feel floaty as if you were playing Puff in Smashbros.
 
+#![allow(clippy::assertions_on_constants)]
+
 mod background;
 mod prelude;
 mod weather;
@@ -17,7 +19,6 @@ fn main() {
                 .set(bevy::log::LogPlugin {
                     level: bevy::log::Level::WARN,
                     filter: "meditation=trace".to_string(),
-                    ..default()
                 })
                 .set(ImagePlugin::default_nearest()),
         )

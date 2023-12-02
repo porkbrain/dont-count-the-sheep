@@ -126,28 +126,26 @@ pub(crate) fn normal(
         if pressed_right {
             vel.x += consts::HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;
         }
+    } else if vel.y < consts::TERMINAL_VELOCITY {
+        // evenly slow down to terminal velocity
+        vel.y += {
+            debug_assert!(consts::TERMINAL_VELOCITY < 0.0);
+
+            let diff = -vel.y + consts::TERMINAL_VELOCITY;
+            // always slow down at least 1 pixel per second to avoid
+            // infinite approach
+            (diff * d).max(1.0)
+        };
     } else {
-        if vel.y < consts::TERMINAL_VELOCITY {
-            // evenly slow down to terminal velocity
-            vel.y += {
-                debug_assert!(consts::TERMINAL_VELOCITY < 0.0);
-                let diff = -vel.y + consts::TERMINAL_VELOCITY;
-                // always slow down at least 1 pixel per second to avoid
-                // infinite approach
-                (diff * d).max(1.0)
-            };
-        } else {
-            // apply gravity
-            vel.y =
-                (vel.y - consts::GRAVITY * d).max(consts::TERMINAL_VELOCITY);
-        }
+        // apply gravity
+        vel.y = (vel.y - consts::GRAVITY * d).max(consts::TERMINAL_VELOCITY);
     }
 
     if pressed_up
         && mode.jumps < consts::MAX_JUMPS
         && mode.last_jump.elapsed() > consts::MIN_JUMP_DELAY
     {
-        mode.jumps = mode.jumps + 1;
+        mode.jumps += 1;
         mode.last_jump = Stopwatch::new();
 
         // each jump is less and less strong until reset
