@@ -1,4 +1,4 @@
-use super::{consts, event};
+use super::{consts, ActionEvent};
 use crate::prelude::*;
 use bevy::time::Stopwatch;
 use std::f32::consts::PI;
@@ -34,7 +34,7 @@ pub(crate) struct LoadingSpecial {
 
 /// Controls when in normal mode.
 pub(crate) fn normal(
-    mut broadcast: EventWriter<event::StartLoadingSpecial>,
+    mut broadcast: EventWriter<ActionEvent>,
     mut weather: Query<(Entity, &mut Normal, &mut Velocity)>,
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
@@ -57,7 +57,7 @@ pub(crate) fn normal(
 
     if mode.can_use_special && pressed_space {
         debug!("Send loading special");
-        broadcast.send(event::StartLoadingSpecial);
+        broadcast.send(ActionEvent::StartLoadingSpecial);
 
         commands.entity(entity).remove::<Normal>();
         commands.entity(entity).insert(LoadingSpecial {
@@ -71,23 +71,13 @@ pub(crate) fn normal(
 
     let d = time.delta_seconds();
 
-    enum Direction {
-        Left,
-        Right,
-    }
     let mut update_horizontal = |dir: Direction| {
-        use Direction::*;
-        let discrim = match dir {
-            Left => -1.0,
-            Right => 1.0,
-        };
-        let is_moving_in_opposite_direction = match dir {
-            Left => vel.x > 0.0, // increase in vel means moving right
-            Right => vel.x < 0.0,
-        };
+        let is_moving_in_opposite_direction = !dir.is_aligned(vel.x);
 
-        if is_moving_in_opposite_direction
-            || mode.last_dash.elapsed() > consts::MIN_DASH_DELAY
+        if mode.last_dash.elapsed() > consts::MIN_DASH_DELAY
+            || (is_moving_in_opposite_direction
+                && mode.last_dash.elapsed()
+                    > consts::MIN_DASH_AGAINST_VELOCITY_DELAY)
         {
             mode.last_dash = Stopwatch::new();
 
@@ -99,16 +89,19 @@ pub(crate) fn normal(
             };
 
             let vel_cap = match dir {
-                Left => vel.x.min(0.),
-                Right => vel.x.max(0.),
+                Direction::Left => vel.x.min(0.0),
+                Direction::Right => vel.x.max(0.0),
+                Direction::None => unreachable!(),
             };
 
             vel.x = vel_cap
-                + discrim * directional_boost * consts::DASH_VELOCITY_BOOST;
+                + dir.sign() * directional_boost * consts::DASH_VELOCITY_BOOST;
 
             // if moving back and forth, fall slower
             if is_moving_in_opposite_direction && vel.y < 0.0 {
                 vel.y /= 2.0;
+                broadcast
+                    .send(ActionEvent::DashedAgainstVelocity { towards: dir });
             }
         }
     };
@@ -122,6 +115,7 @@ pub(crate) fn normal(
 
     if pressed_down && mode.last_dip.elapsed() > consts::MIN_DIP_DELAY {
         mode.last_dip = Stopwatch::new();
+        broadcast.send(ActionEvent::Dipped);
 
         // the downward movement is stabilized
         vel.y = consts::VERTICAL_VELOCITY_ON_DIP;
@@ -189,7 +183,7 @@ pub(crate) fn normal(
 /// direction.
 /// If no direction is selected then the special is canceled.
 pub(crate) fn loading_special(
-    mut broadcast: EventWriter<event::LoadedSpecial>,
+    mut broadcast: EventWriter<ActionEvent>,
     mut weather: Query<(Entity, &mut LoadingSpecial, &mut Velocity)>,
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
@@ -230,7 +224,7 @@ pub(crate) fn loading_special(
                 angle.sin() * consts::VELOCITY_BOOST_ON_SPECIAL * time_boost;
         }
 
-        broadcast.send(event::LoadedSpecial {
+        broadcast.send(ActionEvent::LoadedSpecial {
             fired: mode.angle.is_some(),
         });
     }

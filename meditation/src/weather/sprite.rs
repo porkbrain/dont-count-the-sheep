@@ -1,13 +1,14 @@
-use std::time::{Duration, Instant};
-
+use super::{consts, ActionEvent};
 use crate::prelude::*;
-
-pub(crate) type HasElapsedFor = (Duration, &'static [Kind]);
+use std::time::{Duration, Instant};
 
 #[derive(Component)]
 pub(crate) struct Transition {
     current: Kind,
-    since: Instant,
+    at: Instant,
+    /// This is updated each time an action is received in
+    /// [`crate::weather::anim::sprite`].
+    last_action: Option<(ActionEvent, Instant)>,
 }
 
 #[derive(Copy, Clone, Default, PartialEq, Eq, Debug)]
@@ -16,42 +17,56 @@ pub(crate) enum Kind {
     Default,
     Falling,
     Plunging,
+    BootyDanceLeft,
+    BootyDanceRight,
 }
 
 impl Kind {
     pub(crate) fn index(&self) -> usize {
+        use consts::SPRITE_ATLAS_COLS as COLS;
+        use Kind::*;
+
         match self {
+            // first row
             Kind::Default => 0,
-            Kind::Falling => 2,
-            Kind::Plunging => 3,
+            // second row
+            Falling => COLS,
+            Plunging => COLS + 1,
+            // third row
+            BootyDanceLeft => COLS * 2,
+            BootyDanceRight => COLS * 2 + 1,
         }
     }
 }
 
 impl Transition {
+    pub(crate) fn current_sprite(&self) -> Kind {
+        self.current
+    }
+
     /// Does nothing if the current sprite is already the same.
-    pub(crate) fn update(&mut self, kind: Kind) {
+    pub(crate) fn update_sprite(&mut self, kind: Kind) {
         if kind == self.current {
             return;
         }
 
         trace!("Updating sprite to {kind:?}");
         self.current = kind;
-        self.since = Instant::now();
+        self.at = Instant::now();
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn has_elapsed(&self, duration: Duration) -> bool {
-        self.since.elapsed() >= duration
+    /// Does not check if the current sprite is already the same.
+    pub(crate) fn force_update_sprite(&mut self, kind: Kind) {
+        trace!("Force updating sprite to {kind:?}");
+        self.current = kind;
+        self.at = Instant::now();
     }
 
-    /// Returns true if the current sprite is the same as the given kind or if
-    /// the given duration has elapsed.
-    pub(crate) fn has_elapsed_for(
+    pub(crate) fn has_elapsed_since_sprite_change(
         &self,
-        (duration, kinds): HasElapsedFor,
+        duration: Duration,
     ) -> bool {
-        kinds.contains(&self.current) || self.since.elapsed() >= duration
+        self.at.elapsed() >= duration
     }
 
     pub(crate) fn current_sprite_index(&self) -> usize {
@@ -59,8 +74,24 @@ impl Transition {
     }
 
     #[allow(dead_code)]
-    pub(crate) fn is_current(&self, kind: Kind) -> bool {
+    pub(crate) fn is_current_sprite(&self, kind: Kind) -> bool {
         self.current == kind
+    }
+}
+
+impl Transition {
+    pub(crate) fn last_action_within(
+        &self,
+        within: Duration,
+    ) -> Option<ActionEvent> {
+        self.last_action
+            .as_ref()
+            .filter(|(_, at)| at.elapsed() <= within)
+            .map(|(action, _)| *action)
+    }
+
+    pub(crate) fn update_action(&mut self, action: ActionEvent) {
+        self.last_action = Some((action, Instant::now()));
     }
 }
 
@@ -68,7 +99,8 @@ impl Default for Transition {
     fn default() -> Self {
         Self {
             current: Kind::default(),
-            since: Instant::now(),
+            at: Instant::now(),
+            last_action: None,
         }
     }
 }

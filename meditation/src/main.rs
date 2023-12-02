@@ -23,8 +23,7 @@ fn main() {
         )
         .add_plugins(PixelCameraPlugin)
         .insert_resource(ClearColor(Color::hex("#0d0e1f").unwrap()))
-        .add_event::<weather::event::LoadedSpecial>()
-        .add_event::<weather::event::StartLoadingSpecial>()
+        .add_event::<weather::ActionEvent>()
         .add_systems(Startup, setup)
         .add_systems(
             FixedUpdate,

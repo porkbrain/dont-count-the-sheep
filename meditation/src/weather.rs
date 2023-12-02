@@ -38,15 +38,16 @@ pub(crate) fn spawn(
     ));
 }
 
-pub(crate) mod event {
-    use bevy::prelude::Event;
-
-    #[derive(Event)]
-    pub(crate) struct StartLoadingSpecial;
-
-    #[derive(Event)]
-    pub(crate) struct LoadedSpecial {
+#[derive(Event, Clone, Copy)]
+pub(crate) enum ActionEvent {
+    StartLoadingSpecial,
+    LoadedSpecial {
         // fired or canceled?
-        pub(crate) fired: bool,
-    }
+        fired: bool,
+    },
+    Dipped,
+    DashedAgainstVelocity {
+        /// dashed in this direction while velocity was in the opposite
+        towards: Direction,
+    },
 }

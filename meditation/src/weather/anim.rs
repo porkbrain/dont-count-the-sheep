@@ -1,4 +1,4 @@
-use super::{consts, controls, event, sprite};
+use super::{consts, controls, sprite, ActionEvent};
 use crate::prelude::*;
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
@@ -16,7 +16,11 @@ pub(crate) enum CameraState {
     BloomGoingUp,
 }
 
+/// Deciding on what sprite to use is a bit complicated.
+/// The sprite is changed based on the last action and the current velocity.
+/// Additionally there's a cooldown on the sprite change.
 pub(crate) fn sprite(
+    mut broadcast: EventReader<ActionEvent>,
     mut weather: Query<
         (&Velocity, &mut TextureAtlasSprite, &mut sprite::Transition),
         With<controls::Normal>,
@@ -26,26 +30,61 @@ pub(crate) fn sprite(
         return;
     };
 
-    // either dips or falling fast and sufficient delayed since last sprite
-    let should_be_at_least_falling = vel.y <= consts::VERTICAL_VELOCITY_ON_DIP
-        || (vel.y < consts::TERMINAL_VELOCITY / 2.0
-            && transition.has_elapsed_for(consts::SHOW_FALLING_SPRITE_AFTER));
-    if should_be_at_least_falling {
-        // max fall speed reached and sufficient delay since last sprite
-        let should_be_even_plunging = vel.y
-            <= (consts::VERTICAL_VELOCITY_ON_DIP + consts::TERMINAL_VELOCITY)
-                / 2.0;
-
-        if should_be_even_plunging {
-            transition.update(sprite::Kind::Plunging);
-        } else if transition.has_elapsed_for(
-            consts::MIN_DELAY_BETWEEN_PLUNGING_AND_FALLING_AFTER_DIP,
-        ) {
-            // TODO: show plunging for a bit after dip
-            transition.update(sprite::Kind::Falling);
+    let latest_action = broadcast.read().last();
+    match latest_action {
+        Some(ActionEvent::Dipped) => {
+            // force? if dips twice in a row, reset timer
+            transition.force_update_sprite(sprite::Kind::Plunging);
         }
-    } else {
-        transition.update(sprite::Kind::default());
+        Some(ActionEvent::DashedAgainstVelocity { towards }) => {
+            // I want the booty dance to be shown only if the direction changes
+            // fast from right to left and vice versa, ie. player is spamming
+            // left and right.
+            // * 2 gives the player some time to change direction
+            let max_delay = consts::MIN_DASH_AGAINST_VELOCITY_DELAY * 2;
+            if let Some(ActionEvent::DashedAgainstVelocity {
+                towards: last_towards,
+            }) = transition.last_action_within(max_delay)
+            {
+                if *towards != last_towards {
+                    match towards {
+                        Direction::Left => {
+                            transition
+                                .update_sprite(sprite::Kind::BootyDanceLeft);
+                        }
+                        Direction::Right => {
+                            transition
+                                .update_sprite(sprite::Kind::BootyDanceRight);
+                        }
+                        Direction::None => {}
+                    }
+                }
+            }
+        }
+        // nothing imminent to do, so check the environment
+        _ => {
+            let should_be_at_least_falling =
+                vel.y < consts::TERMINAL_VELOCITY / 2.0;
+            if should_be_at_least_falling {
+                let min_wait = match transition.current_sprite() {
+                    sprite::Kind::Default | sprite::Kind::Plunging => {
+                        consts::SHOW_FALLING_SPRITE_AFTER
+                    }
+                    _ => consts::SHOW_FALLING_SPRITE_AFTER * 2,
+                };
+                if transition.has_elapsed_since_sprite_change(min_wait) {
+                    transition.update_sprite(sprite::Kind::Falling);
+                }
+            } else if transition.has_elapsed_since_sprite_change(
+                consts::SHOW_DEFAULT_SPRITE_AFTER,
+            ) {
+                transition.update_sprite(sprite::Kind::default());
+            }
+        }
+    }
+
+    if let Some(latest_action) = latest_action {
+        transition.update_action(*latest_action);
     }
 
     sprite.index = transition.current_sprite_index();
@@ -108,8 +147,7 @@ pub(crate) fn rotate(
 /// If the special is loading then bloom effect is applied.
 /// It's smoothly animated in and out.
 pub(crate) fn apply_bloom(
-    mut loading: EventReader<event::StartLoadingSpecial>,
-    mut loaded: EventReader<event::LoadedSpecial>,
+    mut action: EventReader<ActionEvent>,
     mut camera: Query<(
         Entity,
         &mut Camera,
@@ -123,87 +161,87 @@ pub(crate) fn apply_bloom(
     let (entity, mut camera, mut state, mut tonemapping, settings) =
         camera.single_mut();
 
-    if let Some(event::LoadedSpecial { fired }) = loaded.read().last() {
-        debug!("Special finished loading. Fired? {fired}");
+    for event in action.read() {
+        match event {
+            ActionEvent::StartLoadingSpecial
+                if !matches!(*state, CameraState::BloomGoingUp) =>
+            {
+                debug!("Special started loading");
+                *state = CameraState::BloomGoingUp;
 
-        if matches!(*state, CameraState::BloomGoingUp) {
-            *state = CameraState::BloomGoingDown {
-                until: Instant::now()
-                    + if *fired {
-                        consts::BLOOM_FADE_OUT_ON_FIRED
-                    } else {
-                        consts::BLOOM_FADE_OUT_ON_CANCELED
-                    },
-            };
+                camera.hdr = true;
+                *tonemapping = Tonemapping::TonyMcMapface;
+                commands.entity(entity).insert(BloomSettings {
+                    intensity: consts::INITIAL_BLOOM_INTENSITY,
+                    low_frequency_boost: consts::INITIAL_BLOOM_LFB,
+                    ..default()
+                });
+            }
+            ActionEvent::LoadedSpecial { fired } => {
+                debug!("Special finished loading. Fired? {fired}");
+
+                if matches!(*state, CameraState::BloomGoingUp) {
+                    *state = CameraState::BloomGoingDown {
+                        until: Instant::now()
+                            + if *fired {
+                                consts::BLOOM_FADE_OUT_ON_FIRED
+                            } else {
+                                consts::BLOOM_FADE_OUT_ON_CANCELED
+                            },
+                    };
+                }
+            }
+            _ => {}
         }
     }
 
-    let recvd_loading = loading.read().last().is_some();
-    if recvd_loading && !matches!(*state, CameraState::BloomGoingUp) {
-        debug!("Special has just been triggered");
+    let state_clone = state.clone();
 
-        *state = CameraState::BloomGoingUp;
-
+    let mut remove_bloom = || {
+        debug!("Removing bloom");
+        commands.entity(entity).remove::<BloomSettings>();
+        *state = CameraState::Normal;
         camera.hdr = true;
         *tonemapping = Tonemapping::TonyMcMapface;
-        commands.entity(entity).insert(BloomSettings {
-            intensity: consts::INITIAL_BLOOM_INTENSITY,
-            low_frequency_boost: consts::INITIAL_BLOOM_LFB,
-            ..default()
-        });
-    } else {
-        let state_clone = state.clone();
+    };
 
-        let mut remove_bloom = || {
-            debug!("Removing bloom");
-            commands.entity(entity).remove::<BloomSettings>();
-            *state = CameraState::Normal;
-            camera.hdr = true;
-            *tonemapping = Tonemapping::TonyMcMapface;
-        };
-
-        match state_clone {
-            CameraState::BloomGoingDown { until } => {
-                let now = Instant::now();
-                if until < now {
-                    remove_bloom();
-                } else {
-                    let mut settings =
-                        settings.expect("Bloom settings missing");
-
-                    let remaining_secs = (until - now).as_secs_f32();
-                    let remaining_frames =
-                        remaining_secs / time.delta_seconds();
-
-                    let new_intensity = settings.intensity
-                        - settings.intensity / remaining_frames;
-
-                    // threshold under which we just remove it
-                    if new_intensity < 0.05 {
-                        remove_bloom();
-                    } else {
-                        settings.intensity = new_intensity;
-
-                        let new_low_frequency_boost = settings
-                            .low_frequency_boost
-                            - settings.low_frequency_boost / remaining_frames;
-                        settings.low_frequency_boost = new_low_frequency_boost;
-                    }
-                }
-            }
-            CameraState::BloomGoingUp => {
+    match state_clone {
+        CameraState::BloomGoingDown { until } => {
+            let now = Instant::now();
+            if until < now {
+                remove_bloom();
+            } else {
                 let mut settings = settings.expect("Bloom settings missing");
 
-                settings.intensity = (settings.intensity
-                    + consts::BLOOM_INTENSITY_INCREASE_PER_SECOND
-                        * time.delta_seconds())
-                .min(0.75);
-                settings.low_frequency_boost = (settings.low_frequency_boost
-                    + consts::BLOOM_LFB_INCREASE_PER_SECOND
-                        * time.delta_seconds())
-                .min(0.75);
+                let remaining_secs = (until - now).as_secs_f32();
+                let remaining_frames = remaining_secs / time.delta_seconds();
+
+                let new_intensity =
+                    settings.intensity - settings.intensity / remaining_frames;
+
+                // threshold under which we just remove it
+                if new_intensity < 0.05 {
+                    remove_bloom();
+                } else {
+                    settings.intensity = new_intensity;
+
+                    let new_low_frequency_boost = settings.low_frequency_boost
+                        - settings.low_frequency_boost / remaining_frames;
+                    settings.low_frequency_boost = new_low_frequency_boost;
+                }
             }
-            CameraState::Normal => debug_assert!(settings.is_none()),
         }
+        CameraState::BloomGoingUp => {
+            let mut settings = settings.expect("Bloom settings missing");
+
+            settings.intensity = (settings.intensity
+                + consts::BLOOM_INTENSITY_INCREASE_PER_SECOND
+                    * time.delta_seconds())
+            .min(0.75);
+            settings.low_frequency_boost = (settings.low_frequency_boost
+                + consts::BLOOM_LFB_INCREASE_PER_SECOND * time.delta_seconds())
+            .min(0.75);
+        }
+        CameraState::Normal => debug_assert!(settings.is_none()),
     }
 }
