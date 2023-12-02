@@ -9,6 +9,7 @@ mod background;
 mod generic;
 mod prelude;
 mod weather;
+mod zindex;
 
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
@@ -65,4 +66,14 @@ fn setup(
 
     background::spawn(&mut commands, &asset_server, &mut texture_atlases);
     weather::spawn(&mut commands, &asset_server, &mut texture_atlases);
+
+    commands.spawn((SpriteBundle {
+        texture: asset_server.load("textures/climate/default.png"),
+        transform: Transform::from_translation(Vec3::new(
+            0.0,
+            0.0,
+            zindex::CLIMATE,
+        )),
+        ..Default::default()
+    },));
 }

@@ -21,7 +21,14 @@ pub(crate) fn spawn(
             Velocity::default(),
             AngularVelocity::default(), // for animation
             sprite::Transition::default(),
-            SpatialBundle::default(),
+            SpatialBundle {
+                transform: Transform::from_translation(Vec3::new(
+                    0.0,
+                    0.0,
+                    zindex::WEATHER,
+                )),
+                ..default()
+            },
         ))
         .id();
 

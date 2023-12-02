@@ -28,7 +28,11 @@ pub(crate) fn spawn(
 ) {
     commands.spawn((SpriteBundle {
         texture: asset_server.load("textures/bg/default.png"),
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, -10.0)),
+        transform: Transform::from_translation(Vec3::new(
+            0.0,
+            0.0,
+            zindex::MAIN_BACKGROUND,
+        )),
         ..Default::default()
     },));
 
@@ -38,6 +42,11 @@ pub(crate) fn spawn(
             SpriteBundle {
                 texture: asset_server
                     .load(format!("textures/bg/twinkle{i}.png")),
+                transform: Transform::from_translation(Vec3::new(
+                    0.0,
+                    0.0,
+                    zindex::TWINKLES,
+                )),
                 ..Default::default()
             },
         ));
@@ -102,7 +111,9 @@ impl ShootingStar {
                 sprite: TextureAtlasSprite::new(animation.first),
                 visibility: Visibility::Hidden,
                 transform: Transform::from_translation(Vec3::new(
-                    -180.0, 50.0, 0.0,
+                    -180.0,
+                    50.0,
+                    zindex::SHOOTING_STARS,
                 )),
                 ..default()
             },

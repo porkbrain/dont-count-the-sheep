@@ -1,4 +1,5 @@
 pub(crate) use crate::generic::*;
+pub(crate) use crate::zindex;
 pub(crate) use bevy::prelude::*;
 pub(crate) use std::time::Duration;
 
