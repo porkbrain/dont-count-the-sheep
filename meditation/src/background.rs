@@ -2,16 +2,15 @@ use crate::prelude::*;
 use bevy::utils::Instant;
 
 mod consts {
-    use std::time::Duration;
+    use crate::prelude::*;
 
-    pub(crate) const TWINKLE_DURATION: Duration = Duration::from_millis(250);
+    pub(crate) const TWINKLE_DURATION: Duration = from_millis(250);
     pub(crate) const TWINKLE_CHANCE_PER_SECOND: f32 = 1.0 / 8.0;
     pub(crate) const TWINKLE_COUNT: usize = 4;
 
     pub(crate) const SHOOTING_STAR_CHANCE_PER_SECOND: f32 = 1.0 / 10.0;
     pub(crate) const SHOOTING_STAR_FRAMES: usize = 4;
-    pub(crate) const SHOOTING_STAR_FRAME_TIME: Duration =
-        Duration::from_millis(50);
+    pub(crate) const SHOOTING_STAR_FRAME_TIME: Duration = from_millis(50);
     pub(crate) const SHOOTING_STAR_WIDTH: f32 = 35.0;
     pub(crate) const SHOOTING_STAR_HEIGHT: f32 = 35.0;
 

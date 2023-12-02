@@ -69,7 +69,7 @@ pub(crate) fn normal(
         return;
     }
 
-    let d = time.delta_seconds();
+    let dt = time.delta_seconds();
 
     let mut update_horizontal = |dir: MotionDirection| {
         let is_moving_in_opposite_direction = !dir.is_aligned(vel.x);
@@ -137,12 +137,12 @@ pub(crate) fn normal(
             let diff = -vel.y + consts::TERMINAL_VELOCITY;
             // always slow down at least 1 pixel per second to avoid
             // infinite approach
-            (diff * d).max(1.0)
+            (diff * dt).max(1.0)
         };
     } else {
         // apply gravity
 
-        vel.y = (vel.y - consts::GRAVITY * d).max(consts::TERMINAL_VELOCITY);
+        vel.y = (vel.y - consts::GRAVITY * dt).max(consts::TERMINAL_VELOCITY);
     }
 
     if pressed_up
@@ -174,7 +174,7 @@ pub(crate) fn normal(
     }
 
     // apply friction to the horizontal movement
-    vel.x -= vel.x * d;
+    vel.x -= vel.x * dt;
 }
 
 /// Controls while loading special.

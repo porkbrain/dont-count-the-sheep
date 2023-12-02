@@ -21,6 +21,7 @@ pub(crate) enum CameraState {
 /// Additionally there's a cooldown on the sprite change.
 ///
 /// TODO: condition on rotation and direction of motion
+/// TODO: intense face when falling only after a certain time
 pub(crate) fn sprite(
     mut broadcast: EventReader<ActionEvent>,
     mut weather: Query<
@@ -87,7 +88,7 @@ pub(crate) fn sprite(
                     let should_be_slowing_down = vel.y
                         < consts::BASIS_VELOCITY_ON_JUMP
                         && transition.has_elapsed_since_body_change(
-                            std::time::Duration::from_millis(500),
+                            std::time::Duration::from_millis(500), // TODO
                         );
                     if should_be_slowing_down {
                         transition.update_body(
@@ -101,7 +102,7 @@ pub(crate) fn sprite(
                     let should_be_spearing_towards = vel.y
                         >= consts::BASIS_VELOCITY_ON_JUMP
                         && transition.has_elapsed_since_body_change(
-                            std::time::Duration::from_millis(250),
+                            std::time::Duration::from_millis(250), // TODO
                         );
 
                     if should_be_at_least_falling {
@@ -162,12 +163,25 @@ pub(crate) fn rotate(
     let rot = transform.rotation.normalize();
 
     // the sprite is attracted towards being upright
-    let (axis, angle) = rot.to_axis_angle();
-    let attract_towards_up = angle % (2.0 * PI)
-        * -axis.z.signum()
-        * consts::ATTRACTION_TO_UPRIGHT_ROTATION;
+    let angle_towards_up = {
+        // the [`Quat::angle_between`] function returns the angle between
+        // two rotations in the range [0, PI], ie. we don't know if we should
+        // rotate clockwise or counterclockwise
+        // the method we are using here:
+        // nudge the rot by the angle and if it's closer to upright then
+        // we're going the right way, otherwise we're going the wrong way
+        // that's probably an inefficient way to do it but look mum 4 LoC
 
-    let mut dangvel = attract_towards_up;
+        let a = rot.angle_between(UPRIGHT_ROTATION);
+        let da = (rot * Quat::from_rotation_z(a * dt))
+            .angle_between(UPRIGHT_ROTATION);
+
+        let signum = if a < da { -1.0 } else { 1.0 };
+
+        a * signum
+    };
+
+    let mut dangvel = angle_towards_up;
 
     // 0 or +-PI means movement straight up or down
     let a = vel.normalize().angle_between(Vec2::new(0.0, 1.0));
@@ -181,7 +195,10 @@ pub(crate) fn rotate(
         let unsign_alpha = PI / 2.0 - (a.abs() - PI / 2.0).abs();
         let alpha = unsign_alpha * -a.signum();
 
-        let velocity_boost = alpha * consts::ROTATION_SPEED;
+        let magnitude_factor =
+            (vel.length() / consts::TERMINAL_VELOCITY).powf(2.0);
+        let velocity_boost = alpha * magnitude_factor * consts::ROTATION_SPEED;
+
         dangvel += velocity_boost;
     }
 
@@ -192,7 +209,7 @@ pub(crate) fn rotate(
         // set upright if it's close enough
         transform.rotation = UPRIGHT_ROTATION;
     } else {
-        transform.rotate_z(angvel.0 * time.delta_seconds());
+        transform.rotate_z(angvel.0 * dt);
 
         // slow down rotation over time
         angvel.0 -= angvel.0 * 0.75 * dt;
