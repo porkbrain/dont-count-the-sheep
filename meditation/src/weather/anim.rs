@@ -161,6 +161,7 @@ pub(crate) fn apply_bloom(
     let (entity, mut camera, mut state, mut tonemapping, settings) =
         camera.single_mut();
 
+    let mut just_started_loading = false;
     for event in action.read() {
         match event {
             ActionEvent::StartLoadingSpecial
@@ -176,6 +177,7 @@ pub(crate) fn apply_bloom(
                     low_frequency_boost: consts::INITIAL_BLOOM_LFB,
                     ..default()
                 });
+                just_started_loading = true;
             }
             ActionEvent::LoadedSpecial { fired } => {
                 debug!("Special finished loading. Fired? {fired}");
@@ -193,6 +195,10 @@ pub(crate) fn apply_bloom(
             }
             _ => {}
         }
+    }
+
+    if just_started_loading {
+        return;
     }
 
     let state_clone = *state;

@@ -114,6 +114,8 @@ pub(crate) fn normal(
     }
 
     if pressed_down && mode.last_dip.elapsed() > consts::MIN_DIP_DELAY {
+        // dip
+
         mode.last_dip = Stopwatch::new();
         broadcast.send(ActionEvent::Dipped);
 
@@ -127,7 +129,8 @@ pub(crate) fn normal(
             vel.x += consts::HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;
         }
     } else if vel.y < consts::TERMINAL_VELOCITY {
-        // evenly slow down to terminal velocity
+        // slow down to terminal velocity
+
         vel.y += {
             debug_assert!(consts::TERMINAL_VELOCITY < 0.0);
 
@@ -138,6 +141,7 @@ pub(crate) fn normal(
         };
     } else {
         // apply gravity
+
         vel.y = (vel.y - consts::GRAVITY * d).max(consts::TERMINAL_VELOCITY);
     }
 

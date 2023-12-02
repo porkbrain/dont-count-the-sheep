@@ -49,7 +49,7 @@ pub(crate) const ATTRACTION_TO_UPRIGHT_ROTATION: f32 = 0.75;
 /// last sprite change.
 /// This is override if dipped.
 pub(crate) const SHOW_FALLING_SPRITE_AFTER: Duration =
-    Duration::from_millis(250);
+    Duration::from_millis(400);
 pub(crate) const SHOW_DEFAULT_SPRITE_AFTER: Duration =
     Duration::from_millis(1000);
 

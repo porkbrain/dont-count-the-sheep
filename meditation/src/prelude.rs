@@ -9,11 +9,15 @@ pub(crate) struct Velocity(Vec2);
 #[derive(Component, Default, Deref, DerefMut)]
 pub(crate) struct AngularVelocity(pub f32);
 
-impl Radians {
-    pub(crate) fn new(radians: f32) -> Self {
-        Self(radians)
-    }
+#[derive(Component)]
+pub(crate) struct Animation {
+    pub(crate) should_repeat_when_played: bool,
+    pub(crate) first: usize,
+    pub(crate) last: usize,
 }
+
+#[derive(Component, Deref, DerefMut)]
+pub(crate) struct AnimationTimer(pub(crate) Timer);
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
 pub(crate) enum Direction {
@@ -38,5 +42,11 @@ impl Direction {
             Self::Right => point > 0.0,
             Self::None => point == 0.0,
         }
+    }
+}
+
+impl Radians {
+    pub(crate) fn new(radians: f32) -> Self {
+        Self(radians)
     }
 }

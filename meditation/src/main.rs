@@ -38,8 +38,10 @@ fn main() {
             Update,
             (
                 apply_velocity,
+                advance_animation,
                 weather::anim::rotate,
                 background::twinkle,
+                background::shooting_star,
                 weather::anim::apply_bloom,
                 weather::anim::sprite,
             ),
@@ -59,8 +61,15 @@ fn setup(
         PixelViewport,
     ));
 
-    background::spawn(&mut commands, &asset_server);
+    background::spawn(&mut commands, &asset_server, &mut texture_atlases);
     weather::spawn(&mut commands, &asset_server, &mut texture_atlases);
+
+    // TODO: for some reason the last sprite to be spawned defies the rules
+    // and is put under everything else instead of on top.
+    commands.spawn((SpriteBundle {
+        texture: asset_server.load("textures/bg/default.png"),
+        ..Default::default()
+    },));
 }
 
 fn apply_velocity(
@@ -70,7 +79,36 @@ fn apply_velocity(
     let d = time.delta_seconds();
 
     for (mut transform, vel) in &mut query {
-        transform.translation.x += vel.x * d;
-        transform.translation.y += vel.y * d;
+        // TODO
+        transform.translation.x += vel.x * d / 2.0;
+        transform.translation.y += vel.y * d / 2.0;
+    }
+}
+
+fn advance_animation(
+    mut query: Query<(
+        Entity,
+        &Animation,
+        &mut AnimationTimer,
+        &mut TextureAtlasSprite,
+        &mut Visibility,
+    )>,
+    mut commands: Commands,
+    time: Res<Time>,
+) {
+    for (entity, indices, mut timer, mut sprite, mut visibility) in &mut query {
+        timer.tick(time.delta());
+        if timer.just_finished() {
+            sprite.index = if sprite.index == indices.last {
+                if !indices.should_repeat_when_played {
+                    commands.entity(entity).remove::<AnimationTimer>();
+                    *visibility = Visibility::Hidden;
+                }
+
+                indices.first
+            } else {
+                sprite.index + 1
+            };
+        }
     }
 }
