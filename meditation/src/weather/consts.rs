@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use super::sprite::{self, HasElapsedFor};
+
 /// How many pixels per second pulls weather down
 pub(crate) const GRAVITY: f32 = 512.0;
 /// Caps gravity effect.
@@ -40,3 +42,18 @@ pub(crate) const BLOOM_LFB_INCREASE_PER_SECOND: f32 = 0.5;
 pub(crate) const ROTATION_SPEED: f32 = 4.0;
 /// How fast does weather rotate towards upright rotation
 pub(crate) const ATTRACTION_TO_UPRIGHT_ROTATION: f32 = 0.75;
+
+/// Even if falling really fast, show the falling animation for at least this
+/// long
+pub(crate) const MIN_DELAY_BETWEEN_PLUNGING_AND_FALLING_AFTER_DIP:
+    HasElapsedFor = (Duration::from_millis(250), &[sprite::Kind::Plunging]);
+/// Show the falling sprite if appropriate at least after this long since the
+/// last sprite change.
+/// This is override if dipped.
+pub(crate) const SHOW_FALLING_SPRITE_AFTER: HasElapsedFor = (
+    Duration::from_millis(250),
+    &[sprite::Kind::Falling, sprite::Kind::Plunging],
+);
+
+pub(crate) const SPRITE_ATLAS_ROWS: usize = 2;
+pub(crate) const SPRITE_ATLAS_COLS: usize = 2;

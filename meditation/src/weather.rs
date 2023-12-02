@@ -6,16 +6,33 @@
 pub(crate) mod anim;
 mod consts;
 pub(crate) mod controls;
+mod sprite;
 
 use crate::prelude::*;
 
-pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
+pub(crate) fn spawn(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+) {
+    let texture_handle = asset_server.load("textures/weather/atlas.png");
+    let texture_atlas = TextureAtlas::from_grid(
+        texture_handle,
+        Vec2::new(35.0, 35.0),
+        consts::SPRITE_ATLAS_COLS,
+        consts::SPRITE_ATLAS_ROWS,
+        None,
+        None,
+    );
+    let texture_atlas_handle = texture_atlases.add(texture_atlas);
     commands.spawn((
         controls::Normal::default(),
         Velocity::default(),
         AngularVelocity::default(), // for animation
-        SpriteBundle {
-            texture: asset_server.load("textures/weather/default.png"),
+        sprite::Transition::default(),
+        SpriteSheetBundle {
+            texture_atlas: texture_atlas_handle,
+            sprite: TextureAtlasSprite::new(sprite::Kind::default().index()),
             ..default()
         },
     ));

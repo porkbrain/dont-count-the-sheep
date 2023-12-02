@@ -41,12 +41,17 @@ fn main() {
                 weather::anim::rotate,
                 background::twinkle,
                 weather::anim::apply_bloom,
+                weather::anim::sprite,
             ),
         )
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
     commands.spawn((
         Camera2dBundle::default(),
         weather::anim::CameraState::default(),
@@ -55,7 +60,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 
     background::spawn(&mut commands, &asset_server);
-    weather::spawn(&mut commands, &asset_server);
+    weather::spawn(&mut commands, &asset_server, &mut texture_atlases);
 }
 
 fn apply_velocity(

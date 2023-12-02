@@ -1,4 +1,4 @@
-use super::{consts, controls, event};
+use super::{consts, controls, event, sprite};
 use crate::prelude::*;
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
@@ -16,6 +16,41 @@ pub(crate) enum CameraState {
     BloomGoingUp,
 }
 
+pub(crate) fn sprite(
+    mut weather: Query<
+        (&Velocity, &mut TextureAtlasSprite, &mut sprite::Transition),
+        With<controls::Normal>,
+    >,
+) {
+    let Ok((vel, mut sprite, mut transition)) = weather.get_single_mut() else {
+        return;
+    };
+
+    // either dips or falling fast and sufficient delayed since last sprite
+    let should_be_at_least_falling = vel.y <= consts::VERTICAL_VELOCITY_ON_DIP
+        || (vel.y < consts::TERMINAL_VELOCITY / 2.0
+            && transition.has_elapsed_for(consts::SHOW_FALLING_SPRITE_AFTER));
+    if should_be_at_least_falling {
+        // max fall speed reached and sufficient delay since last sprite
+        let should_be_even_plunging = vel.y
+            <= (consts::VERTICAL_VELOCITY_ON_DIP + consts::TERMINAL_VELOCITY)
+                / 2.0;
+
+        if should_be_even_plunging {
+            transition.update(sprite::Kind::Plunging);
+        } else if transition.has_elapsed_for(
+            consts::MIN_DELAY_BETWEEN_PLUNGING_AND_FALLING_AFTER_DIP,
+        ) {
+            // TODO: show plunging for a bit after dip
+            transition.update(sprite::Kind::Falling);
+        }
+    } else {
+        transition.update(sprite::Kind::default());
+    }
+
+    sprite.index = transition.current_sprite_index();
+}
+
 pub(crate) fn rotate(
     mut weather: Query<
         (&Velocity, &mut AngularVelocity, &mut Transform),
@@ -23,11 +58,11 @@ pub(crate) fn rotate(
     >,
     time: Res<Time>,
 ) {
-    const UPRIGHT_ROTATION: Quat = Quat::from_xyzw(0.0, 0.0, 0.0, 1.0);
-
     let Ok((vel, mut angvel, mut transform)) = weather.get_single_mut() else {
         return;
     };
+
+    const UPRIGHT_ROTATION: Quat = Quat::from_xyzw(0.0, 0.0, 0.0, 1.0);
 
     let dt = time.delta_seconds();
     let rot = transform.rotation.normalize();
@@ -103,13 +138,7 @@ pub(crate) fn apply_bloom(
         }
     }
 
-    if !loading.is_empty() {
-        debug!("Special loading started xx");
-    }
     let recvd_loading = loading.read().last().is_some();
-    if recvd_loading {
-        debug!("Special loading started yy");
-    }
     if recvd_loading && !matches!(*state, CameraState::BloomGoingUp) {
         debug!("Special has just been triggered");
 
