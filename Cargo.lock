@@ -2228,7 +2228,9 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_pixel_camera",
+ "openh264",
  "rand",
+ "serde",
 ]
 
 [[package]]
@@ -2320,6 +2322,12 @@ dependencies = [
  "tracing",
  "unicode-ident",
 ]
+
+[[package]]
+name = "nasm-rs"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe4d98d0065f4b1daf164b3eafb11974c94662e5e2396cf03f32d0bb5c17da51"
 
 [[package]]
 name = "ndk"
@@ -2581,6 +2589,26 @@ name = "once_cell"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
+
+[[package]]
+name = "openh264"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea6f884c2b7f72ebf4e06a28b88cefa43085da71345d5595d6ec17a0f79e13b2"
+dependencies = [
+ "openh264-sys2",
+]
+
+[[package]]
+name = "openh264-sys2"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "171fdb16e88a11b400d5b41c275f69f65f6e63e2920152621a99c3c2dc50ec4a"
+dependencies = [
+ "cc",
+ "nasm-rs",
+ "walkdir",
+]
 
 [[package]]
 name = "orbclient"

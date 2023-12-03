@@ -1,13 +1,20 @@
+#![allow(dead_code)]
+
 use bevy::{prelude::*, utils::Instant};
 use rand::seq::SliceRandom;
 
 #[derive(Default, Deref, DerefMut, Debug, Clone, Copy, PartialEq)]
 pub(crate) struct Radians(f32);
 
-#[derive(Component, Default, Deref, DerefMut)]
+#[derive(
+    Component, Default, Deref, DerefMut, Clone, Copy, PartialEq, Debug,
+)]
 pub(crate) struct Velocity(Vec2);
 
-#[derive(Component, Default, Deref, DerefMut)]
+#[derive(
+    Component, Default, Deref, DerefMut, Clone, Copy, PartialEq, Debug,
+)]
+/// Positive should be counter-clockwise.
 pub(crate) struct AngularVelocity(pub f32);
 
 #[derive(Component)]
@@ -69,6 +76,30 @@ impl MotionDirection {
 }
 
 impl Radians {
+    pub(crate) fn new(radians: f32) -> Self {
+        Self(radians)
+    }
+}
+
+impl Velocity {
+    pub(crate) fn new(v: Vec2) -> Self {
+        Self(v)
+    }
+}
+
+impl From<Vec2> for Velocity {
+    fn from(vec: Vec2) -> Self {
+        Self(vec)
+    }
+}
+
+impl From<f32> for AngularVelocity {
+    fn from(radians: f32) -> Self {
+        Self(radians)
+    }
+}
+
+impl AngularVelocity {
     pub(crate) fn new(radians: f32) -> Self {
         Self(radians)
     }
@@ -158,7 +189,7 @@ pub(crate) fn advance_animation(
                        * } */
                 }
             } else {
-                atlas.index = atlas.index + 1
+                atlas.index += 1
             };
         }
     }

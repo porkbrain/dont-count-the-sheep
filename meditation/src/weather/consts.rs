@@ -18,7 +18,7 @@ pub(crate) const MIN_DIP_DELAY: Duration = MIN_JUMP_DELAY;
 /// before it fires
 pub(crate) const SPECIAL_LOADING_TIME: Duration = from_millis(1500);
 /// Cannot jump more times in a row than this before resetting
-pub(crate) const MAX_JUMPS: u8 = 6;
+pub(crate) const MAX_JUMPS: u8 = 4;
 /// When left/right is pressed while up/down then weather gets an extra kick
 pub(crate) const HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP: f32 = 128.0;
 /// When down is pressed, weather's vertical velocity is set to this value
@@ -28,7 +28,7 @@ pub(crate) const DASH_VELOCITY_BOOST: f32 = 128.0;
 /// The jump function uses this to calculate the jump strength
 pub(crate) const BASIS_VELOCITY_ON_JUMP: f32 = 216.0;
 /// When special is fired weather gets an extra kick in the chosen direction
-pub(crate) const VELOCITY_BOOST_ON_SPECIAL: f32 = 350.0;
+pub(crate) const VELOCITY_BOOST_ON_SPECIAL: f32 = 512.0;
 
 pub(crate) const BLOOM_FADE_OUT_ON_FIRED: Duration = from_millis(2000);
 pub(crate) const BLOOM_FADE_OUT_ON_CANCELED: Duration = from_millis(250);
@@ -53,6 +53,9 @@ pub(crate) const SHOW_DEFAULT_BODY_AFTER: Duration = from_millis(1000);
 /// Set face to default values if no _body_ change in at least
 /// this long after the last change sprite change
 pub(crate) const SHOW_DEFAULT_FACE_AFTER: Duration = from_millis(500);
+pub(crate) const SHOW_SPEARING_BODY_TOWARDS_FOR: Duration = from_millis(500);
+pub(crate) const SHOW_SPEARING_BODY_TOWARDS_IF_NO_CHANGE_FOR: Duration =
+    from_millis(250);
 
 pub(crate) const BODY_ATLAS_ROWS: usize = 10;
 pub(crate) const BODY_ATLAS_COLS: usize = 10;

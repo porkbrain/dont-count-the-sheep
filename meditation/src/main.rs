@@ -4,6 +4,7 @@
 //! The sprite should feel floaty as if you were playing Puff in Smashbros.
 
 #![allow(clippy::assertions_on_constants)]
+#![allow(clippy::type_complexity)]
 
 mod background;
 mod generic;
@@ -13,6 +14,9 @@ mod zindex;
 
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
+
+#[derive(Resource)]
+struct NalUnits(usize, Vec<Vec<u8>>);
 
 fn main() {
     App::new()
@@ -24,10 +28,11 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest()),
         )
-        .add_plugins(PixelCameraPlugin)
+        .add_plugins((PixelCameraPlugin,))
         .insert_resource(ClearColor(Color::hex("#0d0e1f").unwrap()))
         .add_event::<weather::ActionEvent>()
         .add_systems(Startup, setup)
+        .add_systems(First, reset_weather)
         .add_systems(
             FixedUpdate,
             (
@@ -76,4 +81,23 @@ fn setup(
         )),
         ..Default::default()
     },));
+}
+
+/// If weather transform translation is within 100.0 of the origin, reset
+/// jumps and using special.
+/// This is a temp solution.
+/// TODO: restore one jump per reset. climate pulsates - only if we are within
+/// it in the pulse time do you get one jump.
+/// every 4 pulses you get the special back.
+fn reset_weather(
+    mut query: Query<(&mut weather::controls::Normal, &Transform)>,
+) {
+    let Ok((mut controls, transform)) = query.get_single_mut() else {
+        return;
+    };
+
+    if transform.translation.length() < 100.0 {
+        controls.jumps = 0;
+        controls.can_use_special = true;
+    }
 }

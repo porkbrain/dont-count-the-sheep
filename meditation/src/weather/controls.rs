@@ -167,12 +167,6 @@ pub(crate) fn normal(
         }
     }
 
-    // TODO: make godmode a settings
-    if mode.jumps >= consts::MAX_JUMPS {
-        mode.jumps = 0;
-        mode.can_use_special = true;
-    }
-
     // apply friction to the horizontal movement
     vel.x -= vel.x * dt;
 }
@@ -220,9 +214,9 @@ pub(crate) fn loading_special(
                     / consts::SPECIAL_LOADING_TIME.as_secs_f32();
 
             // fires weather into the direction given by the angle
-            vel.x =
+            vel.x +=
                 angle.cos() * consts::VELOCITY_BOOST_ON_SPECIAL * time_boost;
-            vel.y =
+            vel.y +=
                 angle.sin() * consts::VELOCITY_BOOST_ON_SPECIAL * time_boost;
         }
 

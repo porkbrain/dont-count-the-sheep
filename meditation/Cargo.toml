@@ -7,3 +7,5 @@ edition = "2021"
 bevy.workspace = true
 bevy_pixel_camera.workspace = true
 rand.workspace = true
+openh264 = "0.3"
+serde = "1.0"

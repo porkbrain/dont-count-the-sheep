@@ -4,7 +4,10 @@ use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     utils::Instant,
 };
-use std::f32::consts::PI;
+use std::{
+    cmp::Ordering,
+    f32::consts::{E, PI},
+};
 
 #[derive(Component, Default, Clone, Copy)]
 pub(crate) enum CameraState {
@@ -19,12 +22,15 @@ pub(crate) enum CameraState {
 /// Deciding on what sprite to use is a bit complicated.
 /// The sprite is changed based on the last action and the current velocity.
 /// Additionally there's a cooldown on the sprite change.
-///
-/// TODO: condition on rotation and direction of motion
 pub(crate) fn sprite(
     mut broadcast: EventReader<ActionEvent>,
     mut weather: Query<
-        (&Velocity, &mut sprite::Transition),
+        (
+            &Velocity,
+            &AngularVelocity,
+            &Transform,
+            &mut sprite::Transition,
+        ),
         With<controls::Normal>,
     >,
     mut body: Query<
@@ -36,7 +42,8 @@ pub(crate) fn sprite(
         (With<WeatherFace>, Without<WeatherBody>),
     >,
 ) {
-    let Ok((vel, mut transition)) = weather.get_single_mut() else {
+    let Ok((vel, angvel, transform, mut transition)) = weather.get_single_mut()
+    else {
         return;
     };
     let Ok(mut body) = body.get_single_mut() else {
@@ -46,11 +53,18 @@ pub(crate) fn sprite(
         return;
     };
 
+    let is_rot_and_vel_aligned =
+        is_rotation_aligned_with_velocity(transform, *vel, *angvel, PI / 6.0);
+    let is_rot_and_vel_inverse_aligned = true; // TODO
+
     let latest_action = broadcast.read().last();
     match latest_action {
         Some(ActionEvent::Dipped) => {
             // force? if dips twice in a row, reset timer
-            transition.force_update_body(sprite::BodyKind::Plunging);
+            if is_rot_and_vel_inverse_aligned {
+                transition.force_update_body(sprite::BodyKind::Plunging);
+            }
+
             // but don't reset face cause you catch me once shame on you
             // catch me twice shame on me
             transition.update_face(sprite::FaceKind::Surprised);
@@ -87,7 +101,7 @@ pub(crate) fn sprite(
                     let should_be_slowing_down = vel.y
                         < consts::BASIS_VELOCITY_ON_JUMP
                         && transition.has_elapsed_since_body_change(
-                            std::time::Duration::from_millis(500), // TODO
+                            consts::SHOW_SPEARING_BODY_TOWARDS_FOR,
                         );
                     if should_be_slowing_down {
                         transition.update_body(
@@ -101,7 +115,7 @@ pub(crate) fn sprite(
                     let should_be_spearing_towards = vel.y
                         >= consts::BASIS_VELOCITY_ON_JUMP
                         && transition.has_elapsed_since_body_change(
-                            std::time::Duration::from_millis(250), // TODO
+                            consts::SHOW_SPEARING_BODY_TOWARDS_IF_NO_CHANGE_FOR,
                         );
 
                     if should_be_falling {
@@ -115,7 +129,10 @@ pub(crate) fn sprite(
                         if transition
                             .has_elapsed_since_body_change(min_wait_for_body)
                         {
-                            transition.update_body(sprite::BodyKind::Falling);
+                            if is_rot_and_vel_inverse_aligned {
+                                transition
+                                    .update_body(sprite::BodyKind::Falling);
+                            }
 
                             let min_wait_for_face = match current_sprite {
                                 sprite::BodyKind::Plunging => {
@@ -131,7 +148,9 @@ pub(crate) fn sprite(
                                     .update_face(sprite::FaceKind::Intense);
                             }
                         }
-                    } else if should_be_spearing_towards {
+                    } else if should_be_spearing_towards
+                        && is_rot_and_vel_aligned
+                    {
                         transition
                             .update_body(sprite::BodyKind::SpearingTowards);
                         transition.update_face(sprite::FaceKind::Happy);
@@ -229,11 +248,12 @@ pub(crate) fn rotate(
         // set upright if it's close enough
         transform.rotation = UPRIGHT_ROTATION;
     } else {
+        // e.g. rotating from straight up by PI/2 points to the left
         transform.rotate_z(angvel.0 * dt);
-
-        // slow down rotation over time
-        angvel.0 -= angvel.0 * 0.75 * dt;
     }
+
+    // slow down rotation over time
+    angvel.0 -= angvel.0 * 0.75 * dt;
 }
 
 /// If the special is loading then bloom effect is applied.
@@ -341,5 +361,220 @@ pub(crate) fn apply_bloom(
             .min(0.75);
         }
         CameraState::Normal => debug_assert!(settings.is_none()),
+    }
+}
+
+/// Given current rotation as quat (where's the sprite pointing?), current
+/// velocity vector and angular velocity which affects the rotation over time,
+/// return whether the rotation is approximately aligned with the velocity
+/// vector.
+///
+/// The tolerance is higher if angular velocity is in the direction of the
+/// velocity vector.
+/// If angular velocity through the roof, then it's not aligned.
+/// [This graph](https://www.desmos.com/calculator/14mphdyzxr) shows how we
+/// calculate the factor derived from the angular velocity that ultimately
+/// scales the tolerance.
+///
+/// TODO: revisit cause it's flaky
+fn is_rotation_aligned_with_velocity(
+    transform: &Transform,
+    vel: Velocity,
+    angvel: AngularVelocity,
+    angle_tolerance_basis: f32,
+) -> bool {
+    fn rotate_by_90deg(quaternion: Quat) -> Quat {
+        quaternion * Quat::from_axis_angle(Vec3::Z, PI / 2.0)
+    }
+
+    // we need to rotate by axis because the default state is facing right
+    // but the sprite is facing up
+    let rot = rotate_by_90deg(transform.rotation);
+    let direction_vector = rot.mul_vec3(Vec2::X.extend(0.0)).truncate();
+
+    // Rotate by this much counter clock wise to to get from direction to
+    // velocity.
+    //
+    // This would be the optimal angvel.
+    let angle = direction_vector.angle_between(*vel);
+    if !angle.is_finite() {
+        return false;
+    }
+
+    // The x coordinate in represents angular velocity.
+    // It dictates how fast will the sprite rotate as time goes.
+    let x = *angvel;
+    // This represents angle between rotation of the sprite and the velocity
+    // vector (not to be confused with angular velocity).
+    let a = angle;
+
+    // If the angular velocity goes to zero then the sprite won't rotate much so
+    // we want to return 1 close to zero. On the other hand as the angular
+    // velocity goes in the other direction against the angle x, we again won't
+    // be aligned soon.
+    //
+    // Undefined if a == 0
+    fn one_towards_zero(x: f32, a: f32) -> f32 {
+        2.0f32.powf((-a + x) / a)
+    }
+    // If the angular velocity if high, then we can't really speak of an
+    // alignment because the sprite will rotate.
+    fn steep(x: f32, a: f32) -> f32 {
+        // how much do we care about high angular velocity
+        const STEEPNESS: f32 = 0.5;
+        E.powf(-STEEPNESS * (x - a))
+    }
+
+    let factor = 2.0
+        * match x.partial_cmp(&a) {
+            // it's defined but always 1
+            Some(Ordering::Equal) => 1.0,
+            // x > a && a > 0
+            Some(Ordering::Greater) if a >= 0.0 => steep(x, a),
+            // x > a && a < 0
+            Some(Ordering::Greater) => one_towards_zero(x, a),
+            // x < a && a > 0
+            Some(Ordering::Less) if a > 0.0 => one_towards_zero(x, a),
+            // x < a && a < 0
+            Some(Ordering::Less) => 1.0 / steep(x, a),
+            None => return false,
+        };
+    let adjusted_tolerance = factor * angle_tolerance_basis;
+
+    angle.abs() <= adjusted_tolerance
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const EXACTLY_LEFT: Vec2 = Vec2::new(-1.0, 0.0);
+    const EXACTLY_RIGHT: Vec2 = Vec2::new(1.0, 0.0);
+    const EXACTLY_DOWN: Vec2 = Vec2::new(0.0, -1.0);
+
+    #[test]
+    fn it_is_aligned_if_rotation_exactly_matches_velocity_and_no_angvel() {
+        let mut transform = Transform::default();
+        transform.rotate_z(PI / 2.0);
+        assert!(is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_LEFT.into(),
+            AngularVelocity::default(),
+            f32::EPSILON
+        ));
+
+        let mut transform = Transform::default();
+        transform.rotate_z(PI);
+        assert!(is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_DOWN.into(),
+            AngularVelocity::default(),
+            f32::EPSILON
+        ));
+    }
+
+    #[test]
+    fn it_is_aligned_if_rotation_closely_matches_vel_and_no_angvel() {
+        let mut transform = Transform::default();
+
+        transform.rotate_z(PI / 2.0 + PI / 12.0); // 105deg
+        assert!(is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_LEFT.into(),
+            AngularVelocity::default(),
+            PI / 6.0 // 30deg tolerance
+        ));
+
+        transform.rotate_z(-PI / 6.0); // 105deg - 30deg = 75deg
+        assert!(is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_LEFT.into(),
+            AngularVelocity::default(),
+            PI / 6.0 // 30deg tolerance
+        ));
+
+        let mut transform = Transform::default();
+        transform.rotate_z(PI + PI / 12.0); // 195deg
+        assert!(is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_DOWN.into(),
+            AngularVelocity::default(),
+            PI / 12.0 * 1.01 // slightly above 15deg tolerance
+        ));
+    }
+
+    #[test]
+    fn it_is_not_aligned_if_rotation_exactly_opposite_velocity_and_no_angvel() {
+        let mut transform = Transform::default();
+        transform.rotate_z(-PI / 2.0);
+        assert!(!is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_LEFT.into(),
+            AngularVelocity::default(),
+            f32::EPSILON
+        ));
+
+        assert!(!is_rotation_aligned_with_velocity(
+            &Transform::default(),
+            EXACTLY_DOWN.into(),
+            AngularVelocity::default(),
+            f32::EPSILON
+        ));
+    }
+
+    #[test]
+    fn it_is_aligned_if_angvel_brings_rotation_towards_velocity() {
+        let mut transform = Transform::default();
+        transform.rotate_z(PI / 2.0 - PI / 12.0); // 75deg left
+        assert!(!is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_LEFT.into(),
+            AngularVelocity::default(),
+            PI / 12.0 * 0.99 // slightly below 15deg tolerance
+        ));
+        // now we add andvel in the direction of velocity
+        assert!(is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_LEFT.into(),
+            AngularVelocity::new(PI / 24.0), // 7.5deg
+            PI / 12.0 * 0.99
+        ));
+
+        let mut transform = Transform::default();
+        transform.rotate_z(-PI / 2.0 + PI / 12.0); // 75deg right
+        assert!(!is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_RIGHT.into(),
+            AngularVelocity::default(),
+            PI / 12.0 * 0.99 // slightly below 15deg tolerance
+        ));
+        // now we add andvel in the direction of velocity
+        assert!(is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_RIGHT.into(),
+            AngularVelocity::new(-PI / 24.0), // 7.5deg
+            PI / 12.0 * 0.99
+        ));
+    }
+
+    #[test]
+    fn it_is_not_aligned_if_angular_velocity_through_the_root() {
+        let mut transform = Transform::default();
+        transform.rotate_z(PI / 2.0 + 0.001);
+        assert!(!is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_LEFT.into(),
+            AngularVelocity::new(4.0 * PI),
+            PI / 12.0 * 0.99
+        ));
+
+        let mut transform = Transform::default();
+        transform.rotate_z(-PI / 2.0 + 0.001);
+        assert!(!is_rotation_aligned_with_velocity(
+            &transform,
+            EXACTLY_RIGHT.into(),
+            AngularVelocity::new(-4.0 * PI),
+            PI / 12.0 * 0.99
+        ));
     }
 }
