@@ -19,10 +19,75 @@ pub(crate) enum CameraState {
     BloomGoingUp,
 }
 
+#[derive(Component)]
+pub(crate) struct SparkEffect;
+
+/// It always take the same time to load special.
+/// That's because it's a very timing critical animation.
+///
+/// 1. Abruptly slow down weather to be still.
+/// 2. Render an effect animation's first frame on 0.5x scale and abruptly
+/// scale it up to 1.5x.
+/// 3. Shrink that first frame to its normal size while special is loading
+/// 4. When loaded, we play the next 5 frames.
+/// 5. Weather is off to Mars or wherever while last 4 frames are playing in
+/// place. That's why the effect sprite is not a child of weather.
+pub(crate) fn sprite_loading_special(
+    mut weather: Query<&controls::LoadingSpecial>,
+    mut set: ParamSet<(
+        Query<
+            (Entity, &mut TextureAtlasSprite),
+            (With<SparkEffect>, Without<AnimationTimer>),
+        >,
+        Query<&mut TextureAtlasSprite, With<WeatherBody>>,
+        Query<&mut TextureAtlasSprite, With<WeatherFace>>,
+    )>,
+    mut commands: Commands,
+) {
+    let Ok(mode) = weather.get_single_mut() else {
+        return;
+    };
+
+    if let Ok((spark_entity, mut spark_atlas)) = set.p0().get_single_mut() {
+        let elapsed = mode.activated.elapsed();
+
+        if elapsed > consts::START_SPARK_ANIMATION_AFTER_ELAPSED {
+            spark_atlas.custom_size = Some(Vec2::splat(consts::SPARK_SIDE));
+            commands
+                .entity(spark_entity)
+                .insert(AnimationTimer(Timer::new(
+                    consts::SPARK_FRAME_TIME,
+                    TimerMode::Repeating,
+                )));
+        } else {
+            const INITIAL_EXTRA_SIZE: f32 = 0.75;
+            const INITIAL_SIDE: f32 = consts::SPARK_SIDE * 1.5;
+
+            let initial_size = INITIAL_SIDE * (1.0 + INITIAL_EXTRA_SIZE);
+
+            // e.g. starts at 0.5x and ends at 1.0x
+            let diminishing_size =
+                INITIAL_SIDE * INITIAL_EXTRA_SIZE * elapsed.as_secs_f32()
+                    / consts::START_SPARK_ANIMATION_AFTER_ELAPSED.as_secs_f32();
+
+            let square_side = initial_size - diminishing_size;
+            spark_atlas.custom_size = Some(Vec2::splat(square_side));
+        }
+    }
+
+    if let Ok(mut body) = set.p1().get_single_mut() {
+        body.index = sprite::BodyKind::Folded.index();
+    }
+
+    if let Ok(mut face) = set.p2().get_single_mut() {
+        face.index = sprite::FaceKind::TryHarding.index();
+    }
+}
+
 /// Deciding on what sprite to use is a bit complicated.
 /// The sprite is changed based on the last action and the current velocity.
 /// Additionally there's a cooldown on the sprite change.
-pub(crate) fn sprite(
+pub(crate) fn sprite_normal(
     mut broadcast: EventReader<ActionEvent>,
     mut weather: Query<
         (
@@ -46,12 +111,8 @@ pub(crate) fn sprite(
     else {
         return;
     };
-    let Ok(mut body) = body.get_single_mut() else {
-        return;
-    };
-    let Ok((mut face_visibility, mut face)) = face.get_single_mut() else {
-        return;
-    };
+    let mut body = body.single_mut();
+    let (mut face_visibility, mut face) = face.single_mut();
 
     let is_rot_and_vel_aligned =
         is_rotation_aligned_with_velocity(transform, *vel, *angvel, PI / 6.0);
@@ -69,7 +130,9 @@ pub(crate) fn sprite(
             // catch me twice shame on me
             transition.update_face(sprite::FaceKind::Surprised);
         }
-        Some(ActionEvent::DashedAgainstVelocity { towards }) => {
+        Some(ActionEvent::DashedAgainstVelocity { towards })
+            // TODO: if is_rot_and_vel_aligned (unreliable)
+        => {
             // I want the booty dance to be shown only if the direction changes
             // fast from right to left and vice versa, ie. player is spamming
             // left and right.
@@ -156,12 +219,12 @@ pub(crate) fn sprite(
                         transition.update_face(sprite::FaceKind::Happy);
                     } else {
                         if transition.has_elapsed_since_body_change(
-                            consts::SHOW_DEFAULT_BODY_AFTER,
+                            consts::SHOW_DEFAULT_BODY_AFTER_IF_NO_CHANGE,
                         ) {
                             transition.update_body(sprite::BodyKind::default());
                         }
                         if transition.has_elapsed_since_body_change(
-                            consts::SHOW_DEFAULT_FACE_AFTER,
+                            consts::SHOW_DEFAULT_FACE_AFTER_IF_NO_BODY_CHANGE,
                         ) {
                             transition.update_face(sprite::FaceKind::default());
                         }
@@ -291,17 +354,12 @@ pub(crate) fn apply_bloom(
                 });
                 just_started_loading = true;
             }
-            ActionEvent::LoadedSpecial { fired } => {
-                debug!("Special finished loading. Fired? {fired}");
+            ActionEvent::FiredSpecial => {
+                debug!("Special finished loading");
 
                 if matches!(*state, CameraState::BloomGoingUp) {
                     *state = CameraState::BloomGoingDown {
-                        until: Instant::now()
-                            + if *fired {
-                                consts::BLOOM_FADE_OUT_ON_FIRED
-                            } else {
-                                consts::BLOOM_FADE_OUT_ON_CANCELED
-                            },
+                        until: Instant::now() + consts::BLOOM_FADE_OUT_ON_FIRED,
                     };
                 }
             }

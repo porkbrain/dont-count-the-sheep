@@ -47,8 +47,6 @@ pub(crate) fn spawn(
     }
 
     ShootingStar::spawn(commands, asset_server, texture_atlases);
-
-    // spawn_swirl(commands, asset_server, texture_atlases);
 }
 
 /// When did the twinkle start?

@@ -51,7 +51,8 @@ fn main() {
                 background::twinkle,
                 background::shooting_star,
                 weather::anim::apply_bloom,
-                weather::anim::sprite,
+                weather::anim::sprite_loading_special,
+                weather::anim::sprite_normal,
             ),
         )
         .run();

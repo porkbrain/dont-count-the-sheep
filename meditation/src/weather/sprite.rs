@@ -23,6 +23,7 @@ pub(crate) enum BodyKind {
     BootyDanceRight,
     SpearingTowards,
     SlowingSpearingTowards,
+    Folded,
 }
 
 #[derive(Copy, Clone, Default, PartialEq, Eq, Debug)]
@@ -32,6 +33,7 @@ pub(crate) enum FaceKind {
     Happy,
     Surprised,
     Intense,
+    TryHarding,
 }
 
 impl BodyKind {
@@ -42,6 +44,7 @@ impl BodyKind {
         match self {
             // first row
             BodyKind::Default => 0,
+            Folded => 1,
             // second row
             Falling => COLS,
             Plunging => COLS + 1,
@@ -72,6 +75,7 @@ impl FaceKind {
             Default => COLS + 2,
             // third row
             Intense => COLS * 2,
+            TryHarding => COLS * 2 + 1,
         }
     }
 }

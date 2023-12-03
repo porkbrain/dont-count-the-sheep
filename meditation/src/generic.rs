@@ -27,6 +27,21 @@ pub(crate) struct Animation {
 pub(crate) enum AnimationEnd {
     /// Removes the animation timer.
     RemoveTimer,
+    /// Can mutate state.
+    Custom(
+        Box<
+            dyn Fn(
+                    Entity,
+                    &Animation,
+                    &mut AnimationTimer,
+                    &mut TextureAtlasSprite,
+                    &mut Visibility,
+                    &mut Commands,
+                    &Time,
+                ) + Send
+                + Sync,
+        >,
+    ),
 }
 
 #[derive(Component, Deref, DerefMut)]
@@ -148,6 +163,17 @@ pub(crate) fn advance_animation(
                         commands.entity(entity).remove::<AnimationTimer>();
                         *visibility = Visibility::Hidden;
                         atlas.index = animation.first
+                    }
+                    AnimationEnd::Custom(fun) => {
+                        fun(
+                            entity,
+                            animation,
+                            &mut timer,
+                            &mut atlas,
+                            &mut visibility,
+                            &mut commands,
+                            &time,
+                        );
                     }
                 }
             } else {

@@ -16,7 +16,7 @@ pub(crate) const MIN_DASH_AGAINST_VELOCITY_DELAY: Duration = from_millis(100);
 pub(crate) const MIN_DIP_DELAY: Duration = MIN_JUMP_DELAY;
 /// Maximum amount of time weather can be selecting the angle of its special
 /// before it fires
-pub(crate) const SPECIAL_LOADING_TIME: Duration = from_millis(1500);
+pub(crate) const SPECIAL_LOADING_TIME: Duration = from_millis(1000);
 /// Cannot jump more times in a row than this before resetting
 pub(crate) const MAX_JUMPS: u8 = 4;
 /// When left/right is pressed while up/down then weather gets an extra kick
@@ -28,10 +28,9 @@ pub(crate) const DASH_VELOCITY_BOOST: f32 = 128.0;
 /// The jump function uses this to calculate the jump strength
 pub(crate) const BASIS_VELOCITY_ON_JUMP: f32 = 216.0;
 /// When special is fired weather gets an extra kick in the chosen direction
-pub(crate) const VELOCITY_BOOST_ON_SPECIAL: f32 = 512.0;
+pub(crate) const VELOCITY_BOOST_ON_SPECIAL: f32 = 750.0;
 
-pub(crate) const BLOOM_FADE_OUT_ON_FIRED: Duration = from_millis(2000);
-pub(crate) const BLOOM_FADE_OUT_ON_CANCELED: Duration = from_millis(250);
+pub(crate) const BLOOM_FADE_OUT_ON_FIRED: Duration = from_millis(1000);
 pub(crate) const INITIAL_BLOOM_INTENSITY: f32 = 0.1;
 pub(crate) const INITIAL_BLOOM_LFB: f32 = 0.25;
 pub(crate) const BLOOM_INTENSITY_INCREASE_PER_SECOND: f32 = 0.4;
@@ -49,10 +48,12 @@ pub(crate) const SHOW_FALLING_BODY_AFTER: Duration = from_millis(800);
 pub(crate) const SHOW_FALLING_FACE_AFTER: Duration = from_millis(800);
 /// Set body to default values if no body change in at least
 /// this long after the last change sprite change
-pub(crate) const SHOW_DEFAULT_BODY_AFTER: Duration = from_millis(1000);
+pub(crate) const SHOW_DEFAULT_BODY_AFTER_IF_NO_CHANGE: Duration =
+    from_millis(1000);
 /// Set face to default values if no _body_ change in at least
 /// this long after the last change sprite change
-pub(crate) const SHOW_DEFAULT_FACE_AFTER: Duration = from_millis(500);
+pub(crate) const SHOW_DEFAULT_FACE_AFTER_IF_NO_BODY_CHANGE: Duration =
+    from_millis(500);
 pub(crate) const SHOW_SPEARING_BODY_TOWARDS_FOR: Duration = from_millis(500);
 pub(crate) const SHOW_SPEARING_BODY_TOWARDS_IF_NO_CHANGE_FOR: Duration =
     from_millis(250);
@@ -68,3 +69,11 @@ pub(crate) const FACE_HEIGHT: f32 = BODY_HEIGHT;
 pub(crate) const FACE_ATLAS_PADDING: Vec2 = BODY_ATLAS_PADDING;
 pub(crate) const FACE_ATLAS_ROWS: usize = 5;
 pub(crate) const FACE_ATLAS_COLS: usize = 5;
+
+pub(crate) const SPARK_FRAME_TIME: Duration = from_millis(75);
+pub(crate) const SPARK_FRAMES: usize = 10;
+pub(crate) const SPARK_SIDE: f32 = 90.0;
+pub(crate) const START_SPARK_ANIMATION_AFTER_ELAPSED: Duration = from_millis(
+    (SPECIAL_LOADING_TIME.as_millis() - SPARK_FRAME_TIME.as_millis() * 2)
+        as u64,
+);

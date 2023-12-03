@@ -1,4 +1,4 @@
-use super::{consts, ActionEvent};
+use super::{anim::SparkEffect, consts, ActionEvent};
 use crate::prelude::*;
 use bevy::time::Stopwatch;
 use std::f32::consts::PI;
@@ -35,12 +35,17 @@ pub(crate) struct LoadingSpecial {
 /// Controls when in normal mode.
 pub(crate) fn normal(
     mut broadcast: EventWriter<ActionEvent>,
-    mut weather: Query<(Entity, &mut Normal, &mut Velocity)>,
+    mut weather: Query<
+        (Entity, &mut Normal, &mut Velocity, &Transform),
+        Without<SparkEffect>, // to make bevy be sure there won't be conflicts
+    >,
+    mut spark: Query<(&mut Transform, &mut Visibility), With<SparkEffect>>,
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
 ) {
-    let Ok((entity, mut mode, mut vel)) = weather.get_single_mut() else {
+    let Ok((entity, mut mode, mut vel, transform)) = weather.get_single_mut()
+    else {
         return;
     };
     mode.tick(&time);
@@ -65,6 +70,11 @@ pub(crate) fn normal(
             activated: Stopwatch::default(),
             jumps: mode.jumps,
         });
+
+        let (mut spark_transform, mut spark_visibility) = spark.single_mut();
+        *spark_visibility = Visibility::Visible;
+        *spark_transform = *transform;
+        spark_transform.translation.z = zindex::SPARK_EFFECT;
 
         return;
     }
@@ -173,11 +183,7 @@ pub(crate) fn normal(
 
 /// Controls while loading special.
 ///
-/// Spacebar press keeps the special loading.
-/// It's capped by a a max duration [`consts::SPECIAL_LOADING_TIME`].
-/// The longer weather is loading the stronger the boost in the selected
-/// direction.
-/// If no direction is selected then the special is canceled.
+/// TODO: hold in place and no cancel
 pub(crate) fn loading_special(
     mut broadcast: EventWriter<ActionEvent>,
     mut weather: Query<(Entity, &mut LoadingSpecial, &mut Velocity)>,
@@ -190,15 +196,14 @@ pub(crate) fn loading_special(
     };
     mode.tick(&time);
 
-    let pressed_space = keyboard.pressed(KeyCode::Space);
+    *vel = Velocity::default();
 
-    if pressed_space {
-        // see whether the player has chosen a direction
-        mode.angle = unit_circle_angle(&keyboard).or(mode.angle);
-    }
+    let elapsed = mode.activated.elapsed();
 
-    if !pressed_space || mode.activated.elapsed() > consts::SPECIAL_LOADING_TIME
-    {
+    // see whether the player has chosen a direction
+    mode.angle = unit_circle_angle(&keyboard).or(mode.angle);
+
+    if elapsed > consts::SPECIAL_LOADING_TIME {
         commands.entity(entity).remove::<LoadingSpecial>();
         commands.entity(entity).insert(Normal {
             jumps: mode.jumps,
@@ -209,20 +214,12 @@ pub(crate) fn loading_special(
         });
 
         if let Some(angle) = mode.angle {
-            let time_boost = 0.5
-                + mode.activated.elapsed_secs()
-                    / consts::SPECIAL_LOADING_TIME.as_secs_f32();
-
             // fires weather into the direction given by the angle
-            vel.x +=
-                angle.cos() * consts::VELOCITY_BOOST_ON_SPECIAL * time_boost;
-            vel.y +=
-                angle.sin() * consts::VELOCITY_BOOST_ON_SPECIAL * time_boost;
+            vel.x = angle.cos() * consts::VELOCITY_BOOST_ON_SPECIAL;
+            vel.y = angle.sin() * consts::VELOCITY_BOOST_ON_SPECIAL;
         }
 
-        broadcast.send(ActionEvent::LoadedSpecial {
-            fired: mode.angle.is_some(),
-        });
+        broadcast.send(ActionEvent::FiredSpecial);
     }
 }
 
