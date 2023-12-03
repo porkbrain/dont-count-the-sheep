@@ -61,7 +61,7 @@ pub(crate) fn sprite_loading_special(
                 )));
         } else {
             const INITIAL_EXTRA_SIZE: f32 = 0.75;
-            const INITIAL_SIDE: f32 = consts::SPARK_SIDE * 1.5;
+            const INITIAL_SIDE: f32 = consts::SPARK_SIDE;
 
             let initial_size = INITIAL_SIDE * (1.0 + INITIAL_EXTRA_SIZE);
 

@@ -22,9 +22,7 @@ pub(crate) struct Normal {
 pub(crate) struct LoadingSpecial {
     /// Angle is given by the combination of keys pressed.
     /// See [`unit_circle_angle`].
-    ///
-    /// If the no angle was chosen then the special is canceled.
-    pub(crate) angle: Option<Radians>,
+    pub(crate) angle: Radians,
     /// special mode has a set duration after which it fires
     pub(crate) activated: Stopwatch,
     /// once special is fired, weather can only do the same amount of jumps
@@ -61,22 +59,25 @@ pub(crate) fn normal(
         keyboard.pressed(KeyCode::Up) || keyboard.pressed(KeyCode::W);
 
     if mode.can_use_special && pressed_space {
-        debug!("Send loading special");
-        broadcast.send(ActionEvent::StartLoadingSpecial);
+        if let Some(angle) = unit_circle_angle(&keyboard) {
+            debug!("Send loading special");
+            broadcast.send(ActionEvent::StartLoadingSpecial);
 
-        commands.entity(entity).remove::<Normal>();
-        commands.entity(entity).insert(LoadingSpecial {
-            angle: unit_circle_angle(&keyboard),
-            activated: Stopwatch::default(),
-            jumps: mode.jumps,
-        });
+            commands.entity(entity).remove::<Normal>();
+            commands.entity(entity).insert(LoadingSpecial {
+                angle,
+                activated: Stopwatch::default(),
+                jumps: mode.jumps,
+            });
 
-        let (mut spark_transform, mut spark_visibility) = spark.single_mut();
-        *spark_visibility = Visibility::Visible;
-        *spark_transform = *transform;
-        spark_transform.translation.z = zindex::SPARK_EFFECT;
+            let (mut spark_transform, mut spark_visibility) =
+                spark.single_mut();
+            *spark_visibility = Visibility::Visible;
+            *spark_transform = *transform;
+            spark_transform.translation.z = zindex::SPARK_EFFECT;
 
-        return;
+            return;
+        }
     }
 
     let dt = time.delta_seconds();
@@ -200,8 +201,10 @@ pub(crate) fn loading_special(
 
     let elapsed = mode.activated.elapsed();
 
-    // see whether the player has chosen a direction
-    mode.angle = unit_circle_angle(&keyboard).or(mode.angle);
+    // see whether the player has changed the direction
+    if let Some(angle) = unit_circle_angle(&keyboard) {
+        mode.angle = angle;
+    }
 
     if elapsed > consts::SPECIAL_LOADING_TIME {
         commands.entity(entity).remove::<LoadingSpecial>();
@@ -210,14 +213,12 @@ pub(crate) fn loading_special(
             last_jump: Stopwatch::default(),
             last_dash: Stopwatch::default(),
             last_dip: Stopwatch::default(),
-            can_use_special: mode.angle.is_none(),
+            can_use_special: false,
         });
 
-        if let Some(angle) = mode.angle {
-            // fires weather into the direction given by the angle
-            vel.x = angle.cos() * consts::VELOCITY_BOOST_ON_SPECIAL;
-            vel.y = angle.sin() * consts::VELOCITY_BOOST_ON_SPECIAL;
-        }
+        // fires weather into the direction given by the angle
+        vel.x = mode.angle.cos() * consts::VELOCITY_BOOST_ON_SPECIAL;
+        vel.y = mode.angle.sin() * consts::VELOCITY_BOOST_ON_SPECIAL;
 
         broadcast.send(ActionEvent::FiredSpecial);
     }
