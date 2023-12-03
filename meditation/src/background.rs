@@ -13,12 +13,6 @@ mod consts {
     pub(crate) const SHOOTING_STAR_FRAME_TIME: Duration = from_millis(50);
     pub(crate) const SHOOTING_STAR_WIDTH: f32 = 35.0;
     pub(crate) const SHOOTING_STAR_HEIGHT: f32 = 35.0;
-
-    // pub(crate) const SWIRL_FRAMES: usize = 15;
-    // pub(crate) const SWIRL_FRAME_TIME: Duration = Duration::from_millis(100);
-    // pub(crate) const SWIRL_WIDTH: f32 = 100.0;
-    // pub(crate) const SWIRL_HEIGHT: f32 = 100.0;
-    // pub(crate) const SWIRL_FLICKER_CHANCE_PER_SECOND: f32 = 1.0 / 8.0;
 }
 
 pub(crate) fn spawn(
@@ -143,51 +137,3 @@ pub(crate) fn shooting_star(
         }
     }
 }
-
-// fn spawn_swirl(
-//     commands: &mut Commands,
-//     asset_server: &Res<AssetServer>,
-//     texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
-// ) {
-//     let animation = Animation {
-//         // it is then set to flicker
-//         on_last_frame: AnimationEnd::Custom(Box::new(
-//             |entity, _animation, timer, atlas, _visibility, commands, _time| {
-//                 timer.reset();
-//                 timer.pause();
-//                 atlas.index = consts::SWIRL_FRAMES - 1 - 2;
-//                 commands.entity(entity).insert(ChangeFrameAtRandom::new(
-//                     consts::SWIRL_FLICKER_CHANCE_PER_SECOND,
-//                     &[
-//                         consts::SWIRL_FRAMES - 1,
-//                         consts::SWIRL_FRAMES - 2,
-//                         consts::SWIRL_FRAMES - 3,
-//                     ],
-//                 ));
-//             },
-//         )),
-//         first: 0,
-//         // last three frames are for flicker
-//         last: consts::SWIRL_FRAMES - 1,
-//     };
-//     commands.spawn((
-//         AnimationTimer(Timer::new(
-//             consts::SWIRL_FRAME_TIME,
-//             TimerMode::Repeating,
-//         )),
-//         SpriteSheetBundle {
-//             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-//                 asset_server.load("textures/bg/swirl_atlas.png"),
-//                 Vec2::new(consts::SWIRL_WIDTH, consts::SWIRL_HEIGHT),
-//                 consts::SWIRL_FRAMES,
-//                 1,
-//                 None,
-//                 None,
-//             )),
-//             sprite: TextureAtlasSprite::new(animation.first),
-//             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-//             ..default()
-//         },
-//         animation,
-//     ));
-// }
