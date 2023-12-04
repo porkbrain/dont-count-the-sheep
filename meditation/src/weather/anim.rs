@@ -53,6 +53,7 @@ pub(crate) fn sprite_loading_special(
 
         if elapsed > consts::START_SPARK_ANIMATION_AFTER_ELAPSED {
             spark_atlas.custom_size = Some(Vec2::splat(consts::SPARK_SIDE));
+            spark_atlas.index = 1;
             commands
                 .entity(spark_entity)
                 .insert(AnimationTimer(Timer::new(
@@ -60,17 +61,14 @@ pub(crate) fn sprite_loading_special(
                     TimerMode::Repeating,
                 )));
         } else {
-            const INITIAL_EXTRA_SIZE: f32 = 0.75;
-            const INITIAL_SIDE: f32 = consts::SPARK_SIDE;
+            const INITIAL_SIZE: f32 = consts::SPARK_SIDE * 1.25;
+            const END_SIZE: f32 = consts::SPARK_SIDE * 0.5;
 
-            let initial_size = INITIAL_SIDE * (1.0 + INITIAL_EXTRA_SIZE);
+            let animation_elapsed = elapsed.as_secs_f32()
+                / consts::START_SPARK_ANIMATION_AFTER_ELAPSED.as_secs_f32();
 
-            // e.g. starts at 0.5x and ends at 1.0x
-            let diminishing_size =
-                INITIAL_SIDE * INITIAL_EXTRA_SIZE * elapsed.as_secs_f32()
-                    / consts::START_SPARK_ANIMATION_AFTER_ELAPSED.as_secs_f32();
-
-            let square_side = initial_size - diminishing_size;
+            let square_side =
+                INITIAL_SIZE - (INITIAL_SIZE - END_SIZE) * animation_elapsed;
             spark_atlas.custom_size = Some(Vec2::splat(square_side));
         }
     }

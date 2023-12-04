@@ -16,7 +16,7 @@ pub(crate) const MIN_DASH_AGAINST_VELOCITY_DELAY: Duration = from_millis(100);
 pub(crate) const MIN_DIP_DELAY: Duration = MIN_JUMP_DELAY;
 /// Maximum amount of time weather can be selecting the angle of its special
 /// before it fires
-pub(crate) const SPECIAL_LOADING_TIME: Duration = from_millis(1000);
+pub(crate) const SPECIAL_LOADING_TIME: Duration = from_millis(750);
 /// Cannot jump more times in a row than this before resetting
 pub(crate) const MAX_JUMPS: u8 = 4;
 /// When left/right is pressed while up/down then weather gets an extra kick
@@ -82,6 +82,6 @@ pub(crate) const SPARK_FRAME_TIME: Duration = from_millis(75);
 pub(crate) const SPARK_FRAMES: usize = 10;
 pub(crate) const SPARK_SIDE: f32 = 90.0;
 pub(crate) const START_SPARK_ANIMATION_AFTER_ELAPSED: Duration = from_millis(
-    (SPECIAL_LOADING_TIME.as_millis() - SPARK_FRAME_TIME.as_millis() * 2)
+    (SPECIAL_LOADING_TIME.as_millis() - SPARK_FRAME_TIME.as_millis() * 3)
         as u64,
 );
