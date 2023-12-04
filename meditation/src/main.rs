@@ -7,7 +7,9 @@
 #![allow(clippy::type_complexity)]
 
 mod background;
+mod control_mode;
 mod generic;
+mod menu;
 mod prelude;
 mod weather;
 mod zindex;
@@ -36,24 +38,32 @@ fn main() {
         .add_systems(
             FixedUpdate,
             (
-                weather::controls::normal,
-                weather::controls::loading_special,
-            )
-                .chain(),
+                apply_velocity,
+                advance_animation,
+                weather::anim::rotate,
+                weather::anim::apply_bloom,
+            ),
         )
         .add_systems(
             Update,
             (
-                apply_velocity,
-                advance_animation,
-                change_frame_at_random,
-                weather::anim::rotate,
-                background::twinkle,
-                background::shooting_star,
-                weather::anim::apply_bloom,
                 weather::anim::sprite_loading_special,
                 weather::anim::sprite_normal,
+                change_frame_at_random,
+                background::twinkle,
+                background::shooting_star,
             ),
+        )
+        .add_systems(
+            Update,
+            (
+                menu::open,
+                menu::select, // order important bcs we simulate ESC to close
+                menu::close,
+                weather::controls::normal,
+                weather::controls::loading_special,
+            )
+                .chain(),
         )
         .run();
 }
@@ -72,16 +82,7 @@ fn setup(
 
     background::spawn(&mut commands, &asset_server, &mut texture_atlases);
     weather::spawn(&mut commands, &asset_server, &mut texture_atlases);
-
-    commands.spawn((SpriteBundle {
-        texture: asset_server.load("textures/climate/default.png"),
-        transform: Transform::from_translation(Vec3::new(
-            0.0,
-            0.0,
-            zindex::CLIMATE,
-        )),
-        ..Default::default()
-    },));
+    menu::spawn(&mut commands, &asset_server);
 }
 
 /// If weather transform translation is within 100.0 of the origin, reset
@@ -90,9 +91,7 @@ fn setup(
 /// TODO: restore one jump per reset. climate pulsates - only if we are within
 /// it in the pulse time do you get one jump.
 /// every 4 pulses you get the special back.
-fn reset_weather(
-    mut query: Query<(&mut weather::controls::Normal, &Transform)>,
-) {
+fn reset_weather(mut query: Query<(&mut control_mode::Normal, &Transform)>) {
     let Ok((mut controls, transform)) = query.get_single_mut() else {
         return;
     };

@@ -1,5 +1,5 @@
-use super::{consts, controls, sprite, ActionEvent, WeatherBody, WeatherFace};
-use crate::prelude::*;
+use super::{consts, sprite, ActionEvent, WeatherBody, WeatherFace};
+use crate::{control_mode, prelude::*};
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     utils::Instant,
@@ -33,7 +33,7 @@ pub(crate) struct SparkEffect;
 /// 5. Weather is off to Mars or wherever while last 4 frames are playing in
 /// place. That's why the effect sprite is not a child of weather.
 pub(crate) fn sprite_loading_special(
-    mut weather: Query<&controls::LoadingSpecial>,
+    mut weather: Query<&control_mode::LoadingSpecial>,
     mut set: ParamSet<(
         Query<
             (Entity, &mut TextureAtlasSprite),
@@ -96,7 +96,7 @@ pub(crate) fn sprite_normal(
             &Transform,
             &mut sprite::Transition,
         ),
-        With<controls::Normal>,
+        With<control_mode::Normal>,
     >,
     mut body: Query<
         &mut TextureAtlasSprite,
@@ -251,7 +251,7 @@ pub(crate) fn sprite_normal(
 pub(crate) fn rotate(
     mut weather: Query<
         (&Velocity, &mut AngularVelocity, &mut Transform),
-        With<controls::Normal>,
+        With<control_mode::Normal>,
     >,
     time: Res<Time>,
 ) {

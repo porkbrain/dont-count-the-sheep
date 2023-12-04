@@ -1,40 +1,13 @@
 use super::{anim::SparkEffect, consts, ActionEvent};
-use crate::prelude::*;
+use crate::{control_mode, prelude::*};
 use bevy::time::Stopwatch;
 use std::f32::consts::PI;
-
-#[derive(Component)]
-pub(crate) struct Normal {
-    /// weather has a limited number of jumps before it must reset
-    /// via the [`Climate`]
-    pub(crate) jumps: u8,
-    /// there's a minimum delay between jumps
-    pub(crate) last_jump: Stopwatch,
-    /// there's a minimum delay between dashes
-    pub(crate) last_dash: Stopwatch,
-    /// there's a minimum delay between dips
-    pub(crate) last_dip: Stopwatch,
-    /// weather can only use its special ability once per reset
-    pub(crate) can_use_special: bool,
-}
-
-#[derive(Component, Default)]
-pub(crate) struct LoadingSpecial {
-    /// Angle is given by the combination of keys pressed.
-    /// See [`unit_circle_angle`].
-    pub(crate) angle: Radians,
-    /// special mode has a set duration after which it fires
-    pub(crate) activated: Stopwatch,
-    /// once special is fired, weather can only do the same amount of jumps
-    /// as it had before
-    pub(crate) jumps: u8,
-}
 
 /// Controls when in normal mode.
 pub(crate) fn normal(
     mut broadcast: EventWriter<ActionEvent>,
     mut weather: Query<
-        (Entity, &mut Normal, &mut Velocity, &Transform),
+        (Entity, &mut control_mode::Normal, &mut Velocity, &Transform),
         Without<SparkEffect>, // to make bevy be sure there won't be conflicts
     >,
     mut spark: Query<(&mut Transform, &mut Visibility), With<SparkEffect>>,
@@ -63,12 +36,14 @@ pub(crate) fn normal(
             debug!("Send loading special");
             broadcast.send(ActionEvent::StartLoadingSpecial);
 
-            commands.entity(entity).remove::<Normal>();
-            commands.entity(entity).insert(LoadingSpecial {
-                angle,
-                activated: Stopwatch::default(),
-                jumps: mode.jumps,
-            });
+            commands.entity(entity).remove::<control_mode::Normal>();
+            commands
+                .entity(entity)
+                .insert(control_mode::LoadingSpecial {
+                    angle,
+                    activated: Stopwatch::default(),
+                    jumps: mode.jumps,
+                });
 
             let (mut spark_transform, mut spark_visibility) =
                 spark.single_mut();
@@ -187,7 +162,11 @@ pub(crate) fn normal(
 /// TODO: hold in place and no cancel
 pub(crate) fn loading_special(
     mut broadcast: EventWriter<ActionEvent>,
-    mut weather: Query<(Entity, &mut LoadingSpecial, &mut Velocity)>,
+    mut weather: Query<(
+        Entity,
+        &mut control_mode::LoadingSpecial,
+        &mut Velocity,
+    )>,
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
@@ -207,8 +186,10 @@ pub(crate) fn loading_special(
     }
 
     if elapsed > consts::SPECIAL_LOADING_TIME {
-        commands.entity(entity).remove::<LoadingSpecial>();
-        commands.entity(entity).insert(Normal {
+        commands
+            .entity(entity)
+            .remove::<control_mode::LoadingSpecial>();
+        commands.entity(entity).insert(control_mode::Normal {
             jumps: mode.jumps,
             last_jump: Stopwatch::default(),
             last_dash: Stopwatch::default(),
@@ -268,30 +249,4 @@ fn unit_circle_angle(key: &Input<KeyCode>) -> Option<Radians> {
     };
 
     Some(Radians::new(angle))
-}
-
-impl Normal {
-    fn tick(&mut self, time: &Time) {
-        self.last_jump.tick(time.delta());
-        self.last_dash.tick(time.delta());
-        self.last_dip.tick(time.delta());
-    }
-}
-
-impl LoadingSpecial {
-    fn tick(&mut self, time: &Time) {
-        self.activated.tick(time.delta());
-    }
-}
-
-impl Default for Normal {
-    fn default() -> Self {
-        Self {
-            jumps: 0,
-            last_dash: Stopwatch::default(),
-            last_jump: Stopwatch::default(),
-            last_dip: Stopwatch::default(),
-            can_use_special: true,
-        }
-    }
 }

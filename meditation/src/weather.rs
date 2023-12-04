@@ -4,11 +4,11 @@
 //! Reminds me of the analogy made by Niel deGrasse Tyson.
 
 pub(crate) mod anim;
-mod consts;
+pub(crate) mod consts;
 pub(crate) mod controls;
 mod sprite;
 
-use crate::prelude::*;
+use crate::{control_mode, prelude::*};
 
 use self::anim::SparkEffect;
 
@@ -19,7 +19,7 @@ pub(crate) fn spawn(
 ) {
     let parent = commands
         .spawn((
-            controls::Normal::default(),
+            control_mode::Normal::default(),
             Velocity::default(),
             AngularVelocity::default(), // for animation
             sprite::Transition::default(),
@@ -62,7 +62,10 @@ pub(crate) fn spawn(
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/weather/face_atlas.png"),
-                    Vec2::new(consts::FACE_WIDTH, consts::FACE_HEIGHT),
+                    Vec2::new(
+                        consts::FACE_SPRITE_WIDTH,
+                        consts::FACE_SPRITE_HEIGHT,
+                    ),
                     consts::FACE_ATLAS_COLS,
                     consts::FACE_ATLAS_ROWS,
                     Some(consts::FACE_ATLAS_PADDING),
@@ -107,6 +110,7 @@ pub(crate) fn spawn(
                 None,
             )),
             sprite: TextureAtlasSprite::new(0),
+            visibility: Visibility::Hidden,
             ..default()
         },
     ));

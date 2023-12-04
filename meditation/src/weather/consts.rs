@@ -64,8 +64,16 @@ pub(crate) const BODY_ATLAS_PADDING: Vec2 = Vec2::new(3.0, 3.0);
 pub(crate) const BODY_WIDTH: f32 = 35.0;
 pub(crate) const BODY_HEIGHT: f32 = 35.0;
 
-pub(crate) const FACE_WIDTH: f32 = BODY_WIDTH;
-pub(crate) const FACE_HEIGHT: f32 = BODY_HEIGHT;
+/// Note that this is the sprite size.
+/// The size of the actual visible face is smaller.
+/// It's surrounded by transparent pixels.
+pub(crate) const FACE_SPRITE_WIDTH: f32 = BODY_WIDTH;
+/// Note that this is the sprite size.
+/// The size of the actual visible face is smaller.
+/// It's surrounded by transparent pixels.
+pub(crate) const FACE_SPRITE_HEIGHT: f32 = BODY_HEIGHT;
+/// This is the size of the visible face.
+pub(crate) const FACE_RENDERED_SIZE: f32 = 15.0;
 pub(crate) const FACE_ATLAS_PADDING: Vec2 = BODY_ATLAS_PADDING;
 pub(crate) const FACE_ATLAS_ROWS: usize = 5;
 pub(crate) const FACE_ATLAS_COLS: usize = 5;
