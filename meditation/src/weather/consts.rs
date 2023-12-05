@@ -30,11 +30,13 @@ pub(crate) const BASIS_VELOCITY_ON_JUMP: f32 = 216.0;
 /// When special is fired weather gets an extra kick in the chosen direction
 pub(crate) const VELOCITY_BOOST_ON_SPECIAL: f32 = 750.0;
 
-pub(crate) const BLOOM_FADE_OUT_ON_FIRED: Duration = from_millis(1000);
 pub(crate) const INITIAL_BLOOM_INTENSITY: f32 = 0.1;
+pub(crate) const PEAK_BLOOM_INTENSITY: f32 = 0.7;
 pub(crate) const INITIAL_BLOOM_LFB: f32 = 0.25;
-pub(crate) const BLOOM_INTENSITY_INCREASE_PER_SECOND: f32 = 0.4;
-pub(crate) const BLOOM_LFB_INCREASE_PER_SECOND: f32 = 0.5;
+pub(crate) const PEAK_BLOOM_LFB: f32 = 0.7;
+pub(crate) const ZOOM_IN_SCALE: f32 = 0.75;
+pub(crate) const ZOOM_OUT: Duration = from_millis(250);
+pub(crate) const FADE_BLOOM: Duration = from_millis(1500);
 
 /// How fast does weather rotate towards its velocity vector
 pub(crate) const ROTATION_SPEED: f32 = 2.0;

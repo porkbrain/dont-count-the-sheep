@@ -2,21 +2,25 @@ use super::{consts, sprite, ActionEvent, WeatherBody, WeatherFace};
 use crate::{control_mode, prelude::*};
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
-    utils::Instant,
+    time::Stopwatch,
 };
 use std::{
     cmp::Ordering,
     f32::consts::{E, PI},
 };
 
-#[derive(Component, Default, Clone, Copy)]
+#[derive(Component, Default, Clone)]
 pub(crate) enum CameraState {
     #[default]
     Normal,
-    BloomGoingDown {
-        until: Instant,
+    /// Camera is currently undergoing bloom&zoom effect.
+    EffectOnSpecial {
+        /// When did the effect start.
+        /// Used to calculate phase and smooth out the animation.
+        fired: Stopwatch,
+        /// Where was the weather when the special was started.
+        look_at: Vec2,
     },
-    BloomGoingUp,
 }
 
 #[derive(Component)]
@@ -352,15 +356,15 @@ pub(crate) fn rotate(
     angvel.0 -= angvel.0 * 0.75 * dt;
 }
 
-/// If the special is loading then bloom effect is applied.
-/// It's smoothly animated in and out.
-///
-/// TODO: There's a bug where bloom sometimes stays on screen.
-pub(crate) fn apply_bloom(
+/// Zooms in on weather and makes it glow when special is being loaded,
+/// then resets to initial state.
+pub(crate) fn update_camera_on_special(
     mut action: EventReader<ActionEvent>,
     mut camera: Query<(
         Entity,
         &mut Camera,
+        &mut Transform,
+        &mut OrthographicProjection,
         &mut CameraState,
         &mut Tonemapping,
         Option<&mut BloomSettings>,
@@ -368,92 +372,128 @@ pub(crate) fn apply_bloom(
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    let (entity, mut camera, mut state, mut tonemapping, settings) =
-        camera.single_mut();
+    use consts::{
+        FADE_BLOOM, INITIAL_BLOOM_INTENSITY, INITIAL_BLOOM_LFB,
+        PEAK_BLOOM_INTENSITY, PEAK_BLOOM_LFB, SPECIAL_LOADING_TIME,
+        ZOOM_IN_SCALE, ZOOM_OUT,
+    };
 
-    let mut just_started_loading = false;
-    for event in action.read() {
-        match event {
-            ActionEvent::StartLoadingSpecial
-                if !matches!(*state, CameraState::BloomGoingUp) =>
-            {
-                debug!("Special started loading");
-                *state = CameraState::BloomGoingUp;
+    let (
+        entity,
+        mut camera,
+        mut transform,
+        mut projection,
+        mut state,
+        mut tonemapping,
+        settings,
+    ) = camera.single_mut();
 
-                camera.hdr = true;
-                *tonemapping = Tonemapping::TonyMcMapface;
-                commands.entity(entity).insert(BloomSettings {
-                    intensity: consts::INITIAL_BLOOM_INTENSITY,
-                    low_frequency_boost: consts::INITIAL_BLOOM_LFB,
-                    ..default()
-                });
-                just_started_loading = true;
+    let just_started_loading_from_translation = action
+        .read()
+        .find_map(|e| match e {
+            ActionEvent::StartLoadingSpecial { from_translation } => {
+                Some(from_translation)
             }
-            ActionEvent::FiredSpecial => {
-                debug!("Special finished loading");
+            _ => None,
+        })
+        .cloned();
 
-                if matches!(*state, CameraState::BloomGoingUp) {
-                    *state = CameraState::BloomGoingDown {
-                        until: Instant::now() + consts::BLOOM_FADE_OUT_ON_FIRED,
-                    };
-                }
-            }
-            _ => {}
-        }
-    }
+    if let Some(look_at) = just_started_loading_from_translation {
+        debug!("Special started loading from {look_at}");
+        *state = CameraState::EffectOnSpecial {
+            fired: Stopwatch::new(),
+            look_at,
+        };
 
-    if just_started_loading {
+        camera.hdr = true;
+        *tonemapping = Tonemapping::TonyMcMapface;
+        commands.entity(entity).insert(BloomSettings {
+            intensity: INITIAL_BLOOM_INTENSITY,
+            low_frequency_boost: INITIAL_BLOOM_LFB,
+            ..default()
+        });
+
         return;
     }
 
-    let state_clone = *state;
+    let CameraState::EffectOnSpecial { fired, look_at } = &mut *state else {
+        debug_assert!(settings.is_none());
+        return;
+    };
+    fired.tick(time.delta());
 
-    let mut remove_bloom = || {
-        debug!("Removing bloom");
+    debug_assert!(FADE_BLOOM > ZOOM_OUT);
+    if fired.elapsed() > FADE_BLOOM + SPECIAL_LOADING_TIME {
+        debug!("Removing bloom and zoom");
+
         commands.entity(entity).remove::<BloomSettings>();
         *state = CameraState::Normal;
         camera.hdr = true;
         *tonemapping = Tonemapping::TonyMcMapface;
-    };
 
-    match state_clone {
-        CameraState::BloomGoingDown { until } => {
-            let now = Instant::now();
-            if until < now {
-                remove_bloom();
-            } else {
-                let mut settings = settings.expect("Bloom settings missing");
+        projection.scale = 1.0;
+        transform.translation = Default::default();
 
-                let remaining_secs = (until - now).as_secs_f32();
-                let remaining_frames = remaining_secs / time.delta_seconds();
+        return;
+    }
 
-                let new_intensity =
-                    settings.intensity - settings.intensity / remaining_frames;
+    let mut settings = settings.expect("Bloom settings missing");
 
-                // threshold under which we just remove it
-                if new_intensity < 0.05 {
-                    remove_bloom();
-                } else {
-                    settings.intensity = new_intensity;
+    if fired.elapsed() < SPECIAL_LOADING_TIME {
+        // we are bloomi'n'zoomin'
 
-                    let new_low_frequency_boost = settings.low_frequency_boost
-                        - settings.low_frequency_boost / remaining_frames;
-                    settings.low_frequency_boost = new_low_frequency_boost;
-                }
-            }
+        let animation_elapsed =
+            fired.elapsed_secs() / SPECIAL_LOADING_TIME.as_secs_f32();
+
+        let new_intensity = INITIAL_BLOOM_INTENSITY
+            + (PEAK_BLOOM_INTENSITY - INITIAL_BLOOM_INTENSITY)
+                * animation_elapsed;
+        settings.intensity = new_intensity;
+
+        let new_lfb = INITIAL_BLOOM_LFB
+            + (PEAK_BLOOM_LFB - INITIAL_BLOOM_LFB) * animation_elapsed;
+        settings.low_frequency_boost = new_lfb;
+
+        let new_scale = 1.0 - (1.0 - ZOOM_IN_SCALE) * animation_elapsed;
+        projection.scale = new_scale;
+
+        transform.translation = transform
+            .translation
+            .lerp(look_at.extend(0.0), animation_elapsed);
+    } else {
+        // zoom out and fade bloom
+
+        let how_long_after_fired = fired.elapsed() - SPECIAL_LOADING_TIME;
+
+        if how_long_after_fired < ZOOM_OUT {
+            // zooming out
+
+            let animation_elapsed =
+                how_long_after_fired.as_secs_f32() / ZOOM_OUT.as_secs_f32();
+
+            let new_scale =
+                ZOOM_IN_SCALE + (1.0 - ZOOM_IN_SCALE) * animation_elapsed;
+            projection.scale = new_scale;
+
+            transform.translation = transform
+                .translation
+                .lerp(Default::default(), animation_elapsed);
+        } else {
+            // zoomed out
+
+            projection.scale = 1.0;
+            transform.translation = Default::default();
         }
-        CameraState::BloomGoingUp => {
-            let mut settings = settings.expect("Bloom settings missing");
 
-            settings.intensity = (settings.intensity
-                + consts::BLOOM_INTENSITY_INCREASE_PER_SECOND
-                    * time.delta_seconds())
-            .min(0.75);
-            settings.low_frequency_boost = (settings.low_frequency_boost
-                + consts::BLOOM_LFB_INCREASE_PER_SECOND * time.delta_seconds())
-            .min(0.75);
-        }
-        CameraState::Normal => debug_assert!(settings.is_none()),
+        let animation_elapsed =
+            how_long_after_fired.as_secs_f32() / FADE_BLOOM.as_secs_f32();
+
+        let new_intensity =
+            PEAK_BLOOM_INTENSITY - PEAK_BLOOM_INTENSITY * animation_elapsed;
+        settings.intensity = new_intensity;
+
+        let new_lfb = PEAK_BLOOM_LFB - PEAK_BLOOM_LFB * animation_elapsed;
+        settings.low_frequency_boost = new_lfb;
     }
 }
 

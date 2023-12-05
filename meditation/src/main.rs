@@ -36,12 +36,7 @@ fn main() {
         .add_systems(First, reset_weather)
         .add_systems(
             FixedUpdate,
-            (
-                apply_velocity,
-                advance_animation,
-                weather::anim::rotate,
-                weather::anim::apply_bloom,
-            ),
+            (apply_velocity, advance_animation, weather::anim::rotate),
         )
         .add_systems(
             Update,
@@ -61,6 +56,8 @@ fn main() {
                 menu::close,
                 weather::controls::normal,
                 weather::controls::loading_special,
+                // must be after controls bcs events dependency
+                weather::anim::update_camera_on_special,
             )
                 .chain(),
         )
@@ -79,7 +76,21 @@ fn setup(
         PixelViewport,
     ));
 
-    distractions::xd(&mut commands, &asset_server);
+    // commands.spawn(distractions::WebPAnimationBundle {
+    //     animation: asset_server.load("textures/distractions/test.webp"),
+    //     frame_rate: distractions::WebPAnimationFrameRate::new(2),
+    //     sprite: Sprite {
+    //         color: Color::TOMATO,
+    //         ..default()
+    //     },
+    //     ..default()
+    // });
+
+    // commands.spawn((SpriteBundle {
+    //     texture: asset_server.load("textures/distractions/frame.png"),
+    //     transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
+    //     ..Default::default()
+    // },));
 
     background::spawn(&mut commands, &asset_server, &mut texture_atlases);
     weather::spawn(&mut commands, &asset_server, &mut texture_atlases);

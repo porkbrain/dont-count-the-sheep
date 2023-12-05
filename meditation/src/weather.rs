@@ -124,7 +124,10 @@ pub(crate) struct WeatherFace;
 
 #[derive(Event, Clone, Copy)]
 pub(crate) enum ActionEvent {
-    StartLoadingSpecial,
+    StartLoadingSpecial {
+        /// Where was the weather when the special was started.
+        from_translation: Vec2,
+    },
     FiredSpecial,
     Dipped,
     DashedAgainstVelocity {

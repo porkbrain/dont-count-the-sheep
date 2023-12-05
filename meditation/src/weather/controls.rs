@@ -34,7 +34,9 @@ pub(crate) fn normal(
     if mode.can_use_special && pressed_space {
         if let Some(angle) = unit_circle_angle(&keyboard) {
             debug!("Send loading special");
-            broadcast.send(ActionEvent::StartLoadingSpecial);
+            broadcast.send(ActionEvent::StartLoadingSpecial {
+                from_translation: transform.translation.truncate(),
+            });
 
             commands.entity(entity).remove::<control_mode::Normal>();
             commands
