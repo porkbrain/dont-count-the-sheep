@@ -26,29 +26,49 @@ pub(crate) struct SparkEffect;
 /// That's because it's a very timing critical animation.
 ///
 /// 1. Abruptly slow down weather to be still.
-/// 2. Render an effect animation's first frame on 0.5x scale and abruptly
-/// scale it up to 1.5x.
-/// 3. Shrink that first frame to its normal size while special is loading
-/// 4. When loaded, we play the next 5 frames.
-/// 5. Weather is off to Mars or wherever while last 4 frames are playing in
-/// place. That's why the effect sprite is not a child of weather.
+/// 2. Render spark's atlas first frame in place of weather's body, make it a
+///    bit bigger and shrink it to below its normal size.
+/// 4. The time it takes to shrink is almost the same as the time it takes to
+///    load special. The animation is resumed bit earlier before the special is
+///    loaded.
+/// 5. Weather is off to Mars or wherever while last few frames are playing in
+///    place. That's why the effect sprite is not a child of weather.
 pub(crate) fn sprite_loading_special(
-    mut weather: Query<&control_mode::LoadingSpecial>,
+    mut weather: Query<(
+        &control_mode::LoadingSpecial,
+        &mut Velocity,
+        &Transform,
+    )>,
     mut set: ParamSet<(
         Query<
-            (Entity, &mut TextureAtlasSprite),
-            (With<SparkEffect>, Without<AnimationTimer>),
+            (Entity, &mut TextureAtlasSprite, &mut Transform),
+            (
+                With<SparkEffect>,
+                Without<AnimationTimer>,
+                Without<control_mode::LoadingSpecial>,
+            ),
         >,
-        Query<&mut TextureAtlasSprite, With<WeatherBody>>,
-        Query<&mut TextureAtlasSprite, With<WeatherFace>>,
+        Query<
+            &mut TextureAtlasSprite,
+            (With<WeatherBody>, Without<control_mode::LoadingSpecial>),
+        >,
+        Query<
+            &mut TextureAtlasSprite,
+            (With<WeatherFace>, Without<control_mode::LoadingSpecial>),
+        >,
     )>,
     mut commands: Commands,
+    time: Res<Time>,
 ) {
-    let Ok(mode) = weather.get_single_mut() else {
+    let Ok((mode, mut vel, transform)) = weather.get_single_mut() else {
         return;
     };
 
-    if let Ok((spark_entity, mut spark_atlas)) = set.p0().get_single_mut() {
+    let dt = time.delta_seconds();
+
+    if let Ok((spark_entity, mut spark_atlas, mut spark_transform)) =
+        set.p0().get_single_mut()
+    {
         let elapsed = mode.activated.elapsed();
 
         if elapsed > consts::START_SPARK_ANIMATION_AFTER_ELAPSED {
@@ -70,6 +90,21 @@ pub(crate) fn sprite_loading_special(
             let square_side =
                 INITIAL_SIZE - (INITIAL_SIZE - END_SIZE) * animation_elapsed;
             spark_atlas.custom_size = Some(Vec2::splat(square_side));
+
+            // smoothly:
+            // vec.x when animation_elapsed 0
+            // ...
+            // 0.5 * vec.x when 0.5
+            // ...
+            // 0 when 1
+            let dt_prime = dt
+                / consts::WHEN_LOADING_SPECIAL_STOP_MOVEMENT_WITHIN
+                    .as_secs_f32();
+            vel.x -= vel.x * dt_prime;
+            vel.y -= vel.y * dt_prime;
+            // make spark effect stick with weather until fired
+            spark_transform.translation.x = transform.translation.x;
+            spark_transform.translation.y = transform.translation.y;
         }
     }
 

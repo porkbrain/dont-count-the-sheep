@@ -158,8 +158,6 @@ pub(crate) fn normal(
 }
 
 /// Controls while loading special.
-///
-/// TODO: hold in place and no cancel
 pub(crate) fn loading_special(
     mut broadcast: EventWriter<ActionEvent>,
     mut weather: Query<(
@@ -175,8 +173,6 @@ pub(crate) fn loading_special(
         return;
     };
     mode.tick(&time);
-
-    *vel = Velocity::default();
 
     let elapsed = mode.activated.elapsed();
 

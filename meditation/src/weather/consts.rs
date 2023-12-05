@@ -81,6 +81,8 @@ pub(crate) const FACE_ATLAS_COLS: usize = 5;
 pub(crate) const SPARK_FRAME_TIME: Duration = from_millis(75);
 pub(crate) const SPARK_FRAMES: usize = 10;
 pub(crate) const SPARK_SIDE: f32 = 90.0;
+pub(crate) const WHEN_LOADING_SPECIAL_STOP_MOVEMENT_WITHIN: Duration =
+    from_millis(250);
 pub(crate) const START_SPARK_ANIMATION_AFTER_ELAPSED: Duration = from_millis(
     (SPECIAL_LOADING_TIME.as_millis() - SPARK_FRAME_TIME.as_millis() * 3)
         as u64,
