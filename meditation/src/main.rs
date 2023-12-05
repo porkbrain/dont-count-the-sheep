@@ -8,6 +8,7 @@
 
 mod background;
 mod control_mode;
+mod distractions;
 mod generic;
 mod menu;
 mod prelude;
@@ -16,9 +17,6 @@ mod zindex;
 
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
-
-#[derive(Resource)]
-struct NalUnits(usize, Vec<Vec<u8>>);
 
 fn main() {
     App::new()
@@ -31,6 +29,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest()),
         )
         .add_plugins((PixelCameraPlugin,))
+        .add_plugins((distractions::WebPAnimationPlugin,))
         .insert_resource(ClearColor(Color::hex("#0d0e1f").unwrap()))
         .add_event::<weather::ActionEvent>()
         .add_systems(Startup, setup)
@@ -79,6 +78,8 @@ fn setup(
         PixelZoom::Fixed(3),
         PixelViewport,
     ));
+
+    distractions::xd(&mut commands, &asset_server);
 
     background::spawn(&mut commands, &asset_server, &mut texture_atlases);
     weather::spawn(&mut commands, &asset_server, &mut texture_atlases);

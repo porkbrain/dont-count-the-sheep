@@ -319,6 +319,8 @@ pub(crate) fn rotate(
 
 /// If the special is loading then bloom effect is applied.
 /// It's smoothly animated in and out.
+///
+/// TODO: There's a bug where bloom sometimes stays on screen.
 pub(crate) fn apply_bloom(
     mut action: EventReader<ActionEvent>,
     mut camera: Query<(
