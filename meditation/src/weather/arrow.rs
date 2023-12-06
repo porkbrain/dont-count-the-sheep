@@ -6,13 +6,19 @@ use std::f32::consts::PI;
 use crate::{
     consts::{HEIGHT, WIDTH},
     prelude::*,
-    weather::consts::ARROW_DISTANCE_FROM_EDGE,
+    weather::consts::{ARROW_DISTANCE_FROM_EDGE_X, ARROW_DISTANCE_FROM_EDGE_Y},
 };
 
-use super::Weather;
+use super::{consts::MAX_ARROW_PUSH_BACK, Weather};
 
 #[derive(Component)]
 pub(crate) struct Arrow;
+
+enum OffScreen {
+    Horizontal,
+    Vertical,
+    Both,
+}
 
 /// Renders the arrow pointing to the weather when it's off screen.
 /// Hides the arrow when the weather is on screen.
@@ -23,9 +29,6 @@ pub(crate) fn point_arrow(
         (With<Arrow>, Without<Weather>),
     >,
 ) {
-    const HORIZONTAL_CORNER: f32 = WIDTH / 2.0 - ARROW_DISTANCE_FROM_EDGE;
-    const VERTICAL_CORNER: f32 = HEIGHT / 2.0 - ARROW_DISTANCE_FROM_EDGE;
-
     let Ok(weather_transform) = weather.get_single() else {
         return;
     };
@@ -33,11 +36,9 @@ pub(crate) fn point_arrow(
     let (mut transform, mut visibility) = arrow.single_mut();
 
     let weather_translation = weather_transform.translation;
+
     let is_off_x = weather_translation.x.abs() > WIDTH / 2.0;
     let is_off_y = weather_translation.y.abs() > HEIGHT / 2.0;
-
-    let x_signum = weather_translation.x.signum();
-    let y_signum = weather_translation.y.signum();
 
     *visibility = match (is_off_x, is_off_y) {
         // ~
@@ -48,38 +49,75 @@ pub(crate) fn point_arrow(
         // else show the arrow in the appropriate corner and rotation
         // ~
         (true, false) => {
+            update_arrow_position_and_rotation(
+                OffScreen::Horizontal,
+                &mut transform,
+                weather_translation,
+            );
+
+            Visibility::Visible
+        }
+        // off screen vertically
+        (false, true) => {
+            update_arrow_position_and_rotation(
+                OffScreen::Vertical,
+                &mut transform,
+                weather_translation,
+            );
+
+            Visibility::Visible
+        }
+        // off screen vertically and horizontally
+        (true, true) => {
+            update_arrow_position_and_rotation(
+                OffScreen::Both,
+                &mut transform,
+                weather_translation,
+            );
+
+            Visibility::Visible
+        }
+    }
+}
+
+const HORIZONTAL_CORNER: f32 = WIDTH / 2.0 - ARROW_DISTANCE_FROM_EDGE_X;
+const VERTICAL_CORNER: f32 = HEIGHT / 2.0 - ARROW_DISTANCE_FROM_EDGE_Y;
+
+fn update_arrow_position_and_rotation(
+    offscreen: OffScreen,
+    transform: &mut Transform,
+    weather: Vec3,
+) {
+    let x_signum = weather.x.signum();
+    let y_signum = weather.y.signum();
+
+    let push_back_x =
+        ((weather.x.abs() - WIDTH / 2.0).sqrt()).min(MAX_ARROW_PUSH_BACK);
+    let push_back_y =
+        ((weather.y.abs() - HEIGHT / 2.0).sqrt()).min(MAX_ARROW_PUSH_BACK);
+
+    match offscreen {
+        OffScreen::Horizontal => {
             transform.translation = Vec3::new(
-                x_signum * HORIZONTAL_CORNER,
-                weather_translation
-                    .y
-                    .clamp(-VERTICAL_CORNER, VERTICAL_CORNER),
+                x_signum * (HORIZONTAL_CORNER + push_back_x),
+                weather.y.clamp(-VERTICAL_CORNER, VERTICAL_CORNER),
                 zindex::WEATHER_ARROW,
             );
             transform.rotation = Quat::from_rotation_z(-PI / 2.0 * x_signum);
-
-            Visibility::Visible
         }
-        (false, true) => {
+        OffScreen::Vertical => {
             transform.translation = Vec3::new(
-                weather_translation
-                    .x
-                    .clamp(-HORIZONTAL_CORNER, HORIZONTAL_CORNER),
-                y_signum * VERTICAL_CORNER,
+                weather.x.clamp(-HORIZONTAL_CORNER, HORIZONTAL_CORNER),
+                y_signum * (VERTICAL_CORNER + push_back_y),
                 zindex::WEATHER_ARROW,
             );
             transform.rotation =
-                Quat::from_rotation_z(if weather_translation.y < 0.0 {
-                    PI
-                } else {
-                    0.0
-                });
-
-            Visibility::Visible
+                Quat::from_rotation_z(if weather.y < 0.0 { PI } else { 0.0 });
         }
-        (true, true) => {
+        OffScreen::Both => {
             transform.translation = Vec3::new(
-                x_signum * HORIZONTAL_CORNER,
-                y_signum * VERTICAL_CORNER,
+                x_signum * (HORIZONTAL_CORNER + push_back_x),
+                y_signum * (VERTICAL_CORNER + push_back_y),
                 zindex::WEATHER_ARROW,
             );
 
@@ -87,12 +125,10 @@ pub(crate) fn point_arrow(
             // so we change basis to the arrow to be at the origin.
             // Then we measure the angle between the new origin and weather's
             // position.
-            let diff = weather_translation - transform.translation;
+            let diff = weather - transform.translation;
             let new_origin = Vec2::new(0.0, 1.0);
             let a = new_origin.angle_between(diff.truncate());
             transform.rotation = Quat::from_rotation_z(a);
-
-            Visibility::Visible
         }
     }
 }
