@@ -45,6 +45,7 @@ fn main() {
         .add_systems(
             Update,
             (
+                weather::arrow::point_arrow,
                 weather::anim::sprite_loading_special,
                 weather::anim::sprite_normal,
                 change_frame_at_random,

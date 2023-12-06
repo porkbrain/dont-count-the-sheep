@@ -141,3 +141,8 @@ mod camera_effects_on_special {
     pub(crate) const FADE_BLOOM_WHEN_SPECIAL_IS_LOADED_IN: Duration =
         from_millis(1500);
 }
+
+pub(crate) use arrow::*;
+mod arrow {
+    pub(crate) const ARROW_DISTANCE_FROM_EDGE: f32 = 28.0;
+}

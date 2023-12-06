@@ -4,21 +4,52 @@
 //! Reminds me of the analogy made by Niel deGrasse Tyson.
 
 pub(crate) mod anim;
+pub(crate) mod arrow;
 pub(crate) mod consts;
 pub(crate) mod controls;
 mod sprite;
 
 use crate::{control_mode, prelude::*};
 
-use self::anim::SparkEffect;
+#[derive(Component)]
+pub(crate) struct Weather;
 
+#[derive(Component)]
+pub(crate) struct WeatherBody;
+
+#[derive(Component)]
+pub(crate) struct WeatherFace;
+
+#[derive(Event, Clone, Copy)]
+pub(crate) enum ActionEvent {
+    StartLoadingSpecial {
+        /// Where was the weather when the special was started.
+        from_translation: Vec2,
+    },
+    FiredSpecial,
+    Dipped,
+    DashedAgainstVelocity {
+        /// dashed in this direction while velocity was in the opposite
+        towards: MotionDirection,
+    },
+}
+
+/// 1. spriteless parent which commands the movement
+/// 2. body sprite, child of parent
+/// 3. face sprite, child of parent
+/// 4. spark effect is hidden by default and shown when special is fired
+/// 5. arrow is hidden by default and shown when weather is off screen
 pub(crate) fn spawn(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
     texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
 ) {
+    //
+    // 1.
+    //
     let parent = commands
         .spawn((
+            Weather,
             control_mode::Normal::default(),
             Velocity::default(),
             AngularVelocity::default(), // for animation
@@ -29,7 +60,9 @@ pub(crate) fn spawn(
             },
         ))
         .id();
-
+    //
+    // 2.
+    //
     let body = commands
         .spawn((
             WeatherBody,
@@ -51,7 +84,9 @@ pub(crate) fn spawn(
         ))
         .id();
     commands.entity(parent).add_child(body);
-
+    //
+    // 3.
+    //
     let face = commands
         .spawn((
             WeatherFace,
@@ -76,9 +111,11 @@ pub(crate) fn spawn(
         ))
         .id();
     commands.entity(parent).add_child(face);
-
+    //
+    // 4.
+    //
     commands.spawn((
-        SparkEffect,
+        anim::SparkEffect,
         Animation {
             on_last_frame: AnimationEnd::Custom(Box::new(
                 |entity,
@@ -110,24 +147,20 @@ pub(crate) fn spawn(
             ..default()
         },
     ));
-}
-
-#[derive(Component)]
-pub(crate) struct WeatherBody;
-
-#[derive(Component)]
-pub(crate) struct WeatherFace;
-
-#[derive(Event, Clone, Copy)]
-pub(crate) enum ActionEvent {
-    StartLoadingSpecial {
-        /// Where was the weather when the special was started.
-        from_translation: Vec2,
-    },
-    FiredSpecial,
-    Dipped,
-    DashedAgainstVelocity {
-        /// dashed in this direction while velocity was in the opposite
-        towards: MotionDirection,
-    },
+    //
+    // 5.
+    //
+    commands.spawn((
+        arrow::Arrow,
+        SpriteBundle {
+            texture: asset_server.load("textures/weather/arrow.png"),
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                0.0,
+                zindex::WEATHER_ARROW,
+            )),
+            visibility: Visibility::Hidden,
+            ..default()
+        },
+    ));
 }
