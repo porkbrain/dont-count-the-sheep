@@ -11,6 +11,8 @@ mod sprite;
 
 use crate::{control_mode, prelude::*};
 
+use self::consts::*;
+
 #[derive(Component)]
 pub(crate) struct Weather;
 
@@ -55,7 +57,7 @@ pub(crate) fn spawn(
             AngularVelocity::default(), // for animation
             sprite::Transition::default(),
             SpatialBundle {
-                transform: consts::DEFAULT_TRANSFORM,
+                transform: DEFAULT_TRANSFORM,
                 ..default()
             },
         ))
@@ -69,10 +71,10 @@ pub(crate) fn spawn(
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/weather/body_atlas.png"),
-                    Vec2::new(consts::BODY_WIDTH, consts::BODY_HEIGHT),
-                    consts::BODY_ATLAS_COLS,
-                    consts::BODY_ATLAS_ROWS,
-                    Some(consts::BODY_ATLAS_PADDING),
+                    Vec2::new(BODY_WIDTH, BODY_HEIGHT),
+                    BODY_ATLAS_COLS,
+                    BODY_ATLAS_ROWS,
+                    Some(BODY_ATLAS_PADDING),
                     None,
                 )),
                 sprite: TextureAtlasSprite {
@@ -93,13 +95,10 @@ pub(crate) fn spawn(
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/weather/face_atlas.png"),
-                    Vec2::new(
-                        consts::FACE_SPRITE_WIDTH,
-                        consts::FACE_SPRITE_HEIGHT,
-                    ),
-                    consts::FACE_ATLAS_COLS,
-                    consts::FACE_ATLAS_ROWS,
-                    Some(consts::FACE_ATLAS_PADDING),
+                    Vec2::new(FACE_SPRITE_WIDTH, FACE_SPRITE_HEIGHT),
+                    FACE_ATLAS_COLS,
+                    FACE_ATLAS_ROWS,
+                    Some(FACE_ATLAS_PADDING),
                     None,
                 )),
                 sprite: TextureAtlasSprite {
@@ -131,13 +130,13 @@ pub(crate) fn spawn(
                 },
             )),
             first: 0,
-            last: consts::SPARK_FRAMES - 1,
+            last: SPARK_FRAMES - 1,
         },
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                 asset_server.load("textures/weather/spark_atlas.png"),
-                Vec2::splat(consts::SPARK_SIDE),
-                consts::SPARK_FRAMES,
+                Vec2::splat(SPARK_SIDE),
+                SPARK_FRAMES,
                 1,
                 None,
                 None,

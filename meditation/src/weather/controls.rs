@@ -1,4 +1,4 @@
-use super::{anim::SparkEffect, consts, ActionEvent};
+use super::{anim::SparkEffect, consts::*, ActionEvent};
 use crate::{control_mode, prelude::*};
 use bevy::time::Stopwatch;
 use std::f32::consts::PI;
@@ -63,10 +63,9 @@ pub(crate) fn normal(
     let mut update_horizontal = |dir: MotionDirection| {
         let is_moving_in_opposite_direction = !dir.is_aligned(vel.x);
 
-        if mode.last_dash.elapsed() > consts::MIN_DASH_DELAY
+        if mode.last_dash.elapsed() > MIN_DASH_DELAY
             || (is_moving_in_opposite_direction
-                && mode.last_dash.elapsed()
-                    > consts::MIN_DASH_AGAINST_VELOCITY_DELAY)
+                && mode.last_dash.elapsed() > MIN_DASH_AGAINST_VELOCITY_DELAY)
         {
             mode.last_dash = Stopwatch::new();
 
@@ -83,8 +82,8 @@ pub(crate) fn normal(
                 MotionDirection::None => unreachable!(),
             };
 
-            vel.x = vel_cap
-                + dir.sign() * directional_boost * consts::DASH_VELOCITY_BOOST;
+            vel.x =
+                vel_cap + dir.sign() * directional_boost * DASH_VELOCITY_BOOST;
 
             // if moving back and forth, fall slower
             if is_moving_in_opposite_direction && vel.y < 0.0 {
@@ -102,28 +101,28 @@ pub(crate) fn normal(
         update_horizontal(MotionDirection::Right);
     }
 
-    if pressed_down && mode.last_dip.elapsed() > consts::MIN_DIP_DELAY {
+    if pressed_down && mode.last_dip.elapsed() > MIN_DIP_DELAY {
         // dip
 
         mode.last_dip = Stopwatch::new();
         broadcast.send(ActionEvent::Dipped);
 
         // the downward movement is stabilized
-        vel.y = consts::VERTICAL_VELOCITY_ON_DIP;
+        vel.y = VERTICAL_VELOCITY_ON_DIP;
 
         if pressed_left {
-            vel.x -= consts::HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;
+            vel.x -= HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;
         }
         if pressed_right {
-            vel.x += consts::HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;
+            vel.x += HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;
         }
-    } else if vel.y < consts::TERMINAL_VELOCITY {
+    } else if vel.y < TERMINAL_VELOCITY {
         // slow down to terminal velocity
 
         vel.y += {
-            debug_assert!(consts::TERMINAL_VELOCITY < 0.0);
+            debug_assert!(TERMINAL_VELOCITY < 0.0);
 
-            let diff = -vel.y + consts::TERMINAL_VELOCITY;
+            let diff = -vel.y + TERMINAL_VELOCITY;
             // always slow down at least 1 pixel per second to avoid
             // infinite approach
             (diff * dt).max(1.0)
@@ -131,34 +130,32 @@ pub(crate) fn normal(
     } else {
         // apply gravity
 
-        vel.y = (vel.y - consts::GRAVITY * dt).max(consts::TERMINAL_VELOCITY);
+        vel.y = (vel.y - GRAVITY * dt).max(TERMINAL_VELOCITY);
     }
 
-    if mode.god_mode && mode.jumps >= consts::MAX_JUMPS {
+    if mode.god_mode && mode.jumps >= MAX_JUMPS {
         debug!("You're godly. Here are some more jumps and that");
         mode.jumps = 0;
         mode.can_use_special = true;
     }
 
     if pressed_up
-        && mode.jumps < consts::MAX_JUMPS
-        && mode.last_jump.elapsed() > consts::MIN_JUMP_DELAY
+        && mode.jumps < MAX_JUMPS
+        && mode.last_jump.elapsed() > MIN_JUMP_DELAY
     {
         mode.jumps += 1;
         mode.last_jump = Stopwatch::new();
 
         // each jump is less and less strong until reset
-        let jump_boost = (consts::MAX_JUMPS + 1 - mode.jumps) as f32
-            / consts::MAX_JUMPS as f32;
+        let jump_boost = (MAX_JUMPS + 1 - mode.jumps) as f32 / MAX_JUMPS as f32;
 
-        vel.y = consts::BASIS_VELOCITY_ON_JUMP
-            + consts::BASIS_VELOCITY_ON_JUMP * jump_boost;
+        vel.y = BASIS_VELOCITY_ON_JUMP + BASIS_VELOCITY_ON_JUMP * jump_boost;
 
         if pressed_left {
-            vel.x -= consts::HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;
+            vel.x -= HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;
         }
         if pressed_right {
-            vel.x += consts::HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;
+            vel.x += HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;
         }
     }
 
@@ -190,7 +187,7 @@ pub(crate) fn loading_special(
         mode.angle = angle;
     }
 
-    if elapsed > consts::SPECIAL_LOADING_TIME {
+    if elapsed > SPECIAL_LOADING_TIME {
         commands
             .entity(entity)
             .remove::<control_mode::LoadingSpecial>();
@@ -204,8 +201,8 @@ pub(crate) fn loading_special(
         });
 
         // fires weather into the direction given by the angle
-        vel.x = mode.angle.cos() * consts::VELOCITY_BOOST_ON_SPECIAL;
-        vel.y = mode.angle.sin() * consts::VELOCITY_BOOST_ON_SPECIAL;
+        vel.x = mode.angle.cos() * VELOCITY_BOOST_ON_SPECIAL;
+        vel.y = mode.angle.sin() * VELOCITY_BOOST_ON_SPECIAL;
 
         broadcast.send(ActionEvent::FiredSpecial);
     }

@@ -1,4 +1,4 @@
-use super::{consts, sprite, ActionEvent, WeatherBody, WeatherFace};
+use super::{consts::*, sprite, ActionEvent, WeatherBody, WeatherFace};
 use crate::{control_mode, prelude::*};
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
@@ -75,21 +75,21 @@ pub(crate) fn sprite_loading_special(
     {
         let elapsed = mode.activated.elapsed();
 
-        if elapsed > consts::START_SPARK_ANIMATION_AFTER_ELAPSED {
-            spark_atlas.custom_size = Some(Vec2::splat(consts::SPARK_SIDE));
+        if elapsed > START_SPARK_ANIMATION_AFTER_ELAPSED {
+            spark_atlas.custom_size = Some(Vec2::splat(SPARK_SIDE));
             spark_atlas.index = 1;
             commands
                 .entity(spark_entity)
                 .insert(AnimationTimer(Timer::new(
-                    consts::SPARK_FRAME_TIME,
+                    SPARK_FRAME_TIME,
                     TimerMode::Repeating,
                 )));
         } else {
-            const INITIAL_SIZE: f32 = consts::SPARK_SIDE * 1.25;
-            const END_SIZE: f32 = consts::SPARK_SIDE * 0.5;
+            const INITIAL_SIZE: f32 = SPARK_SIDE * 1.25;
+            const END_SIZE: f32 = SPARK_SIDE * 0.5;
 
             let animation_elapsed = elapsed.as_secs_f32()
-                / consts::START_SPARK_ANIMATION_AFTER_ELAPSED.as_secs_f32();
+                / START_SPARK_ANIMATION_AFTER_ELAPSED.as_secs_f32();
 
             let square_side =
                 INITIAL_SIZE - (INITIAL_SIZE - END_SIZE) * animation_elapsed;
@@ -101,9 +101,8 @@ pub(crate) fn sprite_loading_special(
             // 0.5 * vec.x when 0.5
             // ...
             // 0 when 1
-            let dt_prime = dt
-                / consts::WHEN_LOADING_SPECIAL_STOP_MOVEMENT_WITHIN
-                    .as_secs_f32();
+            let dt_prime =
+                dt / WHEN_LOADING_SPECIAL_STOP_MOVEMENT_WITHIN.as_secs_f32();
             vel.x -= vel.x * dt_prime;
             vel.y -= vel.y * dt_prime;
             // make spark effect stick with weather until fired
@@ -174,7 +173,7 @@ pub(crate) fn sprite_normal(
             // fast from right to left and vice versa, ie. player is spamming
             // left and right.
             // * 2 gives the player some time to change direction
-            let max_delay = consts::MIN_DASH_AGAINST_VELOCITY_DELAY * 2;
+            let max_delay =MIN_DASH_AGAINST_VELOCITY_DELAY * 2;
             if let Some(ActionEvent::DashedAgainstVelocity {
                 towards: last_towards,
             }) = transition.last_action_within(max_delay)
@@ -199,9 +198,9 @@ pub(crate) fn sprite_normal(
             match transition.current_body() {
                 sprite::BodyKind::SpearingTowards => {
                     let should_be_slowing_down = vel.y
-                        < consts::BASIS_VELOCITY_ON_JUMP
+                        <BASIS_VELOCITY_ON_JUMP
                         && transition.has_elapsed_since_body_change(
-                            consts::SHOW_SPEARING_BODY_TOWARDS_FOR,
+                           SHOW_SPEARING_BODY_TOWARDS_FOR,
                         );
                     if should_be_slowing_down {
                         transition.update_body(
@@ -211,20 +210,20 @@ pub(crate) fn sprite_normal(
                 }
                 current_sprite => {
                     let should_be_falling =
-                        vel.y <= consts::TERMINAL_VELOCITY + 5.0; // some tolerance
+                        vel.y <=TERMINAL_VELOCITY + 5.0; // some tolerance
                     let should_be_spearing_towards = vel.y
-                        >= consts::BASIS_VELOCITY_ON_JUMP
+                        >=BASIS_VELOCITY_ON_JUMP
                         && transition.has_elapsed_since_body_change(
-                            consts::SHOW_SPEARING_BODY_TOWARDS_IF_NO_CHANGE_FOR,
+                           SHOW_SPEARING_BODY_TOWARDS_IF_NO_CHANGE_FOR,
                         );
 
                     if should_be_falling {
                         let min_wait_for_body = match current_sprite {
                             sprite::BodyKind::Default
                             | sprite::BodyKind::Plunging => {
-                                consts::SHOW_FALLING_BODY_AFTER / 2
+                               SHOW_FALLING_BODY_AFTER / 2
                             }
-                            _ => consts::SHOW_FALLING_BODY_AFTER,
+                            _ =>SHOW_FALLING_BODY_AFTER,
                         };
                         if transition
                             .has_elapsed_since_body_change(min_wait_for_body)
@@ -236,9 +235,9 @@ pub(crate) fn sprite_normal(
 
                             let min_wait_for_face = match current_sprite {
                                 sprite::BodyKind::Plunging => {
-                                    consts::SHOW_FALLING_FACE_AFTER / 2
+                                   SHOW_FALLING_FACE_AFTER / 2
                                 }
-                                _ => consts::SHOW_FALLING_FACE_AFTER,
+                                _ =>SHOW_FALLING_FACE_AFTER,
                             };
 
                             if transition.has_elapsed_since_face_change(
@@ -256,12 +255,12 @@ pub(crate) fn sprite_normal(
                         transition.update_face(sprite::FaceKind::Happy);
                     } else {
                         if transition.has_elapsed_since_body_change(
-                            consts::SHOW_DEFAULT_BODY_AFTER_IF_NO_CHANGE,
+                           SHOW_DEFAULT_BODY_AFTER_IF_NO_CHANGE,
                         ) {
                             transition.update_body(sprite::BodyKind::default());
                         }
                         if transition.has_elapsed_since_body_change(
-                            consts::SHOW_DEFAULT_FACE_AFTER_IF_NO_BODY_CHANGE,
+                           SHOW_DEFAULT_FACE_AFTER_IF_NO_BODY_CHANGE,
                         ) {
                             transition.update_face(sprite::FaceKind::default());
                         }
@@ -334,9 +333,8 @@ pub(crate) fn rotate(
         let unsign_alpha = PI / 2.0 - (a.abs() - PI / 2.0).abs();
         let alpha = unsign_alpha * -a.signum();
 
-        let magnitude_factor =
-            (vel.length() / consts::TERMINAL_VELOCITY).powf(2.0);
-        let velocity_boost = alpha * magnitude_factor * consts::ROTATION_SPEED;
+        let magnitude_factor = (vel.length() / TERMINAL_VELOCITY).powf(2.0);
+        let velocity_boost = alpha * magnitude_factor * ROTATION_SPEED;
 
         dangvel += velocity_boost;
     }
@@ -372,13 +370,6 @@ pub(crate) fn update_camera_on_special(
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    use consts::{
-        FADE_BLOOM_WHEN_SPECIAL_IS_LOADED_IN,
-        FROM_ZOOMED_BACK_TO_NORMAL_WHEN_SPECIAL_IS_LOADED_IN,
-        INITIAL_BLOOM_INTENSITY, INITIAL_BLOOM_LFB, PEAK_BLOOM_INTENSITY,
-        PEAK_BLOOM_LFB, SPECIAL_LOADING_TIME, ZOOM_IN_SCALE,
-    };
-
     let (
         entity,
         mut camera,

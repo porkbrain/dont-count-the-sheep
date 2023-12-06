@@ -2,13 +2,9 @@ use bevy::app::AppExit;
 
 use crate::{control_mode, prelude::*};
 
-mod consts {
-    use bevy::math::Vec2;
-
-    pub(crate) const FIRST_SELECTION_FACE_OFFSET: Vec2 = Vec2::new(-80.0, 50.0);
-    pub(crate) const SELECTIONS_SPACING: f32 =
-        crate::weather::consts::FACE_RENDERED_SIZE + 4.0;
-}
+pub(crate) const FIRST_SELECTION_FACE_OFFSET: Vec2 = Vec2::new(-80.0, 50.0);
+pub(crate) const SELECTIONS_SPACING: f32 =
+    crate::weather::consts::FACE_RENDERED_SIZE + 4.0;
 
 pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     let bounding_box = commands
@@ -100,8 +96,8 @@ pub(crate) fn open(
     *menu_visibility = Visibility::Visible;
 
     *transform = Transform::from_translation(Vec3::new(
-        consts::FIRST_SELECTION_FACE_OFFSET.x,
-        consts::FIRST_SELECTION_FACE_OFFSET.y,
+        FIRST_SELECTION_FACE_OFFSET.x,
+        FIRST_SELECTION_FACE_OFFSET.y,
         zindex::WEATHER_IN_MENU,
     ));
 }
@@ -203,8 +199,8 @@ pub(crate) fn select(
     if let Some(new_selection) = new_selection {
         debug!("Selected {curr_selection:?}");
         mode.selection = new_selection;
-        transform.translation.y = consts::FIRST_SELECTION_FACE_OFFSET.y
-            - consts::SELECTIONS_SPACING * new_selection as u8 as f32;
+        transform.translation.y = FIRST_SELECTION_FACE_OFFSET.y
+            - SELECTIONS_SPACING * new_selection as u8 as f32;
     }
 }
 

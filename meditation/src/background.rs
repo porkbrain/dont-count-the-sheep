@@ -1,19 +1,15 @@
 use crate::prelude::*;
 use bevy::utils::Instant;
 
-mod consts {
-    use crate::prelude::*;
+pub(crate) const TWINKLE_DURATION: Duration = from_millis(250);
+pub(crate) const TWINKLE_CHANCE_PER_SECOND: f32 = 1.0 / 8.0;
+pub(crate) const TWINKLE_COUNT: usize = 4;
 
-    pub(crate) const TWINKLE_DURATION: Duration = from_millis(250);
-    pub(crate) const TWINKLE_CHANCE_PER_SECOND: f32 = 1.0 / 8.0;
-    pub(crate) const TWINKLE_COUNT: usize = 4;
-
-    pub(crate) const SHOOTING_STAR_CHANCE_PER_SECOND: f32 = 1.0 / 10.0;
-    pub(crate) const SHOOTING_STAR_FRAMES: usize = 4;
-    pub(crate) const SHOOTING_STAR_FRAME_TIME: Duration = from_millis(50);
-    pub(crate) const SHOOTING_STAR_WIDTH: f32 = 35.0;
-    pub(crate) const SHOOTING_STAR_HEIGHT: f32 = 35.0;
-}
+pub(crate) const SHOOTING_STAR_CHANCE_PER_SECOND: f32 = 1.0 / 10.0;
+pub(crate) const SHOOTING_STAR_FRAMES: usize = 4;
+pub(crate) const SHOOTING_STAR_FRAME_TIME: Duration = from_millis(50);
+pub(crate) const SHOOTING_STAR_WIDTH: f32 = 35.0;
+pub(crate) const SHOOTING_STAR_HEIGHT: f32 = 35.0;
 
 pub(crate) fn spawn(
     commands: &mut Commands,
@@ -30,7 +26,7 @@ pub(crate) fn spawn(
         ..default()
     },));
 
-    for i in 1..=consts::TWINKLE_COUNT {
+    for i in 1..=TWINKLE_COUNT {
         commands.spawn((
             Twinkle(Instant::now()),
             SpriteBundle {
@@ -59,11 +55,11 @@ pub(crate) fn twinkle(
 ) {
     for (mut twinkle, mut visibility) in &mut query {
         if matches!(*visibility, Visibility::Hidden) {
-            if twinkle.elapsed() > consts::TWINKLE_DURATION {
+            if twinkle.elapsed() > TWINKLE_DURATION {
                 *visibility = Visibility::Visible;
             }
         } else if rand::random::<f32>()
-            < consts::TWINKLE_CHANCE_PER_SECOND * time.delta_seconds()
+            < TWINKLE_CHANCE_PER_SECOND * time.delta_seconds()
         {
             twinkle.0 = Instant::now();
             *visibility = Visibility::Hidden;
@@ -84,18 +80,15 @@ impl ShootingStar {
             // we schedule it at random
             on_last_frame: AnimationEnd::RemoveTimer,
             first: 0,
-            last: consts::SHOOTING_STAR_FRAMES - 1,
+            last: SHOOTING_STAR_FRAMES - 1,
         };
         commands.spawn((
             ShootingStar,
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/bg/shootingstar_atlas.png"),
-                    Vec2::new(
-                        consts::SHOOTING_STAR_WIDTH,
-                        consts::SHOOTING_STAR_HEIGHT,
-                    ),
-                    consts::SHOOTING_STAR_FRAMES,
+                    Vec2::new(SHOOTING_STAR_WIDTH, SHOOTING_STAR_HEIGHT),
+                    SHOOTING_STAR_FRAMES,
                     1,
                     None,
                     None,
@@ -124,12 +117,12 @@ pub(crate) fn shooting_star(
 ) {
     for (entity, mut visibility) in &mut query {
         if rand::random::<f32>()
-            < consts::SHOOTING_STAR_CHANCE_PER_SECOND * time.delta_seconds()
+            < SHOOTING_STAR_CHANCE_PER_SECOND * time.delta_seconds()
         {
             trace!("Watch out for the shooting star");
             *visibility = Visibility::Visible;
             commands.entity(entity).insert(AnimationTimer(Timer::new(
-                consts::SHOOTING_STAR_FRAME_TIME,
+                SHOOTING_STAR_FRAME_TIME,
                 TimerMode::Repeating,
             )));
         }
