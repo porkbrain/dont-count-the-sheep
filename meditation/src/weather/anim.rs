@@ -373,9 +373,10 @@ pub(crate) fn update_camera_on_special(
     time: Res<Time>,
 ) {
     use consts::{
-        FADE_BLOOM, INITIAL_BLOOM_INTENSITY, INITIAL_BLOOM_LFB,
-        PEAK_BLOOM_INTENSITY, PEAK_BLOOM_LFB, SPECIAL_LOADING_TIME,
-        ZOOM_IN_SCALE, ZOOM_OUT,
+        FADE_BLOOM_WHEN_SPECIAL_IS_LOADED_IN,
+        FROM_ZOOMED_BACK_TO_NORMAL_WHEN_SPECIAL_IS_LOADED_IN,
+        INITIAL_BLOOM_INTENSITY, INITIAL_BLOOM_LFB, PEAK_BLOOM_INTENSITY,
+        PEAK_BLOOM_LFB, SPECIAL_LOADING_TIME, ZOOM_IN_SCALE,
     };
 
     let (
@@ -422,8 +423,13 @@ pub(crate) fn update_camera_on_special(
     };
     fired.tick(time.delta());
 
-    debug_assert!(FADE_BLOOM > ZOOM_OUT);
-    if fired.elapsed() > FADE_BLOOM + SPECIAL_LOADING_TIME {
+    debug_assert!(
+        FADE_BLOOM_WHEN_SPECIAL_IS_LOADED_IN
+            > FROM_ZOOMED_BACK_TO_NORMAL_WHEN_SPECIAL_IS_LOADED_IN
+    );
+    if fired.elapsed()
+        > FADE_BLOOM_WHEN_SPECIAL_IS_LOADED_IN + SPECIAL_LOADING_TIME
+    {
         debug!("Removing bloom and zoom");
 
         commands.entity(entity).remove::<BloomSettings>();
@@ -432,7 +438,7 @@ pub(crate) fn update_camera_on_special(
         *tonemapping = Tonemapping::TonyMcMapface;
 
         projection.scale = 1.0;
-        transform.translation = Default::default();
+        transform.translation = default();
 
         return;
     }
@@ -485,11 +491,14 @@ pub(crate) fn update_camera_on_special(
 
         let how_long_after_fired = fired.elapsed() - SPECIAL_LOADING_TIME;
 
-        if how_long_after_fired < ZOOM_OUT {
+        if how_long_after_fired
+            < FROM_ZOOMED_BACK_TO_NORMAL_WHEN_SPECIAL_IS_LOADED_IN
+        {
             // zooming out
 
-            let animation_elapsed =
-                how_long_after_fired.as_secs_f32() / ZOOM_OUT.as_secs_f32();
+            let animation_elapsed = how_long_after_fired.as_secs_f32()
+                / FROM_ZOOMED_BACK_TO_NORMAL_WHEN_SPECIAL_IS_LOADED_IN
+                    .as_secs_f32();
 
             let new_scale =
                 ZOOM_IN_SCALE + (1.0 - ZOOM_IN_SCALE) * animation_elapsed;
@@ -498,17 +507,17 @@ pub(crate) fn update_camera_on_special(
             let freedom = freedom_of_camera_translation(new_scale);
             transform.translation = transform
                 .translation
-                .lerp(Default::default(), animation_elapsed)
+                .lerp(default(), animation_elapsed)
                 .clamp(-freedom, freedom);
         } else {
             // zoomed out
 
             projection.scale = 1.0;
-            transform.translation = Default::default();
+            transform.translation = default();
         }
 
-        let animation_elapsed =
-            how_long_after_fired.as_secs_f32() / FADE_BLOOM.as_secs_f32();
+        let animation_elapsed = how_long_after_fired.as_secs_f32()
+            / FADE_BLOOM_WHEN_SPECIAL_IS_LOADED_IN.as_secs_f32();
 
         let new_intensity =
             PEAK_BLOOM_INTENSITY - PEAK_BLOOM_INTENSITY * animation_elapsed;

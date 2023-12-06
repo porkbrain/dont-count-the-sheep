@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
-use bevy::{prelude::*, utils::Instant};
+use std::time::Duration;
+
+use bevy::{prelude::*, time::Stopwatch, utils::Instant};
 use rand::seq::SliceRandom;
 
 #[derive(Default, Deref, DerefMut, Debug, Clone, Copy, PartialEq)]
@@ -123,6 +125,12 @@ pub(crate) fn apply_velocity(
         transform.translation.x += vel.x * dt / 2.0;
         transform.translation.y += vel.y * dt / 2.0;
     }
+}
+
+pub(crate) fn stopwatch_at(duration: Duration) -> Stopwatch {
+    let mut s = Stopwatch::new();
+    s.tick(duration);
+    s
 }
 
 pub(crate) fn change_frame_at_random(

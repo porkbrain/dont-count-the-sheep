@@ -38,7 +38,6 @@ fn main() {
         .insert_resource(ClearColor(Color::hex("#0d0e1f").unwrap()))
         .add_event::<weather::ActionEvent>()
         .add_systems(Startup, setup)
-        .add_systems(First, reset_weather)
         .add_systems(
             FixedUpdate,
             (apply_velocity, advance_animation, weather::anim::rotate),
@@ -81,40 +80,20 @@ fn setup(
         PixelViewport,
     ));
 
-    // commands.spawn(distractions::WebPAnimationBundle {
-    //     animation: asset_server.load("textures/distractions/test.webp"),
-    //     frame_rate: distractions::WebPAnimationFrameRate::new(2),
-    //     sprite: Sprite {
-    //         color: Color::TOMATO,
-    //         ..default()
-    //     },
-    //     ..default()
-    // });
+    commands.spawn(distractions::WebPAnimationBundle {
+        animation: asset_server.load("textures/distractions/test.webp"),
+        frame_rate: distractions::WebPAnimationFrameRate::new(2),
+        sprite: Sprite { ..default() },
+        ..default()
+    });
 
-    // commands.spawn((SpriteBundle {
-    //     texture: asset_server.load("textures/distractions/frame.png"),
-    //     transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
-    //     ..Default::default()
-    // },));
+    commands.spawn((SpriteBundle {
+        texture: asset_server.load("textures/distractions/frame.png"),
+        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
+        ..default()
+    },));
 
     background::spawn(&mut commands, &asset_server, &mut texture_atlases);
     weather::spawn(&mut commands, &asset_server, &mut texture_atlases);
     menu::spawn(&mut commands, &asset_server);
-}
-
-/// If weather transform translation is within 100.0 of the origin, reset
-/// jumps and using special.
-/// This is a temp solution.
-/// TODO: restore one jump per reset. climate pulsates - only if we are within
-/// it in the pulse time do you get one jump.
-/// every 4 pulses you get the special back.
-fn reset_weather(mut query: Query<(&mut control_mode::Normal, &Transform)>) {
-    let Ok((mut controls, transform)) = query.get_single_mut() else {
-        return;
-    };
-
-    if transform.translation.length() < 100.0 {
-        controls.jumps = 0;
-        controls.can_use_special = true;
-    }
 }

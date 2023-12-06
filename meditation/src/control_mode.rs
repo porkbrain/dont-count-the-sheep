@@ -1,4 +1,4 @@
-use crate::{menu, prelude::*};
+use crate::{menu, prelude::*, weather};
 use bevy::time::Stopwatch;
 
 #[derive(Component, Clone)]
@@ -14,6 +14,8 @@ pub(crate) struct Normal {
     pub(crate) last_dip: Stopwatch,
     /// weather can only use its special ability once per reset
     pub(crate) can_use_special: bool,
+    /// if in god mode, then jumps and using special is reset once replenished
+    pub(crate) god_mode: bool,
 }
 
 #[derive(Component, Default)]
@@ -26,6 +28,8 @@ pub(crate) struct LoadingSpecial {
     /// once special is fired, weather can only do the same amount of jumps
     /// as it had before
     pub(crate) jumps: u8,
+    /// if in god mode, then jumps and using special is reset once replenished
+    pub(crate) god_mode: bool,
 }
 
 #[derive(Component)]
@@ -75,10 +79,11 @@ impl Default for Normal {
     fn default() -> Self {
         Self {
             jumps: 0,
-            last_dash: Stopwatch::default(),
-            last_jump: Stopwatch::default(),
-            last_dip: Stopwatch::default(),
+            last_dash: stopwatch_at(weather::consts::MIN_DASH_DELAY),
+            last_jump: stopwatch_at(weather::consts::MIN_JUMP_DELAY),
+            last_dip: stopwatch_at(weather::consts::MIN_DIP_DELAY),
             can_use_special: true,
+            god_mode: false,
         }
     }
 }

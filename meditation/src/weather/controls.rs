@@ -45,6 +45,7 @@ pub(crate) fn normal(
                     angle,
                     activated: Stopwatch::default(),
                     jumps: mode.jumps,
+                    god_mode: mode.god_mode,
                 });
 
             let (mut spark_transform, mut spark_visibility) =
@@ -133,6 +134,12 @@ pub(crate) fn normal(
         vel.y = (vel.y - consts::GRAVITY * dt).max(consts::TERMINAL_VELOCITY);
     }
 
+    if mode.god_mode && mode.jumps >= consts::MAX_JUMPS {
+        debug!("You're godly. Here are some more jumps and that");
+        mode.jumps = 0;
+        mode.can_use_special = true;
+    }
+
     if pressed_up
         && mode.jumps < consts::MAX_JUMPS
         && mode.last_jump.elapsed() > consts::MIN_JUMP_DELAY
@@ -193,6 +200,7 @@ pub(crate) fn loading_special(
             last_dash: Stopwatch::default(),
             last_dip: Stopwatch::default(),
             can_use_special: false,
+            god_mode: mode.god_mode,
         });
 
         // fires weather into the direction given by the angle

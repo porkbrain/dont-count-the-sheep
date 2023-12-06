@@ -1,4 +1,4 @@
-use std::process;
+use bevy::app::AppExit;
 
 use crate::{control_mode, prelude::*};
 
@@ -22,7 +22,7 @@ pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
                     zindex::MENU,
                 )),
                 visibility: Visibility::Hidden,
-                ..Default::default()
+                ..default()
             },
         ))
         .id();
@@ -35,7 +35,7 @@ pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
                 0.0,
                 zindex::MENU,
             )),
-            ..Default::default()
+            ..default()
         },))
         .id();
 
@@ -69,6 +69,10 @@ pub(crate) fn open(
     mut commands: Commands,
     mut keyboard: ResMut<Input<KeyCode>>,
 ) {
+    if keyboard.pressed(KeyCode::Escape) {
+        // trace!("Pressed esc: {}", keyboard.just_pressed(KeyCode::Escape));
+    }
+
     if !keyboard.just_pressed(KeyCode::Escape) {
         return;
     }
@@ -127,7 +131,10 @@ pub(crate) fn close(
     }
 
     debug!("Closing menu and unpausing");
-    keyboard.clear(); // prevent accidental immediate unpausing
+    // prevent accidental immediate unpausing
+    keyboard.clear();
+    // we simulate press to close the menu, so we need to simulate release
+    keyboard.release(KeyCode::Escape);
 
     commands.entity(entity).remove::<control_mode::InMenu>();
     commands.entity(entity).insert({
@@ -149,6 +156,7 @@ pub(crate) fn close(
 pub(crate) fn select(
     mut menu: Query<(&mut control_mode::InMenu, &mut Transform)>,
     mut keyboard: ResMut<Input<KeyCode>>,
+    mut exit: EventWriter<AppExit>,
 ) {
     let Ok((mut mode, mut transform)) = menu.get_single_mut() else {
         return;
@@ -160,18 +168,20 @@ pub(crate) fn select(
         debug!("Going with {curr_selection:?}");
 
         match curr_selection {
-            Selection::Resume => {
+            Selection::Resume => keyboard.press(KeyCode::Escape),
+            Selection::Restart => {
+                mode.from_mode = default();
+                mode.from_transform = crate::weather::consts::DEFAULT_TRANSFORM;
+                mode.from_velocity = default();
+                // TODO: weather angular velocity
+
                 keyboard.press(KeyCode::Escape);
             }
-            Selection::Restart => {
-                unimplemented!()
-            }
             Selection::GodMode => {
-                unimplemented!()
+                mode.from_mode.god_mode = !mode.from_mode.god_mode;
+                // TODO: make it visually clear whether god mode is on or off
             }
-            Selection::Quit => {
-                process::exit(0);
-            }
+            Selection::Quit => exit.send(AppExit),
         }
 
         return;

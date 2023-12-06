@@ -27,7 +27,7 @@ pub(crate) fn spawn(
             0.0,
             zindex::MAIN_BACKGROUND,
         )),
-        ..Default::default()
+        ..default()
     },));
 
     for i in 1..=consts::TWINKLE_COUNT {
@@ -41,7 +41,7 @@ pub(crate) fn spawn(
                     0.0,
                     zindex::TWINKLES,
                 )),
-                ..Default::default()
+                ..default()
             },
         ));
     }
