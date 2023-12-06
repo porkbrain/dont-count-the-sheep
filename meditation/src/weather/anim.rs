@@ -437,6 +437,24 @@ pub(crate) fn update_camera_on_special(
         return;
     }
 
+    // used to clamp camera translation otherwise the player would see
+    // outside the frame
+    fn freedom_of_camera_translation(scale: f32) -> Vec3 {
+        let freedom = |size: f32| -> f32 {
+            if scale > 0.999 {
+                0.0
+            } else {
+                size * (1.0 - scale) / 2.0
+            }
+        };
+
+        Vec3::new(
+            freedom(crate::consts::WIDTH),
+            freedom(crate::consts::HEIGHT),
+            0.0,
+        )
+    }
+
     let mut settings = settings.expect("Bloom settings missing");
 
     if fired.elapsed() < SPECIAL_LOADING_TIME {
@@ -457,9 +475,11 @@ pub(crate) fn update_camera_on_special(
         let new_scale = 1.0 - (1.0 - ZOOM_IN_SCALE) * animation_elapsed;
         projection.scale = new_scale;
 
+        let freedom = freedom_of_camera_translation(new_scale);
         transform.translation = transform
             .translation
-            .lerp(look_at.extend(0.0), animation_elapsed);
+            .lerp(look_at.extend(0.0), animation_elapsed)
+            .clamp(-freedom, freedom);
     } else {
         // zoom out and fade bloom
 
@@ -475,9 +495,11 @@ pub(crate) fn update_camera_on_special(
                 ZOOM_IN_SCALE + (1.0 - ZOOM_IN_SCALE) * animation_elapsed;
             projection.scale = new_scale;
 
+            let freedom = freedom_of_camera_translation(new_scale);
             transform.translation = transform
                 .translation
-                .lerp(Default::default(), animation_elapsed);
+                .lerp(Default::default(), animation_elapsed)
+                .clamp(-freedom, freedom);
         } else {
             // zoomed out
 

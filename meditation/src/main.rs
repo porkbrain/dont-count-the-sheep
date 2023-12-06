@@ -15,6 +15,11 @@ mod prelude;
 mod weather;
 mod zindex;
 
+mod consts {
+    pub(crate) const WIDTH: f32 = 630.0;
+    pub(crate) const HEIGHT: f32 = 360.0;
+}
+
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
 
