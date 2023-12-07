@@ -144,8 +144,7 @@ mod camera_effects_on_special {
 
 pub(crate) use arrow::*;
 mod arrow {
-    pub(crate) const ARROW_DISTANCE_FROM_EDGE_X: f32 = 25.0;
-    pub(crate) const ARROW_DISTANCE_FROM_EDGE_Y: f32 = 35.0;
+    pub(crate) const ARROW_DISTANCE_FROM_EDGE: f32 = 25.0;
     /// The closer weather is the more the arrow is pushed back from the edge.
     pub(crate) const MAX_ARROW_PUSH_BACK: f32 = 15.0;
 }

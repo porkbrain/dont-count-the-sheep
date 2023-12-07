@@ -6,7 +6,7 @@ use std::f32::consts::PI;
 use crate::{
     consts::{HEIGHT, WIDTH},
     prelude::*,
-    weather::consts::{ARROW_DISTANCE_FROM_EDGE_X, ARROW_DISTANCE_FROM_EDGE_Y},
+    weather::consts::ARROW_DISTANCE_FROM_EDGE,
 };
 
 use super::{consts::MAX_ARROW_PUSH_BACK, Weather};
@@ -80,8 +80,8 @@ pub(crate) fn point_arrow(
     }
 }
 
-const HORIZONTAL_CORNER: f32 = WIDTH / 2.0 - ARROW_DISTANCE_FROM_EDGE_X;
-const VERTICAL_CORNER: f32 = HEIGHT / 2.0 - ARROW_DISTANCE_FROM_EDGE_Y;
+const HORIZONTAL_CORNER: f32 = WIDTH / 2.0 - ARROW_DISTANCE_FROM_EDGE;
+const VERTICAL_CORNER: f32 = HEIGHT / 2.0 - ARROW_DISTANCE_FROM_EDGE;
 
 fn update_arrow_position_and_rotation(
     offscreen: OffScreen,

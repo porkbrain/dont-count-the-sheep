@@ -76,7 +76,7 @@ pub(crate) fn spawn(
     }
 }
 
-pub(crate) fn xd(
+pub(crate) fn react_to_weather(
     mut score: EventWriter<DistractionDestroyedEvent>,
     mut weather_actions: EventReader<weather::ActionEvent>,
     weather: Query<&Transform, (With<Weather>, Without<Distraction>)>,

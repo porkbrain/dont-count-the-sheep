@@ -20,6 +20,7 @@ mod consts {
     pub(crate) const HEIGHT: f32 = 360.0;
 }
 
+use bevy::window::WindowTheme;
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
 
@@ -33,7 +34,20 @@ fn main() {
                         "meditation=trace,meditation::weather::sprite=debug"
                             .to_string(),
                 })
-                .set(ImagePlugin::default_nearest()),
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Ciesin".into(),
+                        window_theme: Some(WindowTheme::Dark),
+                        enabled_buttons: bevy::window::EnabledButtons {
+                            maximize: false,
+                            ..Default::default()
+                        },
+                        mode: bevy::window::WindowMode::BorderlessFullscreen,
+                        ..default()
+                    }),
+                    ..default()
+                }),
         )
         .add_plugins((PixelCameraPlugin,))
         .add_plugins((distractions::WebPAnimationPlugin,))
@@ -66,12 +80,17 @@ fn main() {
                 weather::controls::loading_special,
                 // must be after controls bcs events dependency
                 weather::anim::update_camera_on_special,
-                distractions::xd,
+                distractions::react_to_weather,
             )
                 .chain(),
         )
         .run();
 }
+
+// A unit struct to help identify the FPS UI component, since there may be many
+// Text components
+#[derive(Component)]
+struct FpsText;
 
 fn setup(
     mut commands: Commands,

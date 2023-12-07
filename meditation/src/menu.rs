@@ -1,45 +1,133 @@
+//! TODO: face is rendered behind menu box
+
 use bevy::app::AppExit;
 
 use crate::{control_mode, prelude::*};
 
-pub(crate) const FIRST_SELECTION_FACE_OFFSET: Vec2 = Vec2::new(-80.0, 50.0);
-pub(crate) const SELECTIONS_SPACING: f32 =
+const FONT_SIZE: f32 = 45.0;
+const FONT: &str = "fonts/fffforwa.ttf";
+const FIRST_SELECTION_FACE_OFFSET: Vec2 = Vec2::new(-80.0, 50.0);
+const SELECTIONS_SPACING: f32 =
     crate::weather::consts::FACE_RENDERED_SIZE + 4.0;
 
 pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
-    let bounding_box = commands
+    commands
         .spawn((
             Menu,
-            SpriteBundle {
-                texture: asset_server.load("textures/menu/box.png"),
-                transform: Transform::from_translation(Vec3::new(
-                    0.0,
-                    0.0,
-                    zindex::MENU,
-                )),
+            NodeBundle {
+                style: Style {
+                    // the node bundle units don't honor pixel camera 3x scale
+                    width: Val::Px(215.0 * 3.0),
+                    height: Val::Px(145.0 * 3.0),
+                    margin: UiRect::all(Val::Auto),
+                    justify_content: JustifyContent::SpaceBetween,
+                    ..default()
+                },
                 visibility: Visibility::Hidden,
                 ..default()
             },
         ))
-        .id();
+        .with_children(|parent| spawn_ui(parent, asset_server));
+}
 
-    let options = commands
-        .spawn((SpriteBundle {
-            texture: asset_server.load("textures/menu/options.png"),
-            transform: Transform::from_translation(Vec3::new(
-                0.0,
-                0.0,
-                zindex::MENU,
-            )),
+fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
+    // displays see through box around the menu options
+    ui_root.spawn((
+        NodeBundle {
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            // a `NodeBundle` is transparent by default, so
+            // to see the image we have to its color to
+            // `WHITE`
+            background_color: Color::WHITE.into(),
             ..default()
-        },))
-        .id();
+        },
+        UiImage::new(asset_server.load("ui/menu_box.png")),
+    ));
 
-    commands.entity(bounding_box).add_child(options);
+    // positions the menu options
+    ui_root
+        .spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::FlexStart,
+                left: Val::Px(128.0),
+                top: Val::Px(55.0),
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "CONTINUE",
+                TextStyle {
+                    font: asset_server.load(FONT),
+                    font_size: FONT_SIZE,
+                    ..default()
+                },
+            ));
+            parent.spawn(
+                TextBundle::from_section(
+                    "RESTART",
+                    TextStyle {
+                        font: asset_server.load(FONT),
+                        font_size: FONT_SIZE,
+                        ..default()
+                    },
+                )
+                .with_style(Style {
+                    margin: UiRect::top(Val::Px(12.0)),
+                    ..default()
+                }),
+            );
+            parent.spawn((
+                GodModeToggle,
+                TextBundle::from_sections([
+                    TextSection {
+                        value: "GOD MODE: ".to_string(),
+                        style: TextStyle {
+                            font: asset_server.load(FONT),
+                            font_size: FONT_SIZE,
+                            ..default()
+                        },
+                    },
+                    TextSection::from_style(TextStyle {
+                        font: asset_server.load(FONT),
+                        font_size: FONT_SIZE - 10.0,
+                        color: Color::hex("#ffea63").unwrap(),
+                    }),
+                ])
+                .with_style(Style {
+                    margin: UiRect::top(Val::Px(12.0)),
+                    ..default()
+                }),
+            ));
+            parent.spawn(
+                TextBundle::from_section(
+                    "EXIT",
+                    TextStyle {
+                        font: asset_server.load(FONT),
+                        font_size: FONT_SIZE,
+                        ..default()
+                    },
+                )
+                .with_style(Style {
+                    margin: UiRect::top(Val::Px(12.0)),
+                    ..default()
+                }),
+            );
+        });
 }
 
 #[derive(Component)]
 pub(crate) struct Menu;
+
+#[derive(Component)]
+pub(crate) struct GodModeToggle;
 
 #[derive(Default, Debug, Clone, Copy)]
 pub(crate) enum Selection {
@@ -62,13 +150,10 @@ pub(crate) fn open(
         Without<Menu>, // to make bevy be sure there won't be conflicts
     >,
     mut menu: Query<&mut Visibility, With<Menu>>,
+    mut god_mode: Query<&mut Text, With<GodModeToggle>>,
     mut commands: Commands,
     mut keyboard: ResMut<Input<KeyCode>>,
 ) {
-    if keyboard.pressed(KeyCode::Escape) {
-        // trace!("Pressed esc: {}", keyboard.just_pressed(KeyCode::Escape));
-    }
-
     if !keyboard.just_pressed(KeyCode::Escape) {
         return;
     }
@@ -92,14 +177,23 @@ pub(crate) fn open(
         from_transform: *transform,
     });
 
-    let mut menu_visibility = menu.single_mut();
-    *menu_visibility = Visibility::Visible;
+    {
+        let mut menu_visibility = menu.single_mut();
+        *menu_visibility = Visibility::Visible;
 
-    *transform = Transform::from_translation(Vec3::new(
-        FIRST_SELECTION_FACE_OFFSET.x,
-        FIRST_SELECTION_FACE_OFFSET.y,
-        zindex::WEATHER_IN_MENU,
-    ));
+        *transform = Transform::from_translation(Vec3::new(
+            FIRST_SELECTION_FACE_OFFSET.x,
+            FIRST_SELECTION_FACE_OFFSET.y,
+            zindex::WEATHER_IN_MENU,
+        ));
+    }
+
+    // updates the text of the second section, ie. after "GOD MODE:"
+    god_mode.single_mut().sections[1].value = if mode.god_mode {
+        "ON".to_string()
+    } else {
+        "OFF".to_string()
+    };
 }
 
 pub(crate) fn close(
@@ -151,6 +245,7 @@ pub(crate) fn close(
 /// So we need to select before we close.
 pub(crate) fn select(
     mut menu: Query<(&mut control_mode::InMenu, &mut Transform)>,
+    mut god_mode: Query<&mut Text, With<GodModeToggle>>,
     mut keyboard: ResMut<Input<KeyCode>>,
     mut exit: EventWriter<AppExit>,
 ) {
@@ -175,7 +270,14 @@ pub(crate) fn select(
             }
             Selection::GodMode => {
                 mode.from_mode.god_mode = !mode.from_mode.god_mode;
-                // TODO: make it visually clear whether god mode is on or off
+
+                // updates the text of the second section, ie. after "GOD MODE:"
+                god_mode.single_mut().sections[1].value =
+                    if mode.from_mode.god_mode {
+                        "ON".to_string()
+                    } else {
+                        "OFF".to_string()
+                    };
             }
             Selection::Quit => exit.send(AppExit),
         }
