@@ -26,7 +26,11 @@ pub(crate) struct WeatherFace;
 pub(crate) enum ActionEvent {
     StartLoadingSpecial {
         /// Where was the weather when the special was started.
-        from_translation: Vec2,
+        at_translation: Vec2,
+    },
+    Jumped {
+        /// How many jumps left.
+        jumps_left: u8,
     },
     FiredSpecial,
     Dipped,

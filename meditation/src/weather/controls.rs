@@ -35,7 +35,7 @@ pub(crate) fn normal(
         if let Some(angle) = unit_circle_angle(&keyboard) {
             debug!("Send loading special");
             broadcast.send(ActionEvent::StartLoadingSpecial {
-                from_translation: transform.translation.truncate(),
+                at_translation: transform.translation.truncate(),
             });
 
             commands.entity(entity).remove::<control_mode::Normal>();
@@ -145,6 +145,9 @@ pub(crate) fn normal(
     {
         mode.jumps += 1;
         mode.last_jump = Stopwatch::new();
+        broadcast.send(ActionEvent::Jumped {
+            jumps_left: MAX_JUMPS + 1 - mode.jumps,
+        });
 
         // each jump is less and less strong until reset
         let jump_boost = (MAX_JUMPS + 1 - mode.jumps) as f32 / MAX_JUMPS as f32;

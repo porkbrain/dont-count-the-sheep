@@ -383,9 +383,9 @@ pub(crate) fn update_camera_on_special(
     let just_started_loading_from_translation = action
         .read()
         .find_map(|e| match e {
-            ActionEvent::StartLoadingSpecial { from_translation } => {
-                Some(from_translation)
-            }
+            ActionEvent::StartLoadingSpecial {
+                at_translation: from_translation,
+            } => Some(from_translation),
             _ => None,
         })
         .cloned();

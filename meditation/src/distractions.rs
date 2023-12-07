@@ -1,3 +1,202 @@
 mod webp;
 
 pub(crate) use webp::*;
+
+use crate::{
+    prelude::*,
+    weather::{self, Weather},
+};
+
+#[derive(Component)]
+pub(crate) struct Distraction {
+    level: Level,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Level {
+    One = 1,
+    Two = 2,
+    Three = 3,
+    Four = 4,
+    Five = 5,
+}
+
+#[derive(Event)]
+pub(crate) struct DistractionDestroyedEvent {
+    pub(crate) level: Level,
+    pub(crate) at_translation: Vec2,
+}
+
+pub(crate) fn spawn(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+) {
+    for i in 0..3 {
+        let parent = commands
+            .spawn((
+                Distraction { level: Level::One },
+                Velocity::new(Vec2::new(0.0, 0.0)),
+                SpriteSheetBundle {
+                    texture_atlas: texture_atlases.add(
+                        TextureAtlas::from_grid(
+                            asset_server
+                                .load("textures/distractions/frame.png"),
+                            Vec2::new(50.0, 50.0),
+                            5,
+                            1,
+                            None,
+                            None,
+                        ),
+                    ),
+                    sprite: TextureAtlasSprite {
+                        index: 1,
+                        ..default()
+                    },
+                    transform: Transform::from_translation(Vec3::new(
+                        100.0 - i as f32 * 100.0,
+                        0.0,
+                        0.0,
+                    )),
+                    ..default()
+                },
+            ))
+            .id();
+
+        let child = commands
+            .spawn((WebPAnimationBundle {
+                animation: asset_server.load("textures/distractions/test.webp"),
+                frame_rate: WebPAnimationFrameRate::new(2),
+                sprite: Sprite { ..default() },
+                ..default()
+            },))
+            .id();
+
+        commands.entity(parent).add_child(child);
+    }
+}
+
+pub(crate) fn xd(
+    mut score: EventWriter<DistractionDestroyedEvent>,
+    mut weather_actions: EventReader<weather::ActionEvent>,
+    weather: Query<&Transform, (With<Weather>, Without<Distraction>)>,
+    mut distraction: Query<
+        (Entity, &Distraction, &Transform, &mut Velocity),
+        Without<Weather>,
+    >,
+    mut commands: Commands,
+) {
+    let Some(action) = weather_actions.read().last() else {
+        return;
+    };
+
+    let Ok(weather_transform) = weather.get_single() else {
+        return;
+    };
+    let weather_translation = weather_transform.translation.truncate();
+
+    for (entity, distraction, transform, mut vel) in distraction.iter_mut() {
+        const LVL1_MAX_DIST_FOR_INSTA_DESTRUCT_ON_SPECIAL: f32 = 35.0;
+        const DISTRACTION_HEIGHT: f32 = 50.0;
+        const DISTRACTION_WIDTH: f32 = DISTRACTION_HEIGHT;
+        const HITBOX_WIDTH: f32 = 50.0;
+        const HITBOX_HEIGHT: f32 = HITBOX_WIDTH;
+        const HITBOX_SIZE: Vec2 = Vec2::new(HITBOX_WIDTH, HITBOX_HEIGHT);
+        const HITBOX_DISTANCE_TO_DISTRACTION: f32 = 0.0;
+        const DEFAULT_KICK: f32 = 5.0;
+
+        let translation = transform.translation.truncate();
+
+        match (action, distraction.level) {
+            (weather::ActionEvent::FiredSpecial, Level::One)
+                if translation.distance(weather_translation)
+                    < LVL1_MAX_DIST_FOR_INSTA_DESTRUCT_ON_SPECIAL =>
+            {
+                debug!("Distraction destroy event sent");
+                score.send(DistractionDestroyedEvent {
+                    level: Level::One,
+                    at_translation: translation,
+                });
+                commands.entity(entity).despawn_recursive();
+
+                continue;
+            }
+            _ => {}
+        };
+
+        let vel_factor = match action {
+            weather::ActionEvent::StartLoadingSpecial { .. } => 0.0,
+            weather::ActionEvent::DashedAgainstVelocity { .. } => 1.0,
+            weather::ActionEvent::Dipped => 2.0,
+            weather::ActionEvent::FiredSpecial => 5.0,
+            // higher if bigger jumps
+            weather::ActionEvent::Jumped { jumps_left } => {
+                3.0 * (*jumps_left as f32 / weather::consts::MAX_JUMPS as f32)
+            }
+        };
+
+        // There are 4 boxes around the distraction:
+        // 1. above, 2. below, 3. left and 4. right.
+        // if weather is in any of them, then distraction gets velocity in
+        // opposite direction
+
+        //
+        // 1.
+        //
+        let box_above_center = translation
+            + Vec2::new(
+                0.0,
+                DISTRACTION_HEIGHT / 2.0 + HITBOX_DISTANCE_TO_DISTRACTION,
+            );
+        let box_above = Rect::from_center_size(box_above_center, HITBOX_SIZE);
+        if box_above.contains(weather_translation) {
+            trace!("ABOVE {vel_factor:.2}");
+            vel.y = -DEFAULT_KICK * vel_factor;
+        } else {
+            //
+            // 2.
+            //
+            let box_below_center = translation
+                + Vec2::new(
+                    0.0,
+                    -DISTRACTION_HEIGHT / 2.0 - HITBOX_DISTANCE_TO_DISTRACTION,
+                );
+            let box_below =
+                Rect::from_center_size(box_below_center, HITBOX_SIZE);
+
+            if box_below.contains(weather_translation) {
+                trace!("below {vel_factor:.2}");
+                vel.y = DEFAULT_KICK * vel_factor;
+            }
+        }
+        //
+        // 3.
+        //
+        let box_left_center = translation
+            + Vec2::new(
+                -DISTRACTION_WIDTH / 2.0 - HITBOX_DISTANCE_TO_DISTRACTION,
+                0.0,
+            );
+        let box_left = Rect::from_center_size(box_left_center, HITBOX_SIZE);
+        if box_left.contains(weather_translation) {
+            trace!("LEft {vel_factor:.2}");
+            vel.x = DEFAULT_KICK * vel_factor;
+        } else {
+            //
+            // 4.
+            //
+            let box_right_center = translation
+                + Vec2::new(
+                    DISTRACTION_WIDTH / 2.0 + HITBOX_DISTANCE_TO_DISTRACTION,
+                    0.0,
+                );
+            let box_right =
+                Rect::from_center_size(box_right_center, HITBOX_SIZE);
+
+            if box_right.contains(weather_translation) {
+                trace!("rigHT {vel_factor:.2}");
+                vel.x = -DEFAULT_KICK * vel_factor;
+            }
+        }
+    }
+}

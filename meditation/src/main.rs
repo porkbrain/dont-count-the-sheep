@@ -29,7 +29,9 @@ fn main() {
             DefaultPlugins
                 .set(bevy::log::LogPlugin {
                     level: bevy::log::Level::WARN,
-                    filter: "meditation=trace".to_string(),
+                    filter:
+                        "meditation=trace,meditation::weather::sprite=debug"
+                            .to_string(),
                 })
                 .set(ImagePlugin::default_nearest()),
         )
@@ -37,6 +39,7 @@ fn main() {
         .add_plugins((distractions::WebPAnimationPlugin,))
         .insert_resource(ClearColor(Color::hex("#0d0e1f").unwrap()))
         .add_event::<weather::ActionEvent>()
+        .add_event::<distractions::DistractionDestroyedEvent>()
         .add_systems(Startup, setup)
         .add_systems(
             FixedUpdate,
@@ -63,6 +66,7 @@ fn main() {
                 weather::controls::loading_special,
                 // must be after controls bcs events dependency
                 weather::anim::update_camera_on_special,
+                distractions::xd,
             )
                 .chain(),
         )
@@ -81,20 +85,8 @@ fn setup(
         PixelViewport,
     ));
 
-    commands.spawn(distractions::WebPAnimationBundle {
-        animation: asset_server.load("textures/distractions/test.webp"),
-        frame_rate: distractions::WebPAnimationFrameRate::new(2),
-        sprite: Sprite { ..default() },
-        ..default()
-    });
-
-    commands.spawn((SpriteBundle {
-        texture: asset_server.load("textures/distractions/frame.png"),
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
-        ..default()
-    },));
-
     background::spawn(&mut commands, &asset_server, &mut texture_atlases);
     weather::spawn(&mut commands, &asset_server, &mut texture_atlases);
     menu::spawn(&mut commands, &asset_server);
+    distractions::spawn(&mut commands, &asset_server, &mut texture_atlases);
 }
