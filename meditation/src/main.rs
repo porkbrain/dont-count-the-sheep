@@ -17,6 +17,7 @@ mod zindex;
 mod consts {
     pub(crate) const WIDTH: f32 = 630.0;
     pub(crate) const HEIGHT: f32 = 360.0;
+    pub(crate) const PIXEL_ZOOM: f32 = 3.0;
 }
 
 use bevy::window::WindowTheme;
@@ -94,7 +95,7 @@ fn setup(
     commands.spawn((
         Camera2dBundle::default(),
         weather::anim::CameraState::default(),
-        PixelZoom::Fixed(3),
+        PixelZoom::Fixed(consts::PIXEL_ZOOM as i32),
         PixelViewport,
     ));
 

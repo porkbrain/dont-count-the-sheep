@@ -7,13 +7,14 @@ use super::consts::*;
 #[derive(Component, Default, Deref, DerefMut)]
 pub(crate) struct Score(usize);
 
+
 pub(crate) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                left: Val::Px(25.0),
-                top: Val::Px(25.0),
+                left: Val::Px(SCORE_EDGE_OFFSET),
+                top: Val::Px(SCORE_EDGE_OFFSET),
                 ..default()
             },
             ..default()

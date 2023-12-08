@@ -141,11 +141,15 @@ pub(crate) fn select(
 
         match curr_selection {
             Selection::Resume => keyboard.press(KeyCode::Escape),
+            // TODO: proper reset of the whole game
             Selection::Restart => {
+                // preserve god mode, but reset the rest
+                let god_mode = mode.from_mode.god_mode;
                 mode.from_mode = default();
+                mode.from_mode.god_mode = god_mode;
+
                 mode.from_transform = crate::weather::consts::DEFAULT_TRANSFORM;
                 mode.from_velocity = default();
-                // TODO: weather angular velocity
 
                 keyboard.press(KeyCode::Escape);
             }
@@ -194,8 +198,8 @@ pub(crate) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             NodeBundle {
                 style: Style {
                     // the node bundle units don't honor pixel camera 3x scale
-                    width: Val::Px(215.0 * 3.0),
-                    height: Val::Px(145.0 * 3.0),
+                    width: Val::Px(MENU_BOX_WIDTH),
+                    height: Val::Px(MENU_BOX_HEIGHT),
                     margin: UiRect::all(Val::Auto),
                     justify_content: JustifyContent::SpaceBetween,
                     ..default()
@@ -232,8 +236,8 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
             style: Style {
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::FlexStart,
-                left: Val::Px(128.0),
-                top: Val::Px(55.0),
+                left: SELECTIONS_LEFT_OFFSET,
+                top: SELECTIONS_TOP_OFFSET,
                 ..default()
             },
             ..default()
@@ -257,7 +261,7 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                     },
                 )
                 .with_style(Style {
-                    margin: UiRect::top(Val::Px(12.0)),
+                    margin: UiRect::top(SELECTIONS_PADDING_TOP),
                     ..default()
                 }),
             );
@@ -279,7 +283,7 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                     }),
                 ])
                 .with_style(Style {
-                    margin: UiRect::top(Val::Px(12.0)),
+                    margin: UiRect::top(SELECTIONS_PADDING_TOP),
                     ..default()
                 }),
             ));
@@ -293,7 +297,7 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                     },
                 )
                 .with_style(Style {
-                    margin: UiRect::top(Val::Px(12.0)),
+                    margin: UiRect::top(SELECTIONS_PADDING_TOP),
                     ..default()
                 }),
             );
