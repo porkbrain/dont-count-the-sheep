@@ -56,10 +56,10 @@ fn main() {
             common_visuals::Plugin,
             ui::Plugin,
         ))
-        .insert_resource(ClearColor(Color::hex("#0d0e1f").unwrap()))
+        .insert_resource(ClearColor(Color::hex(background::COLOR).unwrap()))
         .add_event::<weather::ActionEvent>()
         .add_event::<distractions::DistractionDestroyedEvent>()
-        .add_systems(Startup, setup)
+        .add_systems(Startup, (setup, background::spawn))
         .add_systems(FixedUpdate, weather::anim::rotate)
         .add_systems(
             Update,
@@ -97,7 +97,6 @@ fn setup(
         PixelViewport,
     ));
 
-    background::spawn(&mut commands, &asset_server, &mut texture_atlases);
     weather::spawn(&mut commands, &asset_server, &mut texture_atlases);
     distractions::spawn(&mut commands, &asset_server, &mut texture_atlases);
 }
