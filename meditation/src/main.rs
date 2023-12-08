@@ -66,8 +66,6 @@ fn main() {
             (
                 weather::arrow::point_arrow,
                 weather::anim::sprite_loading_special,
-                weather::anim::sprite_normal,
-                background::shooting_star,
             ),
         )
         .add_systems(
@@ -77,7 +75,7 @@ fn main() {
                 weather::controls::loading_special,
                 // must be after controls bcs events dependency
                 weather::anim::update_camera_on_special,
-                // must be after controls bcs events dependency
+                weather::anim::sprite_normal,
                 distractions::react_to_weather,
                 // must be after react_to_weather bcs events dependency
                 distractions::destroyed,

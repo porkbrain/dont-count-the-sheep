@@ -5,7 +5,7 @@ pub(crate) use common_physics::{
     AngularVelocity, MotionDirection, Radians, Velocity,
 };
 pub(crate) use common_visuals::{
-    Animation, AnimationEnd, AnimationTimer, Flicker,
+    Animation, AnimationEnd, AnimationTimer, BeginAnimationAtRandom, Flicker,
 };
 pub(crate) use std::time::Duration;
 

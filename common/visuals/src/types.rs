@@ -32,11 +32,10 @@ pub enum AnimationEnd {
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(pub(crate) Timer);
 
-impl AnimationTimer {
-    #[inline]
-    pub fn new(duration: Duration, mode: TimerMode) -> Self {
-        Self(Timer::new(duration, mode))
-    }
+#[derive(Component)]
+pub struct BeginAnimationAtRandom {
+    pub chance_per_second: f32,
+    pub frame_time: Duration,
 }
 
 /// Shows entity at random for a given duration.
@@ -62,5 +61,12 @@ impl Flicker {
     #[inline]
     pub fn reset(&mut self) {
         self.last = Instant::now();
+    }
+}
+
+impl AnimationTimer {
+    #[inline]
+    pub fn new(duration: Duration, mode: TimerMode) -> Self {
+        Self(Timer::new(duration, mode))
     }
 }

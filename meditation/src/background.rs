@@ -41,67 +41,43 @@ pub(crate) fn spawn(
         ));
     }
 
-    ShootingStar::spawn(commands, asset_server, texture_atlases);
+    spawn_shooting_star(commands, asset_server, texture_atlases);
 }
 
-#[derive(Component)]
-pub(crate) struct ShootingStar;
-
-impl ShootingStar {
-    fn spawn(
-        commands: &mut Commands,
-        asset_server: &Res<AssetServer>,
-        texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
-    ) {
-        let animation = Animation {
-            // we schedule it at random
-            on_last_frame: AnimationEnd::RemoveTimer,
-            first: 0,
-            last: SHOOTING_STAR_FRAMES - 1,
-        };
-        commands.spawn((
-            ShootingStar,
-            SpriteSheetBundle {
-                texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                    asset_server.load("textures/bg/shootingstar_atlas.png"),
-                    Vec2::new(SHOOTING_STAR_WIDTH, SHOOTING_STAR_HEIGHT),
-                    SHOOTING_STAR_FRAMES,
-                    1,
-                    None,
-                    None,
-                )),
-                sprite: TextureAtlasSprite::new(animation.first),
-                visibility: Visibility::Hidden,
-                transform: Transform::from_translation(Vec3::new(
-                    -180.0,
-                    50.0,
-                    zindex::SHOOTING_STARS,
-                )),
-                ..default()
-            },
-            animation,
-        ));
-    }
-}
-
-pub(crate) fn shooting_star(
-    mut query: Query<
-        (Entity, &mut Visibility),
-        (With<ShootingStar>, Without<AnimationTimer>),
-    >,
-    mut commands: Commands,
-    time: Res<Time>,
+fn spawn_shooting_star(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
 ) {
-    for (entity, mut visibility) in &mut query {
-        if rand::random::<f32>()
-            < SHOOTING_STAR_CHANCE_PER_SECOND * time.delta_seconds()
-        {
-            trace!("Watch out for the shooting star");
-            *visibility = Visibility::Visible;
-            commands.entity(entity).insert(AnimationTimer::new(
-                SHOOTING_STAR_FRAME_TIME,
-                TimerMode::Repeating,
-            ));
-        }
-    }
+    let animation = Animation {
+        // we schedule it at random
+        on_last_frame: AnimationEnd::RemoveTimer,
+        first: 0,
+        last: SHOOTING_STAR_FRAMES - 1,
+    };
+    commands.spawn((
+        BeginAnimationAtRandom {
+            chance_per_second: SHOOTING_STAR_CHANCE_PER_SECOND,
+            frame_time: SHOOTING_STAR_FRAME_TIME,
+        },
+        SpriteSheetBundle {
+            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                asset_server.load("textures/bg/shootingstar_atlas.png"),
+                Vec2::new(SHOOTING_STAR_WIDTH, SHOOTING_STAR_HEIGHT),
+                SHOOTING_STAR_FRAMES,
+                1,
+                None,
+                None,
+            )),
+            sprite: TextureAtlasSprite::new(animation.first),
+            visibility: Visibility::Hidden,
+            transform: Transform::from_translation(Vec3::new(
+                -180.0,
+                50.0,
+                zindex::SHOOTING_STARS,
+            )),
+            ..default()
+        },
+        animation,
+    ));
 }

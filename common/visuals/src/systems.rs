@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{Animation, AnimationEnd, AnimationTimer, Flicker};
+use crate::{
+    Animation, AnimationEnd, AnimationTimer, BeginAnimationAtRandom, Flicker,
+};
 
 pub(crate) fn advance_animation(
     mut query: Query<(
@@ -39,6 +41,29 @@ pub(crate) fn advance_animation(
             } else {
                 atlas.index += 1
             };
+        }
+    }
+}
+
+/// With given chance per second, start animation by inserting an
+/// [`AnimationTimer`] component to the entity.
+pub(crate) fn begin_animation_at_random(
+    mut query: Query<
+        (Entity, &BeginAnimationAtRandom, &mut Visibility),
+        Without<AnimationTimer>,
+    >,
+    mut commands: Commands,
+    time: Res<Time>,
+) {
+    for (entity, settings, mut visibility) in &mut query {
+        if rand::random::<f32>()
+            < settings.chance_per_second * time.delta_seconds()
+        {
+            *visibility = Visibility::Visible;
+            commands.entity(entity).insert(AnimationTimer::new(
+                settings.frame_time,
+                TimerMode::Repeating,
+            ));
         }
     }
 }
