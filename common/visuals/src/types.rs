@@ -32,12 +32,6 @@ pub enum AnimationEnd {
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(pub(crate) Timer);
 
-#[derive(Component)]
-pub struct ChangeFrameAtRandom {
-    pub chance_per_second: f32,
-    pub frames: &'static [usize],
-}
-
 impl AnimationTimer {
     pub fn new(duration: Duration, mode: TimerMode) -> Self {
         Self(Timer::new(duration, mode))
