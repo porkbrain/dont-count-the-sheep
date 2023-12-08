@@ -10,8 +10,8 @@ mod background;
 mod control_mode;
 mod distractions;
 mod generic;
-mod menu;
 mod prelude;
+mod ui;
 mod weather;
 mod zindex;
 
@@ -73,14 +73,17 @@ fn main() {
         .add_systems(
             Update,
             (
-                menu::open,
-                menu::select, // order important bcs we simulate ESC to close
-                menu::close,
+                ui::open,
+                ui::select, // order important bcs we simulate ESC to close
+                ui::close,
                 weather::controls::normal,
                 weather::controls::loading_special,
                 // must be after controls bcs events dependency
                 weather::anim::update_camera_on_special,
+                // must be after controls bcs events dependency
                 distractions::react_to_weather,
+                // must be after react_to_weather bcs events dependency
+                distractions::destroyed,
             )
                 .chain(),
         )
@@ -106,6 +109,6 @@ fn setup(
 
     background::spawn(&mut commands, &asset_server, &mut texture_atlases);
     weather::spawn(&mut commands, &asset_server, &mut texture_atlases);
-    menu::spawn(&mut commands, &asset_server);
+    ui::spawn(&mut commands, &asset_server);
     distractions::spawn(&mut commands, &asset_server, &mut texture_atlases);
 }

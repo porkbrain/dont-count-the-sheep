@@ -1,4 +1,4 @@
-use crate::{menu, prelude::*, weather};
+use crate::{prelude::*, ui, weather};
 use bevy::time::Stopwatch;
 
 #[derive(Component, Clone)]
@@ -34,7 +34,7 @@ pub(crate) struct LoadingSpecial {
 
 #[derive(Component)]
 pub(crate) struct InMenu {
-    pub(crate) selection: menu::Selection,
+    pub(crate) selection: ui::Selection,
     /// Remember the state before entering the menu.
     /// This is used to restore the state when exiting the menu.
     pub(crate) from_mode: Normal,

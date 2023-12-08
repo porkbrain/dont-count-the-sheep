@@ -28,7 +28,7 @@ pub(crate) fn spawn(
 
     for i in 1..=TWINKLE_COUNT {
         commands.spawn((
-            Twinkle(Instant::now()),
+            Twinkle::new(),
             SpriteBundle {
                 texture: asset_server
                     .load(format!("textures/bg/twinkle{i}.png")),
@@ -126,5 +126,11 @@ pub(crate) fn shooting_star(
                 TimerMode::Repeating,
             )));
         }
+    }
+}
+
+impl Twinkle {
+    pub(crate) fn new() -> Self {
+        Self(Instant::now())
     }
 }
