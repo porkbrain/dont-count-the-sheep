@@ -1,14 +1,20 @@
-//! TODO: face is rendered behind menu box
+//! TODO:
+//! - face is rendered behind menu box
+//! - clean up consts and ugly code
+
+use std::ops::AddAssign;
 
 use bevy::app::AppExit;
 
 use crate::{control_mode, prelude::*};
 
-const FONT_SIZE: f32 = 45.0;
+const BIG_FONT_SIZE: f32 = 45.0;
+const SMALL_FONT_SIZE: f32 = BIG_FONT_SIZE - 10.0;
 const FONT: &str = "fonts/fffforwa.ttf";
 const FIRST_SELECTION_FACE_OFFSET: Vec2 = Vec2::new(-80.0, 50.0);
 const SELECTIONS_SPACING: f32 =
     crate::weather::consts::FACE_RENDERED_SIZE + 4.0;
+const HIGHLIGHT_COLOR: &str = "#ffea63";
 
 pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     commands
@@ -28,6 +34,30 @@ pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
             },
         ))
         .with_children(|parent| spawn_ui(parent, asset_server));
+
+    commands
+        .spawn((NodeBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                left: Val::Px(25.0),
+                top: Val::Px(25.0),
+                ..default()
+            },
+            ..default()
+        },))
+        .with_children(|parent| {
+            parent.spawn((
+                Score::default(),
+                TextBundle::from_section(
+                    "0",
+                    TextStyle {
+                        font: asset_server.load(FONT),
+                        font_size: SMALL_FONT_SIZE,
+                        color: Color::hex(HIGHLIGHT_COLOR).unwrap(),
+                    },
+                ),
+            ));
+        });
 }
 
 fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
@@ -66,7 +96,7 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                 "CONTINUE",
                 TextStyle {
                     font: asset_server.load(FONT),
-                    font_size: FONT_SIZE,
+                    font_size: BIG_FONT_SIZE,
                     ..default()
                 },
             ));
@@ -75,7 +105,7 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                     "RESTART",
                     TextStyle {
                         font: asset_server.load(FONT),
-                        font_size: FONT_SIZE,
+                        font_size: BIG_FONT_SIZE,
                         ..default()
                     },
                 )
@@ -91,14 +121,14 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                         value: "GOD MODE: ".to_string(),
                         style: TextStyle {
                             font: asset_server.load(FONT),
-                            font_size: FONT_SIZE,
+                            font_size: BIG_FONT_SIZE,
                             ..default()
                         },
                     },
                     TextSection::from_style(TextStyle {
                         font: asset_server.load(FONT),
-                        font_size: FONT_SIZE - 10.0,
-                        color: Color::hex("#ffea63").unwrap(),
+                        font_size: SMALL_FONT_SIZE,
+                        color: Color::hex(HIGHLIGHT_COLOR).unwrap(),
                     }),
                 ])
                 .with_style(Style {
@@ -111,7 +141,7 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                     "EXIT",
                     TextStyle {
                         font: asset_server.load(FONT),
-                        font_size: FONT_SIZE,
+                        font_size: BIG_FONT_SIZE,
                         ..default()
                     },
                 )
@@ -122,6 +152,9 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
             );
         });
 }
+
+#[derive(Component, Default, Deref, DerefMut)]
+pub(crate) struct Score(usize);
 
 #[derive(Component)]
 pub(crate) struct Menu;
@@ -306,6 +339,14 @@ pub(crate) fn select(
     }
 }
 
+pub(crate) fn update_score(mut score: Query<(&Score, &mut Text)>) {
+    let Ok((score, mut text)) = score.get_single_mut() else {
+        return;
+    };
+
+    text.sections[0].value = score.to_string();
+}
+
 impl Selection {
     fn next(&self) -> Self {
         match self {
@@ -323,5 +364,11 @@ impl Selection {
             Self::GodMode => Self::Restart,
             Self::Quit => Self::GodMode,
         }
+    }
+}
+
+impl AddAssign<usize> for Score {
+    fn add_assign(&mut self, rhs: usize) {
+        self.0 += rhs;
     }
 }

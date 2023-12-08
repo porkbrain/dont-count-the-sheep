@@ -208,16 +208,19 @@ pub(crate) struct BlackHole(Stopwatch);
 
 pub(crate) fn destroyed(
     mut events: EventReader<DistractionDestroyedEvent>,
+    mut score: Query<&mut crate::ui::Score>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
+    let mut score = score.single_mut();
+
     for DistractionDestroyedEvent {
         level,
         at_translation,
     } in events.read()
     {
-        // TODO: increase score
+        *score += level.score();
 
         // TODO: animate out
 
@@ -263,5 +266,17 @@ pub(crate) fn destroyed(
                     },
                 ));
             });
+    }
+}
+
+impl Level {
+    fn score(self) -> usize {
+        match self {
+            Self::One => 1,
+            Self::Two => 4,
+            Self::Three => 32, // optimal level
+            Self::Four => 32,  // stronger but no bonus
+            Self::Five => 1,   // sucks to be you
+        }
     }
 }

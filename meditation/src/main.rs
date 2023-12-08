@@ -68,6 +68,7 @@ fn main() {
                 change_frame_at_random,
                 background::twinkle,
                 background::shooting_star,
+                ui::update_score,
             ),
         )
         .add_systems(
