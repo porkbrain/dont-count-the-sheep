@@ -78,12 +78,10 @@ pub(crate) fn sprite_loading_special(
         if elapsed > START_SPARK_ANIMATION_AFTER_ELAPSED {
             spark_atlas.custom_size = Some(Vec2::splat(SPARK_SIDE));
             spark_atlas.index = 1;
-            commands
-                .entity(spark_entity)
-                .insert(AnimationTimer(Timer::new(
-                    SPARK_FRAME_TIME,
-                    TimerMode::Repeating,
-                )));
+            commands.entity(spark_entity).insert(AnimationTimer::new(
+                SPARK_FRAME_TIME,
+                TimerMode::Repeating,
+            ));
         } else {
             const INITIAL_SIZE: f32 = SPARK_SIDE * 1.25;
             const END_SIZE: f32 = SPARK_SIDE * 0.5;

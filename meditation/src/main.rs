@@ -9,7 +9,6 @@
 mod background;
 mod control_mode;
 mod distractions;
-mod generic;
 mod prelude;
 mod ui;
 mod weather;
@@ -49,22 +48,23 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_plugins((PixelCameraPlugin, bevy_webp_anim::Plugin))
+        .add_plugins((
+            PixelCameraPlugin,
+            bevy_webp_anim::Plugin,
+            project_physics::Plugin,
+            project_visuals::Plugin,
+        ))
         .insert_resource(ClearColor(Color::hex("#0d0e1f").unwrap()))
         .add_event::<weather::ActionEvent>()
         .add_event::<distractions::DistractionDestroyedEvent>()
         .add_systems(Startup, setup)
-        .add_systems(
-            FixedUpdate,
-            (apply_velocity, advance_animation, weather::anim::rotate),
-        )
+        .add_systems(FixedUpdate, weather::anim::rotate)
         .add_systems(
             Update,
             (
                 weather::arrow::point_arrow,
                 weather::anim::sprite_loading_special,
                 weather::anim::sprite_normal,
-                change_frame_at_random,
                 background::twinkle,
                 background::shooting_star,
                 ui::update_score,

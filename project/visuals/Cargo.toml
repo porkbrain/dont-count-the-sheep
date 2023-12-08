@@ -1,0 +1,8 @@
+[package]
+name = "project-visuals"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+rand.workspace = true

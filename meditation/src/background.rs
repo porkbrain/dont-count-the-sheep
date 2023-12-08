@@ -121,10 +121,10 @@ pub(crate) fn shooting_star(
         {
             trace!("Watch out for the shooting star");
             *visibility = Visibility::Visible;
-            commands.entity(entity).insert(AnimationTimer(Timer::new(
+            commands.entity(entity).insert(AnimationTimer::new(
                 SHOOTING_STAR_FRAME_TIME,
                 TimerMode::Repeating,
-            )));
+            ));
         }
     }
 }

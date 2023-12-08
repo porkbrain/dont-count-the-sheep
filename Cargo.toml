@@ -3,7 +3,7 @@
 package.edition = "2021"
 package.version = "0.1.0"
 resolver = "2"
-members = ["meditation", "bevy-webp-anim"]
+members = ["meditation", "bevy-webp-anim", "project/physics", "project/visuals"]
 
 [workspace.dependencies]
 bevy = "0.12"

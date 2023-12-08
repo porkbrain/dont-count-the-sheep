@@ -4,11 +4,9 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-bevy.workspace = true
 bevy_pixel_camera.workspace = true
-rand.workspace = true
-image.workspace = true
-serde.workspace = true
-thiserror.workspace = true
-crossbeam-channel.workspace = true
 bevy-webp-anim = { path = "../bevy-webp-anim" }
+bevy.workspace = true
+project-physics = { path = "../project/physics" }
+project-visuals = { path = "../project/visuals" }
+rand.workspace = true
