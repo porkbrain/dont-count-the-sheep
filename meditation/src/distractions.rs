@@ -1,10 +1,20 @@
 use bevy::time::Stopwatch;
 
 use crate::{
-    background::Twinkle,
     prelude::*,
     weather::{self, Weather},
 };
+
+const BLACKHOLE_FLICKER_CHANCE_PER_SECOND: f32 = 0.5;
+const BLACKHOLE_FLICKER_DURATION: Duration = Duration::from_millis(100);
+const LVL1_MAX_DIST_FOR_INSTA_DESTRUCT_ON_SPECIAL: f32 = 35.0;
+const DISTRACTION_HEIGHT: f32 = 50.0;
+const DISTRACTION_WIDTH: f32 = DISTRACTION_HEIGHT;
+const HITBOX_WIDTH: f32 = 50.0;
+const HITBOX_HEIGHT: f32 = HITBOX_WIDTH;
+const HITBOX_SIZE: Vec2 = Vec2::new(HITBOX_WIDTH, HITBOX_HEIGHT);
+const HITBOX_DISTANCE_TO_DISTRACTION: f32 = 0.0;
+const DEFAULT_KICK: f32 = 5.0;
 
 #[derive(Component)]
 pub(crate) struct Distraction {
@@ -97,15 +107,6 @@ pub(crate) fn react_to_weather(
     let weather_translation = weather_transform.translation.truncate();
 
     for (entity, distraction, transform, mut vel) in distraction.iter_mut() {
-        const LVL1_MAX_DIST_FOR_INSTA_DESTRUCT_ON_SPECIAL: f32 = 35.0;
-        const DISTRACTION_HEIGHT: f32 = 50.0;
-        const DISTRACTION_WIDTH: f32 = DISTRACTION_HEIGHT;
-        const HITBOX_WIDTH: f32 = 50.0;
-        const HITBOX_HEIGHT: f32 = HITBOX_WIDTH;
-        const HITBOX_SIZE: Vec2 = Vec2::new(HITBOX_WIDTH, HITBOX_HEIGHT);
-        const HITBOX_DISTANCE_TO_DISTRACTION: f32 = 0.0;
-        const DEFAULT_KICK: f32 = 5.0;
-
         let translation = transform.translation.truncate();
 
         match (action, distraction.level) {
@@ -251,7 +252,10 @@ pub(crate) fn destroyed(
             ))
             .with_children(|parent| {
                 parent.spawn((
-                    Twinkle::new(),
+                    Flicker::new(
+                        BLACKHOLE_FLICKER_CHANCE_PER_SECOND,
+                        BLACKHOLE_FLICKER_DURATION,
+                    ),
                     SpriteBundle {
                         texture: asset_server.load(format!(
                             "textures/distractions/blackhole_flicker.png"

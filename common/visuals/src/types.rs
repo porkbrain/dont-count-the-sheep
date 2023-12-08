@@ -34,13 +34,36 @@ pub struct AnimationTimer(pub(crate) Timer);
 
 #[derive(Component)]
 pub struct ChangeFrameAtRandom {
-    pub(crate) last_change: Instant,
-    pub(crate) chance_per_second: f32,
-    pub(crate) frames: &'static [usize],
+    pub chance_per_second: f32,
+    pub frames: &'static [usize],
 }
 
 impl AnimationTimer {
     pub fn new(duration: Duration, mode: TimerMode) -> Self {
         Self(Timer::new(duration, mode))
+    }
+}
+
+/// Shows entity at random for a given duration.
+/// Then hides it again.
+#[derive(Component)]
+pub struct Flicker {
+    /// When did the flicker ran last?
+    pub last: Instant,
+    pub chance_per_second: f32,
+    pub shown_for: Duration,
+}
+
+impl Flicker {
+    pub fn new(chance_per_second: f32, shown_for: Duration) -> Self {
+        Self {
+            last: Instant::now(),
+            chance_per_second,
+            shown_for,
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.last = Instant::now();
     }
 }

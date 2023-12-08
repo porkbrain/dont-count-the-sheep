@@ -65,7 +65,6 @@ fn main() {
                 weather::arrow::point_arrow,
                 weather::anim::sprite_loading_special,
                 weather::anim::sprite_normal,
-                background::twinkle,
                 background::shooting_star,
                 ui::update_score,
             ),
@@ -89,11 +88,6 @@ fn main() {
         )
         .run();
 }
-
-// A unit struct to help identify the FPS UI component, since there may be many
-// Text components
-#[derive(Component)]
-struct FpsText;
 
 fn setup(
     mut commands: Commands,
