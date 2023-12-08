@@ -1,12 +1,18 @@
 [workspace]
 
+package.edition = "2021"
+package.version = "0.1.0"
 resolver = "2"
-members = ["meditation"]
+members = ["meditation", "bevy-webp-anim"]
 
 [workspace.dependencies]
 bevy = "0.12"
 bevy_pixel_camera = "0.12"
+crossbeam-channel = "0.5"
+image = "0.24"
 rand = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "1.0"
 
 # compile deps packages in dev with optimizations
 # this makes bevy run fast and bin recompile fast

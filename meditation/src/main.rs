@@ -49,8 +49,7 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_plugins((PixelCameraPlugin,))
-        .add_plugins((distractions::WebPAnimationPlugin,))
+        .add_plugins((PixelCameraPlugin, bevy_webp_anim::Plugin))
         .insert_resource(ClearColor(Color::hex("#0d0e1f").unwrap()))
         .add_event::<weather::ActionEvent>()
         .add_event::<distractions::DistractionDestroyedEvent>()

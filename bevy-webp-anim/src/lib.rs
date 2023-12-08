@@ -1,8 +1,10 @@
+#![doc = include_str!("../README.md")]
+
 use std::thread;
 
-use crate::prelude::*;
 use bevy::{
     asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
+    prelude::*,
     render::{
         render_resource::{Extent3d, TextureDimension, TextureFormat},
         texture::TextureError,
@@ -14,44 +16,44 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Bundle, Default)]
-pub(crate) struct WebPAnimationBundle {
-    pub(crate) frame_rate: WebPAnimationFrameRate,
-    pub(crate) animation: Handle<WebPAnimation>,
-    pub(crate) sprite: Sprite,
-    pub(crate) target: Handle<Image>,
-    pub(crate) transform: Transform,
-    pub(crate) global_transform: GlobalTransform,
-    pub(crate) visibility: Visibility,
-    pub(crate) inherited_visibility: InheritedVisibility,
-    pub(crate) view_visibility: ViewVisibility,
+pub struct WebpBundle {
+    pub frame_rate: FrameRate,
+    pub animation: Handle<WebpAnimation>,
+    pub sprite: Sprite,
+    pub target: Handle<Image>,
+    pub transform: Transform,
+    pub global_transform: GlobalTransform,
+    pub visibility: Visibility,
+    pub inherited_visibility: InheritedVisibility,
+    pub view_visibility: ViewVisibility,
 }
 
 #[derive(Component)]
-pub(crate) struct WebPAnimationFrameRate {
+pub struct FrameRate {
     /// How many ticks to wait before advancing to the next frame.
-    pub(crate) ticks_per_frame: u32,
-    pub(crate) current_tick: u32,
+    pub ticks_per_frame: u32,
+    pub current_tick: u32,
 }
 
 #[derive(Asset, TypePath, Debug, Clone)]
-pub(crate) struct WebPAnimation {
+pub struct WebpAnimation {
     next_frame: Receiver<Image>,
     label: String,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 
-pub(crate) struct WebPAnimationLoader;
+pub(crate) struct WebpLoader;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 
-pub(crate) struct WebPAnimationLoaderSettings;
+pub(crate) struct LoaderSettings;
 
-pub(crate) struct WebPAnimationPlugin;
+pub struct Plugin;
 
 #[non_exhaustive]
 #[derive(Debug, Error)]
-pub(crate) enum WebPAnimationLoaderError {
+pub(crate) enum LoaderError {
     #[error("Image loading error: {0}")]
     ImageError(#[from] image::ImageError),
     #[error("Could load shader: {0}")]
@@ -60,10 +62,10 @@ pub(crate) enum WebPAnimationLoaderError {
     FileTexture(#[from] TextureError),
 }
 
-impl Plugin for WebPAnimationPlugin {
+impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.init_asset_loader::<WebPAnimationLoader>()
-            .init_asset::<WebPAnimation>()
+        app.init_asset_loader::<WebpLoader>()
+            .init_asset::<WebpAnimation>()
             .add_systems(FixedUpdate, load_next_frame);
     }
 
@@ -72,13 +74,13 @@ impl Plugin for WebPAnimationPlugin {
     }
 }
 
-pub(crate) fn load_next_frame(
+fn load_next_frame(
     mut query: Query<(
-        &mut WebPAnimationFrameRate,
+        &mut FrameRate,
         &mut Handle<Image>,
-        &mut Handle<WebPAnimation>,
+        &mut Handle<WebpAnimation>,
     )>,
-    animations: Res<Assets<WebPAnimation>>,
+    animations: Res<Assets<WebpAnimation>>,
     mut images: ResMut<Assets<Image>>,
 ) {
     for (mut frame_rate, mut handle, receiver) in query.iter_mut() {
@@ -111,17 +113,17 @@ pub(crate) fn load_next_frame(
     }
 }
 
-impl AssetLoader for WebPAnimationLoader {
-    type Asset = WebPAnimation;
-    type Settings = WebPAnimationLoaderSettings;
-    type Error = WebPAnimationLoaderError;
+impl AssetLoader for WebpLoader {
+    type Asset = WebpAnimation;
+    type Settings = LoaderSettings;
+    type Error = LoaderError;
 
     fn load<'a>(
         &'a self,
         reader: &'a mut Reader,
-        _settings: &'a WebPAnimationLoaderSettings,
+        _settings: &'a LoaderSettings,
         load_context: &'a mut LoadContext,
-    ) -> bevy::utils::BoxedFuture<'a, Result<WebPAnimation, Self::Error>> {
+    ) -> bevy::utils::BoxedFuture<'a, Result<WebpAnimation, Self::Error>> {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
@@ -157,7 +159,7 @@ impl AssetLoader for WebPAnimationLoader {
 fn spawn_decoder_thread(
     animation_frame: Sender<Image>,
     bytes: &[u8],
-) -> Result<(), WebPAnimationLoaderError> {
+) -> Result<(), LoaderError> {
     loop {
         let frames = WebPDecoder::new(bytes)?.into_frames();
         for frame in frames {
@@ -185,7 +187,7 @@ fn spawn_decoder_thread(
     }
 }
 
-impl Default for WebPAnimationFrameRate {
+impl Default for FrameRate {
     fn default() -> Self {
         Self {
             ticks_per_frame: 1,
@@ -194,8 +196,8 @@ impl Default for WebPAnimationFrameRate {
     }
 }
 
-impl WebPAnimationFrameRate {
-    pub(crate) fn new(ticks_per_frame: u32) -> Self {
+impl FrameRate {
+    pub fn new(ticks_per_frame: u32) -> Self {
         Self {
             ticks_per_frame,
             current_tick: 0,

@@ -1,7 +1,4 @@
-mod webp;
-
-use bevy::{time::Stopwatch, utils::Instant};
-pub(crate) use webp::*;
+use bevy::time::Stopwatch;
 
 use crate::{
     background::Twinkle,
@@ -14,6 +11,7 @@ pub(crate) struct Distraction {
     level: Level,
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Level {
     One = 1,
@@ -66,9 +64,10 @@ pub(crate) fn spawn(
             .id();
 
         let child = commands
-            .spawn((WebPAnimationBundle {
-                animation: asset_server.load("textures/distractions/test.webp"),
-                frame_rate: WebPAnimationFrameRate::new(2),
+            .spawn((bevy_webp_anim::WebpBundle {
+                animation: asset_server
+                    .load("textures/distractions/videos/1.webp"),
+                frame_rate: bevy_webp_anim::FrameRate::new(2),
                 sprite: Sprite { ..default() },
                 ..default()
             },))
