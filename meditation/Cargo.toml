@@ -7,6 +7,6 @@ edition.workspace = true
 bevy_pixel_camera.workspace = true
 bevy-webp-anim = { path = "../bevy-webp-anim" }
 bevy.workspace = true
-project-physics = { path = "../project/physics" }
-project-visuals = { path = "../project/visuals" }
+common-physics = { path = "../common/physics" }
+common-visuals = { path = "../common/visuals" }
 rand.workspace = true

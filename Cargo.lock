@@ -1318,6 +1318,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "common-physics"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
+name = "common-visuals"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "rand",
+]
+
+[[package]]
 name = "concurrent-queue"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2346,8 +2361,8 @@ dependencies = [
  "bevy",
  "bevy-webp-anim",
  "bevy_pixel_camera",
- "project-physics",
- "project-visuals",
+ "common-physics",
+ "common-visuals",
  "rand",
 ]
 
@@ -2867,21 +2882,6 @@ name = "profiling"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f89dff0959d98c9758c88826cc002e2c3d0b9dfac4139711d1f30de442f1139b"
-
-[[package]]
-name = "project-physics"
-version = "0.1.0"
-dependencies = [
- "bevy",
-]
-
-[[package]]
-name = "project-visuals"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "rand",
-]
 
 [[package]]
 name = "qoi"

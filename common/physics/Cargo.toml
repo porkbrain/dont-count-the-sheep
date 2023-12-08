@@ -1,8 +1,7 @@
 [package]
-name = "project-visuals"
+name = "common-physics"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
 bevy.workspace = true
-rand.workspace = true

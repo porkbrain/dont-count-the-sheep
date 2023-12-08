@@ -51,8 +51,8 @@ fn main() {
         .add_plugins((
             PixelCameraPlugin,
             bevy_webp_anim::Plugin,
-            project_physics::Plugin,
-            project_visuals::Plugin,
+            common_physics::Plugin,
+            common_visuals::Plugin,
         ))
         .insert_resource(ClearColor(Color::hex("#0d0e1f").unwrap()))
         .add_event::<weather::ActionEvent>()
