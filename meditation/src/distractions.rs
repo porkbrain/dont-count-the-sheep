@@ -1,8 +1,10 @@
 mod webp;
 
+use bevy::{time::Stopwatch, utils::Instant};
 pub(crate) use webp::*;
 
 use crate::{
+    background::Twinkle,
     prelude::*,
     weather::{self, Weather},
 };
@@ -198,5 +200,68 @@ pub(crate) fn react_to_weather(
                 vel.x = -DEFAULT_KICK * vel_factor;
             }
         }
+    }
+}
+
+#[derive(Component)]
+pub(crate) struct BlackHole(Stopwatch);
+
+pub(crate) fn destroyed(
+    mut events: EventReader<DistractionDestroyedEvent>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    for DistractionDestroyedEvent {
+        level,
+        at_translation,
+    } in events.read()
+    {
+        // TODO: increase score
+
+        // TODO: animate out
+
+        trace!("Spawning black hole");
+        commands
+            .spawn((
+                BlackHole(Stopwatch::new()),
+                SpriteSheetBundle {
+                    texture_atlas: texture_atlases.add(
+                        TextureAtlas::from_grid(
+                            asset_server
+                                .load("textures/distractions/blackhole.png"),
+                            Vec2::new(100.0, 100.0),
+                            5,
+                            1,
+                            None,
+                            None,
+                        ),
+                    ),
+                    sprite: TextureAtlasSprite {
+                        index: 4,
+                        ..default()
+                    },
+                    transform: Transform::from_translation(
+                        at_translation.extend(zindex::BLACK_HOLE),
+                    ),
+                    ..default()
+                },
+            ))
+            .with_children(|parent| {
+                parent.spawn((
+                    Twinkle::new(),
+                    SpriteBundle {
+                        texture: asset_server.load(format!(
+                            "textures/distractions/blackhole_flicker.png"
+                        )),
+                        transform: Transform::from_translation(Vec3::new(
+                            0.0,
+                            0.0,
+                            zindex::BLACK_HOLE_TWINKLE,
+                        )),
+                        ..default()
+                    },
+                ));
+            });
     }
 }
