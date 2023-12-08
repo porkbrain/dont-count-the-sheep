@@ -53,6 +53,7 @@ fn main() {
             bevy_webp_anim::Plugin,
             common_physics::Plugin,
             common_visuals::Plugin,
+            ui::Plugin,
         ))
         .insert_resource(ClearColor(Color::hex("#0d0e1f").unwrap()))
         .add_event::<weather::ActionEvent>()
@@ -66,15 +67,11 @@ fn main() {
                 weather::anim::sprite_loading_special,
                 weather::anim::sprite_normal,
                 background::shooting_star,
-                ui::update_score,
             ),
         )
         .add_systems(
             Update,
             (
-                ui::open,
-                ui::select, // order important bcs we simulate ESC to close
-                ui::close,
                 weather::controls::normal,
                 weather::controls::loading_special,
                 // must be after controls bcs events dependency
@@ -103,6 +100,5 @@ fn setup(
 
     background::spawn(&mut commands, &asset_server, &mut texture_atlases);
     weather::spawn(&mut commands, &asset_server, &mut texture_atlases);
-    ui::spawn(&mut commands, &asset_server);
     distractions::spawn(&mut commands, &asset_server, &mut texture_atlases);
 }

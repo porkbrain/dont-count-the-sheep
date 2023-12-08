@@ -43,30 +43,35 @@ impl MotionDirection {
 }
 
 impl Radians {
+    #[inline]
     pub fn new(radians: f32) -> Self {
         Self(radians)
     }
 }
 
 impl Velocity {
+    #[inline]
     pub fn new(v: Vec2) -> Self {
         Self(v)
     }
 }
 
 impl From<Vec2> for Velocity {
+    #[inline]
     fn from(vec: Vec2) -> Self {
         Self(vec)
     }
 }
 
 impl From<f32> for AngularVelocity {
+    #[inline]
     fn from(radians: f32) -> Self {
         Self(radians)
     }
 }
 
 impl AngularVelocity {
+    #[inline]
     pub fn new(radians: f32) -> Self {
         Self(radians)
     }

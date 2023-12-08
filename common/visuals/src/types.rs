@@ -33,6 +33,7 @@ pub enum AnimationEnd {
 pub struct AnimationTimer(pub(crate) Timer);
 
 impl AnimationTimer {
+    #[inline]
     pub fn new(duration: Duration, mode: TimerMode) -> Self {
         Self(Timer::new(duration, mode))
     }
@@ -49,6 +50,7 @@ pub struct Flicker {
 }
 
 impl Flicker {
+    #[inline]
     pub fn new(chance_per_second: f32, shown_for: Duration) -> Self {
         Self {
             last: Instant::now(),
@@ -57,6 +59,7 @@ impl Flicker {
         }
     }
 
+    #[inline]
     pub fn reset(&mut self) {
         self.last = Instant::now();
     }
