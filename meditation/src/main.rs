@@ -17,7 +17,7 @@ mod weather;
 mod zindex;
 
 mod consts {
-    pub(crate) const VISIBLE_WIDTH: f32 = 630.0;
+    pub(crate) const VISIBLE_WIDTH: f32 = 640.0;
     pub(crate) const VISIBLE_HEIGHT: f32 = 360.0;
 
     pub(crate) const STAGE_WIDTH: f32 = VISIBLE_WIDTH * 1.25;

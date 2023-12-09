@@ -8,9 +8,9 @@ use crate::consts::{STAGE_HEIGHT, STAGE_WIDTH};
 
 pub(crate) const OPTIMAL_OVERCORRECTION_FACTOR: f32 = 1.7490273;
 
-/// Trying to preserve the aspect ratio of the world: 630x360
-pub(crate) const GRAVITY_FIELD_WIDTH: usize = 105;
-pub(crate) const GRAVITY_FIELD_HEIGHT: usize = 60;
+/// Trying to preserve the aspect ratio of the world: 640x360
+pub(crate) const GRAVITY_FIELD_WIDTH: usize = 160;
+pub(crate) const GRAVITY_FIELD_HEIGHT: usize = 90;
 
 pub(crate) struct Gravity;
 
