@@ -1,5 +1,3 @@
-pub(crate) use crate::poissons_equation::systems::*;
-
 use bevy::prelude::*;
 
 use crate::Velocity;

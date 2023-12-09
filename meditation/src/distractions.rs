@@ -2,7 +2,7 @@ use bevy::time::Stopwatch;
 use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
 
 use crate::{
-    gravity::CanvasCoords,
+    gravity::{ChangeOfBasis, Gravity},
     prelude::*,
     weather::{self, Weather},
 };
@@ -211,7 +211,7 @@ pub(crate) struct BlackHole(GridCoords, Stopwatch);
 pub(crate) fn destroyed(
     mut events: EventReader<DistractionDestroyedEvent>,
     mut score: Query<&mut crate::ui::Score>,
-    mut gravity: EventWriter<PoissonsEquationUpdateEvent>,
+    mut gravity: EventWriter<PoissonsEquationUpdateEvent<Gravity>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
@@ -229,8 +229,8 @@ pub(crate) fn destroyed(
 
         let gravity_grid_coords = PoissonsEquationUpdateEvent::send(
             &mut gravity,
-            1.5,
-            CanvasCoords(*at_translation), // TODO
+            1.5, // TODO
+            ChangeOfBasis::new(*at_translation),
         );
 
         trace!("Spawning black hole");
@@ -242,7 +242,7 @@ pub(crate) fn destroyed(
                         TextureAtlas::from_grid(
                             asset_server
                                 .load("textures/distractions/blackhole.png"),
-                            Vec2::new(100.0, 100.0),
+                            Vec2::new(100.0, 100.0), // TODO
                             5,
                             1,
                             None,

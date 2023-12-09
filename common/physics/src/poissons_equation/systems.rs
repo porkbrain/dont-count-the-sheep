@@ -1,15 +1,16 @@
 use bevy::prelude::*;
 
-use crate::{GridCoords, VectorArrow};
+#[cfg(feature = "poissons-eq-visualization")]
+use crate::{GridCoords, VectorArrow, WorldDimensions};
 
-use super::types::{PoissonsEquation, PoissonsEquationUpdateEvent};
+use crate::{PoissonsEquation, PoissonsEquationUpdateEvent};
 
-/// TODO: Hide behind a feature flag
-pub(crate) fn update_poissons_equation(
-    mut updates: EventReader<PoissonsEquationUpdateEvent>,
-    mut field: ResMut<PoissonsEquation>,
+/// Run it on [`Last`] schedule.
+pub(crate) fn update<T: Send + Sync + 'static>(
+    mut updates: EventReader<PoissonsEquationUpdateEvent<T>>,
+    mut field: ResMut<PoissonsEquation<T>>,
 ) {
-    for PoissonsEquationUpdateEvent { delta, coords } in updates.read() {
+    for PoissonsEquationUpdateEvent { delta, coords, .. } in updates.read() {
         field.set(*coords, *delta);
         field.stop_smoothing_out = false;
     }
@@ -27,16 +28,14 @@ pub(crate) fn update_poissons_equation(
     }
 }
 
-pub trait WorldDimensions {
-    fn width() -> f32;
-    fn height() -> f32;
-}
-
 /// Renders the field as non-overlapping half-transparent arrows.
-///
-/// TODO: hide behind a dev feature flag
-pub fn spawn_visualization<W: WorldDimensions>(
-    field: Res<PoissonsEquation>,
+/// The red nose is where the field points.
+#[cfg(feature = "poissons-eq-visualization")]
+pub(crate) fn spawn_visualization<
+    T: Send + Sync + 'static,
+    W: WorldDimensions,
+>(
+    field: Res<PoissonsEquation<T>>,
     mut images: ResMut<Assets<Image>>,
     mut commands: Commands,
 ) {
@@ -50,23 +49,21 @@ pub fn spawn_visualization<W: WorldDimensions>(
             false,
             default(),
         )
-        .expect("Cannot load vector arrow"),
+        .expect("Cannot load vector arrow image"),
     );
-
-    // A tile that the vector arrow represents.
-    // The whole field is a grid of these tiles.
-    let tile_width = W::width() / field.width as f32 - W::width() / 2.0;
-    let tile_height = W::height() / field.height as f32 - W::height() / 2.0;
 
     for y in 0..field.height {
         for x in 0..field.width {
+            // The whole field is a grid of these tiles.
             commands.spawn((
                 VectorArrow,
                 SpriteBundle {
                     texture: arrow.clone(),
                     transform: Transform::from_translation(Vec3::new(
-                        x as f32 * tile_width,
-                        y as f32 * tile_height,
+                        x as f32 * W::width() / field.width as f32
+                            - W::width() / 2.0,
+                        y as f32 * W::height() / field.height as f32
+                            - W::height() / 2.0,
                         0.0,
                     )),
                     ..default()
@@ -77,10 +74,12 @@ pub fn spawn_visualization<W: WorldDimensions>(
 }
 
 /// Adjust the rotation of the arrows to match the field.
-///
-/// TODO: hide behind a dev feature flag
-pub fn update_visualization<T: From<Transform> + Into<GridCoords>>(
-    field: ResMut<PoissonsEquation>,
+#[cfg(feature = "poissons-eq-visualization")]
+pub(crate) fn update_visualization<
+    T: Send + Sync + 'static,
+    P: From<Transform> + Into<GridCoords>,
+>(
+    field: ResMut<PoissonsEquation<T>>,
     mut vector_arrows: Query<&mut Transform, With<VectorArrow>>,
 ) {
     if field.stop_smoothing_out {
@@ -88,7 +87,7 @@ pub fn update_visualization<T: From<Transform> + Into<GridCoords>>(
     }
 
     for mut transform in vector_arrows.iter_mut() {
-        let gradient = field.gradient_at(T::from(*transform));
+        let gradient = field.gradient_at(P::from(*transform));
         let a = gradient.angle_between(Vec2::new(0.0, 1.0));
         transform.rotation = Quat::from_rotation_z(-a);
     }

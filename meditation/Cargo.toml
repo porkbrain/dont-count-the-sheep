@@ -10,3 +10,6 @@ bevy.workspace = true
 common-physics = { path = "../common/physics" }
 common-visuals = { path = "../common/visuals" }
 rand.workspace = true
+
+[features]
+dev = ["common-physics/poissons-eq-visualization"]

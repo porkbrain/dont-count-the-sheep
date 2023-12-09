@@ -5,3 +5,9 @@ edition.workspace = true
 
 [dependencies]
 bevy.workspace = true
+
+[features]
+default = ["poissons-eq"]
+
+poissons-eq = []
+poissons-eq-visualization = []

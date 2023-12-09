@@ -2,7 +2,7 @@
 //! The field must be at least 3x3, and the edges are set to 0.
 
 use crate::prelude::*;
-use common_physics::{GridCoords, PoissonsEquation};
+use common_physics::{GridCoords, PoissonsEquation, WorldDimensions};
 
 use crate::consts::{STAGE_HEIGHT, STAGE_WIDTH};
 
@@ -12,11 +12,15 @@ pub(crate) const OPTIMAL_OVERCORRECTION_FACTOR: f32 = 1.7490273;
 pub(crate) const GRAVITY_FIELD_WIDTH: usize = 105;
 pub(crate) const GRAVITY_FIELD_HEIGHT: usize = 60;
 
-pub(crate) fn field() -> PoissonsEquation {
+pub(crate) struct Gravity;
+
+pub(crate) struct ChangeOfBasis(Vec2);
+
+pub(crate) fn field() -> PoissonsEquation<Gravity> {
     field_(OPTIMAL_OVERCORRECTION_FACTOR)
 }
 
-fn field_(overcorrection_factor: f32) -> PoissonsEquation {
+fn field_(overcorrection_factor: f32) -> PoissonsEquation<Gravity> {
     common_physics::PoissonsEquation::new(
         GRAVITY_FIELD_WIDTH,
         GRAVITY_FIELD_HEIGHT,
@@ -26,10 +30,23 @@ fn field_(overcorrection_factor: f32) -> PoissonsEquation {
     .with_initial_smoothing(32)
 }
 
-pub(crate) struct CanvasCoords(pub(crate) Vec2);
+impl ChangeOfBasis {
+    #[inline]
+    pub(crate) fn new(translation: Vec2) -> Self {
+        Self(translation)
+    }
+}
 
-impl From<CanvasCoords> for GridCoords {
-    fn from(CanvasCoords(Vec2 { x, y }): CanvasCoords) -> Self {
+impl From<Transform> for ChangeOfBasis {
+    #[inline]
+    fn from(Transform { translation, .. }: Transform) -> Self {
+        Self(translation.truncate())
+    }
+}
+
+impl From<ChangeOfBasis> for GridCoords {
+    #[inline]
+    fn from(ChangeOfBasis(Vec2 { x, y }): ChangeOfBasis) -> Self {
         let field_width = GRAVITY_FIELD_WIDTH as f32;
         let field_height = GRAVITY_FIELD_HEIGHT as f32;
 
@@ -48,6 +65,18 @@ impl From<CanvasCoords> for GridCoords {
     }
 }
 
+impl WorldDimensions for ChangeOfBasis {
+    #[inline]
+    fn width() -> f32 {
+        STAGE_WIDTH
+    }
+
+    #[inline]
+    fn height() -> f32 {
+        STAGE_HEIGHT
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::consts::{STAGE_HEIGHT, STAGE_WIDTH};
@@ -59,7 +88,7 @@ mod tests {
         // top left
         assert_eq!(
             GridCoords { x: 0, y: 0 },
-            CanvasCoords(Vec2::new(-STAGE_WIDTH / 2.0, STAGE_HEIGHT / 2.0))
+            ChangeOfBasis(Vec2::new(-STAGE_WIDTH / 2.0, STAGE_HEIGHT / 2.0))
                 .into(),
         );
         // bottom right
@@ -68,7 +97,7 @@ mod tests {
                 x: GRAVITY_FIELD_WIDTH - 1,
                 y: GRAVITY_FIELD_HEIGHT - 1,
             },
-            CanvasCoords(Vec2::new(STAGE_WIDTH / 2.0, -STAGE_HEIGHT / 2.0))
+            ChangeOfBasis(Vec2::new(STAGE_WIDTH / 2.0, -STAGE_HEIGHT / 2.0))
                 .into(),
         );
         // center left
@@ -77,7 +106,7 @@ mod tests {
                 x: 0,
                 y: (GRAVITY_FIELD_HEIGHT as f32 / 2.0).round() as usize,
             },
-            CanvasCoords(Vec2::new(-STAGE_WIDTH / 2.0 + 0.001, 0.0)).into(),
+            ChangeOfBasis(Vec2::new(-STAGE_WIDTH / 2.0 + 0.001, 0.0)).into(),
         );
         // top center
         assert_eq!(
@@ -85,7 +114,7 @@ mod tests {
                 x: (GRAVITY_FIELD_WIDTH as f32 / 2.0).round() as usize,
                 y: 0,
             },
-            CanvasCoords(Vec2::new(0.0, STAGE_HEIGHT / 2.0 + 0.001)).into(),
+            ChangeOfBasis(Vec2::new(0.0, STAGE_HEIGHT / 2.0 + 0.001)).into(),
         );
         // center
         assert_eq!(
@@ -93,7 +122,7 @@ mod tests {
                 x: (GRAVITY_FIELD_WIDTH as f32 / 2.0).round() as usize,
                 y: (GRAVITY_FIELD_HEIGHT as f32 / 2.0).round() as usize,
             },
-            CanvasCoords(Vec2::new(0.0, 0.0)).into(),
+            ChangeOfBasis(Vec2::new(0.0, 0.0)).into(),
         );
     }
 

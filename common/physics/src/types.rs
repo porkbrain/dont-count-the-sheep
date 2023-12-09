@@ -1,3 +1,4 @@
+#[cfg(feature = "poissons-eq")]
 pub use crate::poissons_equation::types::*;
 
 use bevy::prelude::*;

@@ -1,18 +1,21 @@
+use std::marker::PhantomData;
+
 use bevy::prelude::*;
 
 #[derive(Event)]
-pub struct PoissonsEquationUpdateEvent {
+pub struct PoissonsEquationUpdateEvent<T> {
     /// The position within the field
     pub(crate) coords: GridCoords,
     /// If there's already a source at the position, this is added to it.
     /// Otherwise, it's set as the source.
     pub(crate) delta: f32,
+    phantom: PhantomData<T>,
 }
 
 pub(crate) type Grid = Vec<Vec<GridPoint>>;
 
 #[derive(Resource)]
-pub struct PoissonsEquation {
+pub struct PoissonsEquation<T> {
     /// Optimization which allows us to reach convergence usually faster if
     /// the factor is picked well.
     pub overcorrection_factor: f32,
@@ -26,6 +29,7 @@ pub struct PoissonsEquation {
     pub(crate) width: usize,
     pub(crate) height: usize,
     grid: Grid,
+    phantom: PhantomData<T>,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -40,23 +44,34 @@ pub struct GridCoords {
     pub y: usize,
 }
 
+#[cfg(feature = "poissons-eq-visualization")]
 #[derive(Component)]
 pub struct VectorArrow;
 
-impl PoissonsEquationUpdateEvent {
+#[cfg(feature = "poissons-eq-visualization")]
+pub trait WorldDimensions {
+    fn width() -> f32;
+    fn height() -> f32;
+}
+
+impl<T: Send + Sync + 'static> PoissonsEquationUpdateEvent<T> {
     pub fn send<P: Into<GridCoords>>(
         update: &mut EventWriter<Self>,
         delta: f32,
         world_pos: P,
     ) -> GridCoords {
         let coords = world_pos.into();
-        update.send(Self { delta, coords });
+        update.send(Self {
+            delta,
+            coords,
+            phantom: PhantomData,
+        });
 
         coords
     }
 }
 
-impl PoissonsEquation {
+impl<T> PoissonsEquation<T> {
     pub fn new(width: usize, height: usize) -> Self {
         assert!(width > 2 && height > 2, "Field must be at least 3x3");
 
@@ -67,6 +82,7 @@ impl PoissonsEquation {
             width,
             height,
             grid: vec![vec![GridPoint::Average(0.0); width]; height],
+            phantom: PhantomData,
         }
     }
 

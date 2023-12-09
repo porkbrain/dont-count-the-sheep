@@ -1,5 +1,9 @@
 use super::{anim::SparkEffect, consts::*, ActionEvent};
-use crate::{control_mode, gravity::CanvasCoords, prelude::*};
+use crate::{
+    control_mode,
+    gravity::{ChangeOfBasis, Gravity},
+    prelude::*,
+};
 use bevy::time::Stopwatch;
 use common_physics::PoissonsEquation;
 use std::f32::consts::PI;
@@ -14,7 +18,7 @@ pub(crate) fn normal(
     mut spark: Query<(&mut Transform, &mut Visibility), With<SparkEffect>>,
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
-    gravity: Res<PoissonsEquation>,
+    gravity: Res<PoissonsEquation<Gravity>>,
     time: Res<Time>,
 ) {
     let Ok((entity, mut mode, mut vel, transform)) = weather.get_single_mut()
@@ -61,10 +65,7 @@ pub(crate) fn normal(
     }
 
     let dt = time.delta_seconds();
-    let gvec = gravity
-        .gradient_at(CanvasCoords(transform.translation.truncate()))
-        * 7000.0;
-    println!("gvec {gvec}");
+    let gvec = gravity.gradient_at(ChangeOfBasis::from(*transform)) * 7000.0; // TODO
 
     let mut update_horizontal = |dir: MotionDirection| {
         let is_moving_in_opposite_direction = !dir.is_aligned(vel.x);
@@ -173,8 +174,6 @@ pub(crate) fn normal(
     vel.x += gvec.x * dt;
     // apply friction to the horizontal movement
     vel.x -= vel.x * dt;
-
-    println!("vel {}", **vel);
 }
 
 /// Controls while loading special.
