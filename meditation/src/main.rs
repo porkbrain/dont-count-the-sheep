@@ -1,7 +1,8 @@
 //! Player controls weather sprite.
 //!
-//! The controls are WASD (or arrow keys) to move and space to activate special.
-//! The sprite should feel floaty as if you were playing Puff in Smashbros.
+//! The controls are WASD (or arrow keys) to move and move+space to activate
+//! the special. The sprite should feel floaty as if you were playing Puff in
+//! Smashbros.
 
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::type_complexity)]
@@ -9,14 +10,19 @@
 mod background;
 mod control_mode;
 mod distractions;
+mod gravity;
 mod prelude;
 mod ui;
 mod weather;
 mod zindex;
 
 mod consts {
-    pub(crate) const WIDTH: f32 = 630.0;
-    pub(crate) const HEIGHT: f32 = 360.0;
+    pub(crate) const VISIBLE_WIDTH: f32 = 630.0;
+    pub(crate) const VISIBLE_HEIGHT: f32 = 360.0;
+
+    pub(crate) const STAGE_WIDTH: f32 = VISIBLE_WIDTH;
+    pub(crate) const STAGE_HEIGHT: f32 = VISIBLE_HEIGHT;
+
     pub(crate) const PIXEL_ZOOM: f32 = 3.0;
 }
 
@@ -57,15 +63,23 @@ fn main() {
             ui::Plugin,
         ))
         .insert_resource(ClearColor(Color::hex(background::COLOR).unwrap()))
+        .insert_resource(gravity::field())
         .add_event::<weather::ActionEvent>()
         .add_event::<distractions::DistractionDestroyedEvent>()
-        .add_systems(Startup, (setup, background::spawn))
+        .add_systems(
+            Startup,
+            (
+                setup,
+                background::spawn, /* gravity::spawn_visualization */
+            ),
+        )
         .add_systems(FixedUpdate, weather::anim::rotate)
         .add_systems(
             Update,
             (
                 weather::arrow::point_arrow,
                 weather::anim::sprite_loading_special,
+                /* gravity::visualize, */
             ),
         )
         .add_systems(

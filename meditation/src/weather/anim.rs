@@ -444,8 +444,8 @@ pub(crate) fn update_camera_on_special(
         };
 
         Vec3::new(
-            freedom(crate::consts::WIDTH),
-            freedom(crate::consts::HEIGHT),
+            freedom(crate::consts::VISIBLE_WIDTH),
+            freedom(crate::consts::VISIBLE_HEIGHT),
             0.0,
         )
     }

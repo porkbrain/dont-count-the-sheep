@@ -14,22 +14,20 @@ pub(crate) const ROTATION_SPEED: f32 = 2.0;
 
 pub(crate) use physics::*;
 mod physics {
-    /// How many pixels per second pulls weather down
-    pub(crate) const GRAVITY: f32 = 512.0;
     /// Caps gravity effect.
     /// If weather is falling faster than this it slows down
-    pub(crate) const TERMINAL_VELOCITY: f32 = -216.0;
+    pub(crate) const TERMINAL_VELOCITY: f32 = -108.0;
 
     /// When left/right is pressed while up/down then weather gets an extra kick
-    pub(crate) const HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP: f32 = 128.0;
+    pub(crate) const HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP: f32 = 64.0;
     /// When down is pressed, weather's vertical velocity is set to this value
-    pub(crate) const VERTICAL_VELOCITY_ON_DIP: f32 = -350.0;
+    pub(crate) const VERTICAL_VELOCITY_ON_DIP: f32 = -150.0;
     /// When left/right is pressed, weather gets an extra kick
-    pub(crate) const DASH_VELOCITY_BOOST: f32 = 128.0;
+    pub(crate) const DASH_VELOCITY_BOOST: f32 = 64.0;
     /// The jump function uses this to calculate the jump strength
-    pub(crate) const BASIS_VELOCITY_ON_JUMP: f32 = 216.0;
+    pub(crate) const BASIS_VELOCITY_ON_JUMP: f32 = 108.0;
     /// When special is fired weather gets an extra kick in the chosen direction
-    pub(crate) const VELOCITY_BOOST_ON_SPECIAL: f32 = 750.0;
+    pub(crate) const VELOCITY_BOOST_ON_SPECIAL: f32 = 350.0;
 }
 
 pub(crate) use timings_of_actions::*;

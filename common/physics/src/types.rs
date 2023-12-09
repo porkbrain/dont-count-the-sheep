@@ -1,3 +1,5 @@
+pub use crate::poissons_equation::types::*;
+
 use bevy::prelude::*;
 
 #[derive(Default, Deref, DerefMut, Debug, Clone, Copy, PartialEq)]

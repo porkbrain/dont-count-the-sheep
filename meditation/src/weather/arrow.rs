@@ -4,7 +4,7 @@
 use std::f32::consts::PI;
 
 use crate::{
-    consts::{HEIGHT, WIDTH},
+    consts::{VISIBLE_HEIGHT, VISIBLE_WIDTH},
     prelude::*,
     weather::consts::ARROW_DISTANCE_FROM_EDGE,
 };
@@ -37,8 +37,8 @@ pub(crate) fn point_arrow(
 
     let weather_translation = weather_transform.translation;
 
-    let is_off_x = weather_translation.x.abs() > WIDTH / 2.0;
-    let is_off_y = weather_translation.y.abs() > HEIGHT / 2.0;
+    let is_off_x = weather_translation.x.abs() > VISIBLE_WIDTH / 2.0;
+    let is_off_y = weather_translation.y.abs() > VISIBLE_HEIGHT / 2.0;
 
     *visibility = match (is_off_x, is_off_y) {
         // ~
@@ -80,8 +80,8 @@ pub(crate) fn point_arrow(
     }
 }
 
-const HORIZONTAL_CORNER: f32 = WIDTH / 2.0 - ARROW_DISTANCE_FROM_EDGE;
-const VERTICAL_CORNER: f32 = HEIGHT / 2.0 - ARROW_DISTANCE_FROM_EDGE;
+const HORIZONTAL_CORNER: f32 = VISIBLE_WIDTH / 2.0 - ARROW_DISTANCE_FROM_EDGE;
+const VERTICAL_CORNER: f32 = VISIBLE_HEIGHT / 2.0 - ARROW_DISTANCE_FROM_EDGE;
 
 fn update_arrow_position_and_rotation(
     offscreen: OffScreen,
@@ -91,10 +91,10 @@ fn update_arrow_position_and_rotation(
     let x_signum = weather.x.signum();
     let y_signum = weather.y.signum();
 
-    let push_back_x =
-        ((weather.x.abs() - WIDTH / 2.0).sqrt()).min(MAX_ARROW_PUSH_BACK);
-    let push_back_y =
-        ((weather.y.abs() - HEIGHT / 2.0).sqrt()).min(MAX_ARROW_PUSH_BACK);
+    let push_back_x = ((weather.x.abs() - VISIBLE_WIDTH / 2.0).sqrt())
+        .min(MAX_ARROW_PUSH_BACK);
+    let push_back_y = ((weather.y.abs() - VISIBLE_HEIGHT / 2.0).sqrt())
+        .min(MAX_ARROW_PUSH_BACK);
 
     match offscreen {
         OffScreen::Horizontal => {

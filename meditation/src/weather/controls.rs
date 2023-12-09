@@ -1,6 +1,7 @@
 use super::{anim::SparkEffect, consts::*, ActionEvent};
-use crate::{control_mode, prelude::*};
+use crate::{control_mode, gravity::CanvasCoords, prelude::*};
 use bevy::time::Stopwatch;
+use common_physics::PoissonsEquation;
 use std::f32::consts::PI;
 
 /// Controls when in normal mode.
@@ -13,6 +14,7 @@ pub(crate) fn normal(
     mut spark: Query<(&mut Transform, &mut Visibility), With<SparkEffect>>,
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
+    gravity: Res<PoissonsEquation>,
     time: Res<Time>,
 ) {
     let Ok((entity, mut mode, mut vel, transform)) = weather.get_single_mut()
@@ -59,6 +61,10 @@ pub(crate) fn normal(
     }
 
     let dt = time.delta_seconds();
+    let gvec = gravity
+        .gradient_at(CanvasCoords(transform.translation.truncate()))
+        * 7000.0;
+    println!("gvec {gvec}");
 
     let mut update_horizontal = |dir: MotionDirection| {
         let is_moving_in_opposite_direction = !dir.is_aligned(vel.x);
@@ -120,17 +126,18 @@ pub(crate) fn normal(
         // slow down to terminal velocity
 
         vel.y += {
-            debug_assert!(TERMINAL_VELOCITY < 0.0);
+            debug_assert!(TERMINAL_VELOCITY < 0.0); // => vel.y < 0.0
 
             let diff = -vel.y + TERMINAL_VELOCITY;
             // always slow down at least 1 pixel per second to avoid
             // infinite approach
+            // TODO: make the approach slower
             (diff * dt).max(1.0)
         };
     } else {
         // apply gravity
 
-        vel.y = (vel.y - GRAVITY * dt).max(TERMINAL_VELOCITY);
+        vel.y = (vel.y + gvec.y * dt).max(TERMINAL_VELOCITY);
     }
 
     if mode.god_mode && mode.jumps >= MAX_JUMPS {
@@ -162,8 +169,12 @@ pub(crate) fn normal(
         }
     }
 
+    // apply gravity to the horizontal movement
+    vel.x += gvec.x * dt;
     // apply friction to the horizontal movement
     vel.x -= vel.x * dt;
+
+    println!("vel {}", **vel);
 }
 
 /// Controls while loading special.

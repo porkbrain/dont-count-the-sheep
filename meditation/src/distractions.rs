@@ -1,6 +1,8 @@
 use bevy::time::Stopwatch;
+use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
 
 use crate::{
+    gravity::CanvasCoords,
     prelude::*,
     weather::{self, Weather},
 };
@@ -204,11 +206,12 @@ pub(crate) fn react_to_weather(
 }
 
 #[derive(Component)]
-pub(crate) struct BlackHole(Stopwatch);
+pub(crate) struct BlackHole(GridCoords, Stopwatch);
 
 pub(crate) fn destroyed(
     mut events: EventReader<DistractionDestroyedEvent>,
     mut score: Query<&mut crate::ui::Score>,
+    mut gravity: EventWriter<PoissonsEquationUpdateEvent>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
@@ -224,10 +227,16 @@ pub(crate) fn destroyed(
 
         // TODO: animate out
 
+        let gravity_grid_coords = PoissonsEquationUpdateEvent::send(
+            &mut gravity,
+            1.5,
+            CanvasCoords(*at_translation), // TODO
+        );
+
         trace!("Spawning black hole");
         commands
             .spawn((
-                BlackHole(Stopwatch::new()),
+                BlackHole(gravity_grid_coords, Stopwatch::new()),
                 SpriteSheetBundle {
                     texture_atlas: texture_atlases.add(
                         TextureAtlas::from_grid(

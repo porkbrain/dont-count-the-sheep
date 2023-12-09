@@ -1,3 +1,5 @@
+pub(crate) use crate::poissons_equation::systems::*;
+
 use bevy::prelude::*;
 
 use crate::Velocity;
@@ -9,8 +11,7 @@ pub(crate) fn apply_velocity(
     let dt = time.delta_seconds();
 
     for (mut transform, vel) in &mut query {
-        // TODO
-        transform.translation.x += vel.x * dt / 2.0;
-        transform.translation.y += vel.y * dt / 2.0;
+        transform.translation.x += vel.x * dt;
+        transform.translation.y += vel.y * dt;
     }
 }
