@@ -101,6 +101,12 @@ fn main() {
             distractions::destroyed,
         )
             .chain(),
+    )
+    .add_systems(
+        Last,
+        (
+            distractions::visualize_path, // TODO
+        ),
     );
 
     common_physics::poissons_equation::register::<gravity::Gravity>(&mut app);
