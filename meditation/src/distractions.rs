@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{
     math::cubic_splines::CubicCurve, sprite::MaterialMesh2dBundle,
     time::Stopwatch,
@@ -13,13 +15,18 @@ use crate::{
 const BLACKHOLE_FLICKER_CHANCE_PER_SECOND: f32 = 0.5;
 const BLACKHOLE_FLICKER_DURATION: Duration = Duration::from_millis(100);
 const LVL1_MAX_DIST_FOR_INSTA_DESTRUCT_ON_SPECIAL: f32 = 35.0;
-const DISTRACTION_HEIGHT: f32 = 50.0;
-const DISTRACTION_WIDTH: f32 = DISTRACTION_HEIGHT;
-const HITBOX_WIDTH: f32 = 50.0;
-const HITBOX_HEIGHT: f32 = HITBOX_WIDTH;
-const HITBOX_SIZE: Vec2 = vec2(HITBOX_WIDTH, HITBOX_HEIGHT);
-const HITBOX_DISTANCE_TO_DISTRACTION: f32 = 0.0;
-const DEFAULT_KICK: f32 = 5.0;
+const DISTRACTION_SIZE: f32 = 50.0;
+const DEFAULT_ANGVEL_KICK: f32 = 5.0;
+/// If the dot product of the velocity of the distraction and the velocity of
+/// the weather is less than this threshold, then the distraction is affected
+/// by the weather.
+/// The rotation of the distraction is increased by the action factor.
+const PERPENDICULARITY_THRESHOLD: f32 = PI / 8.0;
+/// Weather must be within this distance of the distraction to affect it.
+const HITBOX_RADIUS: f32 = DISTRACTION_SIZE * 1.25;
+/// Every second, the angular velocity of distractions is reduced by this
+/// percent amount.
+const ROTATION_SLOWDOWN_PERCENT_PER_SECOND: f32 = 0.98;
 
 #[derive(Component)]
 pub(crate) struct Distraction {
@@ -149,6 +156,7 @@ pub(crate) fn spawn(
                 ])
                 .to_curve(),
             ),
+            AngularVelocity::default(),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/distractions/frame.png"),
@@ -185,28 +193,42 @@ pub(crate) fn spawn(
 pub(crate) fn react_to_weather(
     mut score: EventWriter<DistractionDestroyedEvent>,
     mut weather_actions: EventReader<weather::ActionEvent>,
-    weather: Query<&Transform, (With<Weather>, Without<Distraction>)>,
+    weather: Query<
+        (&Velocity, &Transform),
+        (With<Weather>, Without<Distraction>),
+    >,
     mut distraction: Query<
-        (Entity, &Distraction, &Transform, &mut Velocity),
+        (Entity, &Distraction, &Transform, &mut AngularVelocity),
         Without<Weather>,
     >,
+    time: Res<Time>,
     mut commands: Commands,
 ) {
     let Some(action) = weather_actions.read().last() else {
         return;
     };
 
-    let Ok(weather_transform) = weather.get_single() else {
+    let Ok((weather_vel, weather_transform)) = weather.get_single() else {
         return;
     };
     let weather_translation = weather_transform.translation.truncate();
+    let weather_vel = **weather_vel;
 
-    for (entity, distraction, transform, mut vel) in distraction.iter_mut() {
+    for (entity, distraction, transform, mut angvel) in distraction.iter_mut() {
         let translation = transform.translation.truncate();
+        let distance_to_weather = translation.distance(weather_translation);
+
+        // in case we in future change the consts
+        debug_assert!(
+            HITBOX_RADIUS > LVL1_MAX_DIST_FOR_INSTA_DESTRUCT_ON_SPECIAL
+        );
+        if distance_to_weather > HITBOX_RADIUS {
+            continue;
+        }
 
         match (action, distraction.level) {
             (weather::ActionEvent::FiredSpecial, Level::One)
-                if translation.distance(weather_translation)
+                if distance_to_weather
                     < LVL1_MAX_DIST_FOR_INSTA_DESTRUCT_ON_SPECIAL =>
             {
                 debug!("Distraction destroy event sent");
@@ -218,83 +240,45 @@ pub(crate) fn react_to_weather(
 
                 continue;
             }
+            // this action doesn't affect distractions
+            (weather::ActionEvent::StartLoadingSpecial { .. }, _) => continue,
             _ => {}
         };
 
-        let vel_factor = match action {
-            weather::ActionEvent::StartLoadingSpecial { .. } => 0.0,
+        let (seg_index, seg_t) = distraction.segment(&time);
+        let seg = &distraction.curve.segments()[seg_index];
+        let vel = seg.velocity(seg_t);
+
+        // if the two vectors are closely aligned, the we affect the distraction
+        let a = vel.angle_between(weather_vel);
+        if a.abs() > PERPENDICULARITY_THRESHOLD {
+            continue;
+        }
+
+        // Different action will have differently proportional effect on the
+        // angular velocity.
+        let action_factor = match action {
+            // we early returned above
+            weather::ActionEvent::StartLoadingSpecial { .. } => unreachable!(),
             weather::ActionEvent::DashedAgainstVelocity { .. } => 1.0,
             weather::ActionEvent::Dipped => 2.0,
-            weather::ActionEvent::FiredSpecial => 5.0,
             // higher if bigger jumps
             weather::ActionEvent::Jumped { jumps_left } => {
-                3.0 * (*jumps_left as f32 / weather::consts::MAX_JUMPS as f32)
+                2.0 * (*jumps_left as f32 / weather::consts::MAX_JUMPS as f32)
             }
+            weather::ActionEvent::FiredSpecial => 5.0,
         };
 
-        // There are 4 boxes around the distraction:
-        // 1. above, 2. below, 3. left and 4. right.
-        // if weather is in any of them, then distraction gets velocity in
-        // opposite direction
+        // The kick to angvel is inversely proportional to distance between
+        // weather and distraction.
+        // This encourages the player to move the weather around the distraction
+        // fast back and forth to increase the angular velocity.
+        let distance_penalty = 1.0 - (distance_to_weather / HITBOX_RADIUS);
 
-        //
-        // 1.
-        //
-        let box_above_center = translation
-            + vec2(
-                0.0,
-                DISTRACTION_HEIGHT / 2.0 + HITBOX_DISTANCE_TO_DISTRACTION,
-            );
-        let box_above = Rect::from_center_size(box_above_center, HITBOX_SIZE);
-        if box_above.contains(weather_translation) {
-            trace!("ABOVE {vel_factor:.2}");
-            vel.y = -DEFAULT_KICK * vel_factor;
-        } else {
-            //
-            // 2.
-            //
-            let box_below_center = translation
-                + vec2(
-                    0.0,
-                    -DISTRACTION_HEIGHT / 2.0 - HITBOX_DISTANCE_TO_DISTRACTION,
-                );
-            let box_below =
-                Rect::from_center_size(box_below_center, HITBOX_SIZE);
+        let kick = DEFAULT_ANGVEL_KICK * action_factor * distance_penalty;
+        trace!("Kick to angvel: {kick}");
 
-            if box_below.contains(weather_translation) {
-                trace!("below {vel_factor:.2}");
-                vel.y = DEFAULT_KICK * vel_factor;
-            }
-        }
-        //
-        // 3.
-        //
-        let box_left_center = translation
-            + vec2(
-                -DISTRACTION_WIDTH / 2.0 - HITBOX_DISTANCE_TO_DISTRACTION,
-                0.0,
-            );
-        let box_left = Rect::from_center_size(box_left_center, HITBOX_SIZE);
-        if box_left.contains(weather_translation) {
-            trace!("LEft {vel_factor:.2}");
-            vel.x = DEFAULT_KICK * vel_factor;
-        } else {
-            //
-            // 4.
-            //
-            let box_right_center = translation
-                + vec2(
-                    DISTRACTION_WIDTH / 2.0 + HITBOX_DISTANCE_TO_DISTRACTION,
-                    0.0,
-                );
-            let box_right =
-                Rect::from_center_size(box_right_center, HITBOX_SIZE);
-
-            if box_right.contains(weather_translation) {
-                trace!("rigHT {vel_factor:.2}");
-                vel.x = -DEFAULT_KICK * vel_factor;
-            }
-        }
+        *angvel += AngularVelocity::new(kick);
     }
 }
 
@@ -377,53 +361,46 @@ pub(crate) fn destroyed(
 
 //TODO: assert len
 const SEGMENT_TIMING: [f32; 6] = {
-    let f = 5.0;
+    let f = 7.0;
     [1.0 * f, 1.4 * f, 1.7 * f, 2.0 * f, 3.0 * f, 3.5 * f]
 };
 const TOTAL_PATH_TIME: f32 = SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
 
 /// Distractions follow an infinite loop curve in shape of the infinity symbol.
 pub(crate) fn follow_curve(
-    mut distraction: Query<(&mut Distraction, &mut Transform)>,
+    mut distraction: Query<(&Distraction, &mut Transform)>,
     time: Res<Time>,
 ) {
-    // total path time, as path repeats once all segments have been traversed
-    let total_t = time.elapsed_seconds() % TOTAL_PATH_TIME;
-
-    // now calculate how much of the current segment has been traversed by
-    // 1. finding the current segment
-    // 2. finding finding how much is left
-    // 3. finding the length of the current segment
-    // 4. dividing 2. by 3. to get the percentage of the segment that has been
-    // traversed
-
-    // 1.
-    let (seg_index, seg_ends_at) = SEGMENT_TIMING
-        .iter()
-        .enumerate()
-        .find(|(_, seg_t)| total_t < **seg_t)
-        .map(|(i, seg_t)| (i, *seg_t))
-        .unwrap_or((
-            SEGMENT_TIMING.len() - 1,
-            SEGMENT_TIMING[SEGMENT_TIMING.len() - 1],
-        ));
-    // 2.
-    let seg_remaining = seg_ends_at - total_t;
-    // 3.
-    let seg_length = if seg_index == 0 {
-        SEGMENT_TIMING[0]
-    } else {
-        SEGMENT_TIMING[seg_index] - SEGMENT_TIMING[seg_index - 1]
-    };
-    // 4.
-    let seg_t = 1.0 - (seg_remaining / seg_length);
-
-    for (mut distraction, mut transform) in distraction.iter_mut() {
+    for (distraction, mut transform) in distraction.iter_mut() {
         let z = transform.translation.z;
 
-        transform.translation = distraction.curve.segments()[seg_index]
-            .position(seg_t)
-            .extend(z);
+        let (seg_index, seg_t) = distraction.segment(&time);
+        let seg = &distraction.curve.segments()[seg_index];
+
+        transform.translation = seg.position(seg_t).extend(z);
+    }
+}
+
+pub(crate) fn rotate(
+    mut distractions: Query<
+        (&mut AngularVelocity, &mut Transform),
+        With<Distraction>,
+    >,
+    time: Res<Time>,
+) {
+    let dt = time.delta_seconds();
+
+    for (mut angular_vel, mut transform) in distractions.iter_mut() {
+        let z = transform.translation.z;
+        let angvel = **angular_vel;
+
+        transform.rotate_z(-angvel * dt);
+
+        *angular_vel = AngularVelocity::new(
+            angvel - angvel * ROTATION_SLOWDOWN_PERCENT_PER_SECOND * dt,
+        );
+
+        transform.translation.z = z;
     }
 }
 
@@ -436,5 +413,45 @@ impl Level {
             Self::Four => 32,  // stronger but no bonus
             Self::Five => 1,   // sucks to be you
         }
+    }
+}
+
+impl Distraction {
+    /// Returns the current segment and how much of it has been traversed.
+    fn segment(&self, time: &Time) -> (usize, f32) {
+        // total path time, as path repeats once all segments have been
+        // traversed
+        let total_t = time.elapsed_seconds() % TOTAL_PATH_TIME;
+
+        // now calculate how much of the current segment has been traversed by
+        // 1. finding the current segment
+        // 2. finding finding how much is left
+        // 3. finding the length of the current segment
+        // 4. dividing 2. by 3. to get the percentage of the segment that has
+        //    been
+        // traversed
+
+        // 1.
+        let (seg_index, seg_ends_at) = SEGMENT_TIMING
+            .iter()
+            .enumerate()
+            .find(|(_, seg_t)| total_t < **seg_t)
+            .map(|(i, seg_t)| (i, *seg_t))
+            .unwrap_or((
+                SEGMENT_TIMING.len() - 1,
+                SEGMENT_TIMING[SEGMENT_TIMING.len() - 1],
+            ));
+        // 2.
+        let seg_remaining = seg_ends_at - total_t;
+        // 3.
+        let seg_length = if seg_index == 0 {
+            SEGMENT_TIMING[0]
+        } else {
+            SEGMENT_TIMING[seg_index] - SEGMENT_TIMING[seg_index - 1]
+        };
+        // 4.
+        let seg_t = 1.0 - (seg_remaining / seg_length);
+
+        (seg_index, seg_t)
     }
 }

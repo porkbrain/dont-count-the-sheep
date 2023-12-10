@@ -79,7 +79,7 @@ fn main() {
             weather::spawn,
         ),
     )
-    .add_systems(FixedUpdate, weather::anim::rotate)
+    .add_systems(FixedUpdate, (weather::anim::rotate, distractions::rotate))
     .add_systems(
         Update,
         (

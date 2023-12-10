@@ -1,3 +1,5 @@
+use std::ops::AddAssign;
+
 #[cfg(feature = "poissons-eq")]
 pub use crate::poissons_equation::types::*;
 
@@ -77,5 +79,12 @@ impl AngularVelocity {
     #[inline]
     pub fn new(radians: f32) -> Self {
         Self(radians)
+    }
+}
+
+impl AddAssign for AngularVelocity {
+    #[inline]
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
     }
 }
