@@ -126,7 +126,7 @@ fn update_arrow_position_and_rotation(
             // Then we measure the angle between the new origin and weather's
             // position.
             let diff = weather - transform.translation;
-            let new_origin = Vec2::new(0.0, 1.0);
+            let new_origin = vec2(0.0, 1.0);
             let a = new_origin.angle_between(diff.truncate());
             transform.rotation = Quat::from_rotation_z(a);
         }

@@ -65,7 +65,8 @@ pub(crate) fn normal(
     }
 
     let dt = time.delta_seconds();
-    let gvec = gravity.gradient_at(ChangeOfBasis::from(*transform)) * 7000.0; // TODO
+    let gvec = gravity.gradient_at(ChangeOfBasis::from(*transform))
+        * GRAVITY_MULTIPLIER;
 
     let mut update_horizontal = |dir: MotionDirection| {
         let is_moving_in_opposite_direction = !dir.is_aligned(vel.x);
@@ -132,8 +133,7 @@ pub(crate) fn normal(
             let diff = -vel.y + TERMINAL_VELOCITY;
             // always slow down at least 1 pixel per second to avoid
             // infinite approach
-            // TODO: make the approach slower
-            (diff * dt).max(1.0)
+            (diff * dt * SLOWDOWN_TO_TERMINAL_VELOCITY_FACTOR).max(1.0)
         };
     } else {
         // apply gravity
@@ -142,7 +142,7 @@ pub(crate) fn normal(
     }
 
     if mode.god_mode && mode.jumps >= MAX_JUMPS {
-        debug!("You're godly. Here are some more jumps and that");
+        debug!("Ability reset");
         mode.jumps = 0;
         mode.can_use_special = true;
     }
@@ -157,10 +157,7 @@ pub(crate) fn normal(
             jumps_left: MAX_JUMPS + 1 - mode.jumps,
         });
 
-        // each jump is less and less strong until reset
-        let jump_boost = (MAX_JUMPS + 1 - mode.jumps) as f32 / MAX_JUMPS as f32;
-
-        vel.y = BASIS_VELOCITY_ON_JUMP + BASIS_VELOCITY_ON_JUMP * jump_boost;
+        vel.y = VELOCITY_ON_JUMP[mode.jumps - 1];
 
         if pressed_left {
             vel.x -= HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP;

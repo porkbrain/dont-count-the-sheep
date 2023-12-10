@@ -2,11 +2,11 @@
 //! The field must be at least 3x3, and the edges are set to 0.
 
 use crate::prelude::*;
-use common_physics::{GridCoords, PoissonsEquation, WorldDimensions};
+use common_physics::{GridCoords, PoissonsEquation};
 
-use crate::consts::{STAGE_HEIGHT, STAGE_WIDTH};
+use crate::consts::{GRAVITY_STAGE_HEIGHT, GRAVITY_STAGE_WIDTH};
 
-pub(crate) const OPTIMAL_OVERCORRECTION_FACTOR: f32 = 1.7490273;
+pub(crate) const OPTIMAL_OVERCORRECTION_FACTOR: f32 = 1.9926682;
 
 /// Trying to preserve the aspect ratio of the world: 640x360
 pub(crate) const GRAVITY_FIELD_WIDTH: usize = 160;
@@ -14,6 +14,7 @@ pub(crate) const GRAVITY_FIELD_HEIGHT: usize = 90;
 
 pub(crate) struct Gravity;
 
+/// Go from the canvas coordinates to the poisson grid coordinates.
 pub(crate) struct ChangeOfBasis(Vec2);
 
 pub(crate) fn field() -> PoissonsEquation<Gravity> {
@@ -53,33 +54,36 @@ impl From<ChangeOfBasis> for GridCoords {
         GridCoords {
             // 0 is the leftmost column
             // so the more positive x the higher the column
-            x: ((STAGE_WIDTH / 2.0 + x) / STAGE_WIDTH * field_width)
+            x: ((GRAVITY_STAGE_WIDTH / 2.0 + x) / GRAVITY_STAGE_WIDTH
+                * field_width)
                 .round()
                 .clamp(0.0, field_width - 1.0) as usize,
             // 0 is the topmost row
             // so the more positive y the higher the row
-            y: ((STAGE_HEIGHT / 2.0 - y) / STAGE_HEIGHT * field_height)
+            y: ((GRAVITY_STAGE_HEIGHT / 2.0 - y) / GRAVITY_STAGE_HEIGHT
+                * field_height)
                 .round()
                 .clamp(0.0, field_height - 1.0) as usize,
         }
     }
 }
 
-impl WorldDimensions for ChangeOfBasis {
+#[cfg(feature = "dev")]
+impl common_physics::WorldDimensions for ChangeOfBasis {
     #[inline]
     fn width() -> f32 {
-        STAGE_WIDTH
+        GRAVITY_STAGE_WIDTH
     }
 
     #[inline]
     fn height() -> f32 {
-        STAGE_HEIGHT
+        GRAVITY_STAGE_HEIGHT
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::consts::{STAGE_HEIGHT, STAGE_WIDTH};
+    use crate::consts::{GRAVITY_STAGE_HEIGHT, GRAVITY_STAGE_WIDTH};
 
     use super::*;
 
@@ -88,8 +92,11 @@ mod tests {
         // top left
         assert_eq!(
             GridCoords { x: 0, y: 0 },
-            ChangeOfBasis(Vec2::new(-STAGE_WIDTH / 2.0, STAGE_HEIGHT / 2.0))
-                .into(),
+            ChangeOfBasis(vec2(
+                -GRAVITY_STAGE_WIDTH / 2.0,
+                GRAVITY_STAGE_HEIGHT / 2.0
+            ))
+            .into(),
         );
         // bottom right
         assert_eq!(
@@ -97,8 +104,11 @@ mod tests {
                 x: GRAVITY_FIELD_WIDTH - 1,
                 y: GRAVITY_FIELD_HEIGHT - 1,
             },
-            ChangeOfBasis(Vec2::new(STAGE_WIDTH / 2.0, -STAGE_HEIGHT / 2.0))
-                .into(),
+            ChangeOfBasis(vec2(
+                GRAVITY_STAGE_WIDTH / 2.0,
+                -GRAVITY_STAGE_HEIGHT / 2.0
+            ))
+            .into(),
         );
         // center left
         assert_eq!(
@@ -106,7 +116,7 @@ mod tests {
                 x: 0,
                 y: (GRAVITY_FIELD_HEIGHT as f32 / 2.0).round() as usize,
             },
-            ChangeOfBasis(Vec2::new(-STAGE_WIDTH / 2.0 + 0.001, 0.0)).into(),
+            ChangeOfBasis(vec2(-GRAVITY_STAGE_WIDTH / 2.0 + 0.001, 0.0)).into(),
         );
         // top center
         assert_eq!(
@@ -114,7 +124,7 @@ mod tests {
                 x: (GRAVITY_FIELD_WIDTH as f32 / 2.0).round() as usize,
                 y: 0,
             },
-            ChangeOfBasis(Vec2::new(0.0, STAGE_HEIGHT / 2.0 + 0.001)).into(),
+            ChangeOfBasis(vec2(0.0, GRAVITY_STAGE_HEIGHT / 2.0 + 0.001)).into(),
         );
         // center
         assert_eq!(
@@ -122,7 +132,7 @@ mod tests {
                 x: (GRAVITY_FIELD_WIDTH as f32 / 2.0).round() as usize,
                 y: (GRAVITY_FIELD_HEIGHT as f32 / 2.0).round() as usize,
             },
-            ChangeOfBasis(Vec2::new(0.0, 0.0)).into(),
+            ChangeOfBasis(vec2(0.0, 0.0)).into(),
         );
     }
 

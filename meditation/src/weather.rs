@@ -30,7 +30,7 @@ pub(crate) enum ActionEvent {
     },
     Jumped {
         /// How many jumps left.
-        jumps_left: u8,
+        jumps_left: usize,
     },
     FiredSpecial,
     Dipped,
@@ -46,9 +46,9 @@ pub(crate) enum ActionEvent {
 /// 4. spark effect is hidden by default and shown when special is fired
 /// 5. arrow is hidden by default and shown when weather is off screen
 pub(crate) fn spawn(
-    commands: &mut Commands,
-    asset_server: &Res<AssetServer>,
-    texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut commands: Commands,
 ) {
     //
     // 1.
@@ -75,7 +75,7 @@ pub(crate) fn spawn(
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/weather/body_atlas.png"),
-                    Vec2::new(BODY_WIDTH, BODY_HEIGHT),
+                    vec2(BODY_WIDTH, BODY_HEIGHT),
                     BODY_ATLAS_COLS,
                     BODY_ATLAS_ROWS,
                     Some(BODY_ATLAS_PADDING),
@@ -99,7 +99,7 @@ pub(crate) fn spawn(
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/weather/face_atlas.png"),
-                    Vec2::new(FACE_SPRITE_WIDTH, FACE_SPRITE_HEIGHT),
+                    vec2(FACE_SPRITE_WIDTH, FACE_SPRITE_HEIGHT),
                     FACE_ATLAS_COLS,
                     FACE_ATLAS_ROWS,
                     Some(FACE_ATLAS_PADDING),

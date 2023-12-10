@@ -13,6 +13,7 @@ pub enum AnimationEnd {
     /// Removes the animation timer.
     RemoveTimer,
     /// Can mutate state.
+    #[allow(clippy::type_complexity)]
     Custom(
         Box<
             dyn Fn(

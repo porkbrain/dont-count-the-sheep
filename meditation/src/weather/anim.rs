@@ -196,7 +196,7 @@ pub(crate) fn sprite_normal(
             match transition.current_body() {
                 sprite::BodyKind::SpearingTowards => {
                     let should_be_slowing_down = vel.y
-                        <BASIS_VELOCITY_ON_JUMP
+                        < VELOCITY_ON_JUMP[MAX_JUMPS - 1]
                         && transition.has_elapsed_since_body_change(
                            SHOW_SPEARING_BODY_TOWARDS_FOR,
                         );
@@ -210,7 +210,7 @@ pub(crate) fn sprite_normal(
                     let should_be_falling =
                         vel.y <=TERMINAL_VELOCITY + 5.0; // some tolerance
                     let should_be_spearing_towards = vel.y
-                        >=BASIS_VELOCITY_ON_JUMP
+                        >= VELOCITY_ON_JUMP[MAX_JUMPS - 1]
                         && transition.has_elapsed_since_body_change(
                            SHOW_SPEARING_BODY_TOWARDS_IF_NO_CHANGE_FOR,
                         );
@@ -320,7 +320,7 @@ pub(crate) fn rotate(
     let mut dangvel = angle_towards_up;
 
     // 0 or +-PI means movement straight up or down
-    let a = vel.normalize().angle_between(Vec2::new(0.0, 1.0));
+    let a = vel.normalize().angle_between(vec2(0.0, 1.0));
     if a.is_finite() {
         // if a positive ~ 0 => alpha is zero (no rot)
         // if a negative ~ 0 => alpha is zero
@@ -601,9 +601,9 @@ fn is_rotation_aligned_with_velocity(
 mod tests {
     use super::*;
 
-    const EXACTLY_LEFT: Vec2 = Vec2::new(-1.0, 0.0);
-    const EXACTLY_RIGHT: Vec2 = Vec2::new(1.0, 0.0);
-    const EXACTLY_DOWN: Vec2 = Vec2::new(0.0, -1.0);
+    const EXACTLY_LEFT: Vec2 = vec2(-1.0, 0.0);
+    const EXACTLY_RIGHT: Vec2 = vec2(1.0, 0.0);
+    const EXACTLY_DOWN: Vec2 = vec2(0.0, -1.0);
 
     #[test]
     fn it_is_aligned_if_rotation_exactly_matches_velocity_and_no_angvel() {

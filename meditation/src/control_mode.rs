@@ -5,7 +5,7 @@ use bevy::time::Stopwatch;
 pub(crate) struct Normal {
     /// weather has a limited number of jumps before it must reset
     /// via the [`Climate`]
-    pub(crate) jumps: u8,
+    pub(crate) jumps: usize,
     /// there's a minimum delay between jumps
     pub(crate) last_jump: Stopwatch,
     /// there's a minimum delay between dashes
@@ -27,7 +27,7 @@ pub(crate) struct LoadingSpecial {
     pub(crate) activated: Stopwatch,
     /// once special is fired, weather can only do the same amount of jumps
     /// as it had before
-    pub(crate) jumps: u8,
+    pub(crate) jumps: usize,
     /// if in god mode, then jumps and using special is reset once replenished
     pub(crate) god_mode: bool,
 }

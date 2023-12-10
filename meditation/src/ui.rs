@@ -26,7 +26,7 @@ mod consts {
     // They match the size of the menu box and were hand picked.
     //
 
-    pub(crate) const FIRST_SELECTION_FACE_OFFSET: Vec2 = Vec2::new(-80.0, 50.0);
+    pub(crate) const FIRST_SELECTION_FACE_OFFSET: Vec2 = vec2(-80.0, 50.0);
     pub(crate) const SELECTIONS_SPACING: f32 =
         crate::weather::consts::FACE_RENDERED_SIZE + 4.0;
 

@@ -70,7 +70,7 @@ fn spawn_shooting_star(
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                 asset_server.load("textures/bg/shootingstar_atlas.png"),
-                Vec2::new(SHOOTING_STAR_WIDTH, SHOOTING_STAR_HEIGHT),
+                vec2(SHOOTING_STAR_WIDTH, SHOOTING_STAR_HEIGHT),
                 SHOOTING_STAR_FRAMES,
                 1,
                 None,

@@ -1,5 +1,9 @@
-use bevy::time::Stopwatch;
+use bevy::{
+    math::cubic_splines::CubicCurve, sprite::MaterialMesh2dBundle,
+    time::Stopwatch,
+};
 use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
+use rand::{thread_rng, Rng};
 
 use crate::{
     gravity::{ChangeOfBasis, Gravity},
@@ -14,18 +18,29 @@ const DISTRACTION_HEIGHT: f32 = 50.0;
 const DISTRACTION_WIDTH: f32 = DISTRACTION_HEIGHT;
 const HITBOX_WIDTH: f32 = 50.0;
 const HITBOX_HEIGHT: f32 = HITBOX_WIDTH;
-const HITBOX_SIZE: Vec2 = Vec2::new(HITBOX_WIDTH, HITBOX_HEIGHT);
+const HITBOX_SIZE: Vec2 = vec2(HITBOX_WIDTH, HITBOX_HEIGHT);
 const HITBOX_DISTANCE_TO_DISTRACTION: f32 = 0.0;
 const DEFAULT_KICK: f32 = 5.0;
 
 #[derive(Component)]
 pub(crate) struct Distraction {
     level: Level,
+    curve: CubicCurve<Vec2>,
+}
+
+impl Distraction {
+    pub(crate) fn new(curve: CubicCurve<Vec2>) -> Self {
+        Self {
+            level: Level::One,
+            curve,
+        }
+    }
 }
 
 #[allow(dead_code)]
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Default, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Level {
+    #[default]
     One = 1,
     Two = 2,
     Three = 3,
@@ -40,53 +55,132 @@ pub(crate) struct DistractionDestroyedEvent {
 }
 
 pub(crate) fn spawn(
-    commands: &mut Commands,
-    asset_server: &Res<AssetServer>,
-    texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
 ) {
-    for i in 0..3 {
-        let parent = commands
-            .spawn((
-                Distraction { level: Level::One },
-                Velocity::new(Vec2::new(0.0, 0.0)),
-                SpriteSheetBundle {
-                    texture_atlas: texture_atlases.add(
-                        TextureAtlas::from_grid(
-                            asset_server
-                                .load("textures/distractions/frame.png"),
-                            Vec2::new(50.0, 50.0),
-                            5,
-                            1,
-                            None,
-                            None,
-                        ),
-                    ),
-                    sprite: TextureAtlasSprite {
-                        index: 1,
-                        ..default()
-                    },
-                    transform: Transform::from_translation(Vec3::new(
-                        100.0 - i as f32 * 100.0,
-                        0.0,
-                        0.0,
-                    )),
+    let factor = 4.0;
+
+    // t = top
+    // b = bottom
+    // r = right
+    // l = ?
+
+    let l_control2 = vec2(-55.0, 23.0) * factor;
+    let t_l = vec2(-64.0, 36.0) * factor;
+    let t_control1 = vec2(-24.0, 25.0) * factor;
+
+    let t_control2 = vec2(24.0, 42.0) * factor;
+    let t_r = vec2(64.0, 36.0) * factor;
+    let r_spiral_in_control1 = vec2(70.0, 16.0) * factor;
+
+    let r_spiral_in_control2 = vec2(54.0, 6.0) * factor;
+    let r_spiral_in = vec2(45.0, 12.0) * factor;
+    let r_spiral_out_control1 = vec2(56.0, 24.0) * factor;
+
+    let r_spiral_out_control2 = vec2(68.0, 0.0) * factor;
+    let r_spiral_out = vec2(64.0, -12.0) * factor;
+    let r_control1 = vec2(54.0, -20.0) * factor;
+
+    let r_control2 = vec2(72.0, -28.0) * factor;
+    let b_r = vec2(64.0, -36.0) * factor;
+    let b_control1 = vec2(24.0, -40.0) * factor;
+
+    let b_control2 = vec2(-36.0, -40.0) * factor;
+    let b_l = vec2(-64.0, -36.0) * factor;
+    let l_control1 = vec2(-68.0, -20.0) * factor;
+
+    #[cfg(feature = "dev")]
+    {
+        // draw visualization for the curve
+
+        for (pos, color) in [
+            (l_control2, Color::SILVER),
+            (t_l, Color::BLACK),
+            (t_control1, Color::GREEN),
+            (t_control2, Color::BLUE),
+            (t_r, Color::BLACK),
+            (r_spiral_in_control1, Color::AQUAMARINE),
+            (r_spiral_in_control2, Color::GREEN),
+            (r_spiral_in, Color::DARK_GREEN),
+            (r_spiral_out_control1, Color::YELLOW),
+            (r_spiral_out_control2, Color::ORANGE),
+            (r_spiral_out, Color::RED),
+            (r_control1, Color::SILVER),
+            (r_control2, Color::GOLD),
+            (b_r, Color::BLACK),
+            (b_control1, Color::GREEN),
+            (b_control2, Color::BLUE),
+            (b_l, Color::BLACK),
+            (l_control1, Color::GOLD),
+        ] {
+            // draw a small circle
+
+            commands.spawn(MaterialMesh2dBundle {
+                mesh: meshes.add(shape::Circle::new(2.).into()).into(),
+                material: materials.add(ColorMaterial::from(color)),
+                transform: Transform::from_translation(pos.extend(0.0)),
+                ..default()
+            });
+        }
+    }
+
+    let parent = commands
+        .spawn((
+            Distraction::new(
+                CubicBezier::new(vec![
+                    [t_l, t_control1, t_control2, t_r],
+                    [
+                        t_r,
+                        r_spiral_in_control1,
+                        r_spiral_in_control2,
+                        r_spiral_in,
+                    ],
+                    [
+                        r_spiral_in,
+                        r_spiral_out_control1,
+                        r_spiral_out_control2,
+                        r_spiral_out,
+                    ],
+                    [r_spiral_out, r_control1, r_control2, b_r],
+                    [b_r, b_control1, b_control2, b_l],
+                    [b_l, l_control1, l_control2, t_l],
+                ])
+                .to_curve(),
+            ),
+            SpriteSheetBundle {
+                texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                    asset_server.load("textures/distractions/frame.png"),
+                    vec2(50.0, 50.0),
+                    5,
+                    1,
+                    None,
+                    None,
+                )),
+                sprite: TextureAtlasSprite {
+                    index: 1,
                     ..default()
                 },
-            ))
-            .id();
-
-        let child = commands
-            .spawn((bevy_webp_anim::WebpBundle {
-                animation: asset_server
-                    .load("textures/distractions/videos/1.webp"),
-                frame_rate: bevy_webp_anim::FrameRate::new(2),
-                sprite: Sprite { ..default() },
+                transform: Transform::from_translation(Vec3::new(
+                    0.0, 0.0, 0.0,
+                )),
                 ..default()
-            },))
-            .id();
+            },
+        ))
+        .id();
 
-        commands.entity(parent).add_child(child);
-    }
+    let child = commands
+        .spawn((bevy_webp_anim::WebpBundle {
+            animation: asset_server.load("textures/distractions/videos/1.webp"),
+            frame_rate: bevy_webp_anim::FrameRate::new(2),
+            sprite: Sprite { ..default() },
+            ..default()
+        },))
+        .id();
+
+    commands.entity(parent).add_child(child);
 }
 
 pub(crate) fn react_to_weather(
@@ -148,7 +242,7 @@ pub(crate) fn react_to_weather(
         // 1.
         //
         let box_above_center = translation
-            + Vec2::new(
+            + vec2(
                 0.0,
                 DISTRACTION_HEIGHT / 2.0 + HITBOX_DISTANCE_TO_DISTRACTION,
             );
@@ -161,7 +255,7 @@ pub(crate) fn react_to_weather(
             // 2.
             //
             let box_below_center = translation
-                + Vec2::new(
+                + vec2(
                     0.0,
                     -DISTRACTION_HEIGHT / 2.0 - HITBOX_DISTANCE_TO_DISTRACTION,
                 );
@@ -177,7 +271,7 @@ pub(crate) fn react_to_weather(
         // 3.
         //
         let box_left_center = translation
-            + Vec2::new(
+            + vec2(
                 -DISTRACTION_WIDTH / 2.0 - HITBOX_DISTANCE_TO_DISTRACTION,
                 0.0,
             );
@@ -190,7 +284,7 @@ pub(crate) fn react_to_weather(
             // 4.
             //
             let box_right_center = translation
-                + Vec2::new(
+                + vec2(
                     DISTRACTION_WIDTH / 2.0 + HITBOX_DISTANCE_TO_DISTRACTION,
                     0.0,
                 );
@@ -242,7 +336,7 @@ pub(crate) fn destroyed(
                         TextureAtlas::from_grid(
                             asset_server
                                 .load("textures/distractions/blackhole.png"),
-                            Vec2::new(100.0, 100.0), // TODO
+                            vec2(100.0, 100.0), // TODO
                             5,
                             1,
                             None,
@@ -266,9 +360,10 @@ pub(crate) fn destroyed(
                         BLACKHOLE_FLICKER_DURATION,
                     ),
                     SpriteBundle {
-                        texture: asset_server.load(format!(
+                        texture: asset_server.load(
                             "textures/distractions/blackhole_flicker.png"
-                        )),
+                                .to_string(),
+                        ),
                         transform: Transform::from_translation(Vec3::new(
                             0.0,
                             0.0,
@@ -278,6 +373,58 @@ pub(crate) fn destroyed(
                     },
                 ));
             });
+    }
+}
+
+//TODO: assert len
+const SEGMENT_TIMING: [f32; 6] = {
+    let f = 5.0;
+    [1.0 * f, 1.4 * f, 1.7 * f, 2.0 * f, 3.0 * f, 3.5 * f]
+};
+const TOTAL_PATH_TIME: f32 = SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
+
+/// Distractions follow an infinite loop curve in shape of the infinity symbol.
+pub(crate) fn follow_curve(
+    mut distraction: Query<(&mut Distraction, &mut Transform)>,
+    time: Res<Time>,
+) {
+    // total path time, as path repeats once all segments have been traversed
+    let total_t = time.elapsed_seconds() % TOTAL_PATH_TIME;
+
+    // now calculate how much of the current segment has been traversed by
+    // 1. finding the current segment
+    // 2. finding finding how much is left
+    // 3. finding the length of the current segment
+    // 4. dividing 2. by 3. to get the percentage of the segment that has been
+    // traversed
+
+    // 1.
+    let (seg_index, seg_ends_at) = SEGMENT_TIMING
+        .iter()
+        .enumerate()
+        .find(|(_, seg_t)| total_t < **seg_t)
+        .map(|(i, seg_t)| (i, *seg_t))
+        .unwrap_or((
+            SEGMENT_TIMING.len() - 1,
+            SEGMENT_TIMING[SEGMENT_TIMING.len() - 1],
+        ));
+    // 2.
+    let seg_remaining = seg_ends_at - total_t;
+    // 3.
+    let seg_length = if seg_index == 0 {
+        SEGMENT_TIMING[0]
+    } else {
+        SEGMENT_TIMING[seg_index] - SEGMENT_TIMING[seg_index - 1]
+    };
+    // 4.
+    let seg_t = 1.0 - (seg_remaining / seg_length);
+
+    for (mut distraction, mut transform) in distraction.iter_mut() {
+        let z = transform.translation.z;
+
+        transform.translation = distraction.curve.segments()[seg_index]
+            .position(seg_t)
+            .extend(z);
     }
 }
 

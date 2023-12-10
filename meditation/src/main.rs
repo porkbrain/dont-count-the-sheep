@@ -17,11 +17,16 @@ mod weather;
 mod zindex;
 
 mod consts {
+    /// What's shown on screen.
     pub(crate) const VISIBLE_WIDTH: f32 = 640.0;
+    /// What's shown on screen.
     pub(crate) const VISIBLE_HEIGHT: f32 = 360.0;
 
-    pub(crate) const STAGE_WIDTH: f32 = VISIBLE_WIDTH * 1.25;
-    pub(crate) const STAGE_HEIGHT: f32 = VISIBLE_HEIGHT * 1.25;
+    /// The stage is bigger than what's shown on screen.
+    pub(crate) const GRAVITY_STAGE_WIDTH: f32 = VISIBLE_WIDTH * 1.25;
+
+    /// The stage is bigger than what's shown on screen.
+    pub(crate) const GRAVITY_STAGE_HEIGHT: f32 = VISIBLE_HEIGHT * 1.25;
 
     pub(crate) const PIXEL_ZOOM: f32 = 3.0;
 }
@@ -65,13 +70,22 @@ fn main() {
     .insert_resource(gravity::field())
     .add_event::<weather::ActionEvent>()
     .add_event::<distractions::DistractionDestroyedEvent>()
-    .add_systems(Startup, (setup, background::spawn))
+    .add_systems(
+        Startup,
+        (
+            setup,
+            background::spawn,
+            distractions::spawn,
+            weather::spawn,
+        ),
+    )
     .add_systems(FixedUpdate, weather::anim::rotate)
     .add_systems(
         Update,
         (
             weather::arrow::point_arrow,
             weather::anim::sprite_loading_special,
+            distractions::follow_curve,
         ),
     )
     .add_systems(
@@ -100,18 +114,11 @@ fn main() {
     app.run();
 }
 
-fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-) {
+fn setup(mut commands: Commands) {
     commands.spawn((
         Camera2dBundle::default(),
         weather::anim::CameraState::default(),
         PixelZoom::Fixed(consts::PIXEL_ZOOM as i32),
         PixelViewport,
     ));
-
-    weather::spawn(&mut commands, &asset_server, &mut texture_atlases);
-    distractions::spawn(&mut commands, &asset_server, &mut texture_atlases);
 }

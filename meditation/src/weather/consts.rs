@@ -7,27 +7,37 @@ pub(crate) const DEFAULT_TRANSFORM: Transform = Transform {
 };
 
 /// Cannot jump more times in a row than this before resetting
-pub(crate) const MAX_JUMPS: u8 = 4;
+pub(crate) const MAX_JUMPS: usize = 4;
 
 /// How fast does weather rotate towards its velocity vector
 pub(crate) const ROTATION_SPEED: f32 = 2.0;
 
 pub(crate) use physics::*;
 mod physics {
+    /// How much does gravity affect weather.
+    /// The gravity gradient comes from a poisson equation.
+    /// We use a default stage gradient from 0.0 at the top to 1.0 at the
+    /// bottom. This is multiplied by this constant to achieve the desired
+    /// effect.
+    pub(crate) const GRAVITY_MULTIPLIER: f32 = 8000.0;
+
     /// Caps gravity effect.
-    /// If weather is falling faster than this it slows down
+    /// If weather is falling faster than this it slows down.
     pub(crate) const TERMINAL_VELOCITY: f32 = -108.0;
+    /// How fast does weather go from dip to terminal velocity.
+    pub(crate) const SLOWDOWN_TO_TERMINAL_VELOCITY_FACTOR: f32 = 0.5;
 
     /// When left/right is pressed while up/down then weather gets an extra kick
     pub(crate) const HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP: f32 = 64.0;
     /// When down is pressed, weather's vertical velocity is set to this value
-    pub(crate) const VERTICAL_VELOCITY_ON_DIP: f32 = -150.0;
+    pub(crate) const VERTICAL_VELOCITY_ON_DIP: f32 = -216.0;
     /// When left/right is pressed, weather gets an extra kick
     pub(crate) const DASH_VELOCITY_BOOST: f32 = 64.0;
     /// The jump function uses this to calculate the jump strength
-    pub(crate) const BASIS_VELOCITY_ON_JUMP: f32 = 108.0;
+    pub(crate) const VELOCITY_ON_JUMP: [f32; super::MAX_JUMPS] =
+        [150.0, 140.0, 130.0, 120.0];
     /// When special is fired weather gets an extra kick in the chosen direction
-    pub(crate) const VELOCITY_BOOST_ON_SPECIAL: f32 = 350.0;
+    pub(crate) const VELOCITY_BOOST_ON_SPECIAL: f32 = 256.0;
 }
 
 pub(crate) use timings_of_actions::*;
@@ -81,7 +91,7 @@ mod body_and_face_sprite_sizes {
     pub(crate) const BODY_ATLAS_ROWS: usize = 10;
     pub(crate) const BODY_ATLAS_COLS: usize = 10;
     /// We use padding because some sprites had artifacts from their neighbours.
-    pub(crate) const BODY_ATLAS_PADDING: Vec2 = Vec2::new(3.0, 3.0);
+    pub(crate) const BODY_ATLAS_PADDING: Vec2 = vec2(3.0, 3.0);
     pub(crate) const BODY_WIDTH: f32 = 35.0;
     pub(crate) const BODY_HEIGHT: f32 = 35.0;
 

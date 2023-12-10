@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy::prelude::*;
+use bevy::{math::vec2, prelude::*};
 
 #[derive(Event)]
 pub struct PoissonsEquationUpdateEvent<T> {
@@ -38,6 +38,8 @@ pub(crate) enum GridPoint {
     Source(f32),
 }
 
+/// It's your responsibility to make sure that the coordinates are within
+/// the field.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct GridCoords {
     pub x: usize,
@@ -140,7 +142,7 @@ impl<T> PoissonsEquation<T> {
             // as if the last value continued on forever
             .unwrap_or_else(|| self.grid[y - 1][x].inner() - at);
 
-        Vec2::new(gradient_x, gradient_y)
+        vec2(gradient_x, gradient_y)
     }
 
     pub(crate) fn set(&mut self, coords: GridCoords, value: f32) {
@@ -148,10 +150,10 @@ impl<T> PoissonsEquation<T> {
 
         match self.grid[y][x] {
             GridPoint::Average(_) => {
-                *&mut self.grid[y][x] = GridPoint::Source(value);
+                self.grid[y][x] = GridPoint::Source(value);
             }
             GridPoint::Source(existing) => {
-                *&mut self.grid[y][x] = GridPoint::Source(existing + value);
+                self.grid[y][x] = GridPoint::Source(existing + value);
             }
         }
     }
