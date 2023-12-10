@@ -6,3 +6,8 @@ edition.workspace = true
 [dependencies]
 bevy.workspace = true
 rand.workspace = true
+
+[features]
+default = ["fps"]
+
+fps = []

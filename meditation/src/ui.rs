@@ -1,10 +1,9 @@
-//! The UI comprises menu, score text and FPS counter (toggle with F12).
+//! The UI comprises menu and score text.
 //!
 //! TODO:
 //! - face is rendered behind menu box
 //! - proper reset of the game
 
-mod fps;
 mod menu;
 mod score;
 
@@ -36,7 +35,6 @@ mod consts {
     pub(crate) const SELECTIONS_PADDING_TOP: Val = Val::Px(12.0);
 }
 
-use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 pub(crate) use menu::Selection;
 pub(crate) use score::Score;
 
@@ -46,9 +44,8 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(FrameTimeDiagnosticsPlugin)
-            .add_systems(Startup, (score::spawn, menu::spawn, fps::spawn))
-            .add_systems(Update, (score::update, fps::update, fps::toggle))
+        app.add_systems(Startup, (score::spawn, menu::spawn))
+            .add_systems(Update, score::update)
             // order important bcs we simulate ESC to close
             .add_systems(
                 Update,

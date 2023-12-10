@@ -3,7 +3,6 @@ use bevy::{
     time::Stopwatch,
 };
 use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
-use rand::{thread_rng, Rng};
 
 use crate::{
     gravity::{ChangeOfBasis, Gravity},
