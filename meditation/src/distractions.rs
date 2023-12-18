@@ -38,14 +38,18 @@ const ROTATION_STOP_IN_SECS: f32 = 15.0;
 #[derive(Component)]
 pub(crate) struct Distraction {
     level: Level,
+    current_path_since: Stopwatch,
     path: LevelPath,
+    transition_into: Option<LevelPath>,
 }
 
 impl Distraction {
-    pub(crate) fn new(path: LevelPath) -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             level: Level::One,
-            path,
+            path: LevelPath::random_intro(),
+            current_path_since: Stopwatch::new(),
+            transition_into: None,
         }
     }
 }
@@ -74,7 +78,7 @@ pub(crate) fn spawn(
 ) {
     commands
         .spawn((
-            Distraction::new(LevelPath::broadest_a()),
+            Distraction::new(),
             AngularVelocity::default(),
             SpatialBundle::default(),
         ))
@@ -111,13 +115,29 @@ pub(crate) fn spawn(
 
 /// Distractions follow an infinite loop curve in shape of the infinity symbol.
 pub(crate) fn follow_curve(
-    mut distraction: Query<(&Distraction, &mut Transform)>,
+    mut distraction: Query<(&mut Distraction, &mut Transform)>,
     time: Res<Time>,
 ) {
-    for (distraction, mut transform) in distraction.iter_mut() {
-        let z = transform.translation.z;
+    for (mut distraction, mut transform) in distraction.iter_mut() {
+        distraction.current_path_since.tick(time.delta());
 
-        let (seg_index, seg_t) = distraction.path.segment(&time);
+        let z = transform.translation.z;
+        let (seg_index, seg_t) = distraction.path_segment();
+
+        let at_least_one_lap = distraction.laps() > 0;
+        let at_lap_beginning = seg_index == 0 && seg_t < 2. / 60.;
+        let ready_to_transition = distraction.transition_into.is_some();
+
+        if at_lap_beginning && at_least_one_lap && ready_to_transition {
+            distraction.current_path_since.reset();
+            distraction.path = distraction.transition_into.take().unwrap();
+        } else if !ready_to_transition {
+            // roll a dice to see if distraction levels up
+            let should_level_up = rand::random::<f32>() < 0.8; // TODO
+            distraction.transition_into =
+                Some(distraction.path.transition_into(should_level_up));
+        }
+
         let seg = &distraction.path.segments()[seg_index];
 
         transform.translation = seg.position(seg_t).extend(z);
@@ -164,7 +184,6 @@ pub(crate) fn react_to_weather(
         (Entity, &Distraction, &Transform, &mut AngularVelocity),
         Without<Weather>,
     >,
-    time: Res<Time>,
     mut commands: Commands,
 ) {
     let Some(action) = weather_actions.read().last() else {
@@ -208,7 +227,7 @@ pub(crate) fn react_to_weather(
             _ => {}
         };
 
-        let (seg_index, seg_t) = distraction.path.segment(&time);
+        let (seg_index, seg_t) = distraction.path_segment();
         let seg = &distraction.path.segments()[seg_index];
         let vel = seg.velocity(seg_t);
 
@@ -331,5 +350,16 @@ impl Level {
             Self::Four => 32,  // stronger but no bonus
             Self::Five => 1,   // sucks to be you
         }
+    }
+}
+
+impl Distraction {
+    fn path_segment(&self) -> (usize, f32) {
+        self.path.segment(&self.current_path_since.elapsed())
+    }
+
+    fn laps(&self) -> usize {
+        (self.current_path_since.elapsed_secs() / self.path.total_path_time())
+            as usize
     }
 }

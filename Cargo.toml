@@ -10,6 +10,7 @@ bevy = "0.12"
 bevy_pixel_camera = "0.12"
 crossbeam-channel = "0.5"
 image = "0.24"
+lazy_static = "1.4"
 rand = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"

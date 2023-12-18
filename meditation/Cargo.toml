@@ -9,6 +9,7 @@ bevy-webp-anim = { path = "../bevy-webp-anim" }
 bevy.workspace = true
 common-physics = { path = "../common/physics" }
 common-visuals = { path = "../common/visuals" }
+lazy_static.workspace = true
 rand.workspace = true
 
 [features]
