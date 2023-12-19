@@ -7,6 +7,7 @@ members = ["meditation", "bevy-webp-anim", "common/physics", "common/visuals"]
 
 [workspace.dependencies]
 bevy = "0.12"
+bevy_magic_light_2d = { git = "https://github.com/zaycev/bevy-magic-light-2d.git" }
 bevy_pixel_camera = "0.12"
 crossbeam-channel = "0.5"
 image = "0.24"

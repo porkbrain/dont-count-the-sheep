@@ -8,9 +8,11 @@
 #![allow(clippy::type_complexity)]
 
 mod background;
+mod climate;
 mod control_mode;
 mod distractions;
 mod gravity;
+mod path;
 mod prelude;
 mod ui;
 mod weather;
@@ -31,7 +33,11 @@ mod consts {
     pub(crate) const PIXEL_ZOOM: f32 = 3.0;
 }
 
-use bevy::window::WindowTheme;
+use bevy::{render::camera::RenderTarget, window::WindowTheme};
+use bevy_magic_light_2d::{
+    gi::{compositing::CameraTargets, BevyMagicLight2DPlugin},
+    FloorCamera, ObjectsCamera, WallsCamera,
+};
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
 
@@ -60,11 +66,13 @@ fn main() {
             }),
     )
     .add_plugins((
+        BevyMagicLight2DPlugin,
         PixelCameraPlugin,
         bevy_webp_anim::Plugin,
         common_physics::Plugin,
         common_visuals::Plugin,
         ui::Plugin,
+        climate::Plugin,
     ))
     .insert_resource(ClearColor(Color::hex(background::COLOR).unwrap()))
     .insert_resource(gravity::field())
@@ -101,13 +109,14 @@ fn main() {
             distractions::destroyed,
         )
             .chain(),
-    )
-    .add_systems(
-        Last,
-        (
-            distractions::visualize_path, // TODO
-        ),
     );
+    // TODO: dev feature
+    // .add_systems(
+    //     Last,
+    //     (
+    //         path::visualize,
+    //     )
+    // );
 
     common_physics::poissons_equation::register::<gravity::Gravity>(&mut app);
     #[cfg(feature = "dev")]
@@ -120,11 +129,37 @@ fn main() {
     app.run();
 }
 
-fn setup(mut commands: Commands) {
-    commands.spawn((
-        Camera2dBundle::default(),
-        weather::anim::CameraState::default(),
-        PixelZoom::Fixed(consts::PIXEL_ZOOM as i32),
-        PixelViewport,
-    ));
+fn setup(mut commands: Commands, camera_targets: Res<CameraTargets>) {
+    let zoom = PixelZoom::Fixed(consts::PIXEL_ZOOM as i32);
+
+    commands
+        .spawn(Name::new("camera_main"))
+        .insert(Camera2dBundle::default())
+        .insert(zoom.clone())
+        .insert(PixelViewport)
+        .insert(RenderLayers::layer(3)); // TODO
+
+    commands
+        .spawn(Name::new("camera_light"))
+        .insert(Camera2dBundle {
+            camera: Camera {
+                hdr: true,
+                target: RenderTarget::Image(
+                    camera_targets.objects_target.clone(),
+                ),
+                ..default()
+            },
+            projection: OrthographicProjection {
+                near: -2000.0,
+                ..default()
+            },
+            ..default()
+        })
+        .insert(zoom.clone())
+        .insert(PixelViewport)
+        .insert(ObjectsCamera)
+        .insert(WallsCamera)
+        .insert(FloorCamera)
+        .insert(RenderLayers::layer(0)) // TODO
+        .insert(UiCameraConfig { show_ui: false });
 }

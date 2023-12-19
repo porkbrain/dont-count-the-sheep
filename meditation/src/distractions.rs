@@ -1,7 +1,3 @@
-mod path;
-
-pub(crate) use path::visualize as visualize_path;
-
 use std::f32::consts::PI;
 
 use bevy::time::Stopwatch;
@@ -13,7 +9,7 @@ use crate::{
     weather::{self, Weather},
 };
 
-use self::path::LevelPath;
+use crate::path::LevelPath;
 
 const BLACKHOLE_FLICKER_CHANCE_PER_SECOND: f32 = 0.5;
 const BLACKHOLE_FLICKER_DURATION: Duration = Duration::from_millis(100);
@@ -54,6 +50,7 @@ impl Distraction {
     }
 }
 
+// TODO: score perhaps a distance to the center of the screen
 #[allow(dead_code)]
 #[derive(Default, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Level {
@@ -93,7 +90,7 @@ pub(crate) fn spawn(
                     None,
                 )),
                 sprite: TextureAtlasSprite {
-                    index: 1,
+                    index: 1, // TODO: random
                     ..default()
                 },
                 // above the video
@@ -103,6 +100,7 @@ pub(crate) fn spawn(
                 ..default()
             });
 
+            // TODO: vary videos
             parent.spawn(bevy_webp_anim::WebpBundle {
                 animation: asset_server
                     .load("textures/distractions/videos/1.webp"),
@@ -110,10 +108,12 @@ pub(crate) fn spawn(
                 sprite: Sprite { ..default() },
                 ..default()
             });
+
+            // TODO: sound
         });
 }
 
-/// Distractions follow an infinite loop curve in shape of the infinity symbol.
+/// TODO: dedup with climate
 pub(crate) fn follow_curve(
     mut distraction: Query<(&mut Distraction, &mut Transform)>,
     time: Res<Time>,
@@ -145,6 +145,8 @@ pub(crate) fn follow_curve(
 }
 
 /// The angular velocity of distractions is reduced every second.
+///
+/// TODO: if rotating fast exit the stage
 pub(crate) fn rotate(
     mut distractions: Query<
         (&mut AngularVelocity, &mut Transform),
@@ -173,6 +175,8 @@ pub(crate) fn rotate(
 /// Otherwise, if weather is still close and moves in line with the distraction
 /// (velocities are aligned or ~ opposite), then the distraction angular
 /// velocity is increased.
+///
+/// TODO: this needs calibration
 pub(crate) fn react_to_weather(
     mut score: EventWriter<DistractionDestroyedEvent>,
     mut weather_actions: EventReader<weather::ActionEvent>,

@@ -45,6 +45,7 @@ pub(crate) enum ActionEvent {
 /// 3. face sprite, child of parent
 /// 4. spark effect is hidden by default and shown when special is fired
 /// 5. arrow is hidden by default and shown when weather is off screen
+/// 6. setup camera state which is affected by going into special
 pub(crate) fn spawn(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
@@ -65,6 +66,7 @@ pub(crate) fn spawn(
                 ..default()
             },
         ))
+        .insert(RenderLayers::layer(3))
         .id();
     //
     // 2.
@@ -166,4 +168,8 @@ pub(crate) fn spawn(
             ..default()
         },
     ));
+    //
+    // 6.
+    //
+    commands.spawn(anim::CameraState::default());
 }

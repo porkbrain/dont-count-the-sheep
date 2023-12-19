@@ -1,4 +1,8 @@
-//! The background of the game comprises of a starry sky and a shooting star.
+//! The background of the game comprises a starry sky and a shooting star.
+//!
+//! TODO: illuminate stars
+
+use bevy_magic_light_2d::gi::types::SkylightLight2D;
 
 use crate::prelude::*;
 
@@ -19,6 +23,14 @@ pub(crate) fn spawn(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
+    // default lighting otherwise we'd have darkness everywhere
+    commands
+        .spawn((SkylightLight2D {
+            color: Color::hex(COLOR).unwrap(),
+            intensity: 1.00,
+        },))
+        .insert(RenderLayers::layer(4)); // TODO
+
     commands.spawn((SpriteBundle {
         texture: asset_server.load("textures/bg/default.png"),
         transform: Transform::from_translation(Vec3::new(

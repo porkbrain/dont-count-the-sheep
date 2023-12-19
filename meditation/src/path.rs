@@ -1,4 +1,4 @@
-//! Contains Bezier curve points for the various paths distractions can take.
+//! Contains Bezier curve points for the various paths objects can take.
 //!
 //! ```text
 //! t = top
@@ -28,6 +28,7 @@ pub(crate) enum LevelPath {
     FromLvl1AToLvl2,
     // TODO: from lvl2a to lvl2
     Lvl2A,
+    InfinitySign,
 }
 
 impl LevelPath {
@@ -55,6 +56,7 @@ impl LevelPath {
                 Lvl2A
             }
             Lvl2A => Lvl2A,
+            InfinitySign => unreachable!("cannot be promoted"),
         }
     }
 
@@ -66,6 +68,7 @@ impl LevelPath {
             Lvl1B => &lvl1_b::CURVE,
             FromLvl1AToLvl2 => &from_lvl1a_to_lvl2::CURVE,
             Lvl2A => &lvl2_a::CURVE,
+            InfinitySign => &infinity_sign::CURVE,
         }
     }
 
@@ -81,6 +84,7 @@ impl LevelPath {
             Lvl1B => &lvl1_b::SEGMENT_TIMING,
             FromLvl1AToLvl2 => &from_lvl1a_to_lvl2::SEGMENT_TIMING,
             Lvl2A => &lvl2_a::SEGMENT_TIMING,
+            InfinitySign => &infinity_sign::SEGMENT_TIMING,
         }
     }
 
@@ -92,6 +96,7 @@ impl LevelPath {
             Lvl1B => lvl1_b::TOTAL_PATH_TIME,
             FromLvl1AToLvl2 => from_lvl1a_to_lvl2::TOTAL_PATH_TIME,
             Lvl2A => lvl2_a::TOTAL_PATH_TIME,
+            InfinitySign => infinity_sign::TOTAL_PATH_TIME,
         }
     }
 
@@ -139,6 +144,7 @@ mod intro_a {
     use super::*;
 
     pub(super) const SEGMENT_TIMING: [f32; 1] = [10.0];
+
     pub(super) const TOTAL_PATH_TIME: f32 =
         SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
 
@@ -165,6 +171,7 @@ mod intro_b {
     use super::*;
 
     pub(super) const SEGMENT_TIMING: [f32; 1] = [10.0];
+
     pub(super) const TOTAL_PATH_TIME: f32 =
         SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
 
@@ -194,6 +201,7 @@ mod lvl1_a {
         let f = 7.0;
         [1.1 * f, 1.5 * f, 1.9 * f, 2.2 * f, 3.4 * f, 4.0 * f]
     };
+
     pub(super) const TOTAL_PATH_TIME: f32 =
         SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
 
@@ -255,6 +263,7 @@ mod lvl1_b {
         let f = 7.0;
         [1.3 * f, 1.75 * f, 2.3 * f, 3.4 * f, 4.0 * f]
     };
+
     pub(super) const TOTAL_PATH_TIME: f32 =
         SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
 
@@ -305,6 +314,7 @@ mod from_lvl1a_to_lvl2 {
         let f = 2.0;
         [1.0 * f, 2.0 * f]
     };
+
     pub(super) const TOTAL_PATH_TIME: f32 =
         SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
 
@@ -342,6 +352,7 @@ mod lvl2_a {
         let f = 5.0;
         [1.0 * f, 2.0 * f, 3.0 * f, 4.0 * f]
     };
+
     pub(super) const TOTAL_PATH_TIME: f32 =
         SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
 
@@ -379,6 +390,53 @@ mod lvl2_a {
     }
 }
 
+mod infinity_sign {
+    use lazy_static::lazy_static;
+
+    use super::*;
+
+    pub(super) const SEGMENT_TIMING: [f32; 4] = {
+        let f = 5.0;
+        [1.0 * f, 2.0 * f, 3.0 * f, 4.0 * f]
+    };
+
+    pub(super) const TOTAL_PATH_TIME: f32 =
+        SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
+
+    lazy_static! {
+        pub(super) static ref CURVE: CubicCurve<Vec2> = curve();
+    }
+
+    fn curve() -> CubicCurve<Vec2> {
+        let l = vec2(-18.0, 0.0) * F;
+        let l_there_control1 = vec2(-16.0, -15.0) * F;
+
+        let l_there_control2 = vec2(-6.0, -8.0) * F;
+        let c = vec2(0.0, 0.0) * F;
+        let r_there_control1 = vec2(6.0, 8.0) * F;
+
+        let r_there_control2 = vec2(16.0, 15.0) * F;
+        let r = vec2(18.0, 0.0) * F;
+
+        let r_back_control1 = vec2(16.0, -15.0) * F;
+        let r_back_control2 = vec2(8.0, -8.0) * F;
+
+        let l_back_control1 = vec2(-8.0, 8.0) * F;
+        let l_back_control2 = vec2(-16.0, 15.0) * F;
+
+        let path = vec![
+            [l, l_there_control1, l_there_control2, c],
+            [c, r_there_control1, r_there_control2, r],
+            [r, r_back_control1, r_back_control2, c],
+            [c, l_back_control1, l_back_control2, l],
+        ];
+        debug_assert_eq!(path.len(), SEGMENT_TIMING.len());
+
+        CubicBezier::new(path).to_curve()
+    }
+}
+
+// TODO: dev feature
 pub(crate) fn visualize(mut gizmos: Gizmos) {
     gizmos.linestrip(
         lvl1_a::CURVE.iter_positions(100).map(|p| p.extend(0.0)),
@@ -400,5 +458,12 @@ pub(crate) fn visualize(mut gizmos: Gizmos) {
     gizmos.linestrip(
         lvl2_a::CURVE.iter_positions(100).map(|p| p.extend(0.0)),
         Color::SALMON,
+    );
+
+    gizmos.linestrip(
+        infinity_sign::CURVE
+            .iter_positions(100)
+            .map(|p| p.extend(0.0)),
+        Color::GOLD,
     );
 }

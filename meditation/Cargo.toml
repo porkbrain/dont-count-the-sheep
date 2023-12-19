@@ -11,6 +11,7 @@ common-physics = { path = "../common/physics" }
 common-visuals = { path = "../common/visuals" }
 lazy_static.workspace = true
 rand.workspace = true
+bevy_magic_light_2d.workspace = true
 
 [features]
 dev = ["common-physics/poissons-eq-visualization"]

@@ -1,6 +1,7 @@
 pub(crate) use crate::zindex;
 pub(crate) use bevy::math::vec2;
 pub(crate) use bevy::prelude::*;
+pub(crate) use bevy::render::view::RenderLayers;
 use bevy::time::Stopwatch;
 pub(crate) use common_physics::{
     AngularVelocity, MotionDirection, Radians, Velocity,

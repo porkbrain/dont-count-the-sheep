@@ -354,29 +354,23 @@ pub(crate) fn rotate(
 
 /// Zooms in on weather and makes it glow when special is being loaded,
 /// then resets to initial state.
+///
+/// We need to do this for each camera.
 pub(crate) fn update_camera_on_special(
     mut action: EventReader<ActionEvent>,
-    mut camera: Query<(
+    mut state: Query<&mut CameraState>,
+    mut cameras: Query<(
         Entity,
         &mut Camera,
         &mut Transform,
         &mut OrthographicProjection,
-        &mut CameraState,
         &mut Tonemapping,
         Option<&mut BloomSettings>,
     )>,
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    let (
-        entity,
-        mut camera,
-        mut transform,
-        mut projection,
-        mut state,
-        mut tonemapping,
-        settings,
-    ) = camera.single_mut();
+    let mut state = state.single_mut();
 
     let just_started_loading_from_translation = action
         .read()
@@ -395,19 +389,21 @@ pub(crate) fn update_camera_on_special(
             look_at,
         };
 
-        camera.hdr = true;
-        *tonemapping = Tonemapping::TonyMcMapface;
-        commands.entity(entity).insert(BloomSettings {
-            intensity: INITIAL_BLOOM_INTENSITY,
-            low_frequency_boost: INITIAL_BLOOM_LFB,
-            ..default()
-        });
+        for (entity, mut camera, _, _, mut tonemapping, _) in cameras.iter_mut()
+        {
+            camera.hdr = true;
+            *tonemapping = Tonemapping::TonyMcMapface;
+            commands.entity(entity).insert(BloomSettings {
+                intensity: INITIAL_BLOOM_INTENSITY,
+                low_frequency_boost: INITIAL_BLOOM_LFB,
+                ..default()
+            });
+        }
 
         return;
     }
 
     let CameraState::EffectOnSpecial { fired, look_at } = &mut *state else {
-        debug_assert!(settings.is_none());
         return;
     };
     fired.tick(time.delta());
@@ -421,13 +417,23 @@ pub(crate) fn update_camera_on_special(
     {
         debug!("Removing bloom and zoom");
 
-        commands.entity(entity).remove::<BloomSettings>();
-        *state = CameraState::Normal;
-        camera.hdr = true;
-        *tonemapping = Tonemapping::TonyMcMapface;
+        for (
+            entity,
+            mut camera,
+            mut transform,
+            mut projection,
+            mut tonemapping,
+            _,
+        ) in cameras.iter_mut()
+        {
+            commands.entity(entity).remove::<BloomSettings>();
+            *state = CameraState::Normal;
+            camera.hdr = true;
+            *tonemapping = Tonemapping::TonyMcMapface;
 
-        projection.scale = 1.0;
-        transform.translation = default();
+            projection.scale = 1.0;
+            transform.translation = default();
+        }
 
         return;
     }
@@ -450,9 +456,28 @@ pub(crate) fn update_camera_on_special(
         )
     }
 
-    let mut settings = settings.expect("Bloom settings missing");
+    struct CameraUpdateArgs {
+        intensity: f32,
+        low_frequency_boost: f32,
+        scale: f32,
+        /// Used for lerp.
+        /// Translates towards this point with some bias where
+        translate_towards: Vec3,
+        /// Used for lerp.
+        /// 1.0 means translate towards it completely.
+        translate_bias: f32,
+        /// We clamp the translation to this from both sides.
+        translate_freedom: Vec3,
+    }
 
-    if fired.elapsed() < SPECIAL_LOADING_TIME {
+    let CameraUpdateArgs {
+        intensity,
+        low_frequency_boost,
+        scale,
+        translate_towards,
+        translate_bias,
+        translate_freedom,
+    } = if fired.elapsed() < SPECIAL_LOADING_TIME {
         // we are bloomi'n'zoomin'
 
         let animation_elapsed =
@@ -461,24 +486,34 @@ pub(crate) fn update_camera_on_special(
         let new_intensity = INITIAL_BLOOM_INTENSITY
             + (PEAK_BLOOM_INTENSITY - INITIAL_BLOOM_INTENSITY)
                 * animation_elapsed;
-        settings.intensity = new_intensity;
 
         let new_lfb = INITIAL_BLOOM_LFB
             + (PEAK_BLOOM_LFB - INITIAL_BLOOM_LFB) * animation_elapsed;
-        settings.low_frequency_boost = new_lfb;
 
         let new_scale = 1.0 - (1.0 - ZOOM_IN_SCALE) * animation_elapsed;
-        projection.scale = new_scale;
 
         let freedom = freedom_of_camera_translation(new_scale);
-        transform.translation = transform
-            .translation
-            .lerp(look_at.extend(0.0), animation_elapsed)
-            .clamp(-freedom, freedom);
+
+        CameraUpdateArgs {
+            intensity: new_intensity,
+            low_frequency_boost: new_lfb,
+            scale: new_scale,
+            translate_towards: look_at.extend(0.0),
+            translate_bias: animation_elapsed,
+            translate_freedom: freedom,
+        }
     } else {
-        // zoom out and fade bloom
+        // fade bloom and zoom out
 
         let how_long_after_fired = fired.elapsed() - SPECIAL_LOADING_TIME;
+
+        let animation_elapsed = how_long_after_fired.as_secs_f32()
+            / FADE_BLOOM_WHEN_SPECIAL_IS_LOADED_IN.as_secs_f32();
+
+        let new_intensity =
+            PEAK_BLOOM_INTENSITY - PEAK_BLOOM_INTENSITY * animation_elapsed;
+
+        let new_lfb = PEAK_BLOOM_LFB - PEAK_BLOOM_LFB * animation_elapsed;
 
         if how_long_after_fired
             < FROM_ZOOMED_BACK_TO_NORMAL_WHEN_SPECIAL_IS_LOADED_IN
@@ -491,29 +526,42 @@ pub(crate) fn update_camera_on_special(
 
             let new_scale =
                 ZOOM_IN_SCALE + (1.0 - ZOOM_IN_SCALE) * animation_elapsed;
-            projection.scale = new_scale;
 
             let freedom = freedom_of_camera_translation(new_scale);
-            transform.translation = transform
-                .translation
-                .lerp(default(), animation_elapsed)
-                .clamp(-freedom, freedom);
+
+            CameraUpdateArgs {
+                intensity: new_intensity,
+                low_frequency_boost: new_lfb,
+                scale: new_scale,
+                translate_towards: default(),
+                translate_bias: animation_elapsed,
+                translate_freedom: freedom,
+            }
         } else {
             // zoomed out
 
-            projection.scale = 1.0;
-            transform.translation = default();
+            CameraUpdateArgs {
+                intensity: new_intensity,
+                low_frequency_boost: new_lfb,
+                scale: 1.0,
+                translate_towards: default(),
+                translate_bias: 1.0,
+                translate_freedom: default(),
+            }
         }
+    };
 
-        let animation_elapsed = how_long_after_fired.as_secs_f32()
-            / FADE_BLOOM_WHEN_SPECIAL_IS_LOADED_IN.as_secs_f32();
+    for (_, _, mut transform, mut projection, _, settings) in cameras.iter_mut()
+    {
+        let mut settings = settings.expect("Bloom settings missing");
+        settings.intensity = intensity;
+        settings.low_frequency_boost = low_frequency_boost;
+        projection.scale = scale;
 
-        let new_intensity =
-            PEAK_BLOOM_INTENSITY - PEAK_BLOOM_INTENSITY * animation_elapsed;
-        settings.intensity = new_intensity;
-
-        let new_lfb = PEAK_BLOOM_LFB - PEAK_BLOOM_LFB * animation_elapsed;
-        settings.low_frequency_boost = new_lfb;
+        transform.translation = transform
+            .translation
+            .lerp(translate_towards, translate_bias)
+            .clamp(-translate_freedom, translate_freedom);
     }
 }
 

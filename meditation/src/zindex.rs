@@ -11,6 +11,8 @@ pub(crate) const BLACK_HOLE_TWINKLE: f32 = BLACK_HOLE + 0.1;
 
 pub(crate) const SPARK_EFFECT: f32 = 1.0;
 
+pub(crate) const CLIMATE: f32 = 2.0;
+
 pub(crate) const WEATHER: f32 = 3.0;
 pub(crate) const WEATHER_IN_MENU: f32 = WEATHER;
 pub(crate) const WEATHER_ARROW: f32 = WEATHER;
