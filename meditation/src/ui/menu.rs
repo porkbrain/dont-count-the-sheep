@@ -1,6 +1,8 @@
 use bevy::app::AppExit;
 
-use crate::{control_mode, prelude::*};
+use crate::{
+    climate::Climate, control_mode, distractions::Distraction, prelude::*,
+};
 
 use super::consts::*;
 
@@ -20,6 +22,7 @@ pub(crate) enum Selection {
 }
 
 pub(crate) fn open(
+    game: Query<Entity, With<Game>>,
     mut weather: Query<
         (
             Entity,
@@ -30,11 +33,17 @@ pub(crate) fn open(
         ),
         Without<Menu>, // to make bevy be sure there won't be conflicts
     >,
+    mut distractions: Query<&mut Distraction>,
+    mut climate: Query<&mut Climate>,
     mut menu: Query<&mut Visibility, With<Menu>>,
     mut god_mode: Query<&mut Text, With<GodModeToggle>>,
     mut commands: Commands,
     mut keyboard: ResMut<Input<KeyCode>>,
 ) {
+    let Ok(game) = game.get_single() else {
+        return;
+    };
+
     if !keyboard.just_pressed(KeyCode::Escape) {
         return;
     }
@@ -47,6 +56,8 @@ pub(crate) fn open(
 
     debug!("Pausing to open menu");
     keyboard.clear(); // prevent accidental immediate unpausing
+
+    commands.entity(game).insert(Paused);
 
     *visibility = Visibility::Hidden;
     commands.entity(entity).remove::<control_mode::Normal>();
@@ -75,9 +86,16 @@ pub(crate) fn open(
     } else {
         "OFF".to_string()
     };
+
+    for mut distraction in distractions.iter_mut() {
+        distraction.pause();
+    }
+
+    climate.single_mut().pause();
 }
 
 pub(crate) fn close(
+    game: Query<Entity, With<Game>>,
     mut weather: Query<
         (
             Entity,
@@ -87,10 +105,16 @@ pub(crate) fn close(
         ),
         Without<Menu>, // to make bevy be sure there won't be conflicts
     >,
+    mut distractions: Query<&mut Distraction>,
+    mut climate: Query<&mut Climate>,
     mut menu: Query<&mut Visibility, With<Menu>>,
     mut commands: Commands,
     mut keyboard: ResMut<Input<KeyCode>>,
 ) {
+    let Ok(game) = game.get_single() else {
+        return;
+    };
+
     let Ok((entity, mode, mut transform, mut visibility)) =
         weather.get_single_mut()
     else {
@@ -102,10 +126,13 @@ pub(crate) fn close(
     }
 
     debug!("Closing menu and unpausing");
+
     // prevent accidental immediate unpausing
     keyboard.clear();
     // we simulate press to close the menu, so we need to simulate release
     keyboard.release(KeyCode::Escape);
+
+    commands.entity(game).remove::<Paused>();
 
     commands.entity(entity).remove::<control_mode::InMenu>();
     commands.entity(entity).insert({
@@ -119,6 +146,12 @@ pub(crate) fn close(
 
     let mut menu_visibility = menu.single_mut();
     *menu_visibility = Visibility::Hidden;
+
+    for mut distraction in distractions.iter_mut() {
+        distraction.resume();
+    }
+
+    climate.single_mut().resume();
 }
 
 /// The order of the systems is important.

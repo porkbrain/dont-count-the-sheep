@@ -36,10 +36,16 @@ mod consts {
 use bevy::{render::camera::RenderTarget, window::WindowTheme};
 use bevy_magic_light_2d::{
     gi::{compositing::CameraTargets, BevyMagicLight2DPlugin},
-    FloorCamera, ObjectsCamera, WallsCamera,
+    FloorCamera,
 };
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
+
+#[derive(Component)]
+struct Game;
+
+#[derive(Component)]
+struct Paused;
 
 fn main() {
     let mut app = App::new();
@@ -87,13 +93,14 @@ fn main() {
             weather::spawn,
         ),
     )
-    .add_systems(FixedUpdate, (weather::anim::rotate, distractions::rotate))
+    .add_systems(FixedUpdate, (weather::anim::rotate,))
     .add_systems(
         Update,
         (
             weather::arrow::point_arrow,
             weather::anim::sprite_loading_special,
             distractions::follow_curve,
+            distractions::react_to_environment,
         ),
     )
     .add_systems(
@@ -104,21 +111,17 @@ fn main() {
             // must be after controls bcs events dependency
             weather::anim::update_camera_on_special,
             weather::anim::sprite_normal,
-            distractions::react_to_weather,
             // must be after react_to_weather bcs events dependency
             distractions::destroyed,
         )
             .chain(),
     );
-    // TODO: dev feature
-    // .add_systems(
-    //     Last,
-    //     (
-    //         path::visualize,
-    //     )
-    // );
 
     common_physics::poissons_equation::register::<gravity::Gravity>(&mut app);
+
+    #[cfg(feature = "dev")]
+    app.add_systems(Last, (path::visualize,));
+
     #[cfg(feature = "dev")]
     common_physics::poissons_equation::register_visualization::<
         gravity::Gravity,
@@ -130,22 +133,19 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, camera_targets: Res<CameraTargets>) {
-    let zoom = PixelZoom::Fixed(consts::PIXEL_ZOOM as i32);
+    commands.spawn(Game);
 
     commands
-        .spawn(Name::new("camera_main"))
-        .insert(Camera2dBundle::default())
-        .insert(zoom.clone())
-        .insert(PixelViewport)
-        .insert(RenderLayers::layer(3)); // TODO
-
-    commands
-        .spawn(Name::new("camera_light"))
+        .spawn((
+            PixelZoom::Fixed(consts::PIXEL_ZOOM as i32),
+            PixelViewport,
+            FloorCamera,
+        ))
         .insert(Camera2dBundle {
             camera: Camera {
                 hdr: true,
                 target: RenderTarget::Image(
-                    camera_targets.objects_target.clone(),
+                    camera_targets.floor_target.clone(),
                 ),
                 ..default()
             },
@@ -154,12 +154,5 @@ fn setup(mut commands: Commands, camera_targets: Res<CameraTargets>) {
                 ..default()
             },
             ..default()
-        })
-        .insert(zoom.clone())
-        .insert(PixelViewport)
-        .insert(ObjectsCamera)
-        .insert(WallsCamera)
-        .insert(FloorCamera)
-        .insert(RenderLayers::layer(0)) // TODO
-        .insert(UiCameraConfig { show_ui: false });
+        });
 }

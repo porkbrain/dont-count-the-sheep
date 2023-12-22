@@ -1,7 +1,11 @@
 //! When weather is off screen we show a little arrow pointing to it on the edge
 //! of the screen closest to the point where weather is.
+//!
+//! TODO: light should not affect the arrow
 
 use std::f32::consts::PI;
+
+use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
 use crate::{
     consts::{VISIBLE_HEIGHT, VISIBLE_WIDTH},
@@ -10,6 +14,9 @@ use crate::{
 };
 
 use super::{consts::MAX_ARROW_PUSH_BACK, Weather};
+
+/// The arrow is lit by a light source.
+const LIGHT_COLOR: &str = "#d9ff75";
 
 #[derive(Component)]
 pub(crate) struct Arrow;
@@ -20,15 +27,43 @@ enum OffScreen {
     Both,
 }
 
+pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
+    commands.spawn((
+        Arrow,
+        SpriteBundle {
+            texture: asset_server.load("textures/weather/arrow.png"),
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                0.0,
+                zindex::WEATHER_ARROW,
+            )),
+            visibility: Visibility::Hidden,
+            ..default()
+        },
+        OmniLightSource2D {
+            intensity: 0.75,
+            color: Color::hex(LIGHT_COLOR).unwrap(),
+            jitter_intensity: 1.0,
+            falloff: Vec3::new(3.0, 3.0, 0.05),
+            ..default()
+        },
+    ));
+}
+
 /// Renders the arrow pointing to the weather when it's off screen.
 /// Hides the arrow when the weather is on screen.
 pub(crate) fn point_arrow(
+    game: Query<&Game, Without<Paused>>,
     weather: Query<&Transform, (With<Weather>, Without<Arrow>)>,
     mut arrow: Query<
         (&mut Transform, &mut Visibility),
         (With<Arrow>, Without<Weather>),
     >,
 ) {
+    if game.is_empty() {
+        return;
+    }
+
     let Ok(weather_transform) = weather.get_single() else {
         return;
     };

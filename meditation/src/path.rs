@@ -143,7 +143,7 @@ mod intro_a {
 
     use super::*;
 
-    pub(super) const SEGMENT_TIMING: [f32; 1] = [10.0];
+    pub(super) const SEGMENT_TIMING: [f32; 1] = [3.0];
 
     pub(super) const TOTAL_PATH_TIME: f32 =
         SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
@@ -170,7 +170,7 @@ mod intro_b {
 
     use super::*;
 
-    pub(super) const SEGMENT_TIMING: [f32; 1] = [10.0];
+    pub(super) const SEGMENT_TIMING: [f32; 1] = [3.0];
 
     pub(super) const TOTAL_PATH_TIME: f32 =
         SEGMENT_TIMING[SEGMENT_TIMING.len() - 1];
@@ -436,7 +436,7 @@ mod infinity_sign {
     }
 }
 
-// TODO: dev feature
+#[cfg(feature = "dev")]
 pub(crate) fn visualize(mut gizmos: Gizmos) {
     gizmos.linestrip(
         lvl1_a::CURVE.iter_positions(100).map(|p| p.extend(0.0)),

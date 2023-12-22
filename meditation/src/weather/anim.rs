@@ -1,9 +1,6 @@
 use super::{consts::*, sprite, ActionEvent, WeatherBody, WeatherFace};
 use crate::{control_mode, prelude::*};
-use bevy::{
-    core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
-    time::Stopwatch,
-};
+use bevy::{core_pipeline::bloom::BloomSettings, time::Stopwatch};
 use std::{
     cmp::Ordering,
     f32::consts::{E, PI},
@@ -38,6 +35,7 @@ pub(crate) struct SparkEffect;
 /// 5. Weather is off to Mars or wherever while last few frames are playing in
 ///    place. That's why the effect sprite is not a child of weather.
 pub(crate) fn sprite_loading_special(
+    game: Query<&Game, Without<Paused>>,
     mut weather: Query<(
         &control_mode::LoadingSpecial,
         &mut Velocity,
@@ -64,6 +62,10 @@ pub(crate) fn sprite_loading_special(
     mut commands: Commands,
     time: Res<Time>,
 ) {
+    if game.is_empty() {
+        return;
+    }
+
     let Ok((mode, mut vel, transform)) = weather.get_single_mut() else {
         return;
     };
@@ -122,6 +124,7 @@ pub(crate) fn sprite_loading_special(
 /// The sprite is changed based on the last action and the current velocity.
 /// Additionally there's a cooldown on the sprite change.
 pub(crate) fn sprite_normal(
+    game: Query<&Game, Without<Paused>>,
     mut broadcast: EventReader<ActionEvent>,
     mut weather: Query<
         (
@@ -141,6 +144,10 @@ pub(crate) fn sprite_normal(
         (With<WeatherFace>, Without<WeatherBody>),
     >,
 ) {
+    if game.is_empty() {
+        return;
+    }
+
     let Ok((vel, angvel, transform, mut transition)) = weather.get_single_mut()
     else {
         return;
@@ -164,14 +171,13 @@ pub(crate) fn sprite_normal(
             // catch me twice shame on me
             transition.update_face(sprite::FaceKind::Surprised);
         }
-        Some(ActionEvent::DashedAgainstVelocity { towards })
-            // TODO: if is_rot_and_vel_aligned (unreliable)
-        => {
+        // TODO: if is_rot_and_vel_aligned (unreliable)
+        Some(ActionEvent::DashedAgainstVelocity { towards }) => {
             // I want the booty dance to be shown only if the direction changes
             // fast from right to left and vice versa, ie. player is spamming
             // left and right.
             // * 2 gives the player some time to change direction
-            let max_delay =MIN_DASH_AGAINST_VELOCITY_DELAY * 2;
+            let max_delay = MIN_DASH_AGAINST_VELOCITY_DELAY * 2;
             if let Some(ActionEvent::DashedAgainstVelocity {
                 towards: last_towards,
             }) = transition.last_action_within(max_delay)
@@ -192,80 +198,12 @@ pub(crate) fn sprite_normal(
             }
         }
         // nothing imminent to do, so check the environment
-        _ => {
-            match transition.current_body() {
-                sprite::BodyKind::SpearingTowards => {
-                    let should_be_slowing_down = vel.y
-                        < VELOCITY_ON_JUMP[MAX_JUMPS - 1]
-                        && transition.has_elapsed_since_body_change(
-                           SHOW_SPEARING_BODY_TOWARDS_FOR,
-                        );
-                    if should_be_slowing_down {
-                        transition.update_body(
-                            sprite::BodyKind::SlowingSpearingTowards,
-                        );
-                    }
-                }
-                current_sprite => {
-                    let should_be_falling =
-                        vel.y <=TERMINAL_VELOCITY + 5.0; // some tolerance
-                    let should_be_spearing_towards = vel.y
-                        >= VELOCITY_ON_JUMP[MAX_JUMPS - 1]
-                        && transition.has_elapsed_since_body_change(
-                           SHOW_SPEARING_BODY_TOWARDS_IF_NO_CHANGE_FOR,
-                        );
-
-                    if should_be_falling {
-                        let min_wait_for_body = match current_sprite {
-                            sprite::BodyKind::Default
-                            | sprite::BodyKind::Plunging => {
-                               SHOW_FALLING_BODY_AFTER / 2
-                            }
-                            _ =>SHOW_FALLING_BODY_AFTER,
-                        };
-                        if transition
-                            .has_elapsed_since_body_change(min_wait_for_body)
-                        {
-                            if is_rot_and_vel_inverse_aligned {
-                                transition
-                                    .update_body(sprite::BodyKind::Falling);
-                            }
-
-                            let min_wait_for_face = match current_sprite {
-                                sprite::BodyKind::Plunging => {
-                                   SHOW_FALLING_FACE_AFTER / 2
-                                }
-                                _ =>SHOW_FALLING_FACE_AFTER,
-                            };
-
-                            if transition.has_elapsed_since_face_change(
-                                min_wait_for_face,
-                            ) {
-                                transition
-                                    .update_face(sprite::FaceKind::Intense);
-                            }
-                        }
-                    } else if should_be_spearing_towards
-                        && is_rot_and_vel_aligned
-                    {
-                        transition
-                            .update_body(sprite::BodyKind::SpearingTowards);
-                        transition.update_face(sprite::FaceKind::Happy);
-                    } else {
-                        if transition.has_elapsed_since_body_change(
-                           SHOW_DEFAULT_BODY_AFTER_IF_NO_CHANGE,
-                        ) {
-                            transition.update_body(sprite::BodyKind::default());
-                        }
-                        if transition.has_elapsed_since_body_change(
-                           SHOW_DEFAULT_FACE_AFTER_IF_NO_BODY_CHANGE,
-                        ) {
-                            transition.update_face(sprite::FaceKind::default());
-                        }
-                    }
-                }
-            };
-        }
+        _ => sprite_under_no_latest_action_of_interest(
+            vel,
+            &mut transition,
+            is_rot_and_vel_inverse_aligned,
+            is_rot_and_vel_aligned,
+        ),
     }
 
     if let Some(latest_action) = latest_action {
@@ -282,13 +220,92 @@ pub(crate) fn sprite_normal(
     };
 }
 
+/// The player did not take an which would warrant some sprite changes.
+/// Check the environment and update the sprite accordingly.
+fn sprite_under_no_latest_action_of_interest(
+    vel: &Velocity,
+    transition: &mut sprite::Transition,
+    is_rot_and_vel_inverse_aligned: bool,
+    is_rot_and_vel_aligned: bool,
+) {
+    match transition.current_body() {
+        sprite::BodyKind::SpearingTowards => {
+            let should_be_slowing_down = vel.y
+                < VELOCITY_ON_JUMP[MAX_JUMPS - 1]
+                && transition.has_elapsed_since_body_change(
+                    SHOW_SPEARING_BODY_TOWARDS_FOR,
+                );
+            if should_be_slowing_down {
+                transition
+                    .update_body(sprite::BodyKind::SlowingSpearingTowards);
+            }
+        }
+        current_sprite => {
+            // some small tolerance, plus because ter. vel. is negative
+            let should_be_falling = vel.y <= TERMINAL_VELOCITY + 5.0;
+
+            let should_be_spearing_towards = vel.y
+                >= VELOCITY_ON_JUMP[MAX_JUMPS - 1]
+                && transition.has_elapsed_since_body_change(
+                    SHOW_SPEARING_BODY_TOWARDS_IF_NO_CHANGE_FOR,
+                );
+
+            if should_be_falling {
+                let min_wait_for_body = match current_sprite {
+                    sprite::BodyKind::Default | sprite::BodyKind::Plunging => {
+                        SHOW_FALLING_BODY_AFTER / 2
+                    }
+                    _ => SHOW_FALLING_BODY_AFTER,
+                };
+                if transition.has_elapsed_since_body_change(min_wait_for_body) {
+                    if is_rot_and_vel_inverse_aligned {
+                        transition.update_body(sprite::BodyKind::Falling);
+                    }
+
+                    let min_wait_for_face = match current_sprite {
+                        sprite::BodyKind::Plunging => {
+                            SHOW_FALLING_FACE_AFTER / 2
+                        }
+                        _ => SHOW_FALLING_FACE_AFTER,
+                    };
+
+                    if transition
+                        .has_elapsed_since_face_change(min_wait_for_face)
+                    {
+                        transition.update_face(sprite::FaceKind::Intense);
+                    }
+                }
+            } else if should_be_spearing_towards && is_rot_and_vel_aligned {
+                transition.update_body(sprite::BodyKind::SpearingTowards);
+                transition.update_face(sprite::FaceKind::Happy);
+            } else {
+                if transition.has_elapsed_since_body_change(
+                    SHOW_DEFAULT_BODY_AFTER_IF_NO_CHANGE,
+                ) {
+                    transition.update_body(sprite::BodyKind::default());
+                }
+                if transition.has_elapsed_since_body_change(
+                    SHOW_DEFAULT_FACE_AFTER_IF_NO_BODY_CHANGE,
+                ) {
+                    transition.update_face(sprite::FaceKind::default());
+                }
+            }
+        }
+    };
+}
+
 pub(crate) fn rotate(
+    game: Query<&Game, Without<Paused>>,
     mut weather: Query<
         (&Velocity, &mut AngularVelocity, &mut Transform),
         With<control_mode::Normal>,
     >,
     time: Res<Time>,
 ) {
+    if game.is_empty() {
+        return;
+    }
+
     let Ok((vel, mut angvel, mut transform)) = weather.get_single_mut() else {
         return;
     };
@@ -355,21 +372,27 @@ pub(crate) fn rotate(
 /// Zooms in on weather and makes it glow when special is being loaded,
 /// then resets to initial state.
 ///
-/// We need to do this for each camera.
+/// We need to do this for each camera in case there are more.
 pub(crate) fn update_camera_on_special(
+    game: Query<&Game, Without<Paused>>,
     mut action: EventReader<ActionEvent>,
     mut state: Query<&mut CameraState>,
-    mut cameras: Query<(
-        Entity,
-        &mut Camera,
-        &mut Transform,
-        &mut OrthographicProjection,
-        &mut Tonemapping,
-        Option<&mut BloomSettings>,
-    )>,
+    mut cameras: Query<
+        (
+            Entity,
+            &mut Transform,
+            &mut OrthographicProjection,
+            Option<&mut BloomSettings>,
+        ),
+        With<Camera>,
+    >,
     mut commands: Commands,
     time: Res<Time>,
 ) {
+    if game.is_empty() {
+        return;
+    }
+
     let mut state = state.single_mut();
 
     let just_started_loading_from_translation = action
@@ -389,10 +412,7 @@ pub(crate) fn update_camera_on_special(
             look_at,
         };
 
-        for (entity, mut camera, _, _, mut tonemapping, _) in cameras.iter_mut()
-        {
-            camera.hdr = true;
-            *tonemapping = Tonemapping::TonyMcMapface;
+        for (entity, _, _, _) in cameras.iter_mut() {
             commands.entity(entity).insert(BloomSettings {
                 intensity: INITIAL_BLOOM_INTENSITY,
                 low_frequency_boost: INITIAL_BLOOM_LFB,
@@ -417,19 +437,9 @@ pub(crate) fn update_camera_on_special(
     {
         debug!("Removing bloom and zoom");
 
-        for (
-            entity,
-            mut camera,
-            mut transform,
-            mut projection,
-            mut tonemapping,
-            _,
-        ) in cameras.iter_mut()
-        {
+        for (entity, mut transform, mut projection, _) in cameras.iter_mut() {
             commands.entity(entity).remove::<BloomSettings>();
             *state = CameraState::Normal;
-            camera.hdr = true;
-            *tonemapping = Tonemapping::TonyMcMapface;
 
             projection.scale = 1.0;
             transform.translation = default();
@@ -551,8 +561,7 @@ pub(crate) fn update_camera_on_special(
         }
     };
 
-    for (_, _, mut transform, mut projection, _, settings) in cameras.iter_mut()
-    {
+    for (_, mut transform, mut projection, settings) in cameras.iter_mut() {
         let mut settings = settings.expect("Bloom settings missing");
         settings.intensity = intensity;
         settings.low_frequency_boost = low_frequency_boost;

@@ -9,6 +9,8 @@ pub(crate) mod consts;
 pub(crate) mod controls;
 mod sprite;
 
+use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
+
 use crate::{control_mode, prelude::*};
 
 use self::consts::*;
@@ -28,10 +30,7 @@ pub(crate) enum ActionEvent {
         /// Where was the weather when the special was started.
         at_translation: Vec2,
     },
-    Jumped {
-        /// How many jumps left.
-        jumps_left: usize,
-    },
+    Jumped,
     FiredSpecial,
     Dipped,
     DashedAgainstVelocity {
@@ -66,7 +65,15 @@ pub(crate) fn spawn(
                 ..default()
             },
         ))
-        .insert(RenderLayers::layer(3))
+        .insert(LightOccluder2D {
+            h_size: Vec2::new(15.0, 15.0), // TODO
+        })
+        .insert(OmniLightSource2D {
+            intensity: 0.25,
+            color: Color::hex("#fff4b3").unwrap(), // TODO
+            falloff: Vec3::new(10.0, 10.0, 0.05),
+            ..default()
+        })
         .id();
     //
     // 2.
@@ -155,19 +162,7 @@ pub(crate) fn spawn(
     //
     // 5.
     //
-    commands.spawn((
-        arrow::Arrow,
-        SpriteBundle {
-            texture: asset_server.load("textures/weather/arrow.png"),
-            transform: Transform::from_translation(Vec3::new(
-                0.0,
-                0.0,
-                zindex::WEATHER_ARROW,
-            )),
-            visibility: Visibility::Hidden,
-            ..default()
-        },
-    ));
+    arrow::spawn(&mut commands, &asset_server);
     //
     // 6.
     //

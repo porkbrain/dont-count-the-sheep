@@ -5,6 +5,7 @@ pub(crate) mod types;
 
 use bevy::app::App;
 
+/// Add a new Poisson's equation system to the app.
 pub fn register<T: Send + Sync + 'static>(app: &mut App) {
     app.add_event::<types::PoissonsEquationUpdateEvent<T>>()
         .add_systems(bevy::app::Last, systems::update::<T>);

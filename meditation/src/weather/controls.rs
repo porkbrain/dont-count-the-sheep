@@ -10,6 +10,7 @@ use std::f32::consts::PI;
 
 /// Controls when in normal mode.
 pub(crate) fn normal(
+    game: Query<&Game, Without<Paused>>,
     mut broadcast: EventWriter<ActionEvent>,
     mut weather: Query<
         (Entity, &mut control_mode::Normal, &mut Velocity, &Transform),
@@ -21,6 +22,10 @@ pub(crate) fn normal(
     gravity: Res<PoissonsEquation<Gravity>>,
     time: Res<Time>,
 ) {
+    if game.is_empty() {
+        return;
+    }
+
     let Ok((entity, mut mode, mut vel, transform)) = weather.get_single_mut()
     else {
         return;
@@ -153,9 +158,7 @@ pub(crate) fn normal(
     {
         mode.jumps += 1;
         mode.last_jump = Stopwatch::new();
-        broadcast.send(ActionEvent::Jumped {
-            jumps_left: MAX_JUMPS + 1 - mode.jumps,
-        });
+        broadcast.send(ActionEvent::Jumped);
 
         vel.y = VELOCITY_ON_JUMP[mode.jumps - 1];
 
@@ -175,6 +178,7 @@ pub(crate) fn normal(
 
 /// Controls while loading special.
 pub(crate) fn loading_special(
+    game: Query<&Game, Without<Paused>>,
     mut broadcast: EventWriter<ActionEvent>,
     mut weather: Query<(
         Entity,
@@ -185,6 +189,10 @@ pub(crate) fn loading_special(
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
 ) {
+    if game.is_empty() {
+        return;
+    }
+
     let Ok((entity, mut mode, mut vel)) = weather.get_single_mut() else {
         return;
     };
