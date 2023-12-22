@@ -1,6 +1,7 @@
 use bevy::time::Stopwatch;
 // use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
+use rand::thread_rng;
 
 use crate::{
     climate::Climate,
@@ -117,7 +118,7 @@ pub(crate) fn spawn(asset_server: Res<AssetServer>, mut commands: Commands) {
             ));
 
             parent.spawn(SpriteBundle {
-                texture: asset_server.load("textures/distractions/frame2.png"),
+                texture: asset_server.load("textures/distractions/frame.png"),
                 // z is higher than the the video
                 transform: Transform::from_translation(Vec3::new(
                     0.0, 0.0, 1.0,
@@ -336,9 +337,8 @@ pub(crate) fn destroyed(
 pub(crate) fn react_to_environment(
     game: Query<&Game, Without<Paused>>,
     climate: Query<
-        &Transform,
+        (&Climate, &Transform),
         (
-            With<Climate>,
             Without<Weather>,
             Without<Distraction>,
             Without<DistractionOccluder>,
@@ -380,7 +380,7 @@ pub(crate) fn react_to_environment(
     let Ok(weather) = weather.get_single() else {
         return;
     };
-    let Ok(climate) = climate.get_single() else {
+    let Ok((climate, climate_transform)) = climate.get_single() else {
         return;
     };
 
@@ -405,20 +405,19 @@ pub(crate) fn react_to_environment(
         let weather_ray_bath = {
             let d = weather.translation.distance(distraction.translation);
 
-            // 1.0 / (d / HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE + 1.0)
-            0.0
+            1.0 / (d / HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE + 1.0)
         };
-        // TODO
-        // between [0; 1], how much is the distraction being lit by the climate
 
-        let angle_to_ray = Climate::angle_between_closest_ray_and_other(
-            climate.translation.truncate(),
+        // between [0; 1], how much is the distraction being lit by the climate
+        let angle_to_ray = climate.angle_between_closest_ray_and_point(
+            climate_transform.translation.truncate(),
             distraction.translation.truncate(),
-            &time,
         );
         // let climate_ray_bath = 1.0 - (PI / 12.0 - angle_to_ray.min(PI /
         // 12.0));
         println!("angle_to_ray {angle_to_ray}");
+        println!("climate {}", climate_transform.translation.truncate());
+        println!("distraction {}", distraction.translation.truncate());
         let climate_ray_bath = 1.0 - angle_to_ray.clamp(0.0, 1.0);
         println!("climate_ray_bath {climate_ray_bath}\n");
 
@@ -453,7 +452,7 @@ pub(crate) fn react_to_environment(
         // Unfortunately, the lighting engine does not use global transform to
         // calculate positions, so we need to add the distraction's translation
         occluder_pos.translation = /*distraction.translation
-            +*/ (distraction.translation - climate.translation).normalize()
+            +*/ (distraction.translation - climate_transform.translation).normalize()
                 * push_back_force;
     }
 }
