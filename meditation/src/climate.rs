@@ -85,7 +85,6 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(OmniLightSource2D {
             intensity: LIGHT_INTENSITY,
             color: LIGHT_COLOR,
-            // TODO: jitter the more distractions there are
             falloff: Vec3::new(50.0, 50.0, 0.05),
             ..default()
         })

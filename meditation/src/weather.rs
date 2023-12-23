@@ -91,11 +91,11 @@ fn spawn(
             },
         ))
         .insert(LightOccluder2D {
-            h_size: Vec2::new(15.0, 15.0), // TODO
+            h_size: OCCLUDER_SIZE,
         })
         .insert(OmniLightSource2D {
-            intensity: 0.25,
-            color: Color::hex("#fff4b3").unwrap(), // TODO
+            intensity: LIGHT_INTENSITY,
+            color: Color::hex(LIGHT_COLOR).unwrap(),
             falloff: Vec3::new(10.0, 10.0, 0.05),
             ..default()
         })

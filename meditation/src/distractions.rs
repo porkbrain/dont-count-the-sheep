@@ -1,7 +1,7 @@
 mod videos;
 
 use bevy::time::Stopwatch;
-use bevy_magic_light_2d::gi::types::LightOccluder2D;
+use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
 use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
 
 use crate::path::LevelPath;
@@ -29,6 +29,13 @@ const PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 25.0;
 /// [`PUSH_BACK_FORCE_WEATHER_DISTANCE`].
 const HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 150.0;
 const PUSH_BACK_FORCE_WEATHER_DISTANCE: f32 = 50.0;
+/// If light is shone on the distraction, it has a chance to crack.
+const CRACK_CHANCE_PER_SECOND: f32 = 1.0;
+
+/// Plays static as on old TVs.
+const STATIC_ATLAS_FRAMES: usize = 5;
+/// How long each frame of static is shown.
+const STATIC_ATLAS_FRAME_TIME: Duration = Duration::from_millis(50);
 
 /// Black hole affects the poissons equation by being a source this strong.
 const BLACKHOLE_GRAVITY: f32 = 1.5;
@@ -37,6 +44,9 @@ const BLACKHOLE_ATLAS_FRAMES: usize = 5;
 /// Every now and then the black hole flickers with some lights
 const BLACKHOLE_FLICKER_CHANCE_PER_SECOND: f32 = 0.5;
 const BLACKHOLE_FLICKER_DURATION: Duration = Duration::from_millis(100);
+const BLACKHOLE_DESPAWN_CHANCE_PER_SECOND: f32 = 0.1;
+/// When despawning, the black hole collapses into itself.
+const BLACKHOLE_FRAME_TIME: Duration = Duration::from_millis(40);
 
 #[derive(Component)]
 pub(crate) struct Distraction {
@@ -254,8 +264,8 @@ fn react_to_weather_special(
 ///    the push back.
 fn react_to_environment(
     game: Query<&Game, Without<Paused>>,
-    climate: Query<
-        (&Climate, &Transform),
+    mut climate: Query<
+        (&Climate, &Transform, &mut OmniLightSource2D),
         (
             Without<Weather>,
             Without<Distraction>,
@@ -302,7 +312,9 @@ fn react_to_environment(
     let Ok(weather) = weather.get_single() else {
         return;
     };
-    let Ok((climate, climate_transform)) = climate.get_single() else {
+    let Ok((climate, climate_transform, mut climate_light)) =
+        climate.get_single_mut()
+    else {
         return;
     };
 
@@ -341,11 +353,9 @@ fn react_to_environment(
         // 3.
         //
 
-        const CRACK_CHANCE_PER_SECOND: f32 = 1.0; // TODO
-
         let crack_chance = CRACK_CHANCE_PER_SECOND * time.delta_seconds();
 
-        // TODO
+        // TODO: balance
         let should_crack =
             push_back_force > 35.0 && rand::random::<f32>() < crack_chance;
 
@@ -356,8 +366,6 @@ fn react_to_environment(
             let is_on_second_to_last_crack = sprite.index == MAX_CRACKS - 2;
 
             if is_on_second_to_last_crack {
-                const STATIC_ATLAS_FRAMES: usize = 5; // TODO
-
                 let first_frame = 0;
 
                 let static_entity = commands
@@ -368,7 +376,7 @@ fn react_to_environment(
                             last: STATIC_ATLAS_FRAMES - 1,
                         },
                         AnimationTimer::new(
-                            Duration::from_millis(50), // TODO
+                            STATIC_ATLAS_FRAME_TIME,
                             TimerMode::Repeating,
                         ),
                     ))
@@ -426,6 +434,10 @@ fn react_to_environment(
                 .normalize()
                 * push_back_force;
     }
+
+    // increase jitter intensity as more distractions are spawned
+    climate_light.jitter_intensity =
+        (distractions.iter().len() as f32 / 5.0).min(1.0);
 }
 
 /// Either distraction is destroyed by the weather special or by accumulating
@@ -516,8 +528,8 @@ fn spawn_black_hole(
                 on_last_frame,
             },
             BeginAnimationAtRandom {
-                chance_per_second: 0.25,               // TODO
-                frame_time: Duration::from_millis(40), // TODO
+                chance_per_second: BLACKHOLE_DESPAWN_CHANCE_PER_SECOND,
+                frame_time: BLACKHOLE_FRAME_TIME,
             },
         ))
         .insert(SpriteSheetBundle {

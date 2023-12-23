@@ -1,3 +1,5 @@
+use rand::random;
+
 use crate::prelude::*;
 
 #[derive(Debug, Clone, Copy)]
@@ -27,7 +29,9 @@ impl Video {
             transform: Transform::from_translation(Vec3::new(
                 0.0,
                 0.0,
-                zindex::DISTRACTION_VIDEO, // TODO: plus rand?
+                // add some randomness to the z-index for deterministic
+                // ordering of multiple distractions
+                zindex::DISTRACTION_VIDEO + random::<f32>() * 0.1,
             )),
             ..default()
         });

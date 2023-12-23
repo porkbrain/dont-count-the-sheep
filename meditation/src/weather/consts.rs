@@ -156,3 +156,12 @@ mod arrow {
     /// The closer weather is the more the arrow is pushed back from the edge.
     pub(crate) const MAX_ARROW_PUSH_BACK: f32 = 15.0;
 }
+
+pub(crate) use light::*;
+mod light {
+    use bevy::math::Vec2;
+
+    pub(crate) const OCCLUDER_SIZE: Vec2 = Vec2::new(15.0, 15.0);
+    pub(crate) const LIGHT_COLOR: &str = "#fff4b3";
+    pub(crate) const LIGHT_INTENSITY: f32 = 0.25;
+}
