@@ -57,6 +57,14 @@ pub trait WorldDimensions {
 }
 
 impl<T: Send + Sync + 'static> PoissonsEquationUpdateEvent<T> {
+    pub fn new<P: Into<GridCoords>>(delta: f32, world_pos: P) -> Self {
+        Self {
+            delta,
+            coords: world_pos.into(),
+            phantom: PhantomData,
+        }
+    }
+
     pub fn send<P: Into<GridCoords>>(
         update: &mut EventWriter<Self>,
         delta: f32,
@@ -151,6 +159,9 @@ impl<T> PoissonsEquation<T> {
         match self.grid[y][x] {
             GridPoint::Average(_) => {
                 self.grid[y][x] = GridPoint::Source(value);
+            }
+            GridPoint::Source(existing) if existing + value < f32::EPSILON => {
+                self.grid[y][x] = GridPoint::Average(0.0);
             }
             GridPoint::Source(existing) => {
                 self.grid[y][x] = GridPoint::Source(existing + value);

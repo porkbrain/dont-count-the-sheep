@@ -1,18 +1,17 @@
+mod videos;
+
 use bevy::time::Stopwatch;
 use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
 
+use crate::path::LevelPath;
 use crate::{
     climate::Climate,
     gravity::{ChangeOfBasis, Gravity},
     prelude::*,
     weather::{self, Weather},
 };
-
-use crate::path::LevelPath;
-
-const BLACKHOLE_FLICKER_CHANCE_PER_SECOND: f32 = 0.5; // TODO
-const BLACKHOLE_FLICKER_DURATION: Duration = Duration::from_millis(100); // TODO
+use videos::Video;
 
 /// If special is casted within this distance of the distraction, then destroy
 /// it.
@@ -22,7 +21,22 @@ const DISTRACTION_SPRITE_SIZE: f32 = 100.0;
 /// There's some empty space around the sprite.
 const DISTRACTION_PERCEIVED_SIZE: f32 = 50.0;
 /// As more light is shone, more cracks appear on the distraction.
-const MAX_CRACKS: usize = 6;
+const MAX_CRACKS: usize = 5;
+/// By default, occluder is pushed towards the climate.
+const PUSH_BACK_FORCE_AT_REST: f32 = -20.0;
+const PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 25.0;
+/// At this distance, the occulder is pushed back by half of
+/// [`PUSH_BACK_FORCE_WEATHER_DISTANCE`].
+const HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 150.0;
+const PUSH_BACK_FORCE_WEATHER_DISTANCE: f32 = 50.0;
+
+/// Black hole affects the poissons equation by being a source this strong.
+const BLACKHOLE_GRAVITY: f32 = 1.5;
+const BLACKHOLE_SPRITE_SIZE: f32 = 100.0;
+const BLACKHOLE_ATLAS_FRAMES: usize = 5;
+/// Every now and then the black hole flickers with some lights
+const BLACKHOLE_FLICKER_CHANCE_PER_SECOND: f32 = 0.5;
+const BLACKHOLE_FLICKER_DURATION: Duration = Duration::from_millis(100);
 
 #[derive(Component)]
 pub(crate) struct Distraction {
@@ -96,6 +110,20 @@ fn spawn(
             ..default()
         })
         .with_children(|parent| {
+            parent.spawn(SpriteBundle {
+                texture: asset_server.load("textures/distractions/frame.png"),
+                transform: Transform::from_translation(Vec3::new(
+                    0.0,
+                    0.0,
+                    zindex::DISTRACTION_FRAME,
+                )),
+                ..default()
+            });
+
+            // TODO: vary videos
+            // TODO: sound
+            Video::Panda.spawn(parent, &asset_server);
+
             parent.spawn((
                 DistractionOccluder,
                 // SpriteBundle {
@@ -125,33 +153,6 @@ fn spawn(
                     ),
                 },
             ));
-
-            parent.spawn(SpriteBundle {
-                texture: asset_server.load("textures/distractions/frame.png"),
-                // z is higher than the the video
-                transform: Transform::from_translation(Vec3::new(
-                    0.0,
-                    0.0,
-                    zindex::DISTRACTION_FRAME,
-                )),
-                ..default()
-            });
-
-            // TODO: vary videos
-            parent.spawn(bevy_webp_anim::WebpBundle {
-                animation: asset_server
-                    .load("textures/distractions/videos/1.webp"),
-                frame_rate: bevy_webp_anim::FrameRate::new(2),
-                sprite: Sprite { ..default() },
-                transform: Transform::from_translation(Vec3::new(
-                    0.0,
-                    0.0,
-                    zindex::DISTRACTION_VIDEO,
-                )),
-                ..default()
-            });
-
-            // TODO: sound
         });
 }
 
@@ -235,8 +236,7 @@ fn react_to_weather_special(
             });
             commands.entity(entity).despawn_recursive();
 
-            // can destroy only one distraction per special
-            break;
+            // ... go to next, can destroy multiple distractions per special
         }
     }
 }
@@ -314,14 +314,6 @@ fn react_to_environment(
         //
         // 1.
         //
-
-        /// By default, occluder is pushed towards the climate.
-        const PUSH_BACK_FORCE_AT_REST: f32 = -20.0;
-        const PUSH_BACK_FORCE_WEATHER_DISTANCE: f32 = 50.0;
-        const PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 25.0;
-        /// At this distance, the occulder is pushed back by half of
-        /// [`PUSH_BACK_FORCE_WEATHER_DISTANCE`].
-        const HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 150.0;
 
         // between [0; 1], increases as weather gets closer to distraction
         let weather_ray_bath = {
@@ -436,6 +428,8 @@ fn react_to_environment(
     }
 }
 
+/// Either distraction is destroyed by the weather special or by accumulating
+/// cracks.
 fn destroyed(
     game: Query<&Game>,
     mut events: EventReader<DistractionDestroyedEvent>,
@@ -458,69 +452,108 @@ fn destroyed(
     {
         debug!("Received distraction destroyed event (special: {by_special})");
 
-        *score += at_translation.length() as usize; // TODO: inverse of distance
-
-        // depending on by_special, use animation
-
-        // TODO: animate out
+        // the further away the distraction is, the more points it's worth
+        *score += at_translation.length() as usize;
 
         if !by_special {
+            // TODO: some animation of the distraction falling apart
+
             continue;
         }
 
-        let gravity_grid_coords = PoissonsEquationUpdateEvent::send(
-            &mut gravity,
-            1.5, // TODO
-            ChangeOfBasis::new(*at_translation),
-        );
-
         trace!("Spawning black hole");
-        commands
-            .spawn((
-                BlackHole(gravity_grid_coords, Stopwatch::new()),
-                SpriteSheetBundle {
-                    texture_atlas: texture_atlases.add(
-                        TextureAtlas::from_grid(
-                            asset_server
-                                .load("textures/distractions/blackhole.png"),
-                            vec2(100.0, 100.0), // TODO
-                            5,
-                            1,
-                            None,
-                            None,
-                        ),
+        spawn_black_hole(
+            &mut commands,
+            &asset_server,
+            &mut texture_atlases,
+            &mut gravity,
+            *at_translation,
+        );
+    }
+}
+
+/// Includes effects of gravity on the poissons equation.
+fn spawn_black_hole(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+    gravity: &mut EventWriter<PoissonsEquationUpdateEvent<Gravity>>,
+    at_translation: Vec2,
+) {
+    let gravity_grid_coords = PoissonsEquationUpdateEvent::send(
+        gravity,
+        BLACKHOLE_GRAVITY,
+        ChangeOfBasis::new(at_translation),
+    );
+
+    let on_last_frame = AnimationEnd::Custom(Box::new(
+        move |entity,
+              _animation,
+              _timer,
+              _atlas,
+              _visibility,
+              commands,
+              _time| {
+            // delete the black hole
+            commands.entity(entity).despawn_recursive();
+
+            // remove gravity influence
+            commands.add(move |world: &mut World| {
+                world.send_event(PoissonsEquationUpdateEvent::<Gravity>::new(
+                    -BLACKHOLE_GRAVITY,
+                    ChangeOfBasis::new(at_translation),
+                ))
+            });
+        },
+    ));
+
+    commands
+        .spawn(BlackHole(gravity_grid_coords, Stopwatch::new()))
+        .insert((
+            Animation {
+                first: 0,
+                last: BLACKHOLE_ATLAS_FRAMES - 1,
+                on_last_frame,
+            },
+            BeginAnimationAtRandom {
+                chance_per_second: 0.25,               // TODO
+                frame_time: Duration::from_millis(40), // TODO
+            },
+        ))
+        .insert(SpriteSheetBundle {
+            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                asset_server.load("textures/distractions/blackhole_atlas.png"),
+                vec2(BLACKHOLE_SPRITE_SIZE, BLACKHOLE_SPRITE_SIZE),
+                BLACKHOLE_ATLAS_FRAMES,
+                1,
+                None,
+                None,
+            )),
+            transform: Transform::from_translation(
+                at_translation.extend(zindex::BLACK_HOLE),
+            ),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn((
+                Flicker::new(
+                    BLACKHOLE_FLICKER_CHANCE_PER_SECOND,
+                    BLACKHOLE_FLICKER_DURATION,
+                ),
+                SpriteBundle {
+                    texture: asset_server.load(
+                        "textures/distractions/blackhole_flicker.png"
+                            .to_string(),
                     ),
-                    sprite: TextureAtlasSprite {
-                        index: 4,
-                        ..default()
-                    },
-                    transform: Transform::from_translation(
-                        at_translation.extend(zindex::BLACK_HOLE),
-                    ),
+                    transform: Transform::from_translation(Vec3::new(
+                        0.0,
+                        0.0,
+                        zindex::BLACK_HOLE_TWINKLE,
+                    )),
                     ..default()
                 },
-            ))
-            .with_children(|parent| {
-                parent.spawn((
-                    Flicker::new(
-                        BLACKHOLE_FLICKER_CHANCE_PER_SECOND,
-                        BLACKHOLE_FLICKER_DURATION,
-                    ),
-                    SpriteBundle {
-                        texture: asset_server.load(
-                            "textures/distractions/blackhole_flicker.png"
-                                .to_string(),
-                        ),
-                        transform: Transform::from_translation(Vec3::new(
-                            0.0,
-                            0.0,
-                            zindex::BLACK_HOLE_TWINKLE,
-                        )),
-                        ..default()
-                    },
-                ));
-            });
-    }
+            ));
+        });
 }
 
 impl Distraction {
