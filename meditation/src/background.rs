@@ -4,7 +4,7 @@
 //! in, and increase hellish red light from the edges or edge distractions.
 
 use bevy::math::vec3;
-use bevy_magic_light_2d::gi::types::{OmniLightSource2D, SkylightLight2D};
+use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
 use crate::prelude::*;
 
@@ -27,12 +27,6 @@ pub(crate) fn spawn(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    // default lighting otherwise we'd have darkness everywhere
-    commands.spawn(SkylightLight2D {
-        color: Color::hex(COLOR).unwrap(),
-        intensity: 0.1,
-    });
-
     commands.spawn((SpriteBundle {
         texture: asset_server.load("textures/bg/default.png"),
         transform: Transform::from_translation(Vec3::new(
@@ -111,7 +105,7 @@ fn spawn_light_sources(commands: &mut Commands) {
             ..default()
         },
         OmniLightSource2D {
-            intensity: 0.75,
+            intensity: 0.5,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
             jitter_intensity: 0.5,
             falloff: Vec3::new(1.0, 1.0, 0.05),
@@ -141,9 +135,9 @@ fn spawn_light_sources(commands: &mut Commands) {
             ..default()
         },
         OmniLightSource2D {
-            intensity: 0.1,
+            intensity: 0.05,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
-            falloff: Vec3::new(50.0, 50.0, 0.05),
+            falloff: Vec3::new(35.0, 35.0, 0.05),
             ..default()
         },
     ));
@@ -155,9 +149,9 @@ fn spawn_light_sources(commands: &mut Commands) {
             ..default()
         },
         OmniLightSource2D {
-            intensity: 0.1,
+            intensity: 0.05,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
-            falloff: Vec3::new(50.0, 50.0, 0.05),
+            falloff: Vec3::new(35.0, 35.0, 0.05),
             ..default()
         },
     ));

@@ -1,13 +1,29 @@
+use crate::prelude::*;
 use rand::random;
 
-use crate::prelude::*;
+/// This gets shuffled so order doesn't matter.
+pub(crate) const ALL_VIDEOS: [Video; 10] = [
+    Video::Alex,
+    Video::Bunny,
+    Video::Dance,
+    Video::Fragrance,
+    Video::Knight,
+    Video::Mukbang,
+    Video::Panda,
+    Video::Puppy,
+    Video::Sandwich,
+    Video::Vampire,
+];
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub(super) enum Video {
+    // Group 1 comprises verbal videos.
     Alex,
+    Fragrance,
+
+    // Group 2 comprises videos with sound/music only.
     Bunny,
     Dance,
-    Fragrance,
     Knight,
     Mukbang,
     Panda,
@@ -17,6 +33,10 @@ pub(super) enum Video {
 }
 
 impl Video {
+    pub(super) fn is_verbal(self) -> bool {
+        matches!(self, Self::Alex | Self::Fragrance)
+    }
+
     pub(super) fn spawn(
         self,
         parent: &mut ChildBuilder,

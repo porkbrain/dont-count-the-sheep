@@ -1,7 +1,9 @@
+mod consts;
+mod spawner;
 mod videos;
 
 use bevy::time::Stopwatch;
-use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
+use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
 
 use crate::path::LevelPath;
@@ -11,45 +13,12 @@ use crate::{
     prelude::*,
     weather::{self, Weather},
 };
+use consts::*;
 use videos::Video;
-
-/// If special is casted within this distance of the distraction, then destroy
-/// it.
-const WEATHER_SPECIAL_HITBOX_RADIUS: f32 = 35.0;
-/// The actual pixel size of the image.
-const DISTRACTION_SPRITE_SIZE: f32 = 100.0;
-/// There's some empty space around the sprite.
-const DISTRACTION_PERCEIVED_SIZE: f32 = 50.0;
-/// As more light is shone, more cracks appear on the distraction.
-const MAX_CRACKS: usize = 5;
-/// By default, occluder is pushed towards the climate.
-const PUSH_BACK_FORCE_AT_REST: f32 = -20.0;
-const PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 25.0;
-/// At this distance, the occulder is pushed back by half of
-/// [`PUSH_BACK_FORCE_WEATHER_DISTANCE`].
-const HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 150.0;
-const PUSH_BACK_FORCE_WEATHER_DISTANCE: f32 = 50.0;
-/// If light is shone on the distraction, it has a chance to crack.
-const CRACK_CHANCE_PER_SECOND: f32 = 1.0;
-
-/// Plays static as on old TVs.
-const STATIC_ATLAS_FRAMES: usize = 5;
-/// How long each frame of static is shown.
-const STATIC_ATLAS_FRAME_TIME: Duration = Duration::from_millis(50);
-
-/// Black hole affects the poissons equation by being a source this strong.
-const BLACK_HOLE_GRAVITY: f32 = 1.5;
-const BLACK_HOLE_SPRITE_SIZE: f32 = 100.0;
-const BLACK_HOLE_ATLAS_FRAMES: usize = 5;
-/// Every now and then the black hole flickers with some lights
-const BLACK_HOLE_FLICKER_CHANCE_PER_SECOND: f32 = 0.5;
-const BLACK_HOLE_FLICKER_DURATION: Duration = Duration::from_millis(100);
-const BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND: f32 = 0.1;
-/// When despawning, the black hole collapses into itself.
-const BLACK_HOLE_FRAME_TIME: Duration = Duration::from_millis(40);
 
 #[derive(Component)]
 pub(crate) struct Distraction {
+    video: Video,
     current_path_since: Stopwatch,
     path: LevelPath,
     transition_into: Option<LevelPath>,
@@ -63,6 +32,9 @@ struct BlackHole(GridCoords, Stopwatch);
 
 #[derive(Event)]
 struct DistractionDestroyedEvent {
+    /// Which video was playing on the distraction.
+    video: Video,
+    /// Where the distraction was when it was destroyed.
     at_translation: Vec2,
     /// Whether the distraction was destroyed by the weather special or by
     /// just accumulating cracks.
@@ -74,18 +46,20 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<DistractionDestroyedEvent>()
-            .add_systems(Startup, spawn)
+            .insert_resource(spawner::Spawner::new())
             .add_systems(
                 Update,
                 (
-                    follow_curve,
+                    spawner::try_spawn_next,
+                    // `after` so that the distraction does not for 1 frame
+                    // appear in the middle
+                    follow_curve.after(spawner::try_spawn_next),
                     react_to_environment,
-                    react_to_weather_special.after(
-                        weather::loading_special_system.into_system_set(),
-                    ),
+                    react_to_weather_special
+                        .after(weather::loading_special_system),
                     destroyed
-                        .after(react_to_weather_special.into_system_set())
-                        .after(react_to_environment.into_system_set()),
+                        .after(react_to_weather_special)
+                        .after(react_to_environment),
                 ),
             );
     }
@@ -93,77 +67,6 @@ impl bevy::app::Plugin for Plugin {
     fn finish(&self, _app: &mut App) {
         //
     }
-}
-
-fn spawn(
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut commands: Commands,
-) {
-    commands
-        .spawn((Distraction::new(), AngularVelocity::default()))
-        .insert(SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load("textures/distractions/crack_atlas.png"),
-                vec2(DISTRACTION_SPRITE_SIZE, DISTRACTION_SPRITE_SIZE),
-                MAX_CRACKS,
-                1,
-                None,
-                None,
-            )),
-            sprite: TextureAtlasSprite::new(0),
-            transform: Transform::from_translation(Vec3::new(
-                0.0,
-                0.0,
-                zindex::DISTRACTION_CRACK,
-            )),
-            ..default()
-        })
-        .with_children(|parent| {
-            parent.spawn(SpriteBundle {
-                texture: asset_server.load("textures/distractions/frame.png"),
-                transform: Transform::from_translation(Vec3::new(
-                    0.0,
-                    0.0,
-                    zindex::DISTRACTION_FRAME,
-                )),
-                ..default()
-            });
-
-            // TODO: vary videos
-            // TODO: sound
-            Video::Panda.spawn(parent, &asset_server);
-
-            parent.spawn((
-                DistractionOccluder,
-                // SpriteBundle {
-                //     sprite: Sprite {
-                //         color: Color::RED,
-                //         custom_size: Some(Vec2::new(
-                //             DISTRACTION_PERCEIVED_SIZE,
-                //             DISTRACTION_PERCEIVED_SIZE,
-                //         )),
-                //         ..default()
-                //     },
-                //     transform: Transform::from_translation(Vec3::new(
-                //         0., 0., 100.,
-                //     )), // TODO
-                //     ..default()
-                // },
-                SpatialBundle {
-                    transform: Transform::from_translation(Vec3::new(
-                        0.0, 0.0, 100.0, // TODO
-                    )),
-                    ..default()
-                },
-                LightOccluder2D {
-                    h_size: Vec2::new(
-                        DISTRACTION_PERCEIVED_SIZE,
-                        DISTRACTION_PERCEIVED_SIZE,
-                    ),
-                },
-            ));
-        });
 }
 
 /// Climate has something similar, but without the level up logic.
@@ -209,10 +112,7 @@ fn react_to_weather_special(
     mut score: EventWriter<DistractionDestroyedEvent>,
     mut weather_actions: EventReader<weather::ActionEvent>,
     weather: Query<&Transform, (With<Weather>, Without<Distraction>)>,
-    distraction: Query<
-        (Entity, &Transform),
-        (Without<Weather>, With<Distraction>),
-    >,
+    distractions: Query<(Entity, &Distraction, &Transform), Without<Weather>>,
     mut commands: Commands,
 ) {
     if game.is_empty() {
@@ -234,13 +134,14 @@ fn react_to_weather_special(
 
     let weather_translation = weather_transform.translation.truncate();
 
-    for (entity, transform) in distraction.iter() {
+    for (entity, distraction, transform) in distractions.iter() {
         let translation = transform.translation.truncate();
         let distance_to_weather = translation.distance(weather_translation);
 
         if distance_to_weather <= WEATHER_SPECIAL_HITBOX_RADIUS {
             debug!("Distraction destroy by special event sent");
             score.send(DistractionDestroyedEvent {
+                video: distraction.video,
                 by_special: true,
                 at_translation: translation,
             });
@@ -291,11 +192,10 @@ fn react_to_environment(
         ),
     >,
     mut distractions: Query<
-        (Entity, &Transform, &mut TextureAtlasSprite),
+        (Entity, &Distraction, &Transform, &mut TextureAtlasSprite),
         (
             Without<Climate>,
             Without<Weather>,
-            With<Distraction>,
             Without<DistractionOccluder>,
         ),
     >,
@@ -319,9 +219,10 @@ fn react_to_environment(
     };
 
     for (distraction_id, mut occluder_pos) in distraction_occluders.iter_mut() {
-        let (distraction, distraction_pos, mut sprite) = distractions
-            .get_mut(distraction_id.get())
-            .expect("Each occluder should have a distraction parent");
+        let (distraction_entity, distraction, distraction_pos, mut sprite) =
+            distractions
+                .get_mut(distraction_id.get())
+                .expect("Each occluder should have a distraction parent");
 
         //
         // 1.
@@ -404,7 +305,7 @@ fn react_to_environment(
                     })
                     .id();
 
-                commands.entity(distraction).add_child(static_entity);
+                commands.entity(distraction_entity).add_child(static_entity);
             }
         } else if should_crack && is_on_last_crack {
             //
@@ -413,11 +314,12 @@ fn react_to_environment(
 
             debug!("Distraction destroy event sent");
             score.send(DistractionDestroyedEvent {
+                video: distraction.video,
                 by_special: false,
                 at_translation: distraction_pos.translation.truncate(),
             });
 
-            commands.entity(distraction).despawn_recursive();
+            commands.entity(distraction_entity).despawn_recursive();
         }
 
         //
@@ -442,10 +344,13 @@ fn react_to_environment(
 
 /// Either distraction is destroyed by the weather special or by accumulating
 /// cracks.
+///
+/// TODO: bug sometimes black hole not removed
 fn destroyed(
     game: Query<&Game>,
-    mut events: EventReader<DistractionDestroyedEvent>,
     mut score: Query<&mut crate::ui::Score>,
+    mut spawner: ResMut<spawner::Spawner>,
+    mut events: EventReader<DistractionDestroyedEvent>,
     mut gravity: EventWriter<PoissonsEquationUpdateEvent<Gravity>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -455,9 +360,14 @@ fn destroyed(
         return;
     }
 
+    if events.is_empty() {
+        return;
+    }
+
     let mut score = score.single_mut();
 
     for DistractionDestroyedEvent {
+        video,
         at_translation,
         by_special,
     } in events.read()
@@ -466,6 +376,8 @@ fn destroyed(
 
         // the further away the distraction is, the more points it's worth
         *score += at_translation.length() as usize;
+        // notify the spawner that the distraction is gone
+        spawner.despawn(*video);
 
         if !by_special {
             // TODO: some animation of the distraction falling apart
@@ -569,6 +481,14 @@ fn spawn_black_hole(
 }
 
 impl Distraction {
+    pub(crate) fn pause(&mut self) {
+        self.current_path_since.pause();
+    }
+
+    pub(crate) fn resume(&mut self) {
+        self.current_path_since.unpause();
+    }
+
     fn path_segment(&self) -> (usize, f32) {
         self.path.segment(&self.current_path_since.elapsed())
     }
@@ -578,19 +498,12 @@ impl Distraction {
             as usize
     }
 
-    pub(crate) fn new() -> Self {
+    fn new(video: Video) -> Self {
         Self {
+            video,
             path: LevelPath::random_intro(),
             current_path_since: Stopwatch::new(),
             transition_into: None,
         }
-    }
-
-    pub(crate) fn pause(&mut self) {
-        self.current_path_since.pause();
-    }
-
-    pub(crate) fn resume(&mut self) {
-        self.current_path_since.unpause();
     }
 }

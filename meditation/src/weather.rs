@@ -51,11 +51,10 @@ impl bevy::app::Plugin for Plugin {
                     anim::sprite_loading_special,
                     controls::normal,
                     controls::loading_special,
-                    anim::update_camera_on_special
-                        .after(controls::normal.into_system_set()),
+                    anim::update_camera_on_special.after(controls::normal),
                     anim::sprite
-                        .after(controls::normal.into_system_set())
-                        .after(controls::loading_special.into_system_set()),
+                        .after(controls::normal)
+                        .after(controls::loading_special),
                 ),
             );
     }

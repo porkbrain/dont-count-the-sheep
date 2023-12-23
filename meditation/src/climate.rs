@@ -12,13 +12,13 @@ use crate::{path::LevelPath, prelude::*};
 /// Climate casts light rays.
 /// We achieve those light rays by orbiting occluders around the climate.
 /// How strong are they?
-const LIGHT_INTENSITY: f32 = 2.5;
+const LIGHT_INTENSITY: f32 = 3.0;
 /// TODO: Something warm but spacy?
 const LIGHT_COLOR: Color = Color::rgb(0.6, 0.3, 0.1);
 /// Determines how many rays are casted.
 const OCCLUDER_COUNT: usize = 5;
 /// Determines the ray size.
-const OCCLUDER_SIZE: f32 = 12.5;
+const OCCLUDER_SIZE: f32 = 14.5;
 /// Determines the ray slope.
 const OCCLUDER_DISTANCE: f32 = 45.0;
 /// Occluders are evenly distributed around the climate.

@@ -41,6 +41,7 @@ use bevy_magic_light_2d::{
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
 
+/// TODO: make it a resource
 #[derive(Component)]
 struct Game;
 
