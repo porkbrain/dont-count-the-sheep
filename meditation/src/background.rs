@@ -28,24 +28,24 @@ pub(crate) fn spawn(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     // default lighting otherwise we'd have darkness everywhere
-    // commands.spawn(SkylightLight2D {
-    //     color: Color::hex(COLOR).unwrap(),
-    //     intensity: 0.1,
-    // });
+    commands.spawn(SkylightLight2D {
+        color: Color::hex(COLOR).unwrap(),
+        intensity: 0.1,
+    });
 
-    // commands.spawn((SpriteBundle {
-    //     texture: asset_server.load("textures/bg/default.png"),
-    //     transform: Transform::from_translation(Vec3::new(
-    //         0.0,
-    //         0.0,
-    //         zindex::MAIN_BACKGROUND,
-    //     )),
-    //     ..default()
-    // },));
+    commands.spawn((SpriteBundle {
+        texture: asset_server.load("textures/bg/default.png"),
+        transform: Transform::from_translation(Vec3::new(
+            0.0,
+            0.0,
+            zindex::MAIN_BACKGROUND,
+        )),
+        ..default()
+    },));
 
-    // spawn_twinkles(&mut commands, &asset_server);
-    // spawn_light_sources(&mut commands);
-    // spawn_shooting_star(&mut commands, &asset_server, &mut texture_atlases);
+    spawn_twinkles(&mut commands, &asset_server);
+    spawn_light_sources(&mut commands);
+    spawn_shooting_star(&mut commands, &asset_server, &mut texture_atlases);
 }
 
 fn spawn_twinkles(commands: &mut Commands, asset_server: &Res<AssetServer>) {

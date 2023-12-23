@@ -1,7 +1,6 @@
 use bevy::time::Stopwatch;
 // use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
-use rand::thread_rng;
 
 use crate::{
     climate::Climate,
@@ -394,12 +393,12 @@ pub(crate) fn react_to_environment(
         //
 
         /// By default, occluder is pushed towards the climate.
-        const PUSH_BACK_FORCE_AT_REST: f32 = -25.0;
+        const PUSH_BACK_FORCE_AT_REST: f32 = -20.0;
         const PUSH_BACK_FORCE_WEATHER_DISTANCE: f32 = 50.0;
-        const PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 50.0;
+        const PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 25.0;
         /// At this distance, the occulder is pushed back by half of
         /// [`PUSH_BACK_FORCE_WEATHER_DISTANCE`].
-        const HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 100.0;
+        const HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 150.0;
 
         // between [0; 1], increases as weather gets closer to distraction
         let weather_ray_bath = {
@@ -409,17 +408,10 @@ pub(crate) fn react_to_environment(
         };
 
         // between [0; 1], how much is the distraction being lit by the climate
-        let angle_to_ray = climate.angle_between_closest_ray_and_point(
+        let climate_ray_bath = climate.ray_bath(
             climate_transform.translation.truncate(),
             distraction.translation.truncate(),
         );
-        // let climate_ray_bath = 1.0 - (PI / 12.0 - angle_to_ray.min(PI /
-        // 12.0));
-        println!("angle_to_ray {angle_to_ray}");
-        println!("climate {}", climate_transform.translation.truncate());
-        println!("distraction {}", distraction.translation.truncate());
-        let climate_ray_bath = 1.0 - angle_to_ray.clamp(0.0, 1.0);
-        println!("climate_ray_bath {climate_ray_bath}\n");
 
         //
         // 2.
@@ -434,7 +426,7 @@ pub(crate) fn react_to_environment(
         // 3.
         //
 
-        // TODO
+        println!("{push_back_force}");
 
         //
         // 4.

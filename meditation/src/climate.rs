@@ -9,13 +9,26 @@ use rand::thread_rng;
 
 use crate::{path::LevelPath, prelude::*};
 
+/// Climate casts light rays.
+/// We achieve those light rays by orbiting occluders around the climate.
+/// How strong are they?
+const LIGHT_INTENSITY: f32 = 2.5;
+/// TODO: Something warm but spacy?
+const LIGHT_COLOR: Color = Color::GOLD;
+/// Determines how many rays are casted.
 const OCCLUDER_COUNT: usize = 6;
+/// Determines the ray size.
 const OCCLUDER_SIZE: f32 = 12.5;
+/// Determines the ray slope.
 const OCCLUDER_DISTANCE: f32 = 45.0;
 /// evenly spaced holes in circle around climate
 const OCCLUDER_SPACING: f32 = 2.0;
-pub(crate) const INITIAL_OCCLUDER_ROTATION: f32 =
+/// Occluders are evenly distributed around the climate.
+/// We calculate the distribution around for the 1st occluder (0th starts at 0).
+const INITIAL_OCCLUDER_ROTATION: f32 =
     2.0 * PI * OCCLUDER_SPACING / (OCCLUDER_COUNT as f32 * OCCLUDER_SPACING);
+/// How far can the ray reach?
+const MAX_RAY_ANGULAR_DISTANCE: f32 = PI / 12.0;
 
 #[derive(Component)]
 pub(crate) struct Climate {
@@ -26,9 +39,11 @@ pub(crate) struct Climate {
     rays_timer: Stopwatch,
 }
 
+/// Source of light at the center of the climate.
 #[derive(Component)]
 struct ClimateLight;
 
+/// Evenly distributed around the climate, they shape the light into rays.
 #[derive(Component)]
 struct ClimateOccluder {
     initial_rotation: f32,
@@ -71,8 +86,8 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
         ))
         .insert(OmniLightSource2D {
-            intensity: 2.5,                    // TODO
-            color: Color::rgb_u8(137, 79, 24), // TODO
+            intensity: LIGHT_INTENSITY,
+            color: LIGHT_COLOR,
             // TODO: jitter the more distractions there are
             falloff: Vec3::new(50.0, 50.0, 0.05),
             ..default()
@@ -123,10 +138,14 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     }
 }
 
+// TODO: dev feature
 fn visualize_raypoints(
     game: Query<&Game, Without<Paused>>,
     climate: Query<(&Climate, &Transform)>,
-    mut raypoints: Query<(&Transform, &mut Visibility), With<RayPoint>>,
+    mut raypoints: Query<
+        (&Transform, &mut Visibility, &mut Sprite),
+        With<RayPoint>,
+    >,
 ) {
     if game.is_empty() {
         return;
@@ -134,13 +153,15 @@ fn visualize_raypoints(
 
     let (climate, climate_transform) = climate.single();
 
-    for (transform, mut visibility) in raypoints.iter_mut() {
-        let angle = climate.angle_between_closest_ray_and_point(
+    for (transform, mut visibility, mut sprite) in raypoints.iter_mut() {
+        let ray_bath = climate.ray_bath(
             climate_transform.translation.truncate(),
             transform.translation.truncate(),
         );
 
-        *visibility = if angle < 0.2 {
+        *visibility = if ray_bath > f32::EPSILON {
+            sprite.color.set_a(ray_bath);
+
             Visibility::Visible
         } else {
             Visibility::Hidden
@@ -211,6 +232,19 @@ impl Climate {
         self
     }
 
+    /// In interval [0, 1], how strongly is target lit by the climate?
+    /// This ignores any possible obstacle in the way and just computes angle
+    /// between the closest ray and the target.
+    pub(crate) fn ray_bath(&self, climate_pos: Vec2, target: Vec2) -> f32 {
+        let angle_to_ray =
+            self.angle_between_closest_ray_and_point(climate_pos, target);
+
+        // a smooth monotonically decreasing function (-x^2)
+        -MAX_RAY_ANGULAR_DISTANCE.powi(-2)
+            * angle_to_ray.clamp(0.0, MAX_RAY_ANGULAR_DISTANCE).powi(2)
+            + 1.0
+    }
+
     /// Calculates the angle between the closest ray and the given position.
     /// Rays are casted from the climate.
     /// We can think of them as straight lines forming a star of sorts with
@@ -233,7 +267,7 @@ impl Climate {
 
     #[inline]
     fn change_in_ray_angle_over_time(&self) -> f32 {
-        (self.rays_timer.elapsed_secs() * 0.5) % INITIAL_OCCLUDER_ROTATION
+        (self.rays_timer.elapsed_secs() * 0.25) % INITIAL_OCCLUDER_ROTATION
     }
 
     fn new() -> Self {
