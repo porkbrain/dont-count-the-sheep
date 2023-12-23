@@ -7,8 +7,7 @@ use super::consts::*;
 #[derive(Component, Default, Deref, DerefMut)]
 pub(crate) struct Score(usize);
 
-
-pub(crate) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((NodeBundle {
             style: Style {
@@ -34,7 +33,7 @@ pub(crate) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-pub(crate) fn update(mut score: Query<(&Score, &mut Text)>) {
+pub(super) fn update(mut score: Query<(&Score, &mut Text)>) {
     let Ok((score, mut text)) = score.get_single_mut() else {
         return;
     };

@@ -1,7 +1,5 @@
 //! When weather is off screen we show a little arrow pointing to it on the edge
 //! of the screen closest to the point where weather is.
-//!
-//! TODO: light should not affect the arrow
 
 use std::f32::consts::PI;
 
@@ -19,7 +17,7 @@ use super::{consts::MAX_ARROW_PUSH_BACK, Weather};
 const LIGHT_COLOR: &str = "#d9ff75";
 
 #[derive(Component)]
-pub(crate) struct Arrow;
+pub(super) struct Arrow;
 
 enum OffScreen {
     Horizontal,
@@ -27,7 +25,8 @@ enum OffScreen {
     Both,
 }
 
-pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
+/// Arrow is hidden by default and shown when weather is off screen
+pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Arrow,
         SpriteBundle {
@@ -52,7 +51,7 @@ pub(crate) fn spawn(commands: &mut Commands, asset_server: &Res<AssetServer>) {
 
 /// Renders the arrow pointing to the weather when it's off screen.
 /// Hides the arrow when the weather is on screen.
-pub(crate) fn point_arrow(
+pub(super) fn point_arrow(
     game: Query<&Game, Without<Paused>>,
     weather: Query<&Transform, (With<Weather>, Without<Arrow>)>,
     mut arrow: Query<

@@ -5,7 +5,6 @@ use std::f32::consts::PI;
 
 use bevy::time::Stopwatch;
 use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
-use rand::thread_rng;
 
 use crate::{path::LevelPath, prelude::*};
 
@@ -14,7 +13,7 @@ use crate::{path::LevelPath, prelude::*};
 /// How strong are they?
 const LIGHT_INTENSITY: f32 = 2.5;
 /// TODO: Something warm but spacy?
-const LIGHT_COLOR: Color = Color::GOLD;
+const LIGHT_COLOR: Color = Color::rgb(0.6, 0.3, 0.1);
 /// Determines how many rays are casted.
 const OCCLUDER_COUNT: usize = 6;
 /// Determines the ray size.
@@ -38,11 +37,9 @@ pub(crate) struct Climate {
     /// Allows us to pause the ray animation when the game is paused.
     rays_timer: Stopwatch,
 }
-
 /// Source of light at the center of the climate.
 #[derive(Component)]
 struct ClimateLight;
-
 /// Evenly distributed around the climate, they shape the light into rays.
 #[derive(Component)]
 struct ClimateOccluder {
@@ -50,7 +47,7 @@ struct ClimateOccluder {
 }
 
 /// Point which is shown when being lit by the climate.
-/// TODO: hide behind dev feature
+#[cfg(feature = "dev")]
 #[derive(Component)]
 struct RayPoint;
 
@@ -60,10 +57,10 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn)
             .register_type::<LightOccluder2D>()
-            .add_systems(
-                Update,
-                (follow_curve, move_occluders, visualize_raypoints),
-            );
+            .add_systems(Update, (follow_curve, move_occluders));
+
+        #[cfg(feature = "dev")]
+        app.add_systems(Update, visualize_raypoints);
     }
 
     fn finish(&self, _app: &mut App) {
@@ -118,9 +115,11 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         ));
     }
 
-    // TODO: dev feature
+    #[cfg(feature = "dev")]
     for _ in 0..10000 {
-        use rand::Rng;
+        // spawns random points across the screen that will be lit by the rays
+
+        use rand::{thread_rng, Rng};
 
         let x = thread_rng().gen_range(-320.0..320.0);
         let y = thread_rng().gen_range(-180.0..180.0);
@@ -135,37 +134,6 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             visibility: Visibility::Hidden,
             ..default()
         });
-    }
-}
-
-// TODO: dev feature
-fn visualize_raypoints(
-    game: Query<&Game, Without<Paused>>,
-    climate: Query<(&Climate, &Transform)>,
-    mut raypoints: Query<
-        (&Transform, &mut Visibility, &mut Sprite),
-        With<RayPoint>,
-    >,
-) {
-    if game.is_empty() {
-        return;
-    }
-
-    let (climate, climate_transform) = climate.single();
-
-    for (transform, mut visibility, mut sprite) in raypoints.iter_mut() {
-        let ray_bath = climate.ray_bath(
-            climate_transform.translation.truncate(),
-            transform.translation.truncate(),
-        );
-
-        *visibility = if ray_bath > f32::EPSILON {
-            sprite.color.set_a(ray_bath);
-
-            Visibility::Visible
-        } else {
-            Visibility::Hidden
-        };
     }
 }
 
@@ -325,6 +293,37 @@ fn angle_between_closest_ray_and_point(
         half_rotation - (half_rotation - angle_between_next_ray).abs();
 
     angle_between_closest_ray
+}
+
+#[cfg(feature = "dev")]
+fn visualize_raypoints(
+    game: Query<&Game, Without<Paused>>,
+    climate: Query<(&Climate, &Transform)>,
+    mut raypoints: Query<
+        (&Transform, &mut Visibility, &mut Sprite),
+        With<RayPoint>,
+    >,
+) {
+    if game.is_empty() {
+        return;
+    }
+
+    let (climate, climate_transform) = climate.single();
+
+    for (transform, mut visibility, mut sprite) in raypoints.iter_mut() {
+        let ray_bath = climate.ray_bath(
+            climate_transform.translation.truncate(),
+            transform.translation.truncate(),
+        );
+
+        *visibility = if ray_bath > f32::EPSILON {
+            sprite.color.set_a(ray_bath);
+
+            Visibility::Visible
+        } else {
+            Visibility::Hidden
+        };
+    }
 }
 
 #[cfg(test)]

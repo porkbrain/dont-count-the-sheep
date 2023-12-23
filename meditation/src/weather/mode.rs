@@ -5,37 +5,37 @@ use bevy::{
 
 use crate::prelude::Radians;
 
-pub(crate) trait Mode {
+pub(super) trait Mode {
     fn tick(&mut self, time: &Time);
 }
 
 #[derive(Component)]
-pub(crate) struct Normal {
+pub(super) struct Normal {
     /// weather has a limited number of jumps before it must reset
     /// via the [`Climate`]
-    pub(crate) jumps: u8,
+    pub(super) jumps: u8,
     /// there's a minimum delay between jumps
-    pub(crate) last_jump: Stopwatch,
+    pub(super) last_jump: Stopwatch,
     /// there's a minimum delay between dashes
-    pub(crate) last_dash: Stopwatch,
+    pub(super) last_dash: Stopwatch,
     /// there's a minimum delay between dips
-    pub(crate) last_dip: Stopwatch,
+    pub(super) last_dip: Stopwatch,
     /// weather can only use its special ability once per reset
-    pub(crate) can_use_special: bool,
+    pub(super) can_use_special: bool,
 }
 
 #[derive(Component, Default)]
-pub(crate) struct LoadingSpecial {
+pub(super) struct LoadingSpecial {
     /// Angle is given by the combination of keys pressed.
     /// See [`unit_circle_angle`].
     ///
     /// If the no angle was chosen then the special is canceled.
-    pub(crate) angle: Option<Radians>,
+    pub(super) angle: Option<Radians>,
     /// special mode has a set duration after which it fires
-    pub(crate) activated: Stopwatch,
+    pub(super) activated: Stopwatch,
     /// once special is fired, weather can only do the same amount of jumps
     /// as it had before
-    pub(crate) jumps: u8,
+    pub(super) jumps: u8,
 }
 
 impl Mode for Normal {

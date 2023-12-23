@@ -3,26 +3,17 @@
 //! screen but is somewhat free.
 //! Reminds me of the analogy made by Niel deGrasse Tyson.
 
-pub(crate) mod anim;
-pub(crate) mod arrow;
+mod anim;
+mod arrow;
 pub(crate) mod consts;
-pub(crate) mod controls;
+mod controls;
 mod sprite;
 
-use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
-
-use crate::{control_mode, prelude::*};
+pub(crate) use controls::loading_special as loading_special_system;
 
 use self::consts::*;
-
-#[derive(Component)]
-pub(crate) struct Weather;
-
-#[derive(Component)]
-pub(crate) struct WeatherBody;
-
-#[derive(Component)]
-pub(crate) struct WeatherFace;
+use crate::{control_mode, prelude::*};
+use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
 
 #[derive(Event, Clone, Copy)]
 pub(crate) enum ActionEvent {
@@ -39,13 +30,47 @@ pub(crate) enum ActionEvent {
     },
 }
 
+#[derive(Component)]
+pub(crate) struct Weather;
+#[derive(Component)]
+struct WeatherBody;
+#[derive(Component)]
+struct WeatherFace;
+
+pub(crate) struct Plugin;
+
+impl bevy::app::Plugin for Plugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<ActionEvent>()
+            .add_systems(Startup, (spawn, arrow::spawn))
+            .add_systems(
+                Update,
+                (
+                    anim::rotate,
+                    arrow::point_arrow,
+                    anim::sprite_loading_special,
+                    controls::normal,
+                    controls::loading_special,
+                    anim::update_camera_on_special
+                        .after(controls::normal.into_system_set()),
+                    anim::sprite
+                        .after(controls::normal.into_system_set())
+                        .after(controls::loading_special.into_system_set()),
+                ),
+            );
+    }
+
+    fn finish(&self, _app: &mut App) {
+        //
+    }
+}
+
 /// 1. spriteless parent which commands the movement
 /// 2. body sprite, child of parent
 /// 3. face sprite, child of parent
 /// 4. spark effect is hidden by default and shown when special is fired
-/// 5. arrow is hidden by default and shown when weather is off screen
-/// 6. setup camera state which is affected by going into special
-pub(crate) fn spawn(
+/// 5. setup camera state which is affected by going into special
+fn spawn(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut commands: Commands,
@@ -161,10 +186,6 @@ pub(crate) fn spawn(
     ));
     //
     // 5.
-    //
-    arrow::spawn(&mut commands, &asset_server);
-    //
-    // 6.
     //
     commands.spawn(anim::CameraState::default());
 }

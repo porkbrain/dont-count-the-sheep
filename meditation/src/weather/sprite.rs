@@ -3,7 +3,7 @@ use crate::prelude::*;
 use std::time::{Duration, Instant};
 
 #[derive(Component)]
-pub(crate) struct Transition {
+pub(super) struct Transition {
     current_body: BodyKind,
     current_body_set_at: Instant,
     current_face: FaceKind,
@@ -14,7 +14,7 @@ pub(crate) struct Transition {
 }
 
 #[derive(Copy, Clone, Default, PartialEq, Eq, Debug)]
-pub(crate) enum BodyKind {
+pub(super) enum BodyKind {
     #[default]
     Default,
     Falling,
@@ -27,7 +27,7 @@ pub(crate) enum BodyKind {
 }
 
 #[derive(Copy, Clone, Default, PartialEq, Eq, Debug)]
-pub(crate) enum FaceKind {
+pub(super) enum FaceKind {
     #[default]
     Default,
     Happy,
@@ -37,7 +37,7 @@ pub(crate) enum FaceKind {
 }
 
 impl BodyKind {
-    pub(crate) fn index(&self) -> usize {
+    pub(super) fn index(&self) -> usize {
         use consts::BODY_ATLAS_COLS as COLS;
         use BodyKind::*;
 
@@ -57,13 +57,13 @@ impl BodyKind {
         }
     }
 
-    pub(crate) fn should_hide_face(&self) -> bool {
+    pub(super) fn should_hide_face(&self) -> bool {
         matches!(self, Self::BootyDanceLeft | Self::BootyDanceRight)
     }
 }
 
 impl FaceKind {
-    pub(crate) fn index(&self) -> usize {
+    pub(super) fn index(&self) -> usize {
         use consts::FACE_ATLAS_COLS as COLS;
         use FaceKind::*;
 
@@ -82,13 +82,13 @@ impl FaceKind {
 
 impl Transition {
     #[inline]
-    pub(crate) fn current_body(&self) -> BodyKind {
+    pub(super) fn current_body(&self) -> BodyKind {
         self.current_body
     }
 
     /// Does nothing if the current body is already the same.
     #[inline]
-    pub(crate) fn update_body(&mut self, kind: BodyKind) {
+    pub(super) fn update_body(&mut self, kind: BodyKind) {
         if kind == self.current_body {
             return;
         }
@@ -100,14 +100,14 @@ impl Transition {
 
     /// Does not check if the current body is already the same.
     #[inline]
-    pub(crate) fn force_update_body(&mut self, kind: BodyKind) {
+    pub(super) fn force_update_body(&mut self, kind: BodyKind) {
         trace!("Force updating body to {kind:?}");
         self.current_body = kind;
         self.current_body_set_at = Instant::now();
     }
 
     #[inline]
-    pub(crate) fn has_elapsed_since_body_change(
+    pub(super) fn has_elapsed_since_body_change(
         &self,
         duration: Duration,
     ) -> bool {
@@ -115,19 +115,19 @@ impl Transition {
     }
 
     #[inline]
-    pub(crate) fn current_body_index(&self) -> usize {
+    pub(super) fn current_body_index(&self) -> usize {
         self.current_body.index()
     }
 
     #[allow(dead_code)]
-    pub(crate) fn is_current_body(&self, kind: BodyKind) -> bool {
+    pub(super) fn is_current_body(&self, kind: BodyKind) -> bool {
         self.current_body == kind
     }
 }
 
 impl Transition {
     #[inline]
-    pub(crate) fn has_elapsed_since_face_change(
+    pub(super) fn has_elapsed_since_face_change(
         &self,
         duration: Duration,
     ) -> bool {
@@ -135,7 +135,7 @@ impl Transition {
     }
 
     #[inline]
-    pub(crate) fn update_face(&mut self, kind: FaceKind) {
+    pub(super) fn update_face(&mut self, kind: FaceKind) {
         if kind == self.current_face {
             return;
         }
@@ -146,14 +146,14 @@ impl Transition {
     }
 
     #[inline]
-    pub(crate) fn current_face_index(&self) -> usize {
+    pub(super) fn current_face_index(&self) -> usize {
         self.current_face.index()
     }
 }
 
 impl Transition {
     #[inline]
-    pub(crate) fn last_action_within(
+    pub(super) fn last_action_within(
         &self,
         within: Duration,
     ) -> Option<ActionEvent> {
@@ -164,7 +164,7 @@ impl Transition {
     }
 
     #[inline]
-    pub(crate) fn update_action(&mut self, action: ActionEvent) {
+    pub(super) fn update_action(&mut self, action: ActionEvent) {
         self.last_action = Some((action, Instant::now()));
     }
 }

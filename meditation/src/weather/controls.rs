@@ -9,7 +9,7 @@ use common_physics::PoissonsEquation;
 use std::f32::consts::PI;
 
 /// Controls when in normal mode.
-pub(crate) fn normal(
+pub(super) fn normal(
     game: Query<&Game, Without<Paused>>,
     mut broadcast: EventWriter<ActionEvent>,
     mut weather: Query<

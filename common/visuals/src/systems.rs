@@ -37,6 +37,9 @@ pub(crate) fn advance_animation(
                             &time,
                         );
                     }
+                    AnimationEnd::Loop => {
+                        atlas.index = animation.first;
+                    }
                 }
             } else {
                 atlas.index += 1

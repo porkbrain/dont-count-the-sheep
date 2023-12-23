@@ -10,6 +10,8 @@ pub struct Animation {
 }
 
 pub enum AnimationEnd {
+    /// Loops the animation.
+    Loop,
     /// Removes the animation timer.
     RemoveTimer,
     /// Can mutate state.

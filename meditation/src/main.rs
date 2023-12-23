@@ -79,43 +79,12 @@ fn main() {
         common_visuals::Plugin,
         ui::Plugin,
         climate::Plugin,
+        distractions::Plugin,
+        weather::Plugin,
     ))
     .insert_resource(ClearColor(Color::hex(background::COLOR).unwrap()))
     .insert_resource(gravity::field())
-    .add_event::<weather::ActionEvent>()
-    .add_event::<distractions::DistractionDestroyedEvent>()
-    .add_systems(
-        Startup,
-        (
-            setup,
-            background::spawn,
-            distractions::spawn,
-            weather::spawn,
-        ),
-    )
-    .add_systems(FixedUpdate, (weather::anim::rotate,))
-    .add_systems(
-        Update,
-        (
-            weather::arrow::point_arrow,
-            weather::anim::sprite_loading_special,
-            distractions::follow_curve,
-            distractions::react_to_environment,
-        ),
-    )
-    .add_systems(
-        Update,
-        (
-            weather::controls::normal,
-            weather::controls::loading_special,
-            // must be after controls bcs events dependency
-            weather::anim::update_camera_on_special,
-            weather::anim::sprite_normal,
-            // must be after react_to_weather bcs events dependency
-            distractions::destroyed,
-        )
-            .chain(),
-    );
+    .add_systems(Startup, (setup, background::spawn));
 
     common_physics::poissons_equation::register::<gravity::Gravity>(&mut app);
 

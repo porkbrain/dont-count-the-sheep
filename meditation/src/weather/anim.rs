@@ -7,7 +7,7 @@ use std::{
 };
 
 #[derive(Component, Default, Clone)]
-pub(crate) enum CameraState {
+pub(super) enum CameraState {
     #[default]
     Normal,
     /// Camera is currently undergoing bloom&zoom effect.
@@ -21,7 +21,7 @@ pub(crate) enum CameraState {
 }
 
 #[derive(Component)]
-pub(crate) struct SparkEffect;
+pub(super) struct SparkEffect;
 
 /// It always take the same time to load special.
 /// That's because it's a very timing critical animation.
@@ -34,7 +34,7 @@ pub(crate) struct SparkEffect;
 ///    loaded.
 /// 5. Weather is off to Mars or wherever while last few frames are playing in
 ///    place. That's why the effect sprite is not a child of weather.
-pub(crate) fn sprite_loading_special(
+pub(super) fn sprite_loading_special(
     game: Query<&Game, Without<Paused>>,
     mut weather: Query<(
         &control_mode::LoadingSpecial,
@@ -123,7 +123,7 @@ pub(crate) fn sprite_loading_special(
 /// Deciding on what sprite to use is a bit complicated.
 /// The sprite is changed based on the last action and the current velocity.
 /// Additionally there's a cooldown on the sprite change.
-pub(crate) fn sprite_normal(
+pub(super) fn sprite(
     game: Query<&Game, Without<Paused>>,
     mut broadcast: EventReader<ActionEvent>,
     mut weather: Query<
@@ -294,7 +294,7 @@ fn sprite_under_no_latest_action_of_interest(
     };
 }
 
-pub(crate) fn rotate(
+pub(super) fn rotate(
     game: Query<&Game, Without<Paused>>,
     mut weather: Query<
         (&Velocity, &mut AngularVelocity, &mut Transform),
@@ -373,7 +373,7 @@ pub(crate) fn rotate(
 /// then resets to initial state.
 ///
 /// We need to do this for each camera in case there are more.
-pub(crate) fn update_camera_on_special(
+pub(super) fn update_camera_on_special(
     game: Query<&Game, Without<Paused>>,
     mut action: EventReader<ActionEvent>,
     mut state: Query<&mut CameraState>,

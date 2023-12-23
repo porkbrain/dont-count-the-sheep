@@ -7,10 +7,10 @@ use crate::{
 use super::consts::*;
 
 #[derive(Component)]
-pub(crate) struct Menu;
+pub(super) struct Menu;
 
 #[derive(Component)]
-pub(crate) struct GodModeToggle;
+pub(super) struct GodModeToggle;
 
 #[derive(Default, Debug, Clone, Copy)]
 pub(crate) enum Selection {
@@ -21,7 +21,7 @@ pub(crate) enum Selection {
     Quit = 3,
 }
 
-pub(crate) fn open(
+pub(super) fn open(
     game: Query<Entity, With<Game>>,
     mut weather: Query<
         (
@@ -94,7 +94,7 @@ pub(crate) fn open(
     climate.single_mut().pause();
 }
 
-pub(crate) fn close(
+pub(super) fn close(
     game: Query<Entity, With<Game>>,
     mut weather: Query<
         (
@@ -157,7 +157,7 @@ pub(crate) fn close(
 /// The order of the systems is important.
 /// We simulate ESC to close the menu.
 /// So we need to select before we close.
-pub(crate) fn select(
+pub(super) fn select(
     mut menu: Query<(&mut control_mode::InMenu, &mut Transform)>,
     mut god_mode: Query<&mut Text, With<GodModeToggle>>,
     mut keyboard: ResMut<Input<KeyCode>>,
@@ -224,7 +224,7 @@ pub(crate) fn select(
     }
 }
 
-pub(crate) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             Menu,
