@@ -91,7 +91,7 @@ fn main() {
     #[cfg(feature = "dev")]
     app.add_systems(Last, (path::visualize,));
 
-    #[cfg(feature = "dev")]
+    #[cfg(feature = "dev-poissons")]
     common_physics::poissons_equation::register_visualization::<
         gravity::Gravity,
         gravity::ChangeOfBasis,

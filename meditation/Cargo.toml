@@ -4,14 +4,16 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true
 bevy-webp-anim = { path = "../bevy-webp-anim" }
 bevy.workspace = true
 common-physics = { path = "../common/physics" }
 common-visuals = { path = "../common/visuals" }
+itertools.workspace = true
 lazy_static.workspace = true
 rand.workspace = true
-bevy_magic_light_2d.workspace = true
 
 [features]
-dev = ["common-physics/poissons-eq-visualization"]
+dev-poisson = ["common-physics/poissons-eq-visualization"]
+dev = []

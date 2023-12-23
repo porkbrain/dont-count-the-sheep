@@ -80,17 +80,19 @@ pub(crate) fn update_visualization<
     P: From<Transform> + Into<GridCoords>,
 >(
     field: ResMut<PoissonsEquation<T>>,
-    mut vector_arrows: Query<&mut Transform, With<VectorArrow>>,
+    mut vector_arrows: Query<(&mut Transform, &mut Sprite), With<VectorArrow>>,
 ) {
     use bevy::math::vec2;
 
-    if field.stop_smoothing_out {
-        return;
-    }
+    for (mut transform, mut sprite) in vector_arrows.iter_mut() {
+        if field.stop_smoothing_out {
+            sprite.color.set_a(0.1);
+        } else {
+            sprite.color.set_a(1.0);
 
-    for mut transform in vector_arrows.iter_mut() {
-        let gradient = field.gradient_at(P::from(*transform));
-        let a = gradient.angle_between(vec2(0.0, 1.0));
-        transform.rotation = Quat::from_rotation_z(-a);
+            let gradient = field.gradient_at(P::from(*transform));
+            let a = gradient.angle_between(vec2(0.0, 1.0));
+            transform.rotation = Quat::from_rotation_z(-a);
+        }
     }
 }

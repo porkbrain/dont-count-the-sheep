@@ -38,15 +38,15 @@ const STATIC_ATLAS_FRAMES: usize = 5;
 const STATIC_ATLAS_FRAME_TIME: Duration = Duration::from_millis(50);
 
 /// Black hole affects the poissons equation by being a source this strong.
-const BLACKHOLE_GRAVITY: f32 = 1.5;
-const BLACKHOLE_SPRITE_SIZE: f32 = 100.0;
-const BLACKHOLE_ATLAS_FRAMES: usize = 5;
+const BLACK_HOLE_GRAVITY: f32 = 1.5;
+const BLACK_HOLE_SPRITE_SIZE: f32 = 100.0;
+const BLACK_HOLE_ATLAS_FRAMES: usize = 5;
 /// Every now and then the black hole flickers with some lights
-const BLACKHOLE_FLICKER_CHANCE_PER_SECOND: f32 = 0.5;
-const BLACKHOLE_FLICKER_DURATION: Duration = Duration::from_millis(100);
-const BLACKHOLE_DESPAWN_CHANCE_PER_SECOND: f32 = 0.1;
+const BLACK_HOLE_FLICKER_CHANCE_PER_SECOND: f32 = 0.5;
+const BLACK_HOLE_FLICKER_DURATION: Duration = Duration::from_millis(100);
+const BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND: f32 = 0.1;
 /// When despawning, the black hole collapses into itself.
-const BLACKHOLE_FRAME_TIME: Duration = Duration::from_millis(40);
+const BLACK_HOLE_FRAME_TIME: Duration = Duration::from_millis(40);
 
 #[derive(Component)]
 pub(crate) struct Distraction {
@@ -494,7 +494,7 @@ fn spawn_black_hole(
 ) {
     let gravity_grid_coords = PoissonsEquationUpdateEvent::send(
         gravity,
-        BLACKHOLE_GRAVITY,
+        BLACK_HOLE_GRAVITY,
         ChangeOfBasis::new(at_translation),
     );
 
@@ -512,7 +512,7 @@ fn spawn_black_hole(
             // remove gravity influence
             commands.add(move |world: &mut World| {
                 world.send_event(PoissonsEquationUpdateEvent::<Gravity>::new(
-                    -BLACKHOLE_GRAVITY,
+                    -BLACK_HOLE_GRAVITY,
                     ChangeOfBasis::new(at_translation),
                 ))
             });
@@ -524,19 +524,19 @@ fn spawn_black_hole(
         .insert((
             Animation {
                 first: 0,
-                last: BLACKHOLE_ATLAS_FRAMES - 1,
+                last: BLACK_HOLE_ATLAS_FRAMES - 1,
                 on_last_frame,
             },
             BeginAnimationAtRandom {
-                chance_per_second: BLACKHOLE_DESPAWN_CHANCE_PER_SECOND,
-                frame_time: BLACKHOLE_FRAME_TIME,
+                chance_per_second: BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND,
+                frame_time: BLACK_HOLE_FRAME_TIME,
             },
         ))
         .insert(SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                 asset_server.load("textures/distractions/blackhole_atlas.png"),
-                vec2(BLACKHOLE_SPRITE_SIZE, BLACKHOLE_SPRITE_SIZE),
-                BLACKHOLE_ATLAS_FRAMES,
+                vec2(BLACK_HOLE_SPRITE_SIZE, BLACK_HOLE_SPRITE_SIZE),
+                BLACK_HOLE_ATLAS_FRAMES,
                 1,
                 None,
                 None,
@@ -549,8 +549,8 @@ fn spawn_black_hole(
         .with_children(|parent| {
             parent.spawn((
                 Flicker::new(
-                    BLACKHOLE_FLICKER_CHANCE_PER_SECOND,
-                    BLACKHOLE_FLICKER_DURATION,
+                    BLACK_HOLE_FLICKER_CHANCE_PER_SECOND,
+                    BLACK_HOLE_FLICKER_DURATION,
                 ),
                 SpriteBundle {
                     texture: asset_server.load(
