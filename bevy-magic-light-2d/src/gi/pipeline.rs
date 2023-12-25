@@ -182,7 +182,7 @@ pub fn system_queue_bind_groups<T: LightScene>(
     pipeline: Res<LightPassPipeline>,
     gpu_images: Res<RenderAssets<Image>>,
     targets_wrapper: Res<GiTargetsWrapper<T>>,
-    gi_compute_assets: Res<LightPassPipelineAssets>,
+    gi_compute_assets: Res<LightPassPipelineAssets<T>>,
     render_device: Res<RenderDevice>,
 ) {
     if let (

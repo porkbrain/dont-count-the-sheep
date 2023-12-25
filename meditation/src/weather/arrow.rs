@@ -1,5 +1,7 @@
 //! When weather is off screen we show a little arrow pointing to it on the edge
 //! of the screen closest to the point where weather is.
+//!
+//! TODO: fix light
 
 use std::f32::consts::PI;
 

@@ -3,7 +3,7 @@
 //! TODO: lower light intensity of stars and galaxies as more distractions come
 //! in, and increase hellish red light from the edges or edge distractions.
 
-use bevy::math::vec3;
+use bevy::{math::vec3, render::view::RenderLayers};
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
 use crate::{consts::BG_RENDER_LAYER, prelude::*, BackgroundLightScene};
@@ -28,7 +28,7 @@ pub(crate) fn spawn(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     commands.spawn((
-        BG_RENDER_LAYER,
+        RenderLayers::layer(BG_RENDER_LAYER),
         SpriteBundle {
             texture: asset_server.load("textures/bg/default.png"),
             transform: Transform::from_translation(Vec3::new(
@@ -48,7 +48,7 @@ pub(crate) fn spawn(
 fn spawn_twinkles(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     for i in 1..=TWINKLE_COUNT {
         commands.spawn((
-            BG_RENDER_LAYER,
+            RenderLayers::layer(BG_RENDER_LAYER),
             Flicker::new(TWINKLE_CHANCE_PER_SECOND, TWINKLE_DURATION),
             SpriteBundle {
                 texture: asset_server
@@ -76,7 +76,7 @@ fn spawn_shooting_star(
         last: SHOOTING_STAR_FRAMES - 1,
     };
     commands.spawn((
-        BG_RENDER_LAYER,
+        RenderLayers::layer(BG_RENDER_LAYER),
         BeginAnimationAtRandom {
             chance_per_second: SHOOTING_STAR_CHANCE_PER_SECOND,
             frame_time: SHOOTING_STAR_FRAME_TIME,

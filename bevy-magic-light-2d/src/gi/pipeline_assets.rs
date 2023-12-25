@@ -21,16 +21,17 @@ use super::LightScene;
 
 #[rustfmt::skip]
 #[derive(Default, Resource)]
-pub struct LightPassPipelineAssets {
+pub struct LightPassPipelineAssets<T> {
     pub camera_params:     UniformBuffer<GpuCameraParams>,
     pub light_pass_params: UniformBuffer<GpuLightPassParams>,
     pub light_sources:     StorageBuffer<GpuLightSourceBuffer>,
     pub light_occluders:   StorageBuffer<GpuLightOccluderBuffer>,
     pub probes:            StorageBuffer<GpuProbeDataBuffer>,
     pub skylight_masks:    StorageBuffer<GpuSkylightMaskBuffer>,
+    phantom:               std::marker::PhantomData<T>,
 }
 
-impl LightPassPipelineAssets {
+impl<T> LightPassPipelineAssets<T> {
     pub fn write_buffer(&mut self, device: &RenderDevice, queue: &RenderQueue) {
         self.light_sources.write_buffer(device, queue);
         self.light_occluders.write_buffer(device, queue);
@@ -42,10 +43,10 @@ impl LightPassPipelineAssets {
 }
 
 #[rustfmt::skip]
-pub fn system_prepare_pipeline_assets(
+pub fn system_prepare_pipeline_assets<T: LightScene>(
     render_device:         Res<RenderDevice>,
     render_queue:          Res<RenderQueue>,
-    mut gi_compute_assets: ResMut<LightPassPipelineAssets>,
+    mut gi_compute_assets: ResMut<LightPassPipelineAssets<T>>,
 ) {
     gi_compute_assets.write_buffer(&render_device, &render_queue);
 }
@@ -84,7 +85,7 @@ pub fn system_extract_pipeline_assets<T: LightScene>(
     query_skylight_light: Extract<Query<&SkylightLight2D>>,
 
     mut gpu_target_sizes: ResMut<ComputedTargetSizes>,
-    mut gpu_pipeline_assets: ResMut<LightPassPipelineAssets>,
+    mut gpu_pipeline_assets: ResMut<LightPassPipelineAssets<T>>,
     mut gpu_frame_counter: Local<i32>,
 ) {
     let light_pass_config = &res_light_settings.light_pass_params;

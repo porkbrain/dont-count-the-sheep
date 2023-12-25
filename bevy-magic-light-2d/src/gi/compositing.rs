@@ -184,5 +184,6 @@ pub fn setup_post_processing_camera<T: LightScene>(
             ..default()
         },
         layer,
+        UiCameraConfig { show_ui: false },
     ));
 }

@@ -12,7 +12,6 @@ use self::pipeline::GiTargets;
 use crate::gi::compositing::{
     setup_post_processing_camera, CameraTargets, PostProcessingMaterial,
 };
-use crate::gi::constants::*;
 use crate::gi::pipeline::{
     system_queue_bind_groups, system_setup_gi_pipeline, GiTargetsWrapper,
     LightPassPipeline, LightPassPipelineBindGroups,
@@ -47,7 +46,7 @@ pub trait LightScene:
     fn render_layer_index() -> u8;
     fn camera_order() -> isize;
 
-    fn init(app: &mut App) {
+    fn build(app: &mut App) {
         app
             .add_plugins(
                 ExtractResourcePlugin::<GiTargetsWrapper<Self>>::default(),
@@ -66,6 +65,43 @@ pub trait LightScene:
             )
             .add_systems(PreUpdate, handle_window_resize::<Self>);
 
+        load_internal_asset!(
+            app,
+            Self::shader_gi_camera(),
+            "shaders/gi_camera.wgsl",
+            Shader::from_wgsl
+        );
+        load_internal_asset!(
+            app,
+            Self::shader_gi_types(),
+            "shaders/gi_types.wgsl",
+            Shader::from_wgsl
+        );
+        load_internal_asset!(
+            app,
+            Self::shader_gi_attenuation(),
+            "shaders/gi_attenuation.wgsl",
+            Shader::from_wgsl
+        );
+        load_internal_asset!(
+            app,
+            Self::shader_gi_halton(),
+            "shaders/gi_halton.wgsl",
+            Shader::from_wgsl
+        );
+        load_internal_asset!(
+            app,
+            Self::shader_gi_math(),
+            "shaders/gi_math.wgsl",
+            Shader::from_wgsl
+        );
+        load_internal_asset!(
+            app,
+            Self::shader_gi_raymarch(),
+            "shaders/gi_raymarch.wgsl",
+            Shader::from_wgsl
+        );
+
         let render_app = app.sub_app_mut(RenderApp);
         render_app
             .add_systems(
@@ -74,8 +110,17 @@ pub trait LightScene:
             )
             .add_systems(
                 Render,
-                system_queue_bind_groups::<Self>.in_set(RenderSet::Queue),
+                (
+                    system_prepare_pipeline_assets::<Self>
+                        .in_set(RenderSet::Prepare),
+                    system_queue_bind_groups::<Self>.in_set(RenderSet::Queue),
+                ),
             );
+    }
+
+    fn finish(app: &mut App) {
+        let render_app = app.sub_app_mut(RenderApp);
+        render_app.init_resource::<LightPassPipelineAssets<Self>>();
     }
 
     fn post_processing_quad() -> Handle<Mesh> {
@@ -105,6 +150,24 @@ pub trait LightScene:
     fn ss_pose_target() -> Handle<Image> {
         Handle::weak_from_u128(Self::HANDLE_START + 9)
     }
+    fn shader_gi_camera() -> Handle<Shader> {
+        Handle::weak_from_u128(Self::HANDLE_START + 10)
+    }
+    fn shader_gi_types() -> Handle<Shader> {
+        Handle::weak_from_u128(Self::HANDLE_START + 11)
+    }
+    fn shader_gi_attenuation() -> Handle<Shader> {
+        Handle::weak_from_u128(Self::HANDLE_START + 12)
+    }
+    fn shader_gi_halton() -> Handle<Shader> {
+        Handle::weak_from_u128(Self::HANDLE_START + 13)
+    }
+    fn shader_gi_math() -> Handle<Shader> {
+        Handle::weak_from_u128(Self::HANDLE_START + 14)
+    }
+    fn shader_gi_raymarch() -> Handle<Shader> {
+        Handle::weak_from_u128(Self::HANDLE_START + 15)
+    }
 }
 
 pub struct BevyMagicLight2DPlugin;
@@ -115,53 +178,7 @@ impl Plugin for BevyMagicLight2DPlugin {
             .init_resource::<ComputedTargetSizes>()
             .add_systems(PreStartup, detect_target_sizes);
 
-        load_internal_asset!(
-            app,
-            SHADER_GI_CAMERA,
-            "shaders/gi_camera.wgsl",
-            Shader::from_wgsl
-        );
-
-        load_internal_asset!(
-            app,
-            SHADER_GI_TYPES,
-            "shaders/gi_types.wgsl",
-            Shader::from_wgsl
-        );
-
-        load_internal_asset!(
-            app,
-            SHADER_GI_ATTENUATION,
-            "shaders/gi_attenuation.wgsl",
-            Shader::from_wgsl
-        );
-
-        load_internal_asset!(
-            app,
-            SHADER_GI_HALTON,
-            "shaders/gi_halton.wgsl",
-            Shader::from_wgsl
-        );
-
-        load_internal_asset!(
-            app,
-            SHADER_GI_MATH,
-            "shaders/gi_math.wgsl",
-            Shader::from_wgsl
-        );
-
-        load_internal_asset!(
-            app,
-            SHADER_GI_RAYMARCH,
-            "shaders/gi_raymarch.wgsl",
-            Shader::from_wgsl
-        );
         let render_app = app.sub_app_mut(RenderApp);
-        render_app.add_systems(
-            Render,
-            system_prepare_pipeline_assets.in_set(RenderSet::Prepare),
-        );
-
         let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
         render_graph.add_node("light_pass_2d", LightPass2DNode::default());
         render_graph.add_node_edge(
@@ -174,7 +191,6 @@ impl Plugin for BevyMagicLight2DPlugin {
         let render_app = app.sub_app_mut(RenderApp);
         render_app
             .init_resource::<LightPassPipeline>()
-            .init_resource::<LightPassPipelineAssets>()
             .init_resource::<ComputedTargetSizes>();
     }
 }

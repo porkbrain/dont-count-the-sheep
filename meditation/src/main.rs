@@ -12,6 +12,7 @@ mod climate;
 mod control_mode;
 mod distractions;
 mod gravity;
+mod light;
 mod path;
 mod prelude;
 mod ui;
@@ -19,8 +20,6 @@ mod weather;
 mod zindex;
 
 mod consts {
-    use bevy::render::view::RenderLayers;
-
     /// What's shown on screen.
     pub(crate) const VISIBLE_WIDTH: f32 = 640.0;
     /// What's shown on screen.
@@ -34,7 +33,7 @@ mod consts {
 
     pub(crate) const PIXEL_ZOOM: f32 = 3.0;
 
-    pub(crate) const BG_RENDER_LAYER: RenderLayers = RenderLayers::layer(0);
+    pub(crate) const BG_RENDER_LAYER: u8 = 2;
 }
 
 use bevy::{
@@ -43,13 +42,15 @@ use bevy::{
     window::WindowTheme,
 };
 use bevy_magic_light_2d::{
-    gi::{compositing::CameraTargets, BevyMagicLight2DPlugin, LightScene},
+    gi::{compositing::CameraTargets, BevyMagicLight2DPlugin},
     SceneCamera,
 };
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
+use consts::BG_RENDER_LAYER;
+use light::BackgroundLightScene;
 use prelude::*;
 
-/// TODO: make it a resource
+/// TODO: use states
 #[derive(Component)]
 struct Game;
 
@@ -90,13 +91,11 @@ fn main() {
         climate::Plugin,
         distractions::Plugin,
         weather::Plugin,
+        light::Plugin,
     ))
     .insert_resource(ClearColor(Color::hex(background::COLOR).unwrap()))
     .insert_resource(gravity::field())
     .add_systems(Startup, (setup, background::spawn));
-
-    BackgroundLightScene::init(&mut app);
-    // ObjectsLightScene::init(&mut app);
 
     common_physics::poissons_equation::register::<gravity::Gravity>(&mut app);
 
@@ -112,36 +111,6 @@ fn main() {
 
     app.run();
 }
-
-#[derive(Component, Default, Clone, TypePath)]
-struct BackgroundLightScene; // TODO: Move
-
-impl LightScene for BackgroundLightScene {
-    const HANDLE_START: u128 = 23475629871623176235;
-
-    fn render_layer_index() -> u8 {
-        (RenderLayers::TOTAL_LAYERS - 2) as u8
-    }
-
-    fn camera_order() -> isize {
-        1
-    }
-}
-
-// #[derive(Component, Default, Clone, TypePath)]
-// struct ObjectsLightScene; // TODO: Move
-
-// impl LightScene for ObjectsLightScene {
-//     const HANDLE_START: u128 = 23475629871623176235;
-
-//     fn render_layer_index() -> u8 {
-//         (RenderLayers::TOTAL_LAYERS - 1) as u8
-//     }
-
-//     fn camera_order() -> isize {
-//         3
-//     }
-// }
 
 fn setup(
     mut commands: Commands,
@@ -198,12 +167,13 @@ fn setup(
             SceneCamera::<BackgroundLightScene>::default(),
             PixelZoom::Fixed(consts::PIXEL_ZOOM as i32),
             PixelViewport,
-            // RenderLayers::layer(2),
+            RenderLayers::from_layers(&[0, BG_RENDER_LAYER]),
+            UiCameraConfig { show_ui: false },
         ))
         .insert(Camera2dBundle {
             camera: Camera {
                 hdr: true,
-                order: 2,
+                // order: 2,
                 target: RenderTarget::Image(
                     bg_camera_targets.floor_target.clone(),
                 ),
