@@ -3,7 +3,7 @@
 
 use std::f32::consts::PI;
 
-use bevy::time::Stopwatch;
+use bevy::{render::view::RenderLayers, time::Stopwatch};
 use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
 use itertools::Itertools;
 use rand::{thread_rng, Rng};
@@ -86,16 +86,34 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
         ))
         .with_children(|commands| {
-            commands.spawn(SpriteBundle {
-                texture: asset_server.load("textures/climate/default.png"),
-                ..default()
-            });
+            commands.spawn((
+                RenderLayers::layer(1),
+                SpriteBundle {
+                    texture: asset_server.load("textures/climate/default.png"),
+                    ..default()
+                },
+            ));
 
             commands.spawn((
                 SpatialBundle::default(),
                 BackgroundLightScene,
                 OmniLightSource2D {
                     intensity: LIGHT_INTENSITY,
+                    color: LIGHT_COLOR_HOT,
+                    falloff: Vec3::new(
+                        FALLOFF_LIGHT_SIZE,
+                        FALLOFF_LIGHT_SIZE,
+                        0.05,
+                    ),
+                    ..default()
+                },
+            ));
+
+            commands.spawn((
+                SpatialBundle::default(),
+                // ObjectsLightScene,
+                OmniLightSource2D {
+                    intensity: 0.5,
                     color: LIGHT_COLOR_HOT,
                     falloff: Vec3::new(
                         FALLOFF_LIGHT_SIZE,
@@ -124,6 +142,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
                 h_size: Vec2::new(OCCLUDER_SIZE, OCCLUDER_SIZE),
             },
             BackgroundLightScene,
+            // ObjectsLightScene,
         ));
     }
 

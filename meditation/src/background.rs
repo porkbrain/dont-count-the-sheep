@@ -6,7 +6,7 @@
 use bevy::math::vec3;
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
-use crate::{prelude::*, BackgroundLightScene};
+use crate::{consts::BG_RENDER_LAYER, prelude::*, BackgroundLightScene};
 
 pub(crate) const COLOR: &str = "#0d0e1f";
 const STAR_LIGHT_COLOR: &str = "#dbcbff";
@@ -27,15 +27,18 @@ pub(crate) fn spawn(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    commands.spawn((SpriteBundle {
-        texture: asset_server.load("textures/bg/default.png"),
-        transform: Transform::from_translation(Vec3::new(
-            0.0,
-            0.0,
-            zindex::MAIN_BACKGROUND,
-        )),
-        ..default()
-    },));
+    commands.spawn((
+        BG_RENDER_LAYER,
+        SpriteBundle {
+            texture: asset_server.load("textures/bg/default.png"),
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                0.0,
+                zindex::MAIN_BACKGROUND,
+            )),
+            ..default()
+        },
+    ));
 
     spawn_twinkles(&mut commands, &asset_server);
     spawn_light_sources(&mut commands);
@@ -45,6 +48,7 @@ pub(crate) fn spawn(
 fn spawn_twinkles(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     for i in 1..=TWINKLE_COUNT {
         commands.spawn((
+            BG_RENDER_LAYER,
             Flicker::new(TWINKLE_CHANCE_PER_SECOND, TWINKLE_DURATION),
             SpriteBundle {
                 texture: asset_server
@@ -72,6 +76,7 @@ fn spawn_shooting_star(
         last: SHOOTING_STAR_FRAMES - 1,
     };
     commands.spawn((
+        BG_RENDER_LAYER,
         BeginAnimationAtRandom {
             chance_per_second: SHOOTING_STAR_CHANCE_PER_SECOND,
             frame_time: SHOOTING_STAR_FRAME_TIME,

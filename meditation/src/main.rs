@@ -19,6 +19,8 @@ mod weather;
 mod zindex;
 
 mod consts {
+    use bevy::render::view::RenderLayers;
+
     /// What's shown on screen.
     pub(crate) const VISIBLE_WIDTH: f32 = 640.0;
     /// What's shown on screen.
@@ -31,6 +33,8 @@ mod consts {
     pub(crate) const GRAVITY_STAGE_HEIGHT: f32 = VISIBLE_HEIGHT * 1.25;
 
     pub(crate) const PIXEL_ZOOM: f32 = 3.0;
+
+    pub(crate) const BG_RENDER_LAYER: RenderLayers = RenderLayers::layer(0);
 }
 
 use bevy::{
@@ -40,7 +44,7 @@ use bevy::{
 };
 use bevy_magic_light_2d::{
     gi::{compositing::CameraTargets, BevyMagicLight2DPlugin, LightScene},
-    MainCamera,
+    SceneCamera,
 };
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
@@ -92,6 +96,7 @@ fn main() {
     .add_systems(Startup, (setup, background::spawn));
 
     BackgroundLightScene::init(&mut app);
+    // ObjectsLightScene::init(&mut app);
 
     common_physics::poissons_equation::register::<gravity::Gravity>(&mut app);
 
@@ -115,7 +120,7 @@ impl LightScene for BackgroundLightScene {
     const HANDLE_START: u128 = 23475629871623176235;
 
     fn render_layer_index() -> u8 {
-        (RenderLayers::TOTAL_LAYERS - 1) as u8
+        (RenderLayers::TOTAL_LAYERS - 2) as u8
     }
 
     fn camera_order() -> isize {
@@ -134,13 +139,14 @@ impl LightScene for BackgroundLightScene {
 //     }
 
 //     fn camera_order() -> isize {
-//         1
+//         3
 //     }
 // }
 
 fn setup(
     mut commands: Commands,
-    camera_targets: Res<CameraTargets<BackgroundLightScene>>,
+    bg_camera_targets: Res<CameraTargets<BackgroundLightScene>>,
+    // obj_camera_targets: Res<CameraTargets<ObjectsLightScene>>,
 ) {
     commands.spawn(Game);
 
@@ -151,7 +157,7 @@ fn setup(
         Camera2dBundle {
             camera: Camera {
                 hdr: true,
-                order: 5,
+                order: 2,
                 ..default()
             },
             camera_2d: Camera2d {
@@ -161,18 +167,45 @@ fn setup(
         },
     ));
 
+    // commands
+    //     .spawn((
+    //         SceneCamera::<ObjectsLightScene>::default(),
+    //         PixelZoom::Fixed(consts::PIXEL_ZOOM as i32),
+    //         PixelViewport,
+    //         RenderLayers::layer(1),
+    //     ))
+    //     .insert(Camera2dBundle {
+    //         camera: Camera {
+    //             hdr: true,
+    //             order: 2,
+    //             target: RenderTarget::Image(
+    //                 obj_camera_targets.floor_target.clone(),
+    //             ),
+    //             ..default()
+    //         },
+    //         projection: OrthographicProjection {
+    //             near: -2000.0,
+    //             ..default()
+    //         },
+    //         camera_2d: Camera2d {
+    //             clear_color: ClearColorConfig::None,
+    //         },
+    //         ..default()
+    //     });
+
     commands
         .spawn((
+            SceneCamera::<BackgroundLightScene>::default(),
             PixelZoom::Fixed(consts::PIXEL_ZOOM as i32),
             PixelViewport,
-            MainCamera,
+            // RenderLayers::layer(2),
         ))
         .insert(Camera2dBundle {
             camera: Camera {
                 hdr: true,
                 order: 2,
                 target: RenderTarget::Image(
-                    camera_targets.floor_target.clone(),
+                    bg_camera_targets.floor_target.clone(),
                 ),
                 ..default()
             },

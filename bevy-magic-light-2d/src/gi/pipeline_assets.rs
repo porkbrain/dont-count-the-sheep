@@ -15,7 +15,7 @@ use crate::gi::types_gpu::{
     GpuProbeDataBuffer, GpuSkylightMaskBuffer, GpuSkylightMaskData,
 };
 use crate::prelude::BevyMagicLight2DSettings;
-use crate::MainCamera;
+use crate::SceneCamera;
 
 use super::LightScene;
 
@@ -77,7 +77,9 @@ pub fn system_extract_pipeline_assets<T: LightScene>(
             With<T>,
         >,
     >,
-    query_camera: Extract<Query<(&Camera, &GlobalTransform), With<MainCamera>>>,
+    query_camera: Extract<
+        Query<(&Camera, &GlobalTransform), With<SceneCamera<T>>>,
+    >,
     query_masks: Extract<Query<(&GlobalTransform, &SkylightMask2D)>>,
     query_skylight_light: Extract<Query<&SkylightLight2D>>,
 

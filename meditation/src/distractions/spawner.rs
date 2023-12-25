@@ -121,6 +121,7 @@ pub(super) fn try_spawn_next(
                     ..default()
                 },
                 BackgroundLightScene,
+                // ObjectsLightScene,
                 LightOccluder2D {
                     h_size: Vec2::new(
                         DISTRACTION_OCCLUDER_SIZE,
