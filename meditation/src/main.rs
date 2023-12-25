@@ -36,7 +36,7 @@ mod consts {
 use bevy::{render::camera::RenderTarget, window::WindowTheme};
 use bevy_magic_light_2d::{
     gi::{compositing::CameraTargets, BevyMagicLight2DPlugin},
-    FloorCamera,
+    MainCamera,
 };
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use prelude::*;
@@ -109,7 +109,7 @@ fn setup(mut commands: Commands, camera_targets: Res<CameraTargets>) {
         .spawn((
             PixelZoom::Fixed(consts::PIXEL_ZOOM as i32),
             PixelViewport,
-            FloorCamera,
+            MainCamera,
         ))
         .insert(Camera2dBundle {
             camera: Camera {

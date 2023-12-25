@@ -15,7 +15,7 @@ use crate::gi::types_gpu::{
     GpuProbeDataBuffer, GpuSkylightMaskBuffer, GpuSkylightMaskData,
 };
 use crate::prelude::BevyMagicLight2DSettings;
-use crate::FloorCamera;
+use crate::MainCamera;
 
 #[rustfmt::skip]
 #[derive(Default, Resource)]
@@ -69,9 +69,7 @@ pub fn system_extract_pipeline_assets(
             &ViewVisibility,
         )>,
     >,
-    query_camera: Extract<
-        Query<(&Camera, &GlobalTransform), With<FloorCamera>>,
-    >,
+    query_camera: Extract<Query<(&Camera, &GlobalTransform), With<MainCamera>>>,
     query_masks: Extract<Query<(&GlobalTransform, &SkylightMask2D)>>,
     query_skylight_light: Extract<Query<&SkylightLight2D>>,
 
