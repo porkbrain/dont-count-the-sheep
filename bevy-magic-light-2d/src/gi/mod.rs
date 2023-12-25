@@ -42,6 +42,8 @@ pub trait LightScene:
 {
     fn post_processing_quad() -> Handle<Mesh>;
     fn post_processing_material() -> Handle<PostProcessingMaterial<Self>>;
+    fn floor_image_handle() -> Handle<Image>;
+
     fn render_layer_index() -> u8;
 
     fn init(app: &mut App) {

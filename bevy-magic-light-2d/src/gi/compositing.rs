@@ -61,7 +61,7 @@ pub struct CameraTargets<T> {
     phantom: PhantomData<T>,
 }
 
-impl<T> CameraTargets<T> {
+impl<T: LightScene> CameraTargets<T> {
     pub fn create(
         images: &mut Assets<Image>,
         sizes: &ComputedTargetSizes,
@@ -91,9 +91,7 @@ impl<T> CameraTargets<T> {
         // Fill images data with zeroes.
         floor_image.resize(target_size);
 
-        // TODO
-        let floor_image_handle: Handle<Image> =
-            Handle::weak_from_u128(9127312736151891273);
+        let floor_image_handle: Handle<Image> = T::floor_image_handle();
 
         images.insert(floor_image_handle.clone(), floor_image);
 
@@ -131,19 +129,17 @@ impl<T: LightScene> Material2d for PostProcessingMaterial<T> {
     }
 }
 
-#[rustfmt::skip]
 pub fn setup_post_processing_camera<T: LightScene>(
-    mut commands:                  Commands,
-    mut meshes:                    ResMut<Assets<Mesh>>,
-    mut materials:                 ResMut<Assets<PostProcessingMaterial<T>>>,
-    mut images:                    ResMut<Assets<Image>>,
-    mut camera_targets:            ResMut<CameraTargets<T>>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<PostProcessingMaterial<T>>>,
+    mut images: ResMut<Assets<Image>>,
+    mut camera_targets: ResMut<CameraTargets<T>>,
 
-    target_sizes:                 Res<ComputedTargetSizes>,
-    gi_targets_wrapper:           Res<GiTargetsWrapper>,
+    target_sizes: Res<ComputedTargetSizes>,
+    gi_targets_wrapper: Res<GiTargetsWrapper>,
 ) {
-
-    let quad =  Mesh::from(shape::Quad::new(Vec2::new(
+    let quad = Mesh::from(shape::Quad::new(Vec2::new(
         target_sizes.primary_target_size.x,
         target_sizes.primary_target_size.y,
     )));
@@ -152,7 +148,8 @@ pub fn setup_post_processing_camera<T: LightScene>(
 
     *camera_targets = CameraTargets::create(&mut images, &target_sizes);
 
-    let material = PostProcessingMaterial::create(&camera_targets, &gi_targets_wrapper);
+    let material =
+        PostProcessingMaterial::create(&camera_targets, &gi_targets_wrapper);
     materials.insert(T::post_processing_material(), material);
 
     // This specifies the layer used for the post processing camera, which
@@ -187,6 +184,6 @@ pub fn setup_post_processing_camera<T: LightScene>(
             intensity: 0.1,
             ..default()
         },
-        layer
+        layer,
     ));
 }

@@ -125,6 +125,10 @@ impl LightScene for BackgroundLightScene {
     fn post_processing_material() -> Handle<PostProcessingMaterial<Self>> {
         Handle::weak_from_u128(52374048672736472871)
     }
+
+    fn floor_image_handle() -> Handle<Image> {
+        Handle::weak_from_u128(9127312736151891273)
+    }
 }
 
 fn setup(
