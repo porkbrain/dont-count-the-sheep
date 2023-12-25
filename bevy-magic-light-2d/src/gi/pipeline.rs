@@ -164,7 +164,7 @@ pub fn system_setup_gi_pipeline<T: LightScene>(
 }
 
 #[derive(Resource)]
-pub struct LightPassPipeline {
+pub struct LightPassPipeline<T> {
     pub sdf_bind_group_layout: BindGroupLayout,
     pub sdf_pipeline: CachedComputePipelineId,
     pub ss_probe_bind_group_layout: BindGroupLayout,
@@ -175,11 +175,12 @@ pub struct LightPassPipeline {
     pub ss_blend_pipeline: CachedComputePipelineId,
     pub ss_filter_bind_group_layout: BindGroupLayout,
     pub ss_filter_pipeline: CachedComputePipelineId,
+    phantom: PhantomData<T>,
 }
 
 pub fn system_queue_bind_groups<T: LightScene>(
     mut commands: Commands,
-    pipeline: Res<LightPassPipeline>,
+    pipeline: Res<LightPassPipeline<T>>,
     gpu_images: Res<RenderAssets<Image>>,
     targets_wrapper: Res<GiTargetsWrapper<T>>,
     gi_compute_assets: Res<LightPassPipelineAssets<T>>,
@@ -423,7 +424,7 @@ pub fn system_queue_bind_groups<T: LightScene>(
     }
 }
 
-impl FromWorld for LightPassPipeline {
+impl<T> FromWorld for LightPassPipeline<T> {
     fn from_world(world: &mut World) -> Self {
         let render_device = world.resource::<RenderDevice>();
 
@@ -906,6 +907,8 @@ impl FromWorld for LightPassPipeline {
             //
             ss_filter_bind_group_layout,
             ss_filter_pipeline,
+
+            phantom: PhantomData,
         }
     }
 }

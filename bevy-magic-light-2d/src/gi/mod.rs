@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy::asset::load_internal_asset;
 use bevy::prelude::*;
 use bevy::render::extract_resource::ExtractResourcePlugin;
@@ -116,11 +118,20 @@ pub trait LightScene:
                     system_queue_bind_groups::<Self>.in_set(RenderSet::Queue),
                 ),
             );
+        let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
+        render_graph
+            .add_node("light_pass_2d", LightPass2DNode::<Self>::default());
+        render_graph.add_node_edge(
+            "light_pass_2d",
+            bevy::render::main_graph::node::CAMERA_DRIVER,
+        )
     }
 
     fn finish(app: &mut App) {
         let render_app = app.sub_app_mut(RenderApp);
-        render_app.init_resource::<LightPassPipelineAssets<Self>>();
+        render_app
+            .init_resource::<LightPassPipelineAssets<Self>>()
+            .init_resource::<LightPassPipeline<Self>>();
     }
 
     fn post_processing_quad() -> Handle<Mesh> {
@@ -177,26 +188,18 @@ impl bevy::app::Plugin for Plugin {
         app.init_resource::<BevyMagicLight2DSettings>()
             .init_resource::<ComputedTargetSizes>()
             .add_systems(PreStartup, detect_target_sizes);
-
-        let render_app = app.sub_app_mut(RenderApp);
-        let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
-        render_graph.add_node("light_pass_2d", LightPass2DNode::default());
-        render_graph.add_node_edge(
-            "light_pass_2d",
-            bevy::render::main_graph::node::CAMERA_DRIVER,
-        )
     }
 
     fn finish(&self, app: &mut App) {
         let render_app = app.sub_app_mut(RenderApp);
-        render_app
-            .init_resource::<LightPassPipeline>()
-            .init_resource::<ComputedTargetSizes>();
+        render_app.init_resource::<ComputedTargetSizes>();
     }
 }
 
 #[derive(Default)]
-struct LightPass2DNode {}
+struct LightPass2DNode<T> {
+    phantom: PhantomData<T>,
+}
 
 #[rustfmt::skip]
 #[allow(clippy::too_many_arguments)]
@@ -253,7 +256,7 @@ pub fn detect_target_sizes(
     *res_target_sizes = ComputedTargetSizes::from_window(window, &res_plugin_config.target_scaling_params);
 }
 
-impl render_graph::Node for LightPass2DNode {
+impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
     fn update(&mut self, _world: &mut World) {}
 
     #[rustfmt::skip]
@@ -265,7 +268,7 @@ impl render_graph::Node for LightPass2DNode {
     ) -> Result<(), render_graph::NodeRunError> {
         if let Some(pipeline_bind_groups) = world.get_resource::<LightPassPipelineBindGroups>() {
             let pipeline_cache = world.resource::<PipelineCache>();
-            let pipeline = world.resource::<LightPassPipeline>();
+            let pipeline = world.resource::<LightPassPipeline<T>>();
             let target_sizes = world.resource::<ComputedTargetSizes>();
 
             if let (
