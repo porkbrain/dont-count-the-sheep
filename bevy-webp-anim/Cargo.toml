@@ -1,5 +1,5 @@
 [package]
-name = "bevy-webp-anim"
+name = "bevy_webp_anim"
 version.workspace = true
 edition.workspace = true
 

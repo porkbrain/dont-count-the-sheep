@@ -1,0 +1,13 @@
+[package]
+edition = "2021"
+name = "bevy_magic_light_2d"
+version = "0.6.1"
+
+[features]
+egui = ["dep:bevy-inspector-egui"]
+
+[dependencies]
+bevy.workspace = true
+bevy-inspector-egui = { worspace = true, optional = true }
+log = "0.4.20"
+rand.workspace = true

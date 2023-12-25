@@ -6,7 +6,7 @@ edition.workspace = true
 [dependencies]
 bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true
-bevy-webp-anim = { path = "../bevy-webp-anim" }
+bevy_webp_anim = { path = "../bevy-webp-anim" }
 bevy.workspace = true
 common-physics = { path = "../common/physics" }
 common-visuals = { path = "../common/visuals" }

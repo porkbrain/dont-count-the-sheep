@@ -398,17 +398,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy-webp-anim"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "crossbeam-channel",
- "image",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "bevy_a11y"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -802,7 +791,6 @@ dependencies = [
 [[package]]
 name = "bevy_magic_light_2d"
 version = "0.6.1"
-source = "git+https://github.com/zaycev/bevy-magic-light-2d.git#861c02b24132cb0f038834d813811a8668fd3b51"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
@@ -1128,6 +1116,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.39",
+]
+
+[[package]]
+name = "bevy_webp_anim"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "crossbeam-channel",
+ "image",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -2569,9 +2568,9 @@ name = "meditation"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy-webp-anim",
  "bevy_magic_light_2d",
  "bevy_pixel_camera",
+ "bevy_webp_anim",
  "common-physics",
  "common-visuals",
  "itertools",

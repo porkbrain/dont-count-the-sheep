@@ -3,11 +3,18 @@
 package.edition = "2021"
 package.version = "0.1.0"
 resolver = "2"
-members = ["meditation", "bevy-webp-anim", "common/physics", "common/visuals"]
+members = [
+    "meditation",
+    "bevy-webp-anim",
+    "bevy-magic-light-2d",
+    "common/physics",
+    "common/visuals",
+]
 
 [workspace.dependencies]
 bevy = "0.12"
-bevy_magic_light_2d = { git = "https://github.com/zaycev/bevy-magic-light-2d.git" }
+bevy_magic_light_2d = { path = "bevy-magic-light-2d" }
+bevy-inspector-egui = "0.21"
 bevy_pixel_camera = "0.12"
 crossbeam-channel = "0.5"
 image = "0.24"
@@ -17,7 +24,20 @@ rand = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
 
-# compile deps packages in dev with optimizations
-# this makes bevy run fast and bin recompile fast
+[profile.release]
+codegen-units = 1
+debug = false
+lto = "thin"
+opt-level = 3
+panic = "abort"
+
 [profile.dev.package."*"]
 opt-level = 3
+debug = true
+incremental = true
+
+[profile.dev]
+codegen-units = 16
+opt-level = 0
+debug = true
+incremental = true
