@@ -161,7 +161,5 @@ pub(crate) use light::*;
 mod light {
     use bevy::math::Vec2;
 
-    pub(crate) const OCCLUDER_SIZE: Vec2 = Vec2::new(2.0, 2.0);
-    pub(crate) const LIGHT_COLOR: &str = "#fff4b3";
-    // pub(crate) const LIGHT_INTENSITY: f32 = 0.25;
+    pub(crate) const OCCLUDER_SIZE: Vec2 = Vec2::new(3.0, 3.0);
 }

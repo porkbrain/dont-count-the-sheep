@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use bevy::{time::Stopwatch, utils::HashSet};
-use bevy_magic_light_2d::gi::types::{LightOccluder2D, SkylightMask2D};
+use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use rand::{random, seq::SliceRandom};
 
 use super::{

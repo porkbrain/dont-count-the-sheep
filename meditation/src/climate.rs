@@ -6,6 +6,7 @@ use std::f32::consts::PI;
 use bevy::time::Stopwatch;
 use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
 use itertools::Itertools;
+use rand::{thread_rng, Rng};
 
 use crate::{path::LevelPath, prelude::*};
 
@@ -18,8 +19,8 @@ use crate::{path::LevelPath, prelude::*};
 const LIGHT_INTENSITY: f32 = 3.0;
 /// How far do the rays reach?
 const FALLOFF_LIGHT_SIZE: f32 = 400.0;
-/// TODO: Something warm but spacy?
-const LIGHT_COLOR: Color = Color::rgb(0.6, 0.3, 0.1);
+const LIGHT_COLOR_HOT: Color = Color::rgb(0.6, 0.3, 0.1);
+const LIGHT_COLOR_COLD: &str = crate::background::COLOR;
 /// Determines how many rays are casted.
 const OCCLUDER_COUNT: usize = 4;
 /// Inversely proportional to the ray size.
@@ -59,7 +60,7 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn)
             .register_type::<LightOccluder2D>()
-            .add_systems(Update, (follow_curve, move_occluders));
+            .add_systems(Update, (follow_curve, move_occluders, change_light));
 
         #[cfg(feature = "dev")]
         app.add_systems(Update, visualize_raypoints);
@@ -86,7 +87,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         ))
         .insert(OmniLightSource2D {
             intensity: LIGHT_INTENSITY,
-            color: LIGHT_COLOR,
+            color: LIGHT_COLOR_HOT,
             falloff: Vec3::new(FALLOFF_LIGHT_SIZE, FALLOFF_LIGHT_SIZE, 0.05),
             ..default()
         })
@@ -120,8 +121,6 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     for _ in 0..10000 {
         // spawns random points across the screen that will be lit by the rays
 
-        use rand::{thread_rng, Rng};
-
         let x = thread_rng().gen_range(-320.0..320.0);
         let y = thread_rng().gen_range(-180.0..180.0);
 
@@ -135,6 +134,36 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             visibility: Visibility::Hidden,
             ..default()
         });
+    }
+}
+
+/// TODO: based on some player action
+/// TODO: consider smooth transition
+fn change_light(
+    game: Query<&Game, Without<Paused>>,
+    mut light: Query<&mut OmniLightSource2D, With<Climate>>,
+    mut score: Query<&mut crate::ui::Score>,
+    time: Res<Time>,
+) {
+    if game.is_empty() {
+        return;
+    }
+
+    let mut light = light.single_mut();
+    let mut score = score.single_mut();
+
+    // toss a coin with chance X per second whether we change light color
+    const LIGHT_COLOR_CHANGE_CHANCE_PER_SECOND_INVERSE: f64 = 15.0;
+    if thread_rng().gen_bool(
+        time.delta_seconds_f64() / LIGHT_COLOR_CHANGE_CHANCE_PER_SECOND_INVERSE,
+    ) {
+        light.color = if light.color == LIGHT_COLOR_HOT {
+            score.set_hot();
+            Color::hex(LIGHT_COLOR_COLD).unwrap()
+        } else {
+            score.set_cold();
+            LIGHT_COLOR_HOT
+        };
     }
 }
 

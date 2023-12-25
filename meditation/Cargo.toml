@@ -15,5 +15,5 @@ lazy_static.workspace = true
 rand.workspace = true
 
 [features]
+dev = ["bevy/glam_assert"]
 dev-poisson = ["common-physics/poissons-eq-visualization"]
-dev = []
