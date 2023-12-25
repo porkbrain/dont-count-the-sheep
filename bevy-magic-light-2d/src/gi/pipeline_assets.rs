@@ -81,8 +81,8 @@ pub fn system_extract_pipeline_assets<T: LightScene>(
     query_camera: Extract<
         Query<(&Camera, &GlobalTransform), With<SceneCamera<T>>>,
     >,
-    query_masks: Extract<Query<(&GlobalTransform, &SkylightMask2D)>>,
-    query_skylight_light: Extract<Query<&SkylightLight2D>>,
+    query_masks: Extract<Query<(&GlobalTransform, &SkylightMask2D), With<T>>>,
+    query_skylight_light: Extract<Query<&SkylightLight2D, With<T>>>,
 
     mut gpu_target_sizes: ResMut<ComputedTargetSizes>,
     mut gpu_pipeline_assets: ResMut<LightPassPipelineAssets<T>>,

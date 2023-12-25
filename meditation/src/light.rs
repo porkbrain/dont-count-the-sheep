@@ -38,7 +38,7 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         BackgroundLightScene::build(app);
-        ObjectsLightScene::build(app);
+        // ObjectsLightScene::build(app);
     }
 
     fn finish(&self, app: &mut App) {

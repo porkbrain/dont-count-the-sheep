@@ -31,7 +31,6 @@ mod pipeline_assets;
 mod types_gpu;
 
 pub mod compositing;
-pub mod render_layer;
 pub mod resource;
 pub mod types;
 pub mod util;
@@ -45,8 +44,12 @@ pub trait LightScene:
     /// order.
     const HANDLE_START: u128 = 23475629871623176235;
 
-    fn render_layer_index() -> u8;
     fn camera_order() -> isize;
+
+    fn render_layer_index() -> u8;
+    fn light_pass() -> String {
+        format!("light_pass_2d_{}", Self::render_layer_index())
+    }
 
     fn build(app: &mut App) {
         app
@@ -118,11 +121,12 @@ pub trait LightScene:
                     system_queue_bind_groups::<Self>.in_set(RenderSet::Queue),
                 ),
             );
+
         let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
         render_graph
-            .add_node("light_pass_2d", LightPass2DNode::<Self>::default());
+            .add_node(Self::light_pass(), LightPass2DNode::<Self>::default());
         render_graph.add_node_edge(
-            "light_pass_2d",
+            Self::light_pass(),
             bevy::render::main_graph::node::CAMERA_DRIVER,
         )
     }
@@ -201,20 +205,18 @@ struct LightPass2DNode<T> {
     phantom: PhantomData<T>,
 }
 
-#[rustfmt::skip]
 #[allow(clippy::too_many_arguments)]
 pub fn handle_window_resize<T: LightScene>(
-
-    mut assets_mesh:     ResMut<Assets<Mesh>>,
+    mut assets_mesh: ResMut<Assets<Mesh>>,
     mut assets_material: ResMut<Assets<PostProcessingMaterial<T>>>,
-    mut assets_image:    ResMut<Assets<Image>>,
+    mut assets_image: ResMut<Assets<Image>>,
 
     query_window: Query<&Window, With<PrimaryWindow>>,
 
-        res_plugin_config:      Res<BevyMagicLight2DSettings>,
-    mut res_target_sizes:       ResMut<ComputedTargetSizes>,
+    res_plugin_config: Res<BevyMagicLight2DSettings>,
+    mut res_target_sizes: ResMut<ComputedTargetSizes>,
     mut res_gi_targets_wrapper: ResMut<GiTargetsWrapper<T>>,
-    mut res_camera_targets:     ResMut<CameraTargets<T>>,
+    mut res_camera_targets: ResMut<CameraTargets<T>>,
 
     mut window_resized_evr: EventReader<WindowResized>,
 ) {
@@ -223,8 +225,10 @@ pub fn handle_window_resize<T: LightScene>(
             .get_single()
             .expect("Expected exactly one primary window");
 
-        *res_target_sizes =
-            ComputedTargetSizes::from_window(window, &res_plugin_config.target_scaling_params);
+        *res_target_sizes = ComputedTargetSizes::from_window(
+            window,
+            &res_plugin_config.target_scaling_params,
+        );
 
         assets_mesh.insert(
             T::post_processing_quad(),
@@ -236,11 +240,20 @@ pub fn handle_window_resize<T: LightScene>(
 
         assets_material.insert(
             T::post_processing_material(),
-            PostProcessingMaterial::create(&res_camera_targets, &res_gi_targets_wrapper),
+            PostProcessingMaterial::create(
+                &res_camera_targets,
+                &res_gi_targets_wrapper,
+            ),
         );
 
-        *res_gi_targets_wrapper = GiTargetsWrapper{targets: Some(GiTargets::create(&mut assets_image, &res_target_sizes))};
-        *res_camera_targets = CameraTargets::create(&mut assets_image, &res_target_sizes);
+        *res_gi_targets_wrapper = GiTargetsWrapper {
+            targets: Some(GiTargets::create(
+                &mut assets_image,
+                &res_target_sizes,
+            )),
+        };
+        *res_camera_targets =
+            CameraTargets::create(&mut assets_image, &res_target_sizes);
     }
 }
 
@@ -259,14 +272,15 @@ pub fn detect_target_sizes(
 impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
     fn update(&mut self, _world: &mut World) {}
 
-    #[rustfmt::skip]
     fn run(
         &self,
         _: &mut render_graph::RenderGraphContext,
         render_context: &mut RenderContext,
         world: &World,
     ) -> Result<(), render_graph::NodeRunError> {
-        if let Some(pipeline_bind_groups) = world.get_resource::<LightPassPipelineBindGroups>() {
+        if let Some(pipeline_bind_groups) =
+            world.get_resource::<LightPassPipelineBindGroups>()
+        {
             let pipeline_cache = world.resource::<PipelineCache>();
             let pipeline = world.resource::<LightPassPipeline<T>>();
             let target_sizes = world.resource::<ComputedTargetSizes>();
@@ -280,57 +294,87 @@ impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
             ) = (
                 pipeline_cache.get_compute_pipeline(pipeline.sdf_pipeline),
                 pipeline_cache.get_compute_pipeline(pipeline.ss_probe_pipeline),
-                pipeline_cache.get_compute_pipeline(pipeline.ss_bounce_pipeline),
+                pipeline_cache
+                    .get_compute_pipeline(pipeline.ss_bounce_pipeline),
                 pipeline_cache.get_compute_pipeline(pipeline.ss_blend_pipeline),
-                pipeline_cache.get_compute_pipeline(pipeline.ss_filter_pipeline),
+                pipeline_cache
+                    .get_compute_pipeline(pipeline.ss_filter_pipeline),
             ) {
                 let sdf_w = target_sizes.sdf_target_usize.x;
                 let sdf_h = target_sizes.sdf_target_usize.y;
 
-                let mut pass =
-                    render_context
-                        .command_encoder()
-                        .begin_compute_pass(&ComputePassDescriptor {
-                            label: Some("light_pass_2d"),
-                        });
+                let mut pass = render_context
+                    .command_encoder()
+                    .begin_compute_pass(&ComputePassDescriptor {
+                        label: Some(&T::light_pass()),
+                    });
 
                 {
                     let grid_w = sdf_w / WORKGROUP_SIZE;
                     let grid_h = sdf_h / WORKGROUP_SIZE;
-                    pass.set_bind_group(0, &pipeline_bind_groups.sdf_bind_group, &[]);
+                    pass.set_bind_group(
+                        0,
+                        &pipeline_bind_groups.sdf_bind_group,
+                        &[],
+                    );
                     pass.set_pipeline(sdf_pipeline);
                     pass.dispatch_workgroups(grid_w, grid_h, 1);
                 }
 
                 {
-                    let grid_w = target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
-                    let grid_h = target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
-                    pass.set_bind_group(0, &pipeline_bind_groups.ss_probe_bind_group, &[]);
+                    let grid_w =
+                        target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
+                    let grid_h =
+                        target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
+                    pass.set_bind_group(
+                        0,
+                        &pipeline_bind_groups.ss_probe_bind_group,
+                        &[],
+                    );
                     pass.set_pipeline(ss_probe_pipeline);
                     pass.dispatch_workgroups(grid_w, grid_h, 1);
                 }
 
                 {
-                    let grid_w = target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
-                    let grid_h = target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
-                    pass.set_bind_group(0, &pipeline_bind_groups.ss_bounce_bind_group, &[]);
+                    let grid_w =
+                        target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
+                    let grid_h =
+                        target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
+                    pass.set_bind_group(
+                        0,
+                        &pipeline_bind_groups.ss_bounce_bind_group,
+                        &[],
+                    );
                     pass.set_pipeline(ss_bounce_pipeline);
                     pass.dispatch_workgroups(grid_w, grid_h, 1);
                 }
 
                 {
-                    let grid_w = target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
-                    let grid_h = target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
-                    pass.set_bind_group(0, &pipeline_bind_groups.ss_blend_bind_group, &[]);
+                    let grid_w =
+                        target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
+                    let grid_h =
+                        target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
+                    pass.set_bind_group(
+                        0,
+                        &pipeline_bind_groups.ss_blend_bind_group,
+                        &[],
+                    );
                     pass.set_pipeline(ss_blend_pipeline);
                     pass.dispatch_workgroups(grid_w, grid_h, 1);
                 }
 
                 {
-                    let aligned = util::align_to_work_group_grid(target_sizes.primary_target_isize).as_uvec2();
+                    let aligned = util::align_to_work_group_grid(
+                        target_sizes.primary_target_isize,
+                    )
+                    .as_uvec2();
                     let grid_w = aligned.x / WORKGROUP_SIZE;
                     let grid_h = aligned.y / WORKGROUP_SIZE;
-                    pass.set_bind_group(0, &pipeline_bind_groups.ss_filter_bind_group, &[]);
+                    pass.set_bind_group(
+                        0,
+                        &pipeline_bind_groups.ss_filter_bind_group,
+                        &[],
+                    );
                     pass.set_pipeline(ss_filter_pipeline);
                     pass.dispatch_workgroups(grid_w, grid_h, 1);
                 }
