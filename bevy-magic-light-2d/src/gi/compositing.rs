@@ -39,7 +39,7 @@ pub struct PostProcessingMaterial<T: LightScene> {
 impl<T: LightScene> PostProcessingMaterial<T> {
     pub fn create(
         camera_targets: &CameraTargets<T>,
-        gi_targets_wrapper: &GiTargetsWrapper,
+        gi_targets_wrapper: &GiTargetsWrapper<T>,
     ) -> Self {
         Self {
             floor_image: camera_targets.floor_target.clone(),
@@ -137,7 +137,7 @@ pub fn setup_post_processing_camera<T: LightScene>(
     mut camera_targets: ResMut<CameraTargets<T>>,
 
     target_sizes: Res<ComputedTargetSizes>,
-    gi_targets_wrapper: Res<GiTargetsWrapper>,
+    gi_targets_wrapper: Res<GiTargetsWrapper<T>>,
 ) {
     let quad = Mesh::from(shape::Quad::new(Vec2::new(
         target_sizes.primary_target_size.x,

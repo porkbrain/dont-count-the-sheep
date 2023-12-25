@@ -47,17 +47,29 @@ pub trait LightScene:
     fn render_layer_index() -> u8;
 
     fn init(app: &mut App) {
-        app.init_resource::<CameraTargets<Self>>()
+        app
+            .add_plugins(
+                ExtractResourcePlugin::<GiTargetsWrapper<Self>>::default(),
+            )
+            .init_resource::<CameraTargets<Self>>()
+            .init_resource::<GiTargetsWrapper<Self>>()
             .add_plugins(
                 Material2dPlugin::<PostProcessingMaterial<Self>>::default(),
             )
             .add_systems(
                 PreStartup,
                 (setup_post_processing_camera::<Self>
-                    .after(system_setup_gi_pipeline),)
-                    .chain(),
+                    .after(system_setup_gi_pipeline::<Self>),
+                    system_setup_gi_pipeline::<Self>.after(detect_target_sizes)
+                ),
             )
             .add_systems(PreUpdate, handle_window_resize::<Self>);
+
+        let render_app = app.sub_app_mut(RenderApp);
+        render_app.add_systems(
+            Render,
+            system_queue_bind_groups::<Self>.in_set(RenderSet::Queue),
+        );
     }
 }
 
@@ -65,18 +77,9 @@ pub struct BevyMagicLight2DPlugin;
 
 impl Plugin for BevyMagicLight2DPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(ExtractResourcePlugin::<GiTargetsWrapper>::default())
-            .init_resource::<GiTargetsWrapper>()
-            .init_resource::<BevyMagicLight2DSettings>()
+        app.init_resource::<BevyMagicLight2DSettings>()
             .init_resource::<ComputedTargetSizes>()
-            .add_systems(
-                PreStartup,
-                (
-                    detect_target_sizes,
-                    system_setup_gi_pipeline.after(detect_target_sizes),
-                )
-                    .chain(),
-            );
+            .add_systems(PreStartup, detect_target_sizes);
 
         load_internal_asset!(
             app,
@@ -124,10 +127,7 @@ impl Plugin for BevyMagicLight2DPlugin {
             .add_systems(ExtractSchedule, system_extract_pipeline_assets)
             .add_systems(
                 Render,
-                (
-                    system_prepare_pipeline_assets.in_set(RenderSet::Prepare),
-                    system_queue_bind_groups.in_set(RenderSet::Queue),
-                ),
+                system_prepare_pipeline_assets.in_set(RenderSet::Prepare),
             );
 
         let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
@@ -162,7 +162,7 @@ pub fn handle_window_resize<T: LightScene>(
 
         res_plugin_config:      Res<BevyMagicLight2DSettings>,
     mut res_target_sizes:       ResMut<ComputedTargetSizes>,
-    mut res_gi_targets_wrapper: ResMut<GiTargetsWrapper>,
+    mut res_gi_targets_wrapper: ResMut<GiTargetsWrapper<T>>,
     mut res_camera_targets:     ResMut<CameraTargets<T>>,
 
     mut window_resized_evr: EventReader<WindowResized>,

@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy::prelude::*;
 use bevy::render::extract_resource::ExtractResource;
 use bevy::render::render_asset::RenderAssets;
@@ -14,6 +16,8 @@ use crate::gi::types_gpu::{
     GpuLightSourceBuffer, GpuProbeDataBuffer, GpuSkylightMaskBuffer,
 };
 
+use super::LightScene;
+
 const SDF_TARGET_FORMAT: TextureFormat = TextureFormat::R16Float;
 const SS_PROBE_TARGET_FORMAT: TextureFormat = TextureFormat::Rgba16Float;
 const SS_BOUNCE_TARGET_FORMAT: TextureFormat = TextureFormat::Rgba32Float;
@@ -29,21 +33,23 @@ const SS_FILTER_PIPELINE_ENTRY: &str = "main";
 
 #[allow(dead_code)]
 #[derive(Clone, Resource, ExtractResource, Default)]
-pub struct GiTargetsWrapper {
-    pub targets: Option<GiTargets>,
+pub struct GiTargetsWrapper<T: LightScene> {
+    pub targets: Option<GiTargets<T>>,
 }
 
 #[derive(Clone)]
-pub struct GiTargets {
+pub struct GiTargets<T> {
     pub sdf_target: Handle<Image>,
     pub ss_probe_target: Handle<Image>,
     pub ss_bounce_target: Handle<Image>,
     pub ss_blend_target: Handle<Image>,
     pub ss_filter_target: Handle<Image>,
     pub ss_pose_target: Handle<Image>,
+
+    phantom: PhantomData<T>,
 }
 
-impl GiTargets {
+impl<T: LightScene> GiTargets<T> {
     pub fn create(
         images: &mut Assets<Image>,
         sizes: &ComputedTargetSizes,
@@ -107,6 +113,7 @@ impl GiTargets {
             ss_blend_target,
             ss_filter_target,
             ss_pose_target,
+            phantom: PhantomData,
         }
     }
 }
@@ -155,9 +162,9 @@ fn create_texture_2d(size: (u32, u32), format: TextureFormat, filter: ImageFilte
 }
 
 #[rustfmt::skip]
-pub fn system_setup_gi_pipeline(
+pub fn system_setup_gi_pipeline<T: LightScene>(
     mut images:          ResMut<Assets<Image>>,
-    mut targets_wrapper: ResMut<GiTargetsWrapper>,
+    mut targets_wrapper: ResMut<GiTargetsWrapper<T>>,
     targets_sizes:   Res<ComputedTargetSizes>,
 ) {
     targets_wrapper.targets = Some(GiTargets::create(&mut images, &targets_sizes));
@@ -177,11 +184,11 @@ pub struct LightPassPipeline {
     pub ss_filter_pipeline: CachedComputePipelineId,
 }
 
-pub fn system_queue_bind_groups(
+pub fn system_queue_bind_groups<T: LightScene>(
     mut commands: Commands,
     pipeline: Res<LightPassPipeline>,
     gpu_images: Res<RenderAssets<Image>>,
-    targets_wrapper: Res<GiTargetsWrapper>,
+    targets_wrapper: Res<GiTargetsWrapper<T>>,
     gi_compute_assets: Res<LightPassPipelineAssets>,
     render_device: Res<RenderDevice>,
 ) {
