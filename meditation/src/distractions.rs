@@ -258,7 +258,7 @@ fn react_to_environment(
 
         // TODO: balance
         let should_crack =
-            push_back_force > 35.0 && rand::random::<f32>() < crack_chance;
+            push_back_force > 45.0 && rand::random::<f32>() < crack_chance;
 
         let is_on_last_crack = sprite.index == MAX_CRACKS - 1;
         if should_crack && !is_on_last_crack {

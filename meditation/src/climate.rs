@@ -12,24 +12,24 @@ use crate::{path::LevelPath, prelude::*};
 /// Climate casts light rays.
 /// We achieve those light rays by orbiting occluders around the climate.
 /// How strong are they?
+///
+/// TODO: If I had two cameras, I could spawn different light intensities for
+/// background differently than for objects.
 const LIGHT_INTENSITY: f32 = 3.0;
+/// How far do the rays reach?
+const FALLOFF_LIGHT_SIZE: f32 = 400.0;
 /// TODO: Something warm but spacy?
 const LIGHT_COLOR: Color = Color::rgb(0.6, 0.3, 0.1);
 /// Determines how many rays are casted.
-const OCCLUDER_COUNT: usize = 5;
-/// Determines the ray size.
-const OCCLUDER_SIZE: f32 = 14.5;
+const OCCLUDER_COUNT: usize = 4;
+/// Inversely proportional to the ray size.
+const OCCLUDER_SIZE: f32 = 18.0;
 /// Determines the ray slope.
-const OCCLUDER_DISTANCE: f32 = 45.0;
+const OCCLUDER_DISTANCE: f32 = 40.0;
 /// Occluders are evenly distributed around the climate.
 /// We calculate the distribution around for the occluder[1] (0th starts at 0).
-const INITIAL_OCCLUDER_ROTATION: f32 = 2.0 * PI / OCCLUDER_COUNT as f32;
-/// How far can the ray reach?
-///
-/// Some good values based on occulder count:
-/// * 6: PI / 12.0
-/// * 5: PI / 8.0
-const MAX_RAY_ANGULAR_DISTANCE: f32 = PI / 8.0;
+const INITIAL_ROTATION: f32 = 2.0 * PI / OCCLUDER_COUNT as f32;
+const INITIAL_HALF_ROTATION: f32 = INITIAL_ROTATION / 2.0;
 
 #[derive(Component)]
 pub(crate) struct Climate {
@@ -87,7 +87,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(OmniLightSource2D {
             intensity: LIGHT_INTENSITY,
             color: LIGHT_COLOR,
-            falloff: Vec3::new(50.0, 50.0, 0.05),
+            falloff: Vec3::new(FALLOFF_LIGHT_SIZE, FALLOFF_LIGHT_SIZE, 0.05),
             ..default()
         })
         .with_children(|commands| {
@@ -98,7 +98,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 
     for i in 0..OCCLUDER_COUNT {
-        let initial_rotation = INITIAL_OCCLUDER_ROTATION * i as f32;
+        let initial_rotation = INITIAL_ROTATION * i as f32;
 
         commands.spawn((
             ClimateOccluder { initial_rotation },
@@ -204,14 +204,21 @@ impl Climate {
     /// In interval [0, 1], how strongly is target lit by the climate?
     /// This ignores any possible obstacle in the way and just computes angle
     /// between the closest ray and the target.
-    pub(crate) fn ray_bath(&self, climate_pos: Vec2, target: Vec2) -> f32 {
+    pub(crate) fn ray_bath(&self, self_pos: Pos2, target_pos: Pos2) -> f32 {
         let angle_to_ray =
-            self.angle_between_closest_ray_and_point(climate_pos, target);
+            self.angle_between_closest_ray_and_point(self_pos, target_pos);
 
-        // a smooth monotonically decreasing function (-x^2)
-        -MAX_RAY_ANGULAR_DISTANCE.powi(-2)
-            * angle_to_ray.clamp(0.0, MAX_RAY_ANGULAR_DISTANCE).powi(2)
-            + 1.0
+        // a smooth monotonically decreasing function that starts at (0, 1)
+        // and ends at (INITIAL_HALF_ROTATION, 0)
+        //
+        // (x - h)^i / h^i {x in [0, h]}
+
+        let h = INITIAL_HALF_ROTATION;
+        let to_the_power_of = 6;
+
+        (angle_to_ray - h).powi(to_the_power_of)
+        //--------------------------------------
+        /         h.powi(to_the_power_of)
     }
 
     fn angle_between_closest_ray_and_point(
@@ -220,7 +227,7 @@ impl Climate {
         target: Vec2,
     ) -> f32 {
         angle_between_closest_ray_and_point(
-            INITIAL_OCCLUDER_ROTATION,
+            INITIAL_ROTATION,
             self.change_in_ray_angle_over_time(),
             climate_pos,
             target,
@@ -229,7 +236,7 @@ impl Climate {
 
     #[inline]
     fn change_in_ray_angle_over_time(&self) -> f32 {
-        (self.rays_timer.elapsed_secs() * 0.25) % INITIAL_OCCLUDER_ROTATION
+        (self.rays_timer.elapsed_secs() * 0.25) % INITIAL_ROTATION
     }
 
     fn new() -> Self {

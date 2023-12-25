@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use bevy::{time::Stopwatch, utils::HashSet};
-use bevy_magic_light_2d::gi::types::LightOccluder2D;
+use bevy_magic_light_2d::gi::types::{LightOccluder2D, SkylightMask2D};
 use rand::{random, seq::SliceRandom};
 
 use super::{
@@ -89,6 +89,8 @@ pub(super) fn try_spawn_next(
             // TODO: sound
             video.spawn(parent, &asset_server);
 
+            const DISTRACTION_OCCLUDER_SIZE: f32 = 4.5;
+
             parent.spawn((
                 DistractionOccluder,
                 // SpriteBundle {
@@ -113,10 +115,12 @@ pub(super) fn try_spawn_next(
                 },
                 LightOccluder2D {
                     h_size: Vec2::new(
-                        DISTRACTION_PERCEIVED_SIZE,
-                        DISTRACTION_PERCEIVED_SIZE,
+                        DISTRACTION_OCCLUDER_SIZE,
+                        DISTRACTION_OCCLUDER_SIZE,
                     ),
-                },
+                }, /* LightOccluder2D {
+                    *     h_size: Vec2::new(25.0, 25.0),
+                    * }, */
             ));
         });
 }

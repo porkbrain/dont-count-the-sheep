@@ -128,6 +128,8 @@ fn spawn_light_sources(commands: &mut Commands) {
         },
     ));
 
+    const GALAXY_LIGHT_INTENSITY: f32 = 0.25;
+
     // bottom left galaxy
     commands.spawn((
         SpatialBundle {
@@ -135,7 +137,7 @@ fn spawn_light_sources(commands: &mut Commands) {
             ..default()
         },
         OmniLightSource2D {
-            intensity: 0.05,
+            intensity: GALAXY_LIGHT_INTENSITY,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
             falloff: Vec3::new(35.0, 35.0, 0.05),
             ..default()
@@ -149,7 +151,7 @@ fn spawn_light_sources(commands: &mut Commands) {
             ..default()
         },
         OmniLightSource2D {
-            intensity: 0.05,
+            intensity: GALAXY_LIGHT_INTENSITY,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
             falloff: Vec3::new(35.0, 35.0, 0.05),
             ..default()
@@ -163,7 +165,7 @@ fn spawn_light_sources(commands: &mut Commands) {
             ..default()
         },
         OmniLightSource2D {
-            intensity: 0.1,
+            intensity: GALAXY_LIGHT_INTENSITY,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
             falloff: Vec3::new(50.0, 50.0, 0.05),
             ..default()

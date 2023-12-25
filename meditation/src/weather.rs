@@ -13,7 +13,7 @@ pub(crate) use controls::loading_special as loading_special_system;
 
 use self::consts::*;
 use crate::{control_mode, prelude::*};
-use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
+use bevy_magic_light_2d::gi::types::LightOccluder2D;
 
 #[derive(Event, Clone, Copy)]
 pub(crate) enum ActionEvent {
@@ -91,12 +91,6 @@ fn spawn(
         ))
         .insert(LightOccluder2D {
             h_size: OCCLUDER_SIZE,
-        })
-        .insert(OmniLightSource2D {
-            intensity: LIGHT_INTENSITY,
-            color: Color::hex(LIGHT_COLOR).unwrap(),
-            falloff: Vec3::new(10.0, 10.0, 0.05),
-            ..default()
         })
         .id();
     //

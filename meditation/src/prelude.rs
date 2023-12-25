@@ -19,3 +19,5 @@ pub(crate) fn stopwatch_at(duration: Duration) -> Stopwatch {
     s.tick(duration);
     s
 }
+
+pub(crate) type Pos2 = Vec2;

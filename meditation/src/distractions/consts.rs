@@ -16,17 +16,15 @@ pub(crate) const MAX_VERBAL_VIDEOS_AT_ONCE: usize = 1;
 pub(crate) const WEATHER_SPECIAL_HITBOX_RADIUS: f32 = 35.0;
 /// The actual pixel size of the image.
 pub(crate) const DISTRACTION_SPRITE_SIZE: f32 = 100.0;
-/// There's some empty space around the sprite.
-pub(crate) const DISTRACTION_PERCEIVED_SIZE: f32 = 50.0;
 /// As more light is shone, more cracks appear on the distraction.
 pub(crate) const MAX_CRACKS: usize = 5;
 /// By default, occluder is pushed towards the climate.
 pub(crate) const PUSH_BACK_FORCE_AT_REST: f32 = -20.0;
-pub(crate) const PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 25.0;
+pub(crate) const PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 40.0;
 /// At this distance, the occulder is pushed back by half of
 /// [`PUSH_BACK_FORCE_WEATHER_DISTANCE`].
 pub(crate) const HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 150.0;
-pub(crate) const PUSH_BACK_FORCE_WEATHER_DISTANCE: f32 = 50.0;
+pub(crate) const PUSH_BACK_FORCE_WEATHER_DISTANCE: f32 = 80.0;
 /// If light is shone on the distraction, it has a chance to crack.
 pub(crate) const CRACK_CHANCE_PER_SECOND: f32 = 1.0;
 
