@@ -1,6 +1,7 @@
 use bevy::math::Vec3Swizzles;
-use bevy::prelude::{Mat4, Transform, Vec2, Vec3, Vec4};
+use bevy::prelude::{Mat4, Vec2, Vec3, Vec4};
 use bevy::render::render_resource::ShaderType;
+use bevy::transform::components::GlobalTransform;
 
 use crate::gi::constants::GI_SCREEN_PROBE_SIZE;
 use crate::gi::types::OmniLightSource2D;
@@ -14,10 +15,8 @@ pub struct GpuOmniLightSource {
     pub falloff:   Vec3,
 }
 
-impl GpuOmniLightSource
-{
-    pub fn new(light: OmniLightSource2D, center: Vec2) -> Self
-    {
+impl GpuOmniLightSource {
+    pub fn new(light: OmniLightSource2D, center: Vec2) -> Self {
         let color = light.color.as_rgba_f32();
         Self {
             center,
@@ -44,13 +43,13 @@ pub struct GpuLightOccluder2D {
     pub h_extent: Vec2,
 }
 
-impl GpuLightOccluder2D
-{
-    pub fn new(transform: &Transform, h_extent: Vec2) -> Self
-    {
-        let center = transform.translation.xy();
-        let rotation = transform.rotation.inverse().into();
-        // let h_extent = h_extent * transform.scale.xy();
+impl GpuLightOccluder2D {
+    pub fn new(transform: &GlobalTransform, h_extent: Vec2) -> Self {
+        let (_, rotation, translation) =
+            transform.to_scale_rotation_translation();
+        let center = translation.xy();
+        let rotation = rotation.inverse().into();
+
         Self {
             center,
             rotation,
@@ -96,24 +95,22 @@ pub struct GpuLightPassParams {
     pub indirect_rays_radius_factor: f32,
 }
 
-impl Default for GpuLightPassParams
-{
-    fn default() -> Self
-    {
+impl Default for GpuLightPassParams {
+    fn default() -> Self {
         Self {
-            frame_counter:    0,
-            probe_size:       0,
+            frame_counter: 0,
+            probe_size: 0,
             probe_atlas_cols: 0,
             probe_atlas_rows: 0,
-            skylight_color:   Vec3::new(0.003, 0.0078, 0.058) / 100.0,
+            skylight_color: Vec3::new(0.003, 0.0078, 0.058) / 100.0,
 
-            reservoir_size:         16,
-            smooth_kernel_size_h:   2,
-            smooth_kernel_size_w:   1,
-            direct_light_contrib:   0.2,
+            reservoir_size: 16,
+            smooth_kernel_size_h: 2,
+            smooth_kernel_size_w: 1,
+            direct_light_contrib: 0.2,
             indirect_light_contrib: 0.8,
 
-            indirect_rays_per_sample:    64,
+            indirect_rays_per_sample: 64,
             indirect_rays_radius_factor: 3.0,
         }
     }
@@ -133,14 +130,13 @@ pub struct GpuProbeDataBuffer {
     pub data:  Vec<GpuProbeData>,
 }
 
-impl Default for GpuProbeDataBuffer
-{
-    fn default() -> Self
-    {
-        const MAX_PROBES: u32 = (GI_SCREEN_PROBE_SIZE * GI_SCREEN_PROBE_SIZE) as u32;
+impl Default for GpuProbeDataBuffer {
+    fn default() -> Self {
+        const MAX_PROBES: u32 =
+            (GI_SCREEN_PROBE_SIZE * GI_SCREEN_PROBE_SIZE) as u32;
         Self {
             count: MAX_PROBES,
-            data:  vec![
+            data: vec![
                 GpuProbeData {
                     camera_pose: Vec2::ZERO,
                 };
@@ -157,10 +153,8 @@ pub struct GpuSkylightMaskData {
     pub h_extent: Vec2,
 }
 
-impl GpuSkylightMaskData
-{
-    pub fn new(center: Vec2, h_extent: Vec2) -> Self
-    {
+impl GpuSkylightMaskData {
+    pub fn new(center: Vec2, h_extent: Vec2) -> Self {
         Self { center, h_extent }
     }
 }

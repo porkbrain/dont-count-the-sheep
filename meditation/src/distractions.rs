@@ -329,12 +329,12 @@ fn react_to_environment(
         // On a line between climate and distraction, pushed back behind the
         // distraction by push_back_force.
         //
-        // Unfortunately, the lighting engine does not use global transform to
-        // calculate positions, so we need to add the distraction's translation
-        occluder_pos.translation = distraction_pos.translation
-            + (distraction_pos.translation - climate_transform.translation)
-                .normalize()
-                * push_back_force;
+        // Our fork of the lighting dependency uses global transform instead of
+        // transform, so the translation is relative to the entity.
+        occluder_pos.translation = (distraction_pos.translation
+            - climate_transform.translation)
+            .normalize()
+            * push_back_force;
     }
 
     // increase jitter intensity as more distractions are spawned
