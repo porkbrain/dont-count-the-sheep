@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy::core_pipeline::bloom::BloomSettings;
 use bevy::pbr::{MAX_CASCADES_PER_LIGHT, MAX_DIRECTIONAL_LIGHTS};
 use bevy::prelude::*;
@@ -12,29 +14,31 @@ use bevy::render::texture::BevyDefault;
 use bevy::render::view::RenderLayers;
 use bevy::sprite::{Material2d, Material2dKey, MaterialMesh2dBundle};
 
-use crate::gi::constants::{POST_PROCESSING_MATERIAL, POST_PROCESSING_QUAD};
 use crate::gi::pipeline::GiTargetsWrapper;
 use crate::gi::resource::ComputedTargetSizes;
+
+use super::LightScene;
 
 #[derive(Component)]
 pub struct PostProcessingQuad;
 
-#[rustfmt::skip]
 #[derive(AsBindGroup, TypeUuid, Clone, TypePath, Asset)]
-#[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
-pub struct PostProcessingMaterial {
+#[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"] // TODO
+pub struct PostProcessingMaterial<T: LightScene> {
     #[texture(0)]
     #[sampler(1)]
-    floor_image:       Handle<Image>,
+    floor_image: Handle<Image>,
 
     #[texture(6)]
     #[sampler(7)]
-    irradiance_image:  Handle<Image>,
+    irradiance_image: Handle<Image>,
+
+    phantom: PhantomData<T>,
 }
 
-impl PostProcessingMaterial {
+impl<T: LightScene> PostProcessingMaterial<T> {
     pub fn create(
-        camera_targets: &CameraTargets,
+        camera_targets: &CameraTargets<T>,
         gi_targets_wrapper: &GiTargetsWrapper,
     ) -> Self {
         Self {
@@ -45,16 +49,19 @@ impl PostProcessingMaterial {
                 .expect("Targets must be initialized")
                 .ss_filter_target
                 .clone(),
+            phantom: PhantomData,
         }
     }
 }
 
 #[derive(Resource, Default)]
-pub struct CameraTargets {
+pub struct CameraTargets<T> {
     pub floor_target: Handle<Image>,
+
+    phantom: PhantomData<T>,
 }
 
-impl CameraTargets {
+impl<T> CameraTargets<T> {
     pub fn create(
         images: &mut Assets<Image>,
         sizes: &ComputedTargetSizes,
@@ -84,6 +91,7 @@ impl CameraTargets {
         // Fill images data with zeroes.
         floor_image.resize(target_size);
 
+        // TODO
         let floor_image_handle: Handle<Image> =
             Handle::weak_from_u128(9127312736151891273);
 
@@ -91,11 +99,12 @@ impl CameraTargets {
 
         Self {
             floor_target: floor_image_handle,
+            phantom: PhantomData,
         }
     }
 }
 
-impl Material2d for PostProcessingMaterial {
+impl<T: LightScene> Material2d for PostProcessingMaterial<T> {
     fn fragment_shader() -> ShaderRef {
         "shaders/gi_post_processing.wgsl".into()
     }
@@ -123,12 +132,12 @@ impl Material2d for PostProcessingMaterial {
 }
 
 #[rustfmt::skip]
-pub fn setup_post_processing_camera(
+pub fn setup_post_processing_camera<T: LightScene>(
     mut commands:                  Commands,
     mut meshes:                    ResMut<Assets<Mesh>>,
-    mut materials:                 ResMut<Assets<PostProcessingMaterial>>,
+    mut materials:                 ResMut<Assets<PostProcessingMaterial<T>>>,
     mut images:                    ResMut<Assets<Image>>,
-    mut camera_targets:            ResMut<CameraTargets>,
+    mut camera_targets:            ResMut<CameraTargets<T>>,
 
     target_sizes:                 Res<ComputedTargetSizes>,
     gi_targets_wrapper:           Res<GiTargetsWrapper>,
@@ -139,22 +148,22 @@ pub fn setup_post_processing_camera(
         target_sizes.primary_target_size.y,
     )));
 
-    meshes.insert(POST_PROCESSING_QUAD.clone(), quad);
+    meshes.insert(T::post_processing_quad(), quad);
 
     *camera_targets = CameraTargets::create(&mut images, &target_sizes);
 
     let material = PostProcessingMaterial::create(&camera_targets, &gi_targets_wrapper);
-    materials.insert(POST_PROCESSING_MATERIAL.clone(), material);
+    materials.insert(T::post_processing_material(), material);
 
     // This specifies the layer used for the post processing camera, which
     // will be attached to the post processing camera and 2d quad.
-    let layer = RenderLayers::layer((RenderLayers::TOTAL_LAYERS - 1) as u8);
+    let layer = RenderLayers::layer(T::render_layer_index());
 
     commands.spawn((
         PostProcessingQuad,
         MaterialMesh2dBundle {
-            mesh: POST_PROCESSING_QUAD.clone().into(),
-            material: POST_PROCESSING_MATERIAL.clone(),
+            mesh: T::post_processing_quad().into(),
+            material: T::post_processing_material(),
             transform: Transform {
                 translation: Vec3::new(0.0, 0.0, 1.5),
                 ..default()

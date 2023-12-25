@@ -9,18 +9,16 @@ use bevy::sprite::Material2dPlugin;
 use bevy::window::{PrimaryWindow, WindowResized};
 
 use self::pipeline::GiTargets;
-use crate::gi::compositing::{setup_post_processing_camera, CameraTargets, PostProcessingMaterial};
+use crate::gi::compositing::{
+    setup_post_processing_camera, CameraTargets, PostProcessingMaterial,
+};
 use crate::gi::constants::*;
 use crate::gi::pipeline::{
-    system_queue_bind_groups,
-    system_setup_gi_pipeline,
-    GiTargetsWrapper,
-    LightPassPipeline,
-    LightPassPipelineBindGroups,
+    system_queue_bind_groups, system_setup_gi_pipeline, GiTargetsWrapper,
+    LightPassPipeline, LightPassPipelineBindGroups,
 };
 use crate::gi::pipeline_assets::{
-    system_extract_pipeline_assets,
-    system_prepare_pipeline_assets,
+    system_extract_pipeline_assets, system_prepare_pipeline_assets,
     LightPassPipelineAssets,
 };
 use crate::gi::resource::ComputedTargetSizes;
@@ -39,30 +37,44 @@ pub mod util;
 
 const WORKGROUP_SIZE: u32 = 8;
 
+pub trait LightScene:
+    TypePath + Send + Sync + Sized + Clone + Default + 'static
+{
+    fn post_processing_quad() -> Handle<Mesh>;
+    fn post_processing_material() -> Handle<PostProcessingMaterial<Self>>;
+    fn render_layer_index() -> u8;
+
+    fn init(app: &mut App) {
+        app.init_resource::<CameraTargets<Self>>()
+            .add_plugins(
+                Material2dPlugin::<PostProcessingMaterial<Self>>::default(),
+            )
+            .add_systems(
+                PreStartup,
+                (setup_post_processing_camera::<Self>
+                    .after(system_setup_gi_pipeline),)
+                    .chain(),
+            )
+            .add_systems(PreUpdate, handle_window_resize::<Self>);
+    }
+}
+
 pub struct BevyMagicLight2DPlugin;
 
-impl Plugin for BevyMagicLight2DPlugin
-{
-    fn build(&self, app: &mut App)
-    {
-        app.add_plugins((
-            ExtractResourcePlugin::<GiTargetsWrapper>::default(),
-            Material2dPlugin::<PostProcessingMaterial>::default(),
-        ))
-        .init_resource::<CameraTargets>()
-        .init_resource::<GiTargetsWrapper>()
-        .init_resource::<BevyMagicLight2DSettings>()
-        .init_resource::<ComputedTargetSizes>()
-        .add_systems(
-            PreStartup,
-            (
-                detect_target_sizes,
-                system_setup_gi_pipeline.after(detect_target_sizes),
-                setup_post_processing_camera.after(system_setup_gi_pipeline),
-            )
-                .chain(),
-        )
-        .add_systems(PreUpdate, handle_window_resize);
+impl Plugin for BevyMagicLight2DPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(ExtractResourcePlugin::<GiTargetsWrapper>::default())
+            .init_resource::<GiTargetsWrapper>()
+            .init_resource::<BevyMagicLight2DSettings>()
+            .init_resource::<ComputedTargetSizes>()
+            .add_systems(
+                PreStartup,
+                (
+                    detect_target_sizes,
+                    system_setup_gi_pipeline.after(detect_target_sizes),
+                )
+                    .chain(),
+            );
 
         load_internal_asset!(
             app,
@@ -124,8 +136,7 @@ impl Plugin for BevyMagicLight2DPlugin
         )
     }
 
-    fn finish(&self, app: &mut App)
-    {
+    fn finish(&self, app: &mut App) {
         let render_app = app.sub_app_mut(RenderApp);
         render_app
             .init_resource::<LightPassPipeline>()
@@ -139,10 +150,10 @@ struct LightPass2DNode {}
 
 #[rustfmt::skip]
 #[allow(clippy::too_many_arguments)]
-pub fn handle_window_resize(
+pub fn handle_window_resize<T: LightScene>(
 
     mut assets_mesh:     ResMut<Assets<Mesh>>,
-    mut assets_material: ResMut<Assets<PostProcessingMaterial>>,
+    mut assets_material: ResMut<Assets<PostProcessingMaterial<T>>>,
     mut assets_image:    ResMut<Assets<Image>>,
 
     query_window: Query<&Window, With<PrimaryWindow>>,
@@ -150,7 +161,7 @@ pub fn handle_window_resize(
         res_plugin_config:      Res<BevyMagicLight2DSettings>,
     mut res_target_sizes:       ResMut<ComputedTargetSizes>,
     mut res_gi_targets_wrapper: ResMut<GiTargetsWrapper>,
-    mut res_camera_targets:     ResMut<CameraTargets>,
+    mut res_camera_targets:     ResMut<CameraTargets<T>>,
 
     mut window_resized_evr: EventReader<WindowResized>,
 ) {
@@ -163,7 +174,7 @@ pub fn handle_window_resize(
             ComputedTargetSizes::from_window(window, &res_plugin_config.target_scaling_params);
 
         assets_mesh.insert(
-            POST_PROCESSING_QUAD.clone(),
+            T::post_processing_quad(),
             Mesh::from(shape::Quad::new(Vec2::new(
                 res_target_sizes.primary_target_size.x,
                 res_target_sizes.primary_target_size.y,
@@ -171,7 +182,7 @@ pub fn handle_window_resize(
         );
 
         assets_material.insert(
-            POST_PROCESSING_MATERIAL.clone(),
+            T::post_processing_material(),
             PostProcessingMaterial::create(&res_camera_targets, &res_gi_targets_wrapper),
         );
 
@@ -192,8 +203,7 @@ pub fn detect_target_sizes(
     *res_target_sizes = ComputedTargetSizes::from_window(window, &res_plugin_config.target_scaling_params);
 }
 
-impl render_graph::Node for LightPass2DNode
-{
+impl render_graph::Node for LightPass2DNode {
     fn update(&mut self, _world: &mut World) {}
 
     #[rustfmt::skip]

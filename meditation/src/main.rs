@@ -33,9 +33,15 @@ mod consts {
     pub(crate) const PIXEL_ZOOM: f32 = 3.0;
 }
 
-use bevy::{render::camera::RenderTarget, window::WindowTheme};
+use bevy::{
+    render::{camera::RenderTarget, view::RenderLayers},
+    window::WindowTheme,
+};
 use bevy_magic_light_2d::{
-    gi::{compositing::CameraTargets, BevyMagicLight2DPlugin},
+    gi::{
+        compositing::{CameraTargets, PostProcessingMaterial},
+        BevyMagicLight2DPlugin, LightScene,
+    },
     MainCamera,
 };
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
@@ -87,6 +93,8 @@ fn main() {
     .insert_resource(gravity::field())
     .add_systems(Startup, (setup, background::spawn));
 
+    BackgroundLightScene::init(&mut app);
+
     common_physics::poissons_equation::register::<gravity::Gravity>(&mut app);
 
     #[cfg(feature = "dev")]
@@ -102,7 +110,27 @@ fn main() {
     app.run();
 }
 
-fn setup(mut commands: Commands, camera_targets: Res<CameraTargets>) {
+#[derive(Default, Clone, TypePath)]
+struct BackgroundLightScene;
+
+impl LightScene for BackgroundLightScene {
+    fn render_layer_index() -> u8 {
+        (RenderLayers::TOTAL_LAYERS - 1) as u8
+    }
+
+    fn post_processing_quad() -> Handle<Mesh> {
+        Handle::weak_from_u128(23475629871623176235)
+    }
+
+    fn post_processing_material() -> Handle<PostProcessingMaterial<Self>> {
+        Handle::weak_from_u128(52374048672736472871)
+    }
+}
+
+fn setup(
+    mut commands: Commands,
+    camera_targets: Res<CameraTargets<BackgroundLightScene>>,
+) {
     commands.spawn(Game);
 
     commands
