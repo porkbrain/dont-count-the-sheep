@@ -22,7 +22,7 @@ impl LightScene for BackgroundLightScene {
 struct ObjectsLightScene;
 
 impl LightScene for ObjectsLightScene {
-    const HANDLE_START: u128 = 4482023275553590181;
+    const HANDLE_START: u128 = 6582023275553590181;
 
     fn render_layer_index() -> u8 {
         (RenderLayers::TOTAL_LAYERS - 3) as u8
@@ -38,7 +38,7 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         BackgroundLightScene::build(app);
-        // ObjectsLightScene::build(app);
+        ObjectsLightScene::build(app);
     }
 
     fn finish(&self, app: &mut App) {

@@ -113,12 +113,14 @@ impl<T: LightScene> GiTargets<T> {
 
 #[allow(dead_code)]
 #[derive(Resource)]
-pub struct LightPassPipelineBindGroups {
+pub struct LightPassPipelineBindGroups<T> {
     pub sdf_bind_group: BindGroup,
     pub ss_blend_bind_group: BindGroup,
     pub ss_probe_bind_group: BindGroup,
     pub ss_bounce_bind_group: BindGroup,
     pub ss_filter_bind_group: BindGroup,
+
+    phantom: PhantomData<T>,
 }
 
 #[rustfmt::skip]
@@ -414,12 +416,13 @@ pub fn system_queue_bind_groups<T: LightScene>(
             ],
         );
 
-        commands.insert_resource(LightPassPipelineBindGroups {
+        commands.insert_resource(LightPassPipelineBindGroups::<T> {
             sdf_bind_group,
             ss_probe_bind_group,
             ss_bounce_bind_group,
             ss_blend_bind_group,
             ss_filter_bind_group,
+            phantom: PhantomData,
         });
     }
 }

@@ -45,11 +45,7 @@ pub trait LightScene:
     const HANDLE_START: u128 = 23475629871623176235;
 
     fn camera_order() -> isize;
-
     fn render_layer_index() -> u8;
-    fn light_pass() -> String {
-        format!("light_pass_2d_{}", Self::render_layer_index())
-    }
 
     fn build(app: &mut App) {
         app
@@ -124,9 +120,9 @@ pub trait LightScene:
 
         let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
         render_graph
-            .add_node(Self::light_pass(), LightPass2DNode::<Self>::default());
+            .add_node("light_pass_2d", LightPass2DNode::<Self>::default());
         render_graph.add_node_edge(
-            Self::light_pass(),
+            "light_pass_2d",
             bevy::render::main_graph::node::CAMERA_DRIVER,
         )
     }
@@ -279,7 +275,7 @@ impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
         world: &World,
     ) -> Result<(), render_graph::NodeRunError> {
         if let Some(pipeline_bind_groups) =
-            world.get_resource::<LightPassPipelineBindGroups>()
+            world.get_resource::<LightPassPipelineBindGroups<T>>()
         {
             let pipeline_cache = world.resource::<PipelineCache>();
             let pipeline = world.resource::<LightPassPipeline<T>>();
@@ -306,7 +302,7 @@ impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
                 let mut pass = render_context
                     .command_encoder()
                     .begin_compute_pass(&ComputePassDescriptor {
-                        label: Some(&T::light_pass()),
+                        label: Some("light_pass_2d"),
                     });
 
                 {
