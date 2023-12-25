@@ -170,9 +170,9 @@ pub trait LightScene:
     }
 }
 
-pub struct BevyMagicLight2DPlugin;
+pub struct Plugin;
 
-impl Plugin for BevyMagicLight2DPlugin {
+impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<BevyMagicLight2DSettings>()
             .init_resource::<ComputedTargetSizes>()

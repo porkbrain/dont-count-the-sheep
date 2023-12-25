@@ -41,10 +41,7 @@ use bevy::{
     render::{camera::RenderTarget, view::RenderLayers},
     window::WindowTheme,
 };
-use bevy_magic_light_2d::{
-    gi::{compositing::CameraTargets, BevyMagicLight2DPlugin},
-    SceneCamera,
-};
+use bevy_magic_light_2d::{gi::compositing::CameraTargets, SceneCamera};
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
 use consts::BG_RENDER_LAYER;
 use light::BackgroundLightScene;
@@ -82,7 +79,7 @@ fn main() {
             }),
     )
     .add_plugins((
-        BevyMagicLight2DPlugin,
+        bevy_magic_light_2d::Plugin,
         PixelCameraPlugin,
         bevy_webp_anim::Plugin,
         common_physics::Plugin,

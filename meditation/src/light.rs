@@ -18,31 +18,31 @@ impl LightScene for BackgroundLightScene {
     }
 }
 
-// #[derive(Component, Default, Clone, TypePath)]
-// struct ObjectsLightScene; // TODO: Move
+#[derive(Component, Default, Clone, TypePath)]
+struct ObjectsLightScene;
 
-// impl LightScene for ObjectsLightScene {
-//     const HANDLE_START: u128 = 4482023275553590181;
+impl LightScene for ObjectsLightScene {
+    const HANDLE_START: u128 = 4482023275553590181;
 
-//     fn render_layer_index() -> u8 {
-//         (RenderLayers::TOTAL_LAYERS - 1) as u8
-//     }
+    fn render_layer_index() -> u8 {
+        (RenderLayers::TOTAL_LAYERS - 3) as u8
+    }
 
-//     fn camera_order() -> isize {
-//         -1
-//     }
-// }
+    fn camera_order() -> isize {
+        -1
+    }
+}
 
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         BackgroundLightScene::build(app);
-        // ObjectsLightScene::build(&mut app);
+        ObjectsLightScene::build(app);
     }
 
     fn finish(&self, app: &mut App) {
         BackgroundLightScene::finish(app);
-        // ObjectsLightScene::finish(&mut app);
+        ObjectsLightScene::finish(app);
     }
 }
