@@ -17,6 +17,8 @@ use crate::gi::types_gpu::{
 use crate::prelude::BevyMagicLight2DSettings;
 use crate::MainCamera;
 
+use super::LightScene;
+
 #[rustfmt::skip]
 #[derive(Default, Resource)]
 pub struct LightPassPipelineAssets {
@@ -49,25 +51,31 @@ pub fn system_prepare_pipeline_assets(
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn system_extract_pipeline_assets(
+pub fn system_extract_pipeline_assets<T: LightScene>(
     res_light_settings: Extract<Res<BevyMagicLight2DSettings>>,
     res_target_sizes: Extract<Res<ComputedTargetSizes>>,
 
     query_lights: Extract<
-        Query<(
-            &GlobalTransform,
-            &OmniLightSource2D,
-            &InheritedVisibility,
-            &ViewVisibility,
-        )>,
+        Query<
+            (
+                &GlobalTransform,
+                &OmniLightSource2D,
+                &InheritedVisibility,
+                &ViewVisibility,
+            ),
+            With<T>,
+        >,
     >,
     query_occluders: Extract<
-        Query<(
-            &LightOccluder2D,
-            &GlobalTransform,
-            &InheritedVisibility,
-            &ViewVisibility,
-        )>,
+        Query<
+            (
+                &LightOccluder2D,
+                &GlobalTransform,
+                &InheritedVisibility,
+                &ViewVisibility,
+            ),
+            With<T>,
+        >,
     >,
     query_camera: Extract<Query<(&Camera, &GlobalTransform), With<MainCamera>>>,
     query_masks: Extract<Query<(&GlobalTransform, &SkylightMask2D)>>,

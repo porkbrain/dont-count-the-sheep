@@ -34,14 +34,12 @@ mod consts {
 }
 
 use bevy::{
+    core_pipeline::clear_color::ClearColorConfig,
     render::{camera::RenderTarget, view::RenderLayers},
     window::WindowTheme,
 };
 use bevy_magic_light_2d::{
-    gi::{
-        compositing::{CameraTargets, PostProcessingMaterial},
-        BevyMagicLight2DPlugin, LightScene,
-    },
+    gi::{compositing::CameraTargets, BevyMagicLight2DPlugin, LightScene},
     MainCamera,
 };
 use bevy_pixel_camera::{PixelCameraPlugin, PixelViewport, PixelZoom};
@@ -110,48 +108,58 @@ fn main() {
     app.run();
 }
 
-#[derive(Default, Clone, TypePath)]
-struct BackgroundLightScene;
+#[derive(Component, Default, Clone, TypePath)]
+struct BackgroundLightScene; // TODO: Move
 
 impl LightScene for BackgroundLightScene {
+    const HANDLE_START: u128 = 23475629871623176235;
+
     fn render_layer_index() -> u8 {
         (RenderLayers::TOTAL_LAYERS - 1) as u8
     }
 
-    fn post_processing_quad() -> Handle<Mesh> {
-        Handle::weak_from_u128(23475629871623176235)
-    }
-    fn post_processing_material() -> Handle<PostProcessingMaterial<Self>> {
-        Handle::weak_from_u128(52374048672736472871)
-    }
-    fn floor_image_handle() -> Handle<Image> {
-        Handle::weak_from_u128(9127312736151891273)
-    }
-    fn sdf_target() -> Handle<Image> {
-        Handle::weak_from_u128(2390847209461232343)
-    }
-    fn ss_probe_target() -> Handle<Image> {
-        Handle::weak_from_u128(3423231236817235162)
-    }
-    fn ss_bounce_target() -> Handle<Image> {
-        Handle::weak_from_u128(3198273198312367527)
-    }
-    fn ss_blend_target() -> Handle<Image> {
-        Handle::weak_from_u128(7782312739182735881)
-    }
-    fn ss_filter_target() -> Handle<Image> {
-        Handle::weak_from_u128(8761232615172413412)
-    }
-    fn ss_pose_target() -> Handle<Image> {
-        Handle::weak_from_u128(4728165084756128470)
+    fn camera_order() -> isize {
+        1
     }
 }
+
+// #[derive(Component, Default, Clone, TypePath)]
+// struct ObjectsLightScene; // TODO: Move
+
+// impl LightScene for ObjectsLightScene {
+//     const HANDLE_START: u128 = 23475629871623176235;
+
+//     fn render_layer_index() -> u8 {
+//         (RenderLayers::TOTAL_LAYERS - 1) as u8
+//     }
+
+//     fn camera_order() -> isize {
+//         1
+//     }
+// }
 
 fn setup(
     mut commands: Commands,
     camera_targets: Res<CameraTargets<BackgroundLightScene>>,
 ) {
     commands.spawn(Game);
+
+    commands.spawn((
+        PixelZoom::Fixed(consts::PIXEL_ZOOM as i32),
+        PixelViewport,
+        RenderLayers::layer(1),
+        Camera2dBundle {
+            camera: Camera {
+                hdr: true,
+                order: 5,
+                ..default()
+            },
+            camera_2d: Camera2d {
+                clear_color: ClearColorConfig::None,
+            },
+            ..default()
+        },
+    ));
 
     commands
         .spawn((
@@ -162,6 +170,7 @@ fn setup(
         .insert(Camera2dBundle {
             camera: Camera {
                 hdr: true,
+                order: 2,
                 target: RenderTarget::Image(
                     camera_targets.floor_target.clone(),
                 ),

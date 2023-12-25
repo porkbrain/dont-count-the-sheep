@@ -38,19 +38,14 @@ pub mod util;
 const WORKGROUP_SIZE: u32 = 8;
 
 pub trait LightScene:
-    TypePath + Send + Sync + Sized + Clone + Default + 'static
+    Component + TypePath + Send + Sync + Sized + Clone + Default + 'static
 {
-    fn render_layer_index() -> u8;
+    /// Some unique number that we can use to generate handles IDs in increasing
+    /// order.
+    const HANDLE_START: u128 = 23475629871623176235;
 
-    fn post_processing_quad() -> Handle<Mesh>;
-    fn post_processing_material() -> Handle<PostProcessingMaterial<Self>>;
-    fn floor_image_handle() -> Handle<Image>;
-    fn sdf_target() -> Handle<Image>;
-    fn ss_probe_target() -> Handle<Image>;
-    fn ss_bounce_target() -> Handle<Image>;
-    fn ss_blend_target() -> Handle<Image>;
-    fn ss_filter_target() -> Handle<Image>;
-    fn ss_pose_target() -> Handle<Image>;
+    fn render_layer_index() -> u8;
+    fn camera_order() -> isize;
 
     fn init(app: &mut App) {
         app
@@ -72,10 +67,43 @@ pub trait LightScene:
             .add_systems(PreUpdate, handle_window_resize::<Self>);
 
         let render_app = app.sub_app_mut(RenderApp);
-        render_app.add_systems(
-            Render,
-            system_queue_bind_groups::<Self>.in_set(RenderSet::Queue),
-        );
+        render_app
+            .add_systems(
+                ExtractSchedule,
+                system_extract_pipeline_assets::<Self>,
+            )
+            .add_systems(
+                Render,
+                system_queue_bind_groups::<Self>.in_set(RenderSet::Queue),
+            );
+    }
+
+    fn post_processing_quad() -> Handle<Mesh> {
+        Handle::weak_from_u128(Self::HANDLE_START + 1)
+    }
+    fn post_processing_material() -> Handle<PostProcessingMaterial<Self>> {
+        Handle::weak_from_u128(Self::HANDLE_START + 2)
+    }
+    fn floor_image_handle() -> Handle<Image> {
+        Handle::weak_from_u128(Self::HANDLE_START + 3)
+    }
+    fn sdf_target() -> Handle<Image> {
+        Handle::weak_from_u128(Self::HANDLE_START + 4)
+    }
+    fn ss_probe_target() -> Handle<Image> {
+        Handle::weak_from_u128(Self::HANDLE_START + 5)
+    }
+    fn ss_bounce_target() -> Handle<Image> {
+        Handle::weak_from_u128(Self::HANDLE_START + 6)
+    }
+    fn ss_blend_target() -> Handle<Image> {
+        Handle::weak_from_u128(Self::HANDLE_START + 7)
+    }
+    fn ss_filter_target() -> Handle<Image> {
+        Handle::weak_from_u128(Self::HANDLE_START + 8)
+    }
+    fn ss_pose_target() -> Handle<Image> {
+        Handle::weak_from_u128(Self::HANDLE_START + 9)
     }
 }
 
@@ -129,12 +157,10 @@ impl Plugin for BevyMagicLight2DPlugin {
             Shader::from_wgsl
         );
         let render_app = app.sub_app_mut(RenderApp);
-        render_app
-            .add_systems(ExtractSchedule, system_extract_pipeline_assets)
-            .add_systems(
-                Render,
-                system_prepare_pipeline_assets.in_set(RenderSet::Prepare),
-            );
+        render_app.add_systems(
+            Render,
+            system_prepare_pipeline_assets.in_set(RenderSet::Prepare),
+        );
 
         let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
         render_graph.add_node("light_pass_2d", LightPass2DNode::default());

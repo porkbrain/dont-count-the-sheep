@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy::core_pipeline::bloom::BloomSettings;
 use bevy::pbr::{MAX_CASCADES_PER_LIGHT, MAX_DIRECTIONAL_LIGHTS};
 use bevy::prelude::*;
-use bevy::reflect::{TypePath, TypeUuid};
+use bevy::reflect::TypePath;
 use bevy::render::mesh::MeshVertexBufferLayout;
 use bevy::render::render_resource::{
     AsBindGroup, Extent3d, RenderPipelineDescriptor, ShaderDefVal, ShaderRef,
@@ -22,8 +22,7 @@ use super::LightScene;
 #[derive(Component)]
 pub struct PostProcessingQuad;
 
-#[derive(AsBindGroup, TypeUuid, Clone, TypePath, Asset)]
-#[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"] // TODO
+#[derive(AsBindGroup, Clone, TypePath, Asset)]
 pub struct PostProcessingMaterial<T: LightScene> {
     #[texture(0)]
     #[sampler(1)]
@@ -174,7 +173,7 @@ pub fn setup_post_processing_camera<T: LightScene>(
         Name::new("post_processing_camera"),
         Camera2dBundle {
             camera: Camera {
-                order: 1,
+                order: T::camera_order(),
                 hdr: true,
                 ..default()
             },

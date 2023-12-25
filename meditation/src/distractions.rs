@@ -2,6 +2,7 @@ mod consts;
 mod spawner;
 mod videos;
 
+use bevy::render::view::RenderLayers;
 use bevy::time::Stopwatch;
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
@@ -280,6 +281,7 @@ fn react_to_environment(
                             STATIC_ATLAS_FRAME_TIME,
                             TimerMode::Repeating,
                         ),
+                        RenderLayers::layer(1),
                     ))
                     .insert(SpriteSheetBundle {
                         texture_atlas: texture_atlases.add(

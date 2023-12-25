@@ -8,7 +8,7 @@ use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
 use itertools::Itertools;
 use rand::{thread_rng, Rng};
 
-use crate::{path::LevelPath, prelude::*};
+use crate::{path::LevelPath, prelude::*, BackgroundLightScene};
 
 /// Climate casts light rays.
 /// We achieve those light rays by orbiting occluders around the climate.
@@ -60,7 +60,7 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn)
             .register_type::<LightOccluder2D>()
-            .add_systems(Update, (follow_curve, move_occluders, change_light));
+            .add_systems(Update, (follow_curve, move_occluders));
 
         #[cfg(feature = "dev")]
         app.add_systems(Update, visualize_raypoints);
@@ -85,17 +85,26 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
         ))
-        .insert(OmniLightSource2D {
-            intensity: LIGHT_INTENSITY,
-            color: LIGHT_COLOR_HOT,
-            falloff: Vec3::new(FALLOFF_LIGHT_SIZE, FALLOFF_LIGHT_SIZE, 0.05),
-            ..default()
-        })
         .with_children(|commands| {
             commands.spawn(SpriteBundle {
                 texture: asset_server.load("textures/climate/default.png"),
                 ..default()
             });
+
+            commands.spawn((
+                SpatialBundle::default(),
+                BackgroundLightScene,
+                OmniLightSource2D {
+                    intensity: LIGHT_INTENSITY,
+                    color: LIGHT_COLOR_HOT,
+                    falloff: Vec3::new(
+                        FALLOFF_LIGHT_SIZE,
+                        FALLOFF_LIGHT_SIZE,
+                        0.05,
+                    ),
+                    ..default()
+                },
+            ));
         });
 
     for i in 0..OCCLUDER_COUNT {
@@ -114,6 +123,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             LightOccluder2D {
                 h_size: Vec2::new(OCCLUDER_SIZE, OCCLUDER_SIZE),
             },
+            BackgroundLightScene,
         ));
     }
 
@@ -139,33 +149,33 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 /// TODO: based on some player action
 /// TODO: consider smooth transition
-fn change_light(
-    game: Query<&Game, Without<Paused>>,
-    mut light: Query<&mut OmniLightSource2D, With<Climate>>,
-    mut score: Query<&mut crate::ui::Score>,
-    time: Res<Time>,
-) {
-    if game.is_empty() {
-        return;
-    }
+// fn change_light(
+//     game: Query<&Game, Without<Paused>>,
+//     mut light: Query<&mut OmniLightSource2D, With<Climate>>,
+//     mut score: Query<&mut crate::ui::Score>,
+//     time: Res<Time>,
+// ) {
+//     if game.is_empty() {
+//         return;
+//     }
 
-    let mut light = light.single_mut();
-    let mut score = score.single_mut();
+//     let mut light = light.single_mut();
+//     let mut score = score.single_mut();
 
-    // toss a coin with chance X per second whether we change light color
-    const LIGHT_COLOR_CHANGE_CHANCE_PER_SECOND_INVERSE: f64 = 15.0;
-    if thread_rng().gen_bool(
-        time.delta_seconds_f64() / LIGHT_COLOR_CHANGE_CHANCE_PER_SECOND_INVERSE,
-    ) {
-        light.color = if light.color == LIGHT_COLOR_HOT {
-            score.set_hot();
-            Color::hex(LIGHT_COLOR_COLD).unwrap()
-        } else {
-            score.set_cold();
-            LIGHT_COLOR_HOT
-        };
-    }
-}
+//     // toss a coin with chance X per second whether we change light color
+//     const LIGHT_COLOR_CHANGE_CHANCE_PER_SECOND_INVERSE: f64 = 15.0;
+//     if thread_rng().gen_bool(
+//         time.delta_seconds_f64() /
+// LIGHT_COLOR_CHANGE_CHANCE_PER_SECOND_INVERSE,     ) {
+//         light.color = if light.color == LIGHT_COLOR_HOT {
+//             score.set_hot();
+//             Color::hex(LIGHT_COLOR_COLD).unwrap()
+//         } else {
+//             score.set_cold();
+//             LIGHT_COLOR_HOT
+//         };
+//     }
+// }
 
 /// Distractions have something similar, but with some extra logic to change
 /// path.

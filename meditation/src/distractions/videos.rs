@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use bevy::render::view::RenderLayers;
 use rand::random;
 
 /// This gets shuffled so order doesn't matter.
@@ -42,19 +43,22 @@ impl Video {
         parent: &mut ChildBuilder,
         asset_server: &Res<AssetServer>,
     ) {
-        parent.spawn(bevy_webp_anim::WebpBundle {
-            animation: asset_server.load(self.asset_path()),
-            frame_rate: bevy_webp_anim::FrameRate::new(2),
-            sprite: Sprite { ..default() },
-            transform: Transform::from_translation(Vec3::new(
-                0.0,
-                0.0,
-                // add some randomness to the z-index for deterministic
-                // ordering of multiple distractions
-                zindex::DISTRACTION_VIDEO + random::<f32>() * 0.1,
-            )),
-            ..default()
-        });
+        parent.spawn((
+            RenderLayers::layer(1),
+            bevy_webp_anim::WebpBundle {
+                animation: asset_server.load(self.asset_path()),
+                frame_rate: bevy_webp_anim::FrameRate::new(2),
+                sprite: Sprite { ..default() },
+                transform: Transform::from_translation(Vec3::new(
+                    0.0,
+                    0.0,
+                    // add some randomness to the z-index for deterministic
+                    // ordering of multiple distractions
+                    zindex::DISTRACTION_VIDEO + random::<f32>() * 0.1,
+                )),
+                ..default()
+            },
+        ));
     }
 
     fn asset_path(self) -> &'static str {

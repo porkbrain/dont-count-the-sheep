@@ -9,6 +9,7 @@ pub(crate) mod consts;
 mod controls;
 mod sprite;
 
+use bevy::render::view::RenderLayers;
 pub(crate) use controls::loading_special as loading_special_system;
 
 use self::consts::*;
@@ -99,6 +100,7 @@ fn spawn(
     let body = commands
         .spawn((
             WeatherBody,
+            RenderLayers::layer(1),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/weather/body_atlas.png"),
@@ -123,6 +125,7 @@ fn spawn(
     let face = commands
         .spawn((
             WeatherFace,
+            RenderLayers::layer(1),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/weather/face_atlas.png"),
@@ -146,6 +149,7 @@ fn spawn(
     //
     commands.spawn((
         anim::SparkEffect,
+        RenderLayers::layer(1),
         Animation {
             on_last_frame: AnimationEnd::Custom(Box::new(
                 |entity,

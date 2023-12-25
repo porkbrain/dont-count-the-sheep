@@ -1,5 +1,5 @@
-use crate::prelude::*;
-use bevy::{time::Stopwatch, utils::HashSet};
+use crate::{prelude::*, BackgroundLightScene};
+use bevy::{render::view::RenderLayers, time::Stopwatch, utils::HashSet};
 use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use rand::{random, seq::SliceRandom};
 
@@ -57,33 +57,40 @@ pub(super) fn try_spawn_next(
 
     commands
         .spawn((Distraction::new(video), AngularVelocity::default()))
-        .insert(SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load("textures/distractions/crack_atlas.png"),
-                vec2(DISTRACTION_SPRITE_SIZE, DISTRACTION_SPRITE_SIZE),
-                MAX_CRACKS,
-                1,
-                None,
-                None,
-            )),
-            sprite: TextureAtlasSprite::new(0),
-            transform: Transform::from_translation(Vec3::new(
-                0.0,
-                0.0,
-                zindex::DISTRACTION_CRACK,
-            )),
-            ..default()
-        })
-        .with_children(|parent| {
-            parent.spawn(SpriteBundle {
-                texture: asset_server.load("textures/distractions/frame.png"),
+        .insert((
+            RenderLayers::layer(1),
+            SpriteSheetBundle {
+                texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                    asset_server.load("textures/distractions/crack_atlas.png"),
+                    vec2(DISTRACTION_SPRITE_SIZE, DISTRACTION_SPRITE_SIZE),
+                    MAX_CRACKS,
+                    1,
+                    None,
+                    None,
+                )),
+                sprite: TextureAtlasSprite::new(0),
                 transform: Transform::from_translation(Vec3::new(
                     0.0,
                     0.0,
-                    zindex::DISTRACTION_FRAME,
+                    zindex::DISTRACTION_CRACK,
                 )),
                 ..default()
-            });
+            },
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                RenderLayers::layer(1),
+                SpriteBundle {
+                    texture: asset_server
+                        .load("textures/distractions/frame.png"),
+                    transform: Transform::from_translation(Vec3::new(
+                        0.0,
+                        0.0,
+                        zindex::DISTRACTION_FRAME,
+                    )),
+                    ..default()
+                },
+            ));
 
             // TODO: vary videos
             // TODO: sound
@@ -113,6 +120,7 @@ pub(super) fn try_spawn_next(
                     )),
                     ..default()
                 },
+                BackgroundLightScene,
                 LightOccluder2D {
                     h_size: Vec2::new(
                         DISTRACTION_OCCLUDER_SIZE,
