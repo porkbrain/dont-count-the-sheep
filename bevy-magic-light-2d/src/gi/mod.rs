@@ -40,11 +40,17 @@ const WORKGROUP_SIZE: u32 = 8;
 pub trait LightScene:
     TypePath + Send + Sync + Sized + Clone + Default + 'static
 {
+    fn render_layer_index() -> u8;
+
     fn post_processing_quad() -> Handle<Mesh>;
     fn post_processing_material() -> Handle<PostProcessingMaterial<Self>>;
     fn floor_image_handle() -> Handle<Image>;
-
-    fn render_layer_index() -> u8;
+    fn sdf_target() -> Handle<Image>;
+    fn ss_probe_target() -> Handle<Image>;
+    fn ss_bounce_target() -> Handle<Image>;
+    fn ss_blend_target() -> Handle<Image>;
+    fn ss_filter_target() -> Handle<Image>;
+    fn ss_pose_target() -> Handle<Image>;
 
     fn init(app: &mut App) {
         app

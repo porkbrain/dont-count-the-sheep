@@ -85,19 +85,12 @@ impl<T: LightScene> GiTargets<T> {
             ImageFilterMode::Nearest,
         );
 
-        // TODO
-        let sdf_target: Handle<Image> =
-            Handle::weak_from_u128(2390847209461232343);
-        let ss_probe_target: Handle<Image> =
-            Handle::weak_from_u128(3423231236817235162);
-        let ss_bounce_target: Handle<Image> =
-            Handle::weak_from_u128(3198273198312367527);
-        let ss_blend_target: Handle<Image> =
-            Handle::weak_from_u128(7782312739182735881);
-        let ss_filter_target: Handle<Image> =
-            Handle::weak_from_u128(8761232615172413412);
-        let ss_pose_target: Handle<Image> =
-            Handle::weak_from_u128(4728165084756128470);
+        let sdf_target = T::sdf_target();
+        let ss_probe_target = T::ss_probe_target();
+        let ss_bounce_target = T::ss_bounce_target();
+        let ss_blend_target = T::ss_blend_target();
+        let ss_filter_target = T::ss_filter_target();
+        let ss_pose_target = T::ss_pose_target();
 
         images.insert(sdf_target.clone(), sdf_tex);
         images.insert(ss_probe_target.clone(), ss_probe_tex);
