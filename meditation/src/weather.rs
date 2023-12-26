@@ -7,13 +7,14 @@ mod anim;
 mod arrow;
 pub(crate) mod consts;
 mod controls;
+mod mode;
 mod sprite;
 
 use bevy::render::view::RenderLayers;
-pub(crate) use controls::loading_special as loading_special_system;
+pub(crate) use controls::loading_special;
 
 use self::consts::*;
-use crate::{cameras::OBJ_RENDER_LAYER, control_mode, prelude::*};
+use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
 use bevy_magic_light_2d::gi::types::LightOccluder2D;
 
 #[derive(Event, Clone, Copy)]
@@ -38,12 +39,21 @@ struct WeatherBody;
 #[derive(Component)]
 struct WeatherFace;
 
+/// Any entity spawned by this plugin has this component.
+/// Useful for despawning.
+#[derive(Component)]
+struct WeatherEntity;
+
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ActionEvent>()
-            .add_systems(Startup, (spawn, arrow::spawn))
+            .add_systems(
+                OnEnter(GlobalGameState::MeditationLoading),
+                (spawn, arrow::spawn),
+            )
+            .add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn)
             .add_systems(
                 Update,
                 (
@@ -56,7 +66,8 @@ impl bevy::app::Plugin for Plugin {
                     anim::sprite
                         .after(controls::normal)
                         .after(controls::loading_special),
-                ),
+                )
+                    .run_if(in_state(GlobalGameState::MeditationInGame)),
             );
     }
 
@@ -75,13 +86,15 @@ fn spawn(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut commands: Commands,
 ) {
+    debug!("Spawning weather entities");
+
     //
     // 1.
     //
     let parent = commands
         .spawn((
             Weather,
-            control_mode::Normal::default(),
+            mode::Normal::default(),
             Velocity::default(),
             AngularVelocity::default(), // for animation
             sprite::Transition::default(),
@@ -185,4 +198,15 @@ fn spawn(
     // 5.
     //
     commands.spawn(anim::CameraState::default());
+}
+
+fn despawn(
+    mut commands: Commands,
+    entities: Query<Entity, With<WeatherEntity>>,
+) {
+    debug!("Spawning weather entities");
+
+    for entity in entities.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
 }

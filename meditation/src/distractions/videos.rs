@@ -2,6 +2,8 @@ use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
 use bevy::render::view::RenderLayers;
 use rand::random;
 
+use super::DistractionEntity;
+
 /// This gets shuffled so order doesn't matter.
 pub(crate) const ALL_VIDEOS: [Video; 10] = [
     Video::Alex,
@@ -44,6 +46,7 @@ impl Video {
         asset_server: &Res<AssetServer>,
     ) {
         parent.spawn((
+            DistractionEntity,
             RenderLayers::layer(OBJ_RENDER_LAYER),
             bevy_webp_anim::WebpBundle {
                 animation: asset_server.load(self.asset_path()),

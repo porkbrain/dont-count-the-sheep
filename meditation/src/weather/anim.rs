@@ -1,5 +1,5 @@
-use super::{consts::*, sprite, ActionEvent, WeatherBody, WeatherFace};
-use crate::{control_mode, prelude::*};
+use super::{consts::*, mode, sprite, ActionEvent, WeatherBody, WeatherFace};
+use crate::prelude::*;
 use bevy::{core_pipeline::bloom::BloomSettings, time::Stopwatch};
 use std::{
     cmp::Ordering,
@@ -35,37 +35,28 @@ pub(super) struct SparkEffect;
 /// 5. Weather is off to Mars or wherever while last few frames are playing in
 ///    place. That's why the effect sprite is not a child of weather.
 pub(super) fn sprite_loading_special(
-    game: Query<&Game, Without<Paused>>,
-    mut weather: Query<(
-        &control_mode::LoadingSpecial,
-        &mut Velocity,
-        &Transform,
-    )>,
+    mut weather: Query<(&mode::LoadingSpecial, &mut Velocity, &Transform)>,
     mut set: ParamSet<(
         Query<
             (Entity, &mut TextureAtlasSprite, &mut Transform),
             (
                 With<SparkEffect>,
                 Without<AnimationTimer>,
-                Without<control_mode::LoadingSpecial>,
+                Without<mode::LoadingSpecial>,
             ),
         >,
         Query<
             &mut TextureAtlasSprite,
-            (With<WeatherBody>, Without<control_mode::LoadingSpecial>),
+            (With<WeatherBody>, Without<mode::LoadingSpecial>),
         >,
         Query<
             &mut TextureAtlasSprite,
-            (With<WeatherFace>, Without<control_mode::LoadingSpecial>),
+            (With<WeatherFace>, Without<mode::LoadingSpecial>),
         >,
     )>,
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let Ok((mode, mut vel, transform)) = weather.get_single_mut() else {
         return;
     };
@@ -124,7 +115,6 @@ pub(super) fn sprite_loading_special(
 /// The sprite is changed based on the last action and the current velocity.
 /// Additionally there's a cooldown on the sprite change.
 pub(super) fn sprite(
-    game: Query<&Game, Without<Paused>>,
     mut broadcast: EventReader<ActionEvent>,
     mut weather: Query<
         (
@@ -133,7 +123,7 @@ pub(super) fn sprite(
             &Transform,
             &mut sprite::Transition,
         ),
-        With<control_mode::Normal>,
+        With<mode::Normal>,
     >,
     mut body: Query<
         &mut TextureAtlasSprite,
@@ -144,10 +134,6 @@ pub(super) fn sprite(
         (With<WeatherFace>, Without<WeatherBody>),
     >,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let Ok((vel, angvel, transform, mut transition)) = weather.get_single_mut()
     else {
         return;
@@ -295,17 +281,12 @@ fn sprite_under_no_latest_action_of_interest(
 }
 
 pub(super) fn rotate(
-    game: Query<&Game, Without<Paused>>,
     mut weather: Query<
         (&Velocity, &mut AngularVelocity, &mut Transform),
-        With<control_mode::Normal>,
+        With<mode::Normal>,
     >,
     time: Res<Time>,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let Ok((vel, mut angvel, mut transform)) = weather.get_single_mut() else {
         return;
     };
@@ -374,7 +355,6 @@ pub(super) fn rotate(
 ///
 /// We need to do this for each camera in case there are more.
 pub(super) fn update_camera_on_special(
-    game: Query<&Game, Without<Paused>>,
     mut action: EventReader<ActionEvent>,
     mut state: Query<&mut CameraState>,
     mut cameras: Query<
@@ -389,10 +369,6 @@ pub(super) fn update_camera_on_special(
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let mut state = state.single_mut();
 
     let just_started_loading_from_translation = action

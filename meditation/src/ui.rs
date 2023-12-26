@@ -1,7 +1,8 @@
 //! The UI comprises menu and score text.
+//! Open/close the menu with ESC.
 //!
 //! TODO:
-//! - face is rendered behind menu box
+//! - render face next to the menu selection
 //! - proper reset of the game
 
 mod menu;
@@ -28,16 +29,11 @@ mod consts {
     // They match the size of the menu box and were hand picked.
     //
 
-    pub(crate) const FIRST_SELECTION_FACE_OFFSET: Vec2 = vec2(-80.0, 50.0);
-    pub(crate) const SELECTIONS_SPACING: f32 =
-        crate::weather::consts::FACE_RENDERED_SIZE + 4.0;
-
     pub(crate) const SELECTIONS_LEFT_OFFSET: Val = Val::Px(128.0);
     pub(crate) const SELECTIONS_TOP_OFFSET: Val = Val::Px(55.0);
     pub(crate) const SELECTIONS_PADDING_TOP: Val = Val::Px(12.0);
 }
 
-pub(crate) use menu::Selection;
 pub(crate) use score::Score;
 
 use crate::prelude::*;
@@ -55,11 +51,29 @@ impl bevy::app::Plugin for Plugin {
                 OnExit(GlobalGameState::MeditationInMenu),
                 menu::despawn,
             )
-            .add_systems(Update, score::update)
-            // order important bcs we simulate ESC to close
             .add_systems(
                 Update,
-                (menu::open, menu::select, menu::close).chain(),
+                score::update
+                    .run_if(in_state(GlobalGameState::MeditationInGame)),
+            )
+            .add_systems(
+                Update,
+                menu::open.run_if(in_state(GlobalGameState::MeditationInGame)),
+            )
+            .add_systems(
+                Update,
+                // order important bcs we simulate ESC to close
+                menu::select
+                    .run_if(in_state(GlobalGameState::MeditationInMenu))
+                    .before(menu::close),
+            )
+            .add_systems(
+                Update,
+                menu::close.run_if(in_state(GlobalGameState::MeditationInMenu)),
+            )
+            .add_systems(
+                OnEnter(GlobalGameState::MeditationQuitting),
+                score::despawn,
             );
     }
 

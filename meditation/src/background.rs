@@ -8,23 +8,44 @@ use crate::{cameras::BG_RENDER_LAYER, prelude::*, BackgroundLightScene};
 pub(crate) const COLOR: Color = Color::rgb(0.050980393, 0.05490196, 0.12156863);
 const STAR_LIGHT_COLOR: &str = "#dbcbff";
 
-pub(crate) const TWINKLE_DURATION: Duration = from_millis(250);
-pub(crate) const TWINKLE_CHANCE_PER_SECOND: f32 = 1.0 / 8.0;
-pub(crate) const TWINKLE_COUNT: usize = 4;
+const TWINKLE_DURATION: Duration = from_millis(250);
+const TWINKLE_CHANCE_PER_SECOND: f32 = 1.0 / 8.0;
+const TWINKLE_COUNT: usize = 4;
 
-pub(crate) const SHOOTING_STAR_CHANCE_PER_SECOND: f32 = 1.0 / 10.0;
-pub(crate) const SHOOTING_STAR_FRAMES: usize = 4;
-pub(crate) const SHOOTING_STAR_FRAME_TIME: Duration = from_millis(50);
-pub(crate) const SHOOTING_STAR_WIDTH: f32 = 35.0;
-pub(crate) const SHOOTING_STAR_HEIGHT: f32 = 35.0;
-pub(crate) const SHOOTING_STAR_POSITION: Vec2 = vec2(-180.0, 50.0);
+const SHOOTING_STAR_CHANCE_PER_SECOND: f32 = 1.0 / 10.0;
+const SHOOTING_STAR_FRAMES: usize = 4;
+const SHOOTING_STAR_FRAME_TIME: Duration = from_millis(50);
+const SHOOTING_STAR_WIDTH: f32 = 35.0;
+const SHOOTING_STAR_HEIGHT: f32 = 35.0;
+const SHOOTING_STAR_POSITION: Vec2 = vec2(-180.0, 50.0);
 
-pub(crate) fn spawn(
+const GALAXY_LIGHT_INTENSITY: f32 = 0.25;
+
+pub(crate) struct Plugin;
+
+/// Identifies the background entities.
+/// Useful for despawning.
+#[derive(Component)]
+struct BackgroundEntity;
+
+impl bevy::app::Plugin for Plugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn)
+            .add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
+    }
+
+    fn finish(&self, _app: &mut App) {
+        //
+    }
+}
+
+fn spawn(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     commands.spawn((
+        BackgroundEntity,
         RenderLayers::layer(BG_RENDER_LAYER),
         SpriteBundle {
             texture: asset_server.load("textures/bg/default.png"),
@@ -42,9 +63,16 @@ pub(crate) fn spawn(
     spawn_shooting_star(&mut commands, &asset_server, &mut texture_atlases);
 }
 
+fn despawn(mut commands: Commands, bg: Query<Entity, With<BackgroundEntity>>) {
+    for entity in bg.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
 fn spawn_twinkles(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     for i in 1..=TWINKLE_COUNT {
         commands.spawn((
+            BackgroundEntity,
             RenderLayers::layer(BG_RENDER_LAYER),
             Flicker::new(TWINKLE_CHANCE_PER_SECOND, TWINKLE_DURATION),
             SpriteBundle {
@@ -73,6 +101,7 @@ fn spawn_shooting_star(
         last: SHOOTING_STAR_FRAMES - 1,
     };
     commands.spawn((
+        BackgroundEntity,
         RenderLayers::layer(BG_RENDER_LAYER),
         BeginAnimationAtRandom {
             chance_per_second: SHOOTING_STAR_CHANCE_PER_SECOND,
@@ -102,6 +131,7 @@ fn spawn_shooting_star(
 fn spawn_light_sources(commands: &mut Commands) {
     // top right star
     commands.spawn((
+        BackgroundEntity,
         SpatialBundle {
             transform: Transform::from_translation(vec3(-187.0, 122.0, 0.0)),
             ..default()
@@ -118,6 +148,7 @@ fn spawn_light_sources(commands: &mut Commands) {
 
     // top left star
     commands.spawn((
+        BackgroundEntity,
         SpatialBundle {
             transform: Transform::from_translation(vec3(235.0, 67.0, 0.0)),
             ..default()
@@ -132,10 +163,9 @@ fn spawn_light_sources(commands: &mut Commands) {
         },
     ));
 
-    const GALAXY_LIGHT_INTENSITY: f32 = 0.25;
-
     // bottom left galaxy
     commands.spawn((
+        BackgroundEntity,
         SpatialBundle {
             transform: Transform::from_translation(vec3(140.0, -45.0, 0.0)),
             ..default()
@@ -151,6 +181,7 @@ fn spawn_light_sources(commands: &mut Commands) {
 
     // bottom right galaxy
     commands.spawn((
+        BackgroundEntity,
         SpatialBundle {
             transform: Transform::from_translation(vec3(-280.0, -55.0, 0.0)),
             ..default()
@@ -166,6 +197,7 @@ fn spawn_light_sources(commands: &mut Commands) {
 
     // top center galaxy
     commands.spawn((
+        BackgroundEntity,
         SpatialBundle {
             transform: Transform::from_translation(vec3(-20.0, 150.0, 0.0)),
             ..default()

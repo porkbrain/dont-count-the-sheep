@@ -17,17 +17,23 @@ pub(crate) struct Score {
     deduction_per_interval: usize,
 }
 
+#[derive(Component)]
+pub(super) struct ScoreEntity;
+
 pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
-        .spawn((NodeBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                left: Val::Px(SCORE_EDGE_OFFSET),
-                top: Val::Px(SCORE_EDGE_OFFSET),
+        .spawn((
+            ScoreEntity,
+            NodeBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    left: Val::Px(SCORE_EDGE_OFFSET),
+                    top: Val::Px(SCORE_EDGE_OFFSET),
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        },))
+        ))
         .with_children(|parent| {
             parent.spawn((
                 Score::default(),
@@ -43,15 +49,19 @@ pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
+pub(super) fn despawn(
+    entities: Query<Entity, With<ScoreEntity>>,
+    mut commands: Commands,
+) {
+    for entity in entities.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
 pub(super) fn update(
-    game: Query<&Game, Without<Paused>>,
     mut score: Query<(&mut Score, &mut Text)>,
     time: Res<Time>,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let Ok((mut score, mut text)) = score.get_single_mut() else {
         return;
     };

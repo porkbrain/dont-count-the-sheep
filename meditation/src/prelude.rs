@@ -1,4 +1,5 @@
-pub(crate) use crate::{zindex, Game, Paused};
+pub(crate) use crate::zindex;
+pub(crate) use crate::GlobalGameState;
 pub(crate) use bevy::math::vec2;
 pub(crate) use bevy::prelude::*;
 use bevy::time::Stopwatch;
@@ -21,5 +22,3 @@ pub(crate) fn stopwatch_at(duration: Duration) -> Stopwatch {
 }
 
 pub(crate) type Pos2 = Vec2;
-
-pub(crate) use crate::GlobalGameState;

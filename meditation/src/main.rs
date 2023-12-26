@@ -10,7 +10,6 @@
 mod background;
 mod cameras;
 mod climate;
-mod control_mode;
 mod distractions;
 mod gravity;
 mod path;
@@ -35,16 +34,20 @@ mod consts {
 use bevy::window::WindowTheme;
 use bevy_pixel_camera::PixelCameraPlugin;
 use cameras::BackgroundLightScene;
+use common_physics::PoissonsEquation;
+use gravity::Gravity;
 use prelude::*;
 
 /// This will eventually be exported to the main game bin as this workspace
 /// member becomes a library.
 #[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash)]
 enum GlobalGameState {
+    /// Dummy state so that we can do loading transitions.
+    #[default]
+    Blank,
     /// Change the game state to this state to run systems that setup the
     /// meditation game in the background.
     /// Nothing is shown to the player yet.
-    #[default]
     MeditationLoading,
     /// Game is being played.
     MeditationInGame,
@@ -57,18 +60,15 @@ enum GlobalGameState {
     MeditationQuitting,
 }
 
-/// TODO: use states
-#[derive(Component)]
-struct Game;
-
-#[derive(Component)]
-struct Paused;
-
 fn main() {
     let mut app = App::new();
 
     // This will eventually be called outside of this crate.
     app.add_state::<GlobalGameState>();
+    fn start(mut next_state: ResMut<NextState<GlobalGameState>>) {
+        next_state.set(GlobalGameState::MeditationLoading);
+    }
+    app.add_systems(Update, start.run_if(in_state(GlobalGameState::Blank)));
 
     app.add_plugins(
         DefaultPlugins
@@ -91,24 +91,33 @@ fn main() {
                 }),
                 ..default()
             }),
-    )
-    .add_plugins((
+    );
+    app.add_plugins((
         bevy_magic_light_2d::Plugin,
         PixelCameraPlugin,
         bevy_webp_anim::Plugin,
         common_physics::Plugin,
         common_visuals::Plugin,
+    ));
+
+    app.add_plugins((
         ui::Plugin,
         climate::Plugin,
         distractions::Plugin,
         weather::Plugin,
         cameras::Plugin,
+        background::Plugin,
     ))
-    .add_systems(Startup, (setup, background::spawn));
+    .add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn)
+    .add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
 
-    common_physics::poissons_equation::register::<gravity::Gravity>(&mut app);
+    common_physics::poissons_equation::register::<gravity::Gravity, _>(
+        &mut app,
+        GlobalGameState::MeditationInGame,
+    );
 
     #[cfg(feature = "dev")]
+    // TODO: run in state
     app.add_systems(Last, (path::visualize,));
 
     #[cfg(feature = "dev-poissons")]
@@ -116,13 +125,29 @@ fn main() {
         gravity::Gravity,
         gravity::ChangeOfBasis,
         gravity::ChangeOfBasis,
-    >(&mut app);
+        _,
+    >(&mut app, GlobalGameState::MeditationInGame);
 
+    // TODO: move
     app.run();
 }
 
-fn setup(mut commands: Commands) {
+fn spawn(
+    mut commands: Commands,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+) {
+    info!("Loading meditation game");
+
+    debug!("Spawning resources ClearColor and PoissonsEquation<Gravity>");
     commands.insert_resource(ClearColor(background::COLOR));
     commands.insert_resource(gravity::field());
-    commands.spawn(Game);
+
+    next_state.set(GlobalGameState::MeditationInGame);
+}
+
+fn despawn(mut commands: Commands) {
+    debug!("Despawning resources ClearColor and PoissonsEquation<Gravity>");
+
+    commands.remove_resource::<ClearColor>();
+    commands.remove_resource::<PoissonsEquation<Gravity>>();
 }

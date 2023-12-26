@@ -12,7 +12,7 @@ use crate::{
     weather::consts::ARROW_DISTANCE_FROM_EDGE,
 };
 
-use super::{consts::MAX_ARROW_PUSH_BACK, Weather};
+use super::{consts::MAX_ARROW_PUSH_BACK, Weather, WeatherEntity};
 
 /// The arrow is lit by a light source.
 const LIGHT_COLOR: &str = "#d9ff75";
@@ -26,10 +26,11 @@ enum OffScreen {
     Both,
 }
 
-/// Arrow is hidden by default and shown when weather is off screen
+/// Arrow is hidden by default and shown when weather is off screen.
 pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Arrow,
+        WeatherEntity,
         SpriteBundle {
             texture: asset_server.load("textures/weather/arrow.png"),
             transform: Transform::from_translation(Vec3::new(
@@ -54,17 +55,12 @@ pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
 /// Renders the arrow pointing to the weather when it's off screen.
 /// Hides the arrow when the weather is on screen.
 pub(super) fn point_arrow(
-    game: Query<&Game, Without<Paused>>,
     weather: Query<&Transform, (With<Weather>, Without<Arrow>)>,
     mut arrow: Query<
         (&mut Transform, &mut Visibility),
         (With<Arrow>, Without<Weather>),
     >,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let Ok(weather_transform) = weather.get_single() else {
         return;
     };

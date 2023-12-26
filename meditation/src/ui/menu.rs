@@ -1,81 +1,63 @@
 use bevy::app::AppExit;
 
-use crate::{
-    climate::Climate, control_mode, distractions::Distraction, prelude::*,
-};
+use crate::{climate::Climate, distractions::Distraction, prelude::*};
 
 use super::consts::*;
 
 #[derive(Component)]
-pub(super) struct Menu;
-
-#[derive(Component)]
-pub(super) struct GodModeToggle;
+pub(super) struct Menu {
+    selection: Selection,
+}
 
 #[derive(Default, Debug, Clone, Copy)]
-pub(crate) enum Selection {
+enum Selection {
     #[default]
     Resume = 0,
     Restart = 1,
-    GodMode = 2,
-    Quit = 3,
+    Quit = 2,
+}
+
+pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands
+        .spawn(Menu {
+            selection: Selection::Resume,
+        })
+        .insert(NodeBundle {
+            style: Style {
+                // the node bundle units don't honor pixel camera 3x scale
+                width: Val::Px(MENU_BOX_WIDTH),
+                height: Val::Px(MENU_BOX_HEIGHT),
+                margin: UiRect::all(Val::Auto),
+                justify_content: JustifyContent::SpaceBetween,
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| spawn_ui(parent, &asset_server));
+}
+
+pub(super) fn despawn(mut commands: Commands, menu: Query<Entity, With<Menu>>) {
+    if let Ok(entity) = menu.get_single() {
+        commands.entity(entity).despawn_recursive();
+    }
 }
 
 pub(super) fn open(
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    game: Query<Entity, With<Game>>,
-    mut weather: Query<
-        (
-            Entity,
-            &mut control_mode::Normal,
-            &mut Transform,
-            &mut Visibility,
-            &Velocity,
-        ),
-        Without<Menu>, // to make bevy be sure there won't be conflicts
-    >,
-    mut distractions: Query<&mut Distraction>,
-    mut climate: Query<&mut Climate>,
-    mut commands: Commands,
+    mut distractions: Query<&mut Distraction>, // TODO: move
+    mut climate: Query<&mut Climate>,          // TODO: move
     mut keyboard: ResMut<Input<KeyCode>>,
 ) {
-    let Ok(game) = game.get_single() else {
-        return;
-    };
-
     if !keyboard.just_pressed(KeyCode::Escape) {
         return;
     }
-
-    let Ok((entity, mut mode, mut transform, mut visibility, vel)) =
-        weather.get_single_mut()
-    else {
-        return;
-    };
 
     debug!("Pausing to open menu");
     keyboard.clear(); // prevent accidental immediate unpausing
 
     next_state.set(GlobalGameState::MeditationInMenu);
-    commands.entity(game).insert(Paused);
 
-    *visibility = Visibility::Hidden;
-    commands.entity(entity).remove::<control_mode::Normal>();
-    commands.entity(entity).remove::<Velocity>();
-    commands.entity(entity).insert(control_mode::InMenu {
-        selection: Selection::default(),
-        from_mode: { mode.pause().clone() },
-        from_velocity: *vel,
-        from_transform: *transform,
-    });
-
-    *transform = Transform::from_translation(Vec3::new(
-        FIRST_SELECTION_FACE_OFFSET.x,
-        FIRST_SELECTION_FACE_OFFSET.y,
-        zindex::WEATHER_IN_MENU,
-    ));
-
-    // TODO: update the text of the second section, ie. after "GOD MODE:"
+    // TODO: pause weather
 
     for mut distraction in distractions.iter_mut() {
         distraction.pause();
@@ -86,31 +68,10 @@ pub(super) fn open(
 
 pub(super) fn close(
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    game: Query<Entity, With<Game>>,
-    mut weather: Query<
-        (
-            Entity,
-            &control_mode::InMenu,
-            &mut Transform,
-            &mut Visibility,
-        ),
-        Without<Menu>, // to make bevy be sure there won't be conflicts
-    >,
-    mut distractions: Query<&mut Distraction>,
-    mut climate: Query<&mut Climate>,
-    mut commands: Commands,
+    mut distractions: Query<&mut Distraction>, // TODO: move
+    mut climate: Query<&mut Climate>,          // TODO: move
     mut keyboard: ResMut<Input<KeyCode>>,
 ) {
-    let Ok(game) = game.get_single() else {
-        return;
-    };
-
-    let Ok((entity, mode, mut transform, mut visibility)) =
-        weather.get_single_mut()
-    else {
-        return;
-    };
-
     if !keyboard.just_pressed(KeyCode::Escape) {
         return;
     }
@@ -123,17 +84,6 @@ pub(super) fn close(
     keyboard.release(KeyCode::Escape);
 
     next_state.set(GlobalGameState::MeditationInGame);
-    commands.entity(game).remove::<Paused>();
-
-    commands.entity(entity).remove::<control_mode::InMenu>();
-    commands.entity(entity).insert({
-        let mut mode = mode.from_mode.clone();
-        mode.unpause();
-        mode
-    });
-    commands.entity(entity).insert(mode.from_velocity);
-    *transform = mode.from_transform;
-    *visibility = Visibility::Visible;
 
     for mut distraction in distractions.iter_mut() {
         distraction.resume();
@@ -146,44 +96,25 @@ pub(super) fn close(
 /// We simulate ESC to close the menu.
 /// So we need to select before we close.
 pub(super) fn select(
-    mut menu: Query<(&mut control_mode::InMenu, &mut Transform)>,
-    mut god_mode: Query<&mut Text, With<GodModeToggle>>,
+    mut menu: Query<&mut Menu>,
     mut keyboard: ResMut<Input<KeyCode>>,
     mut exit: EventWriter<AppExit>,
 ) {
-    let Ok((mut mode, mut transform)) = menu.get_single_mut() else {
+    let Ok(mut menu) = menu.get_single_mut() else {
         return;
     };
 
-    let curr_selection = mode.selection;
+    let curr_selection = menu.selection;
 
     if keyboard.just_pressed(KeyCode::Return) {
         debug!("Going with {curr_selection:?}");
 
         match curr_selection {
             Selection::Resume => keyboard.press(KeyCode::Escape),
-            // TODO: proper reset of the whole game
             Selection::Restart => {
-                // preserve god mode, but reset the rest
-                let god_mode = mode.from_mode.god_mode;
-                mode.from_mode = default();
-                mode.from_mode.god_mode = god_mode;
-
-                mode.from_transform = crate::weather::consts::DEFAULT_TRANSFORM;
-                mode.from_velocity = default();
+                // TODO: proper reset of the whole game
 
                 keyboard.press(KeyCode::Escape);
-            }
-            Selection::GodMode => {
-                mode.from_mode.god_mode = !mode.from_mode.god_mode;
-
-                // updates the text of the second section, ie. after "GOD MODE:"
-                god_mode.single_mut().sections[1].value =
-                    if mode.from_mode.god_mode {
-                        "ON".to_string()
-                    } else {
-                        "OFF".to_string()
-                    };
             }
             Selection::Quit => exit.send(AppExit),
         }
@@ -206,34 +137,7 @@ pub(super) fn select(
 
     if let Some(new_selection) = new_selection {
         debug!("Selected {curr_selection:?}");
-        mode.selection = new_selection;
-        transform.translation.y = FIRST_SELECTION_FACE_OFFSET.y
-            - SELECTIONS_SPACING * new_selection as u8 as f32;
-    }
-}
-
-pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands
-        .spawn((
-            Menu,
-            NodeBundle {
-                style: Style {
-                    // the node bundle units don't honor pixel camera 3x scale
-                    width: Val::Px(MENU_BOX_WIDTH),
-                    height: Val::Px(MENU_BOX_HEIGHT),
-                    margin: UiRect::all(Val::Auto),
-                    justify_content: JustifyContent::SpaceBetween,
-                    ..default()
-                },
-                ..default()
-            },
-        ))
-        .with_children(|parent| spawn_ui(parent, &asset_server));
-}
-
-pub(super) fn despawn(mut commands: Commands, menu: Query<Entity, With<Menu>>) {
-    if let Ok(entity) = menu.get_single() {
-        commands.entity(entity).despawn_recursive();
+        menu.selection = new_selection;
     }
 }
 
@@ -291,28 +195,6 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                     ..default()
                 }),
             );
-            parent.spawn((
-                GodModeToggle,
-                TextBundle::from_sections([
-                    TextSection {
-                        value: "GOD MODE: ".to_string(),
-                        style: TextStyle {
-                            font: asset_server.load(FONT),
-                            font_size: BIG_FONT_SIZE,
-                            ..default()
-                        },
-                    },
-                    TextSection::from_style(TextStyle {
-                        font: asset_server.load(FONT),
-                        font_size: SMALL_FONT_SIZE,
-                        color: Color::hex(HIGHLIGHT_COLOR).unwrap(),
-                    }),
-                ])
-                .with_style(Style {
-                    margin: UiRect::top(SELECTIONS_PADDING_TOP),
-                    ..default()
-                }),
-            ));
             parent.spawn(
                 TextBundle::from_section(
                     "EXIT",
@@ -334,8 +216,7 @@ impl Selection {
     fn next(&self) -> Self {
         match self {
             Self::Resume => Self::Restart,
-            Self::Restart => Self::GodMode,
-            Self::GodMode => Self::Quit,
+            Self::Restart => Self::Quit,
             Self::Quit => Self::Resume,
         }
     }
@@ -344,8 +225,7 @@ impl Selection {
         match self {
             Self::Resume => Self::Quit,
             Self::Restart => Self::Resume,
-            Self::GodMode => Self::Restart,
-            Self::Quit => Self::GodMode,
+            Self::Quit => Self::Restart,
         }
     }
 }

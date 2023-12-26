@@ -106,9 +106,6 @@ mod body_and_face_sprite_sizes {
     /// The size of the actual visible face is smaller.
     /// It's surrounded by transparent pixels.
     pub(crate) const FACE_SPRITE_HEIGHT: f32 = BODY_HEIGHT;
-
-    /// This is the size of the visible face.
-    pub(crate) const FACE_RENDERED_SIZE: f32 = 15.0;
 }
 
 pub(crate) use spark_animation_on_special::*;

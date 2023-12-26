@@ -1,5 +1,6 @@
 use crate::{
     cameras::{BackgroundLightScene, OBJ_RENDER_LAYER},
+    distractions::DistractionEntity,
     prelude::*,
 };
 use bevy::{render::view::RenderLayers, time::Stopwatch, utils::HashSet};
@@ -17,29 +18,24 @@ pub(super) struct Spawner {
     /// We never spawn the same video twice.
     active: HashSet<Video>,
     /// How many videos out of active are verbal.
+    /// We don't want to play too many of those at once.
     out_of_those_are_verbal: usize,
     /// When choosing the next video, we iterate over this array based on the
     /// last index (the first tuple member.)
     sampler: (usize, [Video; 10]),
     /// When was the last distraction spawned.
-    /// TODO: pausable
     last_spawned_at: Stopwatch,
 }
 
 /// If we don't have another video to spawn of if too crowded, then we do
 /// nothing.
 pub(super) fn try_spawn_next(
-    game: Query<&Game, Without<Paused>>,
     mut spawner: ResMut<Spawner>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     spawner.last_spawned_at.tick(time.delta());
 
     if spawner.active.len() >= MAX_DISTRACTIONS {
@@ -64,7 +60,7 @@ pub(super) fn try_spawn_next(
     spawner.last_spawned_at.reset();
 
     commands
-        .spawn((Distraction::new(video), AngularVelocity::default()))
+        .spawn((Distraction::new(video), DistractionEntity))
         .insert((
             RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {

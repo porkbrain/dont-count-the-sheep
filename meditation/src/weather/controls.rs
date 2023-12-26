@@ -1,6 +1,5 @@
-use super::{anim::SparkEffect, consts::*, ActionEvent};
+use super::{anim::SparkEffect, consts::*, mode, ActionEvent};
 use crate::{
-    control_mode,
     gravity::{ChangeOfBasis, Gravity},
     prelude::*,
 };
@@ -10,10 +9,9 @@ use std::f32::consts::PI;
 
 /// Controls when in normal mode.
 pub(super) fn normal(
-    game: Query<&Game, Without<Paused>>,
     mut broadcast: EventWriter<ActionEvent>,
     mut weather: Query<
-        (Entity, &mut control_mode::Normal, &mut Velocity, &Transform),
+        (Entity, &mut mode::Normal, &mut Velocity, &Transform),
         Without<SparkEffect>, // to make bevy be sure there won't be conflicts
     >,
     mut spark: Query<(&mut Transform, &mut Visibility), With<SparkEffect>>,
@@ -22,10 +20,6 @@ pub(super) fn normal(
     gravity: Res<PoissonsEquation<Gravity>>,
     time: Res<Time>,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let Ok((entity, mut mode, mut vel, transform)) = weather.get_single_mut()
     else {
         return;
@@ -49,15 +43,12 @@ pub(super) fn normal(
                 at_translation: transform.translation.truncate(),
             });
 
-            commands.entity(entity).remove::<control_mode::Normal>();
-            commands
-                .entity(entity)
-                .insert(control_mode::LoadingSpecial {
-                    angle,
-                    activated: Stopwatch::default(),
-                    jumps: mode.jumps,
-                    god_mode: mode.god_mode,
-                });
+            commands.entity(entity).remove::<mode::Normal>();
+            commands.entity(entity).insert(mode::LoadingSpecial {
+                angle,
+                activated: Stopwatch::default(),
+                jumps: mode.jumps,
+            });
 
             let (mut spark_transform, mut spark_visibility) =
                 spark.single_mut();
@@ -146,8 +137,8 @@ pub(super) fn normal(
         vel.y = (vel.y + gvec.y * dt).max(TERMINAL_VELOCITY);
     }
 
-    if mode.god_mode && mode.jumps >= MAX_JUMPS {
-        debug!("Ability reset");
+    if mode.jumps >= MAX_JUMPS {
+        debug!("God mode: Ability reset");
         mode.jumps = 0;
         mode.can_use_special = true;
     }
@@ -178,21 +169,12 @@ pub(super) fn normal(
 
 /// Controls while loading special.
 pub(crate) fn loading_special(
-    game: Query<&Game, Without<Paused>>,
     mut broadcast: EventWriter<ActionEvent>,
-    mut weather: Query<(
-        Entity,
-        &mut control_mode::LoadingSpecial,
-        &mut Velocity,
-    )>,
+    mut weather: Query<(Entity, &mut mode::LoadingSpecial, &mut Velocity)>,
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let Ok((entity, mut mode, mut vel)) = weather.get_single_mut() else {
         return;
     };
@@ -206,16 +188,13 @@ pub(crate) fn loading_special(
     }
 
     if elapsed > SPECIAL_LOADING_TIME {
-        commands
-            .entity(entity)
-            .remove::<control_mode::LoadingSpecial>();
-        commands.entity(entity).insert(control_mode::Normal {
+        commands.entity(entity).remove::<mode::LoadingSpecial>();
+        commands.entity(entity).insert(mode::Normal {
             jumps: mode.jumps,
             last_jump: Stopwatch::default(),
             last_dash: Stopwatch::default(),
             last_dip: Stopwatch::default(),
             can_use_special: false,
-            god_mode: mode.god_mode,
         });
 
         // fires weather into the direction given by the angle

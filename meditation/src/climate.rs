@@ -73,6 +73,11 @@ pub(crate) enum ClimateLightMode {
     Cold,
 }
 
+/// Any entity that's spawned in this module.
+/// Useful for despawning.
+#[derive(Component)]
+struct ClimateEntity;
+
 /// Debug tool.
 /// Point which is shown when being lit by the climate.
 #[cfg(feature = "dev")]
@@ -83,8 +88,8 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn)
-            .register_type::<LightOccluder2D>()
+        app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn)
+            .add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn)
             .add_systems(
                 Update,
                 (
@@ -92,11 +97,24 @@ impl bevy::app::Plugin for Plugin {
                     smoothly_transition_light_color,
                     follow_curve,
                     move_occluders,
-                ),
+                )
+                    .run_if(in_state(GlobalGameState::MeditationInGame)),
+            )
+            .add_systems(
+                Update,
+                // don't stop the color transition in menu, no need as it does
+                // not affect the gameplay but complicates things as it uses
+                // instant to time stuff
+                smoothly_transition_light_color
+                    .run_if(in_state(GlobalGameState::MeditationInMenu)),
             );
 
         #[cfg(feature = "dev")]
-        app.add_systems(Update, visualize_raypoints);
+        app.add_systems(
+            Update,
+            visualize_raypoints
+                .run_if(in_state(GlobalGameState::MeditationInGame)),
+        );
     }
 
     fn finish(&self, _app: &mut App) {
@@ -108,6 +126,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             Climate::new(),
+            ClimateEntity,
             AngularVelocity::default(),
             SpatialBundle {
                 transform: Transform::from_translation(Vec3::new(
@@ -146,6 +165,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
 
         commands.spawn((
             ClimateOccluder { initial_rotation },
+            ClimateEntity,
             SpatialBundle {
                 transform: {
                     let mut t = Transform::default();
@@ -170,16 +190,24 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         let x = thread_rng().gen_range(-320.0..320.0);
         let y = thread_rng().gen_range(-180.0..180.0);
 
-        commands.spawn(RayPoint).insert(SpriteBundle {
-            sprite: Sprite {
-                color: Color::rgba(0.0, 1.0, 0.0, 1.0),
-                custom_size: Some(vec2(1.0, 1.0)),
+        commands
+            .spawn((RayPoint, ClimateEntity))
+            .insert(SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgba(0.0, 1.0, 0.0, 1.0),
+                    custom_size: Some(vec2(1.0, 1.0)),
+                    ..default()
+                },
+                transform: Transform::from_translation(Vec3::new(x, y, 100.)),
+                visibility: Visibility::Hidden,
                 ..default()
-            },
-            transform: Transform::from_translation(Vec3::new(x, y, 100.)),
-            visibility: Visibility::Hidden,
-            ..default()
-        });
+            });
+    }
+}
+
+fn despawn(mut commands: Commands, bg: Query<Entity, With<ClimateEntity>>) {
+    for entity in bg.iter() {
+        commands.entity(entity).despawn_recursive();
     }
 }
 
@@ -206,13 +234,8 @@ fn toggle_mode(
 }
 
 fn smoothly_transition_light_color(
-    game: Query<&Game, Without<Paused>>,
     mut climate: Query<(&Climate, &mut OmniLightSource2D)>,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let (climate, mut light) = climate.single_mut();
 
     // change color of the light based on climate.mode smoothly
@@ -232,14 +255,9 @@ fn smoothly_transition_light_color(
 /// Distractions have something similar, but with some extra logic to change
 /// path.
 fn follow_curve(
-    game: Query<&Game, Without<Paused>>,
     mut climate: Query<(&mut Climate, &mut Transform)>,
     time: Res<Time>,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let (mut climate, mut transform) = climate.single_mut();
 
     climate.rays_animation.tick(time.delta());
@@ -256,14 +274,9 @@ fn follow_curve(
 /// Animates the occluders around the climate.
 /// This results in rays of light being casted from the climate.
 fn move_occluders(
-    game: Query<&Game, Without<Paused>>,
     climate: Query<(&Climate, &Transform), Without<ClimateOccluder>>,
     mut occluders: Query<(&ClimateOccluder, &mut Transform), Without<Climate>>,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let (climate, climate_transform) = climate.single();
 
     for (ClimateOccluder { initial_rotation }, mut transform) in
@@ -419,17 +432,12 @@ fn angle_between_closest_ray_and_point(
 
 #[cfg(feature = "dev")]
 fn visualize_raypoints(
-    game: Query<&Game, Without<Paused>>,
     climate: Query<(&Climate, &Transform)>,
     mut raypoints: Query<
         (&Transform, &mut Visibility, &mut Sprite),
         With<RayPoint>,
     >,
 ) {
-    if game.is_empty() {
-        return;
-    }
-
     let (climate, climate_transform) = climate.single();
 
     for (transform, mut visibility, mut sprite) in raypoints.iter_mut() {

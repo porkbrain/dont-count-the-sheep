@@ -3,17 +3,15 @@ use bevy::{
     time::{Stopwatch, Time},
 };
 
-use crate::prelude::Radians;
+use crate::prelude::{stopwatch_at, Radians};
 
-pub(super) trait Mode {
-    fn tick(&mut self, time: &Time);
-}
+use super::consts::{MIN_DASH_DELAY, MIN_DIP_DELAY, MIN_JUMP_DELAY};
 
 #[derive(Component)]
 pub(super) struct Normal {
     /// weather has a limited number of jumps before it must reset
     /// via the [`Climate`]
-    pub(super) jumps: u8,
+    pub(super) jumps: usize,
     /// there's a minimum delay between jumps
     pub(super) last_jump: Stopwatch,
     /// there's a minimum delay between dashes
@@ -25,29 +23,27 @@ pub(super) struct Normal {
 }
 
 #[derive(Component, Default)]
-pub(super) struct LoadingSpecial {
+pub(crate) struct LoadingSpecial {
     /// Angle is given by the combination of keys pressed.
     /// See [`unit_circle_angle`].
-    ///
-    /// If the no angle was chosen then the special is canceled.
-    pub(super) angle: Option<Radians>,
+    pub(super) angle: Radians,
     /// special mode has a set duration after which it fires
     pub(super) activated: Stopwatch,
     /// once special is fired, weather can only do the same amount of jumps
     /// as it had before
-    pub(super) jumps: u8,
+    pub(super) jumps: usize,
 }
 
-impl Mode for Normal {
-    fn tick(&mut self, time: &Time) {
+impl Normal {
+    pub(super) fn tick(&mut self, time: &Time) {
         self.last_jump.tick(time.delta());
         self.last_dash.tick(time.delta());
         self.last_dip.tick(time.delta());
     }
 }
 
-impl Mode for LoadingSpecial {
-    fn tick(&mut self, time: &Time) {
+impl LoadingSpecial {
+    pub(super) fn tick(&mut self, time: &Time) {
         self.activated.tick(time.delta());
     }
 }
@@ -56,9 +52,9 @@ impl Default for Normal {
     fn default() -> Self {
         Self {
             jumps: 0,
-            last_dash: Stopwatch::default(),
-            last_jump: Stopwatch::default(),
-            last_dip: Stopwatch::default(),
+            last_dash: stopwatch_at(MIN_DASH_DELAY),
+            last_jump: stopwatch_at(MIN_JUMP_DELAY),
+            last_dip: stopwatch_at(MIN_DIP_DELAY),
             can_use_special: true,
         }
     }
