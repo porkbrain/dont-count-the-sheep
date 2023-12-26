@@ -152,7 +152,7 @@ pub(super) fn to_environment(
 
         let crack_chance = CRACK_CHANCE_PER_SECOND * time.delta_seconds();
 
-        // TODO: balance
+        // TODO: balance, more predictable, clamp the time
         let should_crack =
             push_back_force > 45.0 && rand::random::<f32>() < crack_chance;
 

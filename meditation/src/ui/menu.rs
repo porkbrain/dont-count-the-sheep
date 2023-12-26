@@ -2,7 +2,7 @@ use main_game_lib::{
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 
-use crate::{climate::Climate, distractions::Distraction, prelude::*};
+use crate::prelude::*;
 
 use super::consts::*;
 
@@ -46,8 +46,6 @@ pub(super) fn despawn(mut commands: Commands, menu: Query<Entity, With<Menu>>) {
 
 pub(super) fn open(
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut distractions: Query<&mut Distraction>, // TODO: move
-    mut climate: Query<&mut Climate>,          // TODO: move
     mut keyboard: ResMut<Input<KeyCode>>,
 ) {
     if !keyboard.just_pressed(KeyCode::Escape) {
@@ -58,20 +56,10 @@ pub(super) fn open(
     keyboard.clear(); // prevent accidental immediate unpausing
 
     next_state.set(GlobalGameState::MeditationInMenu);
-
-    // TODO: pause weather
-
-    for mut distraction in distractions.iter_mut() {
-        distraction.pause();
-    }
-
-    climate.single_mut().pause();
 }
 
 pub(super) fn close(
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut distractions: Query<&mut Distraction>, // TODO: move
-    mut climate: Query<&mut Climate>,          // TODO: move
     mut keyboard: ResMut<Input<KeyCode>>,
 ) {
     if !keyboard.just_pressed(KeyCode::Escape) {
@@ -86,19 +74,11 @@ pub(super) fn close(
     keyboard.release(KeyCode::Escape);
 
     next_state.set(GlobalGameState::MeditationInGame);
-
-    for mut distraction in distractions.iter_mut() {
-        distraction.resume();
-    }
-
-    climate.single_mut().resume();
 }
 
 /// The order of the systems is important.
 /// We simulate ESC to close the menu.
 /// So we need to select before we close.
-///
-/// TODO: transition into a quitting state
 pub(super) fn select(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,

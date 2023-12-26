@@ -164,14 +164,6 @@ fn destroyed(
 }
 
 impl Distraction {
-    pub(crate) fn pause(&mut self) {
-        self.current_path_since.pause();
-    }
-
-    pub(crate) fn resume(&mut self) {
-        self.current_path_since.unpause();
-    }
-
     fn path_segment(&self) -> (usize, f32) {
         self.path.segment(&self.current_path_since.elapsed())
     }

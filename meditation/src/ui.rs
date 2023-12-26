@@ -3,7 +3,6 @@
 //!
 //! TODO:
 //! - render face next to the menu selection
-//! - proper reset of the game
 
 mod menu;
 mod score;
@@ -27,6 +26,7 @@ mod consts {
     //
     // These spacings and sizes are arbitrary.
     // They match the size of the menu box and were hand picked.
+    // #pixel_perfect
     //
 
     pub(crate) const SELECTIONS_LEFT_OFFSET: Val = Val::Px(128.0);

@@ -293,18 +293,6 @@ fn move_occluders(
 }
 
 impl Climate {
-    pub(crate) fn pause(&mut self) -> &mut Self {
-        self.current_path_since.pause();
-        self.rays_animation.pause();
-        self
-    }
-
-    pub(crate) fn resume(&mut self) -> &mut Self {
-        self.current_path_since.unpause();
-        self.rays_animation.unpause();
-        self
-    }
-
     /// In interval [0, 1], how strongly is target lit by the climate?
     /// This ignores any possible obstacle in the way and just computes angle
     /// between the closest ray and the target.
