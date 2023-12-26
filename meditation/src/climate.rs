@@ -30,6 +30,8 @@ const OCCLUDER_DISTANCE: f32 = 40.0;
 /// We calculate the distribution around for the occluder[1] (0th starts at 0).
 const INITIAL_ROTATION: f32 = 2.0 * PI / OCCLUDER_COUNT as f32;
 const INITIAL_HALF_ROTATION: f32 = INITIAL_ROTATION / 2.0;
+/// What to press to toggle the light mode.
+const TOGGLE_MODE_KEY: KeyCode = KeyCode::ShiftLeft;
 /// When the mode is [`LightMode::Hot`], we deduct this much from the score.
 const HOT_DEDUCTION: usize = 80;
 /// How often do we deduct from the score when the mode is [`LightMode::Hot`].
@@ -181,13 +183,16 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     }
 }
 
-/// TODO: bette decide on something else than shift?
+/// Changes the mode of the climate.
+/// See readme for the game to understand what this means.
+/// In short: we change light color, how score is deducted and how strong is
+/// the ray on the distractions.
 fn toggle_mode(
     mut climate: Query<&mut Climate>,
     mut score: Query<&mut crate::ui::Score>,
     keyboard: Res<Input<KeyCode>>,
 ) {
-    if !keyboard.just_pressed(KeyCode::ShiftLeft) {
+    if !keyboard.just_pressed(TOGGLE_MODE_KEY) {
         return;
     }
 

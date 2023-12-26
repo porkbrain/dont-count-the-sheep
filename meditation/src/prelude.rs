@@ -21,3 +21,5 @@ pub(crate) fn stopwatch_at(duration: Duration) -> Stopwatch {
 }
 
 pub(crate) type Pos2 = Vec2;
+
+pub(crate) use crate::GlobalGameState;

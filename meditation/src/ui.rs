@@ -46,7 +46,15 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (score::spawn, menu::spawn))
+        app.add_systems(Startup, score::spawn)
+            .add_systems(
+                OnEnter(GlobalGameState::MeditationInMenu),
+                menu::spawn,
+            )
+            .add_systems(
+                OnExit(GlobalGameState::MeditationInMenu),
+                menu::despawn,
+            )
             .add_systems(Update, score::update)
             // order important bcs we simulate ESC to close
             .add_systems(

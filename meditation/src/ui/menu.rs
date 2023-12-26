@@ -22,6 +22,7 @@ pub(crate) enum Selection {
 }
 
 pub(super) fn open(
+    mut next_state: ResMut<NextState<GlobalGameState>>,
     game: Query<Entity, With<Game>>,
     mut weather: Query<
         (
@@ -35,8 +36,6 @@ pub(super) fn open(
     >,
     mut distractions: Query<&mut Distraction>,
     mut climate: Query<&mut Climate>,
-    mut menu: Query<&mut Visibility, With<Menu>>,
-    mut god_mode: Query<&mut Text, With<GodModeToggle>>,
     mut commands: Commands,
     mut keyboard: ResMut<Input<KeyCode>>,
 ) {
@@ -57,6 +56,7 @@ pub(super) fn open(
     debug!("Pausing to open menu");
     keyboard.clear(); // prevent accidental immediate unpausing
 
+    next_state.set(GlobalGameState::MeditationInMenu);
     commands.entity(game).insert(Paused);
 
     *visibility = Visibility::Hidden;
@@ -69,23 +69,13 @@ pub(super) fn open(
         from_transform: *transform,
     });
 
-    {
-        let mut menu_visibility = menu.single_mut();
-        *menu_visibility = Visibility::Visible;
+    *transform = Transform::from_translation(Vec3::new(
+        FIRST_SELECTION_FACE_OFFSET.x,
+        FIRST_SELECTION_FACE_OFFSET.y,
+        zindex::WEATHER_IN_MENU,
+    ));
 
-        *transform = Transform::from_translation(Vec3::new(
-            FIRST_SELECTION_FACE_OFFSET.x,
-            FIRST_SELECTION_FACE_OFFSET.y,
-            zindex::WEATHER_IN_MENU,
-        ));
-    }
-
-    // updates the text of the second section, ie. after "GOD MODE:"
-    god_mode.single_mut().sections[1].value = if mode.god_mode {
-        "ON".to_string()
-    } else {
-        "OFF".to_string()
-    };
+    // TODO: update the text of the second section, ie. after "GOD MODE:"
 
     for mut distraction in distractions.iter_mut() {
         distraction.pause();
@@ -95,6 +85,7 @@ pub(super) fn open(
 }
 
 pub(super) fn close(
+    mut next_state: ResMut<NextState<GlobalGameState>>,
     game: Query<Entity, With<Game>>,
     mut weather: Query<
         (
@@ -107,7 +98,6 @@ pub(super) fn close(
     >,
     mut distractions: Query<&mut Distraction>,
     mut climate: Query<&mut Climate>,
-    mut menu: Query<&mut Visibility, With<Menu>>,
     mut commands: Commands,
     mut keyboard: ResMut<Input<KeyCode>>,
 ) {
@@ -132,6 +122,7 @@ pub(super) fn close(
     // we simulate press to close the menu, so we need to simulate release
     keyboard.release(KeyCode::Escape);
 
+    next_state.set(GlobalGameState::MeditationInGame);
     commands.entity(game).remove::<Paused>();
 
     commands.entity(entity).remove::<control_mode::InMenu>();
@@ -143,9 +134,6 @@ pub(super) fn close(
     commands.entity(entity).insert(mode.from_velocity);
     *transform = mode.from_transform;
     *visibility = Visibility::Visible;
-
-    let mut menu_visibility = menu.single_mut();
-    *menu_visibility = Visibility::Hidden;
 
     for mut distraction in distractions.iter_mut() {
         distraction.resume();
@@ -237,11 +225,16 @@ pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
                     justify_content: JustifyContent::SpaceBetween,
                     ..default()
                 },
-                visibility: Visibility::Hidden,
                 ..default()
             },
         ))
         .with_children(|parent| spawn_ui(parent, &asset_server));
+}
+
+pub(super) fn despawn(mut commands: Commands, menu: Query<Entity, With<Menu>>) {
+    if let Ok(entity) = menu.get_single() {
+        commands.entity(entity).despawn_recursive();
+    }
 }
 
 fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {

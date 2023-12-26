@@ -37,6 +37,26 @@ use bevy_pixel_camera::PixelCameraPlugin;
 use cameras::BackgroundLightScene;
 use prelude::*;
 
+/// This will eventually be exported to the main game bin as this workspace
+/// member becomes a library.
+#[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash)]
+enum GlobalGameState {
+    /// Change the game state to this state to run systems that setup the
+    /// meditation game in the background.
+    /// Nothing is shown to the player yet.
+    #[default]
+    MeditationLoading,
+    /// Game is being played.
+    MeditationInGame,
+    /// Game is paused and menu is spawned.
+    /// Menu is always spawned and destroyed, unlike the game resources.
+    MeditationInMenu,
+    /// Change the game state to this state to run systems that clean up the
+    /// meditation game in the background.
+    #[allow(dead_code)]
+    MeditationQuitting,
+}
+
 /// TODO: use states
 #[derive(Component)]
 struct Game;
@@ -46,6 +66,10 @@ struct Paused;
 
 fn main() {
     let mut app = App::new();
+
+    // This will eventually be called outside of this crate.
+    app.add_state::<GlobalGameState>();
+
     app.add_plugins(
         DefaultPlugins
             .set(bevy::log::LogPlugin {
@@ -80,8 +104,6 @@ fn main() {
         weather::Plugin,
         cameras::Plugin,
     ))
-    .insert_resource(ClearColor(background::COLOR))
-    .insert_resource(gravity::field())
     .add_systems(Startup, (setup, background::spawn));
 
     common_physics::poissons_equation::register::<gravity::Gravity>(&mut app);
@@ -100,5 +122,7 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
+    commands.insert_resource(ClearColor(background::COLOR));
+    commands.insert_resource(gravity::field());
     commands.spawn(Game);
 }
