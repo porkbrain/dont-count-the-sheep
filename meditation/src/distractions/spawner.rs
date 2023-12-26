@@ -1,4 +1,7 @@
-use crate::{prelude::*, BackgroundLightScene};
+use crate::{
+    cameras::{BackgroundLightScene, OBJ_RENDER_LAYER},
+    prelude::*,
+};
 use bevy::{render::view::RenderLayers, time::Stopwatch, utils::HashSet};
 use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use rand::{random, seq::SliceRandom};
@@ -58,7 +61,7 @@ pub(super) fn try_spawn_next(
     commands
         .spawn((Distraction::new(video), AngularVelocity::default()))
         .insert((
-            RenderLayers::layer(1),
+            RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/distractions/crack_atlas.png"),
@@ -79,7 +82,7 @@ pub(super) fn try_spawn_next(
         ))
         .with_children(|parent| {
             parent.spawn((
-                RenderLayers::layer(1),
+                RenderLayers::layer(OBJ_RENDER_LAYER),
                 SpriteBundle {
                     texture: asset_server
                         .load("textures/distractions/frame.png"),
@@ -100,20 +103,6 @@ pub(super) fn try_spawn_next(
 
             parent.spawn((
                 DistractionOccluder,
-                // SpriteBundle {
-                //     sprite: Sprite {
-                //         color: Color::RED,
-                //         custom_size: Some(Vec2::new(
-                //             DISTRACTION_PERCEIVED_SIZE,
-                //             DISTRACTION_PERCEIVED_SIZE,
-                //         )),
-                //         ..default()
-                //     },
-                //     transform: Transform::from_translation(Vec3::new(
-                //         0., 0., 100.,
-                //     )), // TODO
-                //     ..default()
-                // },
                 SpatialBundle {
                     transform: Transform::from_translation(Vec3::new(
                         0.0, 0.0, 100.0, // TODO
@@ -121,15 +110,12 @@ pub(super) fn try_spawn_next(
                     ..default()
                 },
                 BackgroundLightScene,
-                // ObjectsLightScene,
                 LightOccluder2D {
                     h_size: Vec2::new(
                         DISTRACTION_OCCLUDER_SIZE,
                         DISTRACTION_OCCLUDER_SIZE,
                     ),
-                }, /* LightOccluder2D {
-                    *     h_size: Vec2::new(25.0, 25.0),
-                    * }, */
+                },
             ));
         });
 }

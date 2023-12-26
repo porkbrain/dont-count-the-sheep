@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
 use bevy::render::view::RenderLayers;
 use rand::random;
 
@@ -44,7 +44,7 @@ impl Video {
         asset_server: &Res<AssetServer>,
     ) {
         parent.spawn((
-            RenderLayers::layer(1),
+            RenderLayers::layer(OBJ_RENDER_LAYER),
             bevy_webp_anim::WebpBundle {
                 animation: asset_server.load(self.asset_path()),
                 frame_rate: bevy_webp_anim::FrameRate::new(2),

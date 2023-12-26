@@ -42,89 +42,109 @@ pub trait LightScene:
 {
     /// Some unique number that we can use to generate handles IDs in increasing
     /// order.
-    const HANDLE_START: u128 = 23475629871623176235;
+    const HANDLE_START: u128;
 
     fn camera_order() -> isize;
     fn render_layer_index() -> u8;
 
+    fn light_pass() -> String {
+        format!("light_pass_{}", Self::type_path())
+    }
+
+    fn debug() -> bool {
+        false
+    }
+
     fn build(app: &mut App) {
-        app
-            .add_plugins(
-                ExtractResourcePlugin::<GiTargetsWrapper<Self>>::default(),
-            )
-            .init_resource::<CameraTargets<Self>>()
-            .init_resource::<GiTargetsWrapper<Self>>()
-            .add_plugins(
-                Material2dPlugin::<PostProcessingMaterial<Self>>::default(),
-            )
-            .add_systems(
-                PreStartup,
-                (setup_post_processing_camera::<Self>
-                    .after(system_setup_gi_pipeline::<Self>),
-                    system_setup_gi_pipeline::<Self>.after(detect_target_sizes)
-                ),
-            )
-            .add_systems(PreUpdate, handle_window_resize::<Self>);
+        app.init_resource::<CameraTargets<Self>>();
+        app.init_resource::<GiTargetsWrapper<Self>>();
 
-        load_internal_asset!(
-            app,
-            Self::shader_gi_camera(),
-            "shaders/gi_camera.wgsl",
-            Shader::from_wgsl
-        );
-        load_internal_asset!(
-            app,
-            Self::shader_gi_types(),
-            "shaders/gi_types.wgsl",
-            Shader::from_wgsl
-        );
-        load_internal_asset!(
-            app,
-            Self::shader_gi_attenuation(),
-            "shaders/gi_attenuation.wgsl",
-            Shader::from_wgsl
-        );
-        load_internal_asset!(
-            app,
-            Self::shader_gi_halton(),
-            "shaders/gi_halton.wgsl",
-            Shader::from_wgsl
-        );
-        load_internal_asset!(
-            app,
-            Self::shader_gi_math(),
-            "shaders/gi_math.wgsl",
-            Shader::from_wgsl
-        );
-        load_internal_asset!(
-            app,
-            Self::shader_gi_raymarch(),
-            "shaders/gi_raymarch.wgsl",
-            Shader::from_wgsl
+        app.add_systems(
+            PreStartup,
+            system_setup_gi_pipeline::<Self>.after(detect_target_sizes),
         );
 
-        let render_app = app.sub_app_mut(RenderApp);
-        render_app
-            .add_systems(
-                ExtractSchedule,
-                system_extract_pipeline_assets::<Self>,
-            )
-            .add_systems(
-                Render,
-                (
-                    system_prepare_pipeline_assets::<Self>
-                        .in_set(RenderSet::Prepare),
-                    system_queue_bind_groups::<Self>.in_set(RenderSet::Queue),
-                ),
+        app.add_plugins((
+            ExtractResourcePlugin::<GiTargetsWrapper<Self>>::default(),
+            Material2dPlugin::<PostProcessingMaterial<Self>>::default(),
+        ));
+
+        app.add_systems(
+            PreStartup,
+            setup_post_processing_camera::<Self>
+                .after(system_setup_gi_pipeline::<Self>),
+        );
+
+        if !Self::debug() {
+            app.add_systems(PreUpdate, handle_window_resize::<Self>);
+        }
+
+        if !Self::debug() {
+            // TODO: single call?
+            load_internal_asset!(
+                app,
+                Self::shader_gi_camera(),
+                "shaders/gi_camera.wgsl",
+                Shader::from_wgsl
+            );
+            load_internal_asset!(
+                app,
+                Self::shader_gi_types(),
+                "shaders/gi_types.wgsl",
+                Shader::from_wgsl
+            );
+            load_internal_asset!(
+                app,
+                Self::shader_gi_attenuation(),
+                "shaders/gi_attenuation.wgsl",
+                Shader::from_wgsl
+            );
+            load_internal_asset!(
+                app,
+                Self::shader_gi_halton(),
+                "shaders/gi_halton.wgsl",
+                Shader::from_wgsl
+            );
+            load_internal_asset!(
+                app,
+                Self::shader_gi_math(),
+                "shaders/gi_math.wgsl",
+                Shader::from_wgsl
+            );
+            load_internal_asset!(
+                app,
+                Self::shader_gi_raymarch(),
+                "shaders/gi_raymarch.wgsl",
+                Shader::from_wgsl
             );
 
-        let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
-        render_graph
-            .add_node("light_pass_2d", LightPass2DNode::<Self>::default());
-        render_graph.add_node_edge(
-            "light_pass_2d",
-            bevy::render::main_graph::node::CAMERA_DRIVER,
-        )
+            let render_app = app.sub_app_mut(RenderApp);
+            render_app
+                .add_systems(
+                    ExtractSchedule,
+                    system_extract_pipeline_assets::<Self>,
+                )
+                .add_systems(
+                    Render,
+                    (
+                        system_prepare_pipeline_assets::<Self>
+                            .in_set(RenderSet::Prepare),
+                        system_queue_bind_groups::<Self>
+                            .in_set(RenderSet::Queue),
+                    ),
+                );
+
+            let mut render_graph =
+                render_app.world.resource_mut::<RenderGraph>();
+            render_graph.add_node(
+                Self::light_pass(),
+                LightPass2DNode::<Self>::default(),
+            );
+            render_graph.add_node_edge(
+                Self::light_pass(),
+                bevy::render::main_graph::node::CAMERA_DRIVER,
+            );
+        }
     }
 
     fn finish(app: &mut App) {
@@ -302,7 +322,7 @@ impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
                 let mut pass = render_context
                     .command_encoder()
                     .begin_compute_pass(&ComputePassDescriptor {
-                        label: Some("light_pass_2d"),
+                        label: Some(&T::light_pass()),
                     });
 
                 {

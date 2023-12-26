@@ -8,7 +8,11 @@ use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
 use itertools::Itertools;
 use rand::{thread_rng, Rng};
 
-use crate::{path::LevelPath, prelude::*, BackgroundLightScene};
+use crate::{
+    cameras::{BackgroundLightScene, OBJ_RENDER_LAYER},
+    path::LevelPath,
+    prelude::*,
+};
 
 /// Climate casts light rays.
 /// We achieve those light rays by orbiting occluders around the climate.
@@ -84,42 +88,23 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
                 )),
                 ..default()
             },
+            BackgroundLightScene,
+            OmniLightSource2D {
+                intensity: LIGHT_INTENSITY,
+                color: LIGHT_COLOR_HOT,
+                falloff: Vec3::new(
+                    FALLOFF_LIGHT_SIZE,
+                    FALLOFF_LIGHT_SIZE,
+                    0.05,
+                ),
+                ..default()
+            },
         ))
         .with_children(|commands| {
             commands.spawn((
-                RenderLayers::layer(1),
+                RenderLayers::layer(OBJ_RENDER_LAYER),
                 SpriteBundle {
                     texture: asset_server.load("textures/climate/default.png"),
-                    ..default()
-                },
-            ));
-
-            commands.spawn((
-                SpatialBundle::default(),
-                BackgroundLightScene,
-                OmniLightSource2D {
-                    intensity: LIGHT_INTENSITY,
-                    color: LIGHT_COLOR_HOT,
-                    falloff: Vec3::new(
-                        FALLOFF_LIGHT_SIZE,
-                        FALLOFF_LIGHT_SIZE,
-                        0.05,
-                    ),
-                    ..default()
-                },
-            ));
-
-            commands.spawn((
-                SpatialBundle::default(),
-                // ObjectsLightScene,
-                OmniLightSource2D {
-                    intensity: 0.5,
-                    color: LIGHT_COLOR_HOT,
-                    falloff: Vec3::new(
-                        FALLOFF_LIGHT_SIZE,
-                        FALLOFF_LIGHT_SIZE,
-                        0.05,
-                    ),
                     ..default()
                 },
             ));
@@ -142,7 +127,6 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
                 h_size: Vec2::new(OCCLUDER_SIZE, OCCLUDER_SIZE),
             },
             BackgroundLightScene,
-            // ObjectsLightScene,
         ));
     }
 

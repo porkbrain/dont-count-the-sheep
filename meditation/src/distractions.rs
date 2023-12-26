@@ -7,6 +7,7 @@ use bevy::time::Stopwatch;
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
 
+use crate::cameras::{BG_RENDER_LAYER, OBJ_RENDER_LAYER};
 use crate::path::LevelPath;
 use crate::{
     climate::Climate,
@@ -281,7 +282,7 @@ fn react_to_environment(
                             STATIC_ATLAS_FRAME_TIME,
                             TimerMode::Repeating,
                         ),
-                        RenderLayers::layer(1),
+                        RenderLayers::layer(OBJ_RENDER_LAYER),
                     ))
                     .insert(SpriteSheetBundle {
                         texture_atlas: texture_atlases.add(
@@ -445,6 +446,7 @@ fn spawn_black_hole(
                 chance_per_second: BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND,
                 frame_time: BLACK_HOLE_FRAME_TIME,
             },
+            RenderLayers::layer(BG_RENDER_LAYER),
         ))
         .insert(SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
@@ -466,6 +468,7 @@ fn spawn_black_hole(
                     BLACK_HOLE_FLICKER_CHANCE_PER_SECOND,
                     BLACK_HOLE_FLICKER_DURATION,
                 ),
+                RenderLayers::layer(BG_RENDER_LAYER),
                 SpriteBundle {
                     texture: asset_server.load(
                         "textures/distractions/blackhole_flicker.png"

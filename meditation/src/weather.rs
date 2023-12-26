@@ -13,7 +13,7 @@ use bevy::render::view::RenderLayers;
 pub(crate) use controls::loading_special as loading_special_system;
 
 use self::consts::*;
-use crate::{control_mode, prelude::*};
+use crate::{cameras::OBJ_RENDER_LAYER, control_mode, prelude::*};
 use bevy_magic_light_2d::gi::types::LightOccluder2D;
 
 #[derive(Event, Clone, Copy)]
@@ -100,7 +100,7 @@ fn spawn(
     let body = commands
         .spawn((
             WeatherBody,
-            RenderLayers::layer(1),
+            RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/weather/body_atlas.png"),
@@ -125,7 +125,7 @@ fn spawn(
     let face = commands
         .spawn((
             WeatherFace,
-            RenderLayers::layer(1),
+            RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load("textures/weather/face_atlas.png"),
@@ -149,7 +149,7 @@ fn spawn(
     //
     commands.spawn((
         anim::SparkEffect,
-        RenderLayers::layer(1),
+        RenderLayers::layer(OBJ_RENDER_LAYER),
         Animation {
             on_last_frame: AnimationEnd::Custom(Box::new(
                 |entity,

@@ -8,6 +8,8 @@ mod menu;
 mod score;
 
 mod consts {
+    use crate::cameras::PIXEL_ZOOM;
+
     use super::*;
 
     pub(crate) const BIG_FONT_SIZE: f32 = 45.0;
@@ -18,8 +20,8 @@ mod consts {
 
     pub(crate) const SCORE_EDGE_OFFSET: f32 = 25.0;
 
-    pub(crate) const MENU_BOX_WIDTH: f32 = 215.0 * crate::consts::PIXEL_ZOOM;
-    pub(crate) const MENU_BOX_HEIGHT: f32 = 145.0 * crate::consts::PIXEL_ZOOM;
+    pub(crate) const MENU_BOX_WIDTH: f32 = 215.0 * PIXEL_ZOOM;
+    pub(crate) const MENU_BOX_HEIGHT: f32 = 145.0 * PIXEL_ZOOM;
 
     //
     // These spacings and sizes are arbitrary.

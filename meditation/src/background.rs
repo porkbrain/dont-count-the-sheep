@@ -6,7 +6,7 @@
 use bevy::{math::vec3, render::view::RenderLayers};
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
-use crate::{consts::BG_RENDER_LAYER, prelude::*, BackgroundLightScene};
+use crate::{cameras::BG_RENDER_LAYER, prelude::*, BackgroundLightScene};
 
 pub(crate) const COLOR: &str = "#0d0e1f";
 const STAR_LIGHT_COLOR: &str = "#dbcbff";
