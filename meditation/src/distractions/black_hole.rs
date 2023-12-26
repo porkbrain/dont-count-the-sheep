@@ -28,6 +28,7 @@ pub(super) fn spawn(
         ChangeOfBasis::new(at_translation),
     );
 
+    // TODO: don't despawn when the game is paused
     let on_last_frame = AnimationEnd::Custom(Box::new(
         move |entity,
               _animation,

@@ -6,6 +6,11 @@ Player controls "weather" sprite.
 The controls are WASD (or arrow keys) to move and move+space to activate the special.
 The sprite should feel floaty as if you were playing Smashbros Puff after 3 Red Bulls®.
 
+## Features
+
+There are two debug features which help visualize the game state:
+`dev` and `dev-poisson`.
+
 ## Score
 
 Player gets points for each destroyed distraction.

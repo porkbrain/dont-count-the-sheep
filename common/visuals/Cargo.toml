@@ -1,5 +1,5 @@
 [package]
-name = "common-visuals"
+name = "common_visuals"
 version.workspace = true
 edition.workspace = true
 

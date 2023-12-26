@@ -1,5 +1,5 @@
 [package]
-name = "common-physics"
+name = "common_physics"
 version.workspace = true
 edition.workspace = true
 

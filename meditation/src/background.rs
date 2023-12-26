@@ -76,8 +76,7 @@ fn spawn_twinkles(commands: &mut Commands, asset_server: &Res<AssetServer>) {
             RenderLayers::layer(BG_RENDER_LAYER),
             Flicker::new(TWINKLE_CHANCE_PER_SECOND, TWINKLE_DURATION),
             SpriteBundle {
-                texture: asset_server
-                    .load(format!("textures/bg/twinkle{i}.png")),
+                texture: asset_server.load(assets::twinkle(i)),
                 transform: Transform::from_translation(Vec3::new(
                     0.0,
                     0.0,

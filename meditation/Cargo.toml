@@ -6,14 +6,13 @@ edition.workspace = true
 [lib]
 path = "src/lib.rs"
 
-
 [dependencies]
 bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true
 bevy.workspace = true
 bevy_webp_anim.workspace = true
-common-physics.workspace = true
-common-visuals.workspace = true
+common_physics.workspace = true
+common_visuals.workspace = true
 main_game_lib.workspace = true
 itertools.workspace = true
 lazy_static.workspace = true
@@ -21,4 +20,4 @@ rand.workspace = true
 
 [features]
 dev = ["bevy/glam_assert"]
-dev-poisson = ["common-physics/poissons-eq-visualization"]
+dev-poisson = ["common_physics/poissons-eq-visualization"]

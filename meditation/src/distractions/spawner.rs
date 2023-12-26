@@ -85,8 +85,7 @@ pub(super) fn try_spawn_next(
             parent.spawn((
                 RenderLayers::layer(OBJ_RENDER_LAYER),
                 SpriteBundle {
-                    texture: asset_server
-                        .load("textures/distractions/frame.png"),
+                    texture: asset_server.load(assets::DISTRACTION_FRAME),
                     transform: Transform::from_translation(Vec3::new(
                         0.0,
                         0.0,

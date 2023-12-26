@@ -2,6 +2,9 @@ pub(crate) const BACKGROUND_DEFAULT: &str =
     "meditation/textures/bg/default.png";
 pub(crate) const SHOOTING_STAR_ATLAS: &str =
     "meditation/textures/bg/shootingstar_atlas.png";
+pub(crate) fn twinkle(i: usize) -> String {
+    format!("meditation/textures/bg/twinkle{i}.png")
+}
 
 pub(crate) const CLIMATE_DEFAULT: &str =
     "meditation/textures/climate/default.png";
@@ -22,6 +25,8 @@ pub(crate) const TV_STATIC_ATLAS: &str =
     "meditation/textures/distractions/static_atlas.png";
 pub(crate) const CRACK_ATLAS: &str =
     "meditation/textures/distractions/crack_atlas.png";
+pub(crate) const DISTRACTION_FRAME: &str =
+    "meditation/textures/distractions/frame.png";
 
 pub(crate) const MENU_BOX: &str = "meditation/ui/menu_box.png";
 

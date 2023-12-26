@@ -1327,14 +1327,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "common-physics"
+name = "common_physics"
 version = "0.1.0"
 dependencies = [
  "bevy",
 ]
 
 [[package]]
-name = "common-visuals"
+name = "common_visuals"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -2397,8 +2397,8 @@ dependencies = [
  "bevy_magic_light_2d",
  "bevy_pixel_camera",
  "bevy_webp_anim",
- "common-physics",
- "common-visuals",
+ "common_physics",
+ "common_visuals",
  "itertools",
  "lazy_static",
  "main_game_lib",
