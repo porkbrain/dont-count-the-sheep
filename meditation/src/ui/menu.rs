@@ -1,4 +1,6 @@
-use bevy::app::AppExit;
+use main_game_lib::{
+    GlobalGameStateTransition, GlobalGameStateTransitionStack,
+};
 
 use crate::{climate::Climate, distractions::Distraction, prelude::*};
 
@@ -98,9 +100,10 @@ pub(super) fn close(
 ///
 /// TODO: transition into a quitting state
 pub(super) fn select(
+    mut stack: ResMut<GlobalGameStateTransitionStack>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
     mut menu: Query<&mut Menu>,
     mut keyboard: ResMut<Input<KeyCode>>,
-    mut exit: EventWriter<AppExit>,
 ) {
     let Ok(mut menu) = menu.get_single_mut() else {
         return;
@@ -114,11 +117,13 @@ pub(super) fn select(
         match curr_selection {
             Selection::Resume => keyboard.press(KeyCode::Escape),
             Selection::Restart => {
-                // TODO: proper reset of the whole game
-
-                keyboard.press(KeyCode::Escape);
+                stack.push(GlobalGameStateTransition::MeditationQuittingToMeditationLoading);
+                next_state.set(GlobalGameState::MeditationQuitting);
             }
-            Selection::Quit => exit.send(AppExit),
+            Selection::Quit => {
+                stack.push(GlobalGameStateTransition::MeditationQuittingToExit);
+                next_state.set(GlobalGameState::MeditationQuitting);
+            }
         }
 
         return;

@@ -18,14 +18,10 @@ mod zindex;
 use cameras::BackgroundLightScene;
 use common_physics::PoissonsEquation;
 use gravity::Gravity;
+use main_game_lib::GlobalGameStateTransitionStack;
 use prelude::*;
 
 pub fn add(app: &mut App) {
-    app.add_systems(
-        FixedUpdate,
-        common_physics::systems::apply_velocity
-            .run_if(in_state(GlobalGameState::MeditationInGame)),
-    );
     app.add_plugins((
         ui::Plugin,
         climate::Plugin,
@@ -33,9 +29,28 @@ pub fn add(app: &mut App) {
         weather::Plugin,
         cameras::Plugin,
         background::Plugin,
-    ))
-    .add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn)
-    .add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
+    ));
+
+    // TODO: compose these
+    app.add_plugins((
+        bevy_magic_light_2d::Plugin,
+        bevy_webp_anim::Plugin,
+        common_visuals::Plugin,
+    ));
+
+    app.add_systems(
+        FixedUpdate,
+        common_physics::systems::apply_velocity
+            .run_if(in_state(GlobalGameState::MeditationInGame)),
+    );
+
+    app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn);
+    app.add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
+
+    app.add_systems(
+        Last,
+        all_cleaned_up.run_if(in_state(GlobalGameState::MeditationQuitting)),
+    );
 
     common_physics::poissons_equation::register::<gravity::Gravity, _>(
         app,
@@ -47,13 +62,6 @@ pub fn add(app: &mut App) {
         Last,
         path::visualize.run_if(in_state(GlobalGameState::MeditationInGame)),
     );
-
-    // TODO: compose these
-    app.add_plugins((
-        bevy_magic_light_2d::Plugin,
-        bevy_webp_anim::Plugin,
-        common_visuals::Plugin,
-    ));
 
     #[cfg(feature = "dev-poissons")]
     common_physics::poissons_equation::register_visualization::<
@@ -82,4 +90,19 @@ fn despawn(mut commands: Commands) {
 
     commands.remove_resource::<ClearColor>();
     commands.remove_resource::<PoissonsEquation<Gravity>>();
+}
+
+fn all_cleaned_up(
+    mut stack: ResMut<GlobalGameStateTransitionStack>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+) {
+    match stack.pop_next_for(GlobalGameState::MeditationQuitting) {
+        // possible restart or change of game loop
+        Some(next) => next_state.set(next),
+        None => {
+            unreachable!(
+                "There's nowhere to transition from MeditationQuitting"
+            );
+        }
+    }
 }

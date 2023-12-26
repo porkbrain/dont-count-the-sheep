@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::WindowTheme};
+use bevy::{app::AppExit, prelude::*, window::WindowTheme};
 use bevy_pixel_camera::PixelCameraPlugin;
 
 #[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash)]
@@ -18,12 +18,31 @@ pub enum GlobalGameState {
     /// Change the game state to this state to run systems that clean up the
     /// meditation game in the background.
     MeditationQuitting,
+    /// Performs all necessary cleanup and exits the game.
+    Exit,
+}
+
+/// What are the allowed transitions between game states?
+#[derive(Debug)]
+pub enum GlobalGameStateTransition {
+    /// Restart the game.
+    MeditationQuittingToMeditationLoading,
+    /// This won't be needed once we have game loop.
+    MeditationQuittingToExit,
+}
+
+/// Certain states have multiple allowed transitions.
+/// The tip of the stack must always match the current state.
+#[derive(Resource, Debug, Default)]
+pub struct GlobalGameStateTransitionStack {
+    stack: Vec<GlobalGameStateTransition>,
 }
 
 pub fn windowed_app() -> App {
     let mut app = App::new();
 
     app.add_state::<GlobalGameState>();
+    app.insert_resource(GlobalGameStateTransitionStack::default());
 
     app.add_plugins(
         DefaultPlugins
@@ -47,8 +66,45 @@ pub fn windowed_app() -> App {
                 ..default()
             }),
     );
-
     app.add_plugins(PixelCameraPlugin);
 
+    app.add_systems(OnEnter(GlobalGameState::Exit), exit);
+
     app
+}
+
+fn exit(mut exit: EventWriter<AppExit>) {
+    exit.send(AppExit)
+}
+
+impl GlobalGameStateTransitionStack {
+    pub fn push(&mut self, transition: GlobalGameStateTransition) {
+        self.stack.push(transition);
+    }
+
+    pub fn pop_next_for(
+        &mut self,
+        state: GlobalGameState,
+    ) -> Option<GlobalGameState> {
+        use GlobalGameState::*;
+        use GlobalGameStateTransition::*;
+
+        match (self.stack.pop(), state) {
+            (None, state) => {
+                debug!("There's nowhere to transition from {state:?}");
+                None
+            }
+            (
+                Some(MeditationQuittingToMeditationLoading),
+                MeditationQuitting,
+            ) => Some(MeditationLoading),
+            (Some(MeditationQuittingToExit), MeditationQuitting) => Some(Exit),
+            (Some(transition), state) => {
+                error!(
+                    "Next transition {transition:?} does not match {state:?}"
+                );
+                None
+            }
+        }
+    }
 }

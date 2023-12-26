@@ -47,9 +47,7 @@ impl bevy::app::Plugin for Plugin {
             .add_systems(
                 Update,
                 (
-                    spawner::try_spawn_next.before(follow_curve),
-                    // `after` so that the distraction does not for 1 frame
-                    // appear in the middle TODO: no good
+                    spawner::try_spawn_next,
                     follow_curve,
                     react::to_environment,
                     react::to_weather_special.after(weather::loading_special),
@@ -120,8 +118,6 @@ fn follow_curve(
 
 /// Either distraction is destroyed by the weather special or by accumulating
 /// cracks.
-///
-/// TODO: bug sometimes black hole not removed
 fn destroyed(
     mut score: Query<&mut crate::ui::Score>,
     mut spawner: ResMut<spawner::Spawner>,

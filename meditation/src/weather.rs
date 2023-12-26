@@ -94,6 +94,7 @@ fn spawn(
     let parent = commands
         .spawn((
             Weather,
+            WeatherEntity,
             mode::Normal::default(),
             Velocity::default(),
             AngularVelocity::default(), // for animation
@@ -162,6 +163,7 @@ fn spawn(
     //
     commands.spawn((
         anim::SparkEffect,
+        WeatherEntity,
         RenderLayers::layer(OBJ_RENDER_LAYER),
         Animation {
             on_last_frame: AnimationEnd::Custom(Box::new(
@@ -197,7 +199,7 @@ fn spawn(
     //
     // 5.
     //
-    commands.spawn(anim::CameraState::default());
+    commands.spawn((WeatherEntity, anim::CameraState::default()));
 }
 
 fn despawn(

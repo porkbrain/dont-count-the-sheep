@@ -42,39 +42,35 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, score::spawn)
-            .add_systems(
-                OnEnter(GlobalGameState::MeditationInMenu),
-                menu::spawn,
-            )
-            .add_systems(
-                OnExit(GlobalGameState::MeditationInMenu),
-                menu::despawn,
-            )
-            .add_systems(
-                Update,
-                score::update
-                    .run_if(in_state(GlobalGameState::MeditationInGame)),
-            )
-            .add_systems(
-                Update,
-                menu::open.run_if(in_state(GlobalGameState::MeditationInGame)),
-            )
-            .add_systems(
-                Update,
-                // order important bcs we simulate ESC to close
-                menu::select
-                    .run_if(in_state(GlobalGameState::MeditationInMenu))
-                    .before(menu::close),
-            )
-            .add_systems(
-                Update,
-                menu::close.run_if(in_state(GlobalGameState::MeditationInMenu)),
-            )
-            .add_systems(
-                OnEnter(GlobalGameState::MeditationQuitting),
-                score::despawn,
-            );
+        app.add_systems(
+            OnEnter(GlobalGameState::MeditationLoading),
+            score::spawn,
+        )
+        .add_systems(OnEnter(GlobalGameState::MeditationInMenu), menu::spawn)
+        .add_systems(OnExit(GlobalGameState::MeditationInMenu), menu::despawn)
+        .add_systems(
+            Update,
+            score::update.run_if(in_state(GlobalGameState::MeditationInGame)),
+        )
+        .add_systems(
+            Update,
+            menu::open.run_if(in_state(GlobalGameState::MeditationInGame)),
+        )
+        .add_systems(
+            Update,
+            // order important bcs we simulate ESC to close
+            menu::select
+                .run_if(in_state(GlobalGameState::MeditationInMenu))
+                .before(menu::close),
+        )
+        .add_systems(
+            Update,
+            menu::close.run_if(in_state(GlobalGameState::MeditationInMenu)),
+        )
+        .add_systems(
+            OnEnter(GlobalGameState::MeditationQuitting),
+            score::despawn,
+        );
     }
 
     fn finish(&self, _app: &mut App) {

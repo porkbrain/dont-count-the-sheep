@@ -59,8 +59,16 @@ pub(super) fn try_spawn_next(
 
     spawner.last_spawned_at.reset();
 
+    let distraction = Distraction::new(video);
+
+    let translation = {
+        let (seg_index, seg_t) = distraction.path_segment();
+        let seg = &distraction.path.segments()[seg_index];
+        seg.position(seg_t).extend(zindex::DISTRACTION_CRACK)
+    };
+
     commands
-        .spawn((Distraction::new(video), DistractionEntity))
+        .spawn((distraction, DistractionEntity))
         .insert((
             RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {
@@ -73,11 +81,7 @@ pub(super) fn try_spawn_next(
                     None,
                 )),
                 sprite: TextureAtlasSprite::new(0),
-                transform: Transform::from_translation(Vec3::new(
-                    0.0,
-                    0.0,
-                    zindex::DISTRACTION_CRACK,
-                )),
+                transform: Transform::from_translation(translation),
                 ..default()
             },
         ))
@@ -97,6 +101,7 @@ pub(super) fn try_spawn_next(
 
             // TODO: vary videos
             // TODO: sound
+            // TODO: preload frames and share them between videos
             video.spawn(parent, &asset_server);
 
             parent.spawn((
