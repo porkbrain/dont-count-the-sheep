@@ -65,17 +65,19 @@ impl Video {
     }
 
     fn asset_path(self) -> &'static str {
+        use assets::*;
+
         match self {
-            Self::Alex => "textures/distractions/videos/alex.webp",
-            Self::Bunny => "textures/distractions/videos/bunny.webp",
-            Self::Dance => "textures/distractions/videos/dance.webp",
-            Self::Fragrance => "textures/distractions/videos/fragrance.webp",
-            Self::Knight => "textures/distractions/videos/knight.webp",
-            Self::Mukbang => "textures/distractions/videos/mukbang.webp",
-            Self::Panda => "textures/distractions/videos/panda.webp",
-            Self::Puppy => "textures/distractions/videos/puppy.webp",
-            Self::Sandwich => "textures/distractions/videos/sandwich.webp",
-            Self::Vampire => "textures/distractions/videos/vampire.webp",
+            Self::Alex => VIDEO_ALEX,
+            Self::Bunny => VIDEO_BUNNY,
+            Self::Dance => VIDEO_DANCE,
+            Self::Fragrance => VIDEO_FRAGRANCE,
+            Self::Knight => VIDEO_KNIGHT,
+            Self::Mukbang => VIDEO_MUKBANG,
+            Self::Panda => VIDEO_PANDA,
+            Self::Puppy => VIDEO_PUPPY,
+            Self::Sandwich => VIDEO_SANDWICH,
+            Self::Vampire => VIDEO_VAMPIRE,
         }
     }
 }

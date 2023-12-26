@@ -182,9 +182,7 @@ pub(super) fn to_environment(
                     .insert(SpriteSheetBundle {
                         texture_atlas: texture_atlases.add(
                             TextureAtlas::from_grid(
-                                asset_server.load(
-                                    "textures/distractions/static_atlas.png",
-                                ),
+                                asset_server.load(assets::TV_STATIC_ATLAS),
                                 vec2(
                                     DISTRACTION_SPRITE_SIZE,
                                     DISTRACTION_SPRITE_SIZE,

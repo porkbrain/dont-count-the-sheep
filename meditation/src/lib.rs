@@ -2,6 +2,7 @@
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::type_complexity)]
 
+mod assets;
 mod background;
 mod cameras;
 mod climate;

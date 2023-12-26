@@ -116,7 +116,7 @@ fn spawn(
             RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                    asset_server.load("textures/weather/body_atlas.png"),
+                    asset_server.load(assets::BODY_ATLAS),
                     vec2(BODY_WIDTH, BODY_HEIGHT),
                     BODY_ATLAS_COLS,
                     BODY_ATLAS_ROWS,
@@ -141,7 +141,7 @@ fn spawn(
             RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                    asset_server.load("textures/weather/face_atlas.png"),
+                    asset_server.load(assets::FACE_ATLAS),
                     vec2(FACE_SPRITE_WIDTH, FACE_SPRITE_HEIGHT),
                     FACE_ATLAS_COLS,
                     FACE_ATLAS_ROWS,
@@ -182,7 +182,7 @@ fn spawn(
         },
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load("textures/weather/spark_atlas.png"),
+                asset_server.load(assets::SPARK_ATLAS),
                 Vec2::splat(SPARK_SIDE),
                 SPARK_FRAMES,
                 1,

@@ -154,7 +154,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             commands.spawn((
                 RenderLayers::layer(OBJ_RENDER_LAYER),
                 SpriteBundle {
-                    texture: asset_server.load("textures/climate/default.png"),
+                    texture: asset_server.load(assets::CLIMATE_DEFAULT),
                     ..default()
                 },
             ));

@@ -66,7 +66,7 @@ pub(super) fn spawn(
         ))
         .insert(SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load("textures/distractions/blackhole_atlas.png"),
+                asset_server.load(assets::BLACKHOLE_ATLAS),
                 vec2(BLACK_HOLE_SPRITE_SIZE, BLACK_HOLE_SPRITE_SIZE),
                 BLACK_HOLE_ATLAS_FRAMES,
                 1,
@@ -86,10 +86,7 @@ pub(super) fn spawn(
                 ),
                 RenderLayers::layer(BG_RENDER_LAYER),
                 SpriteBundle {
-                    texture: asset_server.load(
-                        "textures/distractions/blackhole_flicker.png"
-                            .to_string(),
-                    ),
+                    texture: asset_server.load(assets::BLACKHOLE_FLICKER),
                     transform: Transform::from_translation(Vec3::new(
                         0.0,
                         0.0,

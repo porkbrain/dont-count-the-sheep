@@ -159,7 +159,7 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
             background_color: Color::WHITE.into(),
             ..default()
         },
-        UiImage::new(asset_server.load("ui/menu_box.png")),
+        UiImage::new(asset_server.load(assets::MENU_BOX)),
     ));
 
     // positions the menu options

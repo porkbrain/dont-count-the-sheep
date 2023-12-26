@@ -32,7 +32,7 @@ pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         Arrow,
         WeatherEntity,
         SpriteBundle {
-            texture: asset_server.load("textures/weather/arrow.png"),
+            texture: asset_server.load(assets::WEATHER_ARROW),
             transform: Transform::from_translation(Vec3::new(
                 0.0,
                 0.0,

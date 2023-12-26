@@ -65,7 +65,7 @@ pub(super) fn try_spawn_next(
             RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                    asset_server.load("textures/distractions/crack_atlas.png"),
+                    asset_server.load(assets::CRACK_ATLAS),
                     vec2(DISTRACTION_SPRITE_SIZE, DISTRACTION_SPRITE_SIZE),
                     MAX_CRACKS,
                     1,

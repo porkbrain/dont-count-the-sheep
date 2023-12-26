@@ -1,4 +1,4 @@
-pub(crate) use crate::zindex;
+pub(crate) use crate::{assets, zindex};
 pub(crate) use bevy::math::vec2;
 pub(crate) use bevy::prelude::*;
 use bevy::time::Stopwatch;

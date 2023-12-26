@@ -48,7 +48,7 @@ fn spawn(
         BackgroundEntity,
         RenderLayers::layer(BG_RENDER_LAYER),
         SpriteBundle {
-            texture: asset_server.load("textures/bg/default.png"),
+            texture: asset_server.load(assets::BACKGROUND_DEFAULT),
             transform: Transform::from_translation(Vec3::new(
                 0.0,
                 0.0,
@@ -109,7 +109,7 @@ fn spawn_shooting_star(
         },
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load("textures/bg/shootingstar_atlas.png"),
+                asset_server.load(assets::SHOOTING_STAR_ATLAS),
                 vec2(SHOOTING_STAR_WIDTH, SHOOTING_STAR_HEIGHT),
                 SHOOTING_STAR_FRAMES,
                 1,
