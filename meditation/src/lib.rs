@@ -31,18 +31,41 @@ pub fn add(app: &mut App) {
         background::Plugin,
     ));
 
-    // TODO: compose these
-    app.add_plugins((
-        bevy_magic_light_2d::Plugin,
-        bevy_webp_anim::Plugin,
-        common_visuals::Plugin,
-    ));
+    // TODO: compose this plugin
+    app.add_plugins(bevy_webp_anim::Plugin);
+
+    // visuals
+
+    app.add_systems(
+        FixedUpdate,
+        common_visuals::systems::advance_animation
+            .run_if(in_state(GlobalGameState::MeditationInGame)),
+    );
+    app.add_systems(
+        Update,
+        (
+            common_visuals::systems::begin_animation_at_random
+                .run_if(in_state(GlobalGameState::MeditationInGame)),
+            common_visuals::systems::flicker
+                .run_if(in_state(GlobalGameState::MeditationInGame)),
+            common_visuals::systems::flicker
+                .run_if(in_state(GlobalGameState::MeditationInMenu)),
+        ),
+    );
+
+    // physics
 
     app.add_systems(
         FixedUpdate,
         common_physics::systems::apply_velocity
             .run_if(in_state(GlobalGameState::MeditationInGame)),
     );
+    common_physics::poissons_equation::register::<gravity::Gravity, _>(
+        app,
+        GlobalGameState::MeditationInGame,
+    );
+
+    // game loop
 
     app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn);
     app.add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
@@ -52,10 +75,7 @@ pub fn add(app: &mut App) {
         all_cleaned_up.run_if(in_state(GlobalGameState::MeditationQuitting)),
     );
 
-    common_physics::poissons_equation::register::<gravity::Gravity, _>(
-        app,
-        GlobalGameState::MeditationInGame,
-    );
+    // dev
 
     #[cfg(feature = "dev")]
     app.add_systems(

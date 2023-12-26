@@ -2368,6 +2368,7 @@ name = "main_game_lib"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_magic_light_2d",
  "bevy_pixel_camera",
 ]
 

@@ -4,5 +4,6 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-bevy.workspace = true
+bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true
+bevy.workspace = true

@@ -4,7 +4,7 @@ use crate::{
     Animation, AnimationEnd, AnimationTimer, BeginAnimationAtRandom, Flicker,
 };
 
-pub(crate) fn advance_animation(
+pub fn advance_animation(
     mut query: Query<(
         Entity,
         &Animation,
@@ -50,7 +50,7 @@ pub(crate) fn advance_animation(
 
 /// With given chance per second, start animation by inserting an
 /// [`AnimationTimer`] component to the entity.
-pub(crate) fn begin_animation_at_random(
+pub fn begin_animation_at_random(
     mut query: Query<
         (Entity, &BeginAnimationAtRandom, &mut Visibility),
         Without<AnimationTimer>,
@@ -74,7 +74,7 @@ pub(crate) fn begin_animation_at_random(
 /// Flickers the entity with the given chance per second.
 /// The entity will be visible for the given duration if the chance hits.
 /// For the rest of the time, the entity will be hidden.
-pub(crate) fn flicker(
+pub fn flicker(
     mut query: Query<(&mut Flicker, &mut Visibility)>,
     time: Res<Time>,
 ) {
