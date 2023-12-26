@@ -28,7 +28,8 @@ pub(super) fn spawn(
         ChangeOfBasis::new(at_translation),
     );
 
-    // TODO: don't despawn when the game is paused
+    // the reason why black hole does not despawn while game is paused is that
+    // we don't run the system while game is paused
     let on_last_frame = AnimationEnd::Custom(Box::new(
         move |entity,
               _animation,

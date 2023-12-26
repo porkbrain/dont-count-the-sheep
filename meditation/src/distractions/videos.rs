@@ -52,13 +52,21 @@ impl Video {
                 animation: asset_server.load(self.asset_path()),
                 frame_rate: bevy_webp_anim::FrameRate::new(2),
                 sprite: Sprite { ..default() },
-                transform: Transform::from_translation(Vec3::new(
-                    0.0,
-                    0.0,
-                    // add some randomness to the z-index for deterministic
-                    // ordering of multiple distractions
-                    zindex::DISTRACTION_VIDEO + random::<f32>() * 0.1,
-                )),
+                transform: {
+                    let mut t = Transform::from_translation(Vec3::new(
+                        0.0,
+                        0.0,
+                        // add some randomness to the z-index for deterministic
+                        // ordering of multiple distractions
+                        zindex::DISTRACTION_VIDEO + random::<f32>() * 0.1,
+                    ));
+
+                    // there's a bug where the video every so slightly goes out
+                    // of the frame sometimes
+                    t.scale = Vec3::splat(1.0 - 0.01);
+
+                    t
+                },
                 ..default()
             },
         ));
