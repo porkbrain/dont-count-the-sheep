@@ -9,5 +9,5 @@ path = "src/main.rs"
 
 [dependencies]
 bevy.workspace = true
-meditation.workspace = true
 main_game_lib.workspace = true
+meditation.workspace = true

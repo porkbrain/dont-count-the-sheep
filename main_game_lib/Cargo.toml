@@ -7,3 +7,4 @@ version.workspace = true
 bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true
 bevy.workspace = true
+common_visuals.workspace = true

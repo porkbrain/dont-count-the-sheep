@@ -2370,6 +2370,7 @@ dependencies = [
  "bevy",
  "bevy_magic_light_2d",
  "bevy_pixel_camera",
+ "common_visuals",
 ]
 
 [[package]]
