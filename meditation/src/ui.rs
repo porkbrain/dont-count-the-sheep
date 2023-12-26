@@ -1,8 +1,5 @@
 //! The UI comprises menu and score text.
 //! Open/close the menu with ESC.
-//!
-//! TODO:
-//! - render face next to the menu selection
 
 mod menu;
 mod score;
@@ -30,8 +27,14 @@ mod consts {
     //
 
     pub(crate) const SELECTIONS_LEFT_OFFSET: Val = Val::Px(128.0);
-    pub(crate) const SELECTIONS_TOP_OFFSET: Val = Val::Px(55.0);
+    pub(crate) const SELECTIONS_TOP_OFFSET: Val = Val::Px(54.0);
     pub(crate) const SELECTIONS_PADDING_TOP: Val = Val::Px(12.0);
+
+    pub(crate) const SELECTION_MARKER_TOP_OFFSET_PX: f32 = 4.5 * PIXEL_ZOOM;
+    pub(crate) const SELECTION_MARKER_TOP_PADDING_PX_PER_SELECTION: f32 =
+        19.0 * PIXEL_ZOOM;
+    pub(crate) const SELECTION_MARKER_LEFT_OFFSET: Val =
+        Val::Px(5.0 * PIXEL_ZOOM);
 }
 
 pub(crate) use score::Score;

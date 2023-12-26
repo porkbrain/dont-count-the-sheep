@@ -29,6 +29,9 @@ pub(crate) const DISTRACTION_FRAME: &str =
     "meditation/textures/distractions/frame.png";
 
 pub(crate) const MENU_BOX: &str = "meditation/ui/menu_box.png";
+pub(crate) const FACE_ON_CONTINUE: &str = "meditation/ui/face_on_continue.png";
+pub(crate) const FACE_ON_RESTART: &str = "meditation/ui/face_on_restart.png";
+pub(crate) const FACE_ON_EXIT: &str = "meditation/ui/face_on_exit.png";
 
 pub(crate) const VIDEO_ALEX: &str =
     "meditation/textures/distractions/videos/alex.webp";

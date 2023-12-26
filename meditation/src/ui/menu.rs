@@ -2,7 +2,7 @@ use main_game_lib::{
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 
-use crate::prelude::*;
+use crate::{cameras::PIXEL_ZOOM, prelude::*};
 
 use super::consts::*;
 
@@ -18,6 +18,11 @@ enum Selection {
     Restart = 1,
     Quit = 2,
 }
+
+/// We render a small image and move it based on which selection is currently
+/// active to give the player some visual feedback.
+#[derive(Component)]
+pub(super) struct SelectionMarker;
 
 pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
@@ -83,7 +88,12 @@ pub(super) fn select(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut menu: Query<&mut Menu>,
+    mut selection_marker: Query<
+        (&mut Style, &mut UiImage),
+        With<SelectionMarker>,
+    >,
     mut keyboard: ResMut<Input<KeyCode>>,
+    asset_server: Res<AssetServer>,
 ) {
     let Ok(mut menu) = menu.get_single_mut() else {
         return;
@@ -123,8 +133,22 @@ pub(super) fn select(
     };
 
     if let Some(new_selection) = new_selection {
-        debug!("Selected {curr_selection:?}");
         menu.selection = new_selection;
+
+        let (mut style, mut image) = selection_marker.single_mut();
+
+        style.top = Val::Px(
+            SELECTION_MARKER_TOP_OFFSET_PX
+                + new_selection as u8 as f32
+                    * SELECTION_MARKER_TOP_PADDING_PX_PER_SELECTION,
+        );
+
+        // this is ugly, promise you won't tell xx
+        *image = UiImage::new(asset_server.load(match new_selection {
+            Selection::Resume => assets::FACE_ON_CONTINUE,
+            Selection::Restart => assets::FACE_ON_RESTART,
+            Selection::Quit => assets::FACE_ON_EXIT,
+        }));
     }
 }
 
@@ -139,12 +163,32 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                 ..default()
             },
             // a `NodeBundle` is transparent by default, so
-            // to see the image we have to its color to
+            // to see the image we have to set its color to
             // `WHITE`
             background_color: Color::WHITE.into(),
             ..default()
         },
         UiImage::new(asset_server.load(assets::MENU_BOX)),
+    ));
+
+    ui_root.spawn((
+        SelectionMarker,
+        NodeBundle {
+            style: Style {
+                width: Val::Px(36.0 * PIXEL_ZOOM),
+                height: Val::Px(36.0 * PIXEL_ZOOM),
+                top: Val::Px(SELECTION_MARKER_TOP_OFFSET_PX),
+                left: SELECTION_MARKER_LEFT_OFFSET,
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            // a `NodeBundle` is transparent by default, so
+            // to see the image we have to set its color to
+            // `WHITE`
+            background_color: Color::WHITE.into(),
+            ..default()
+        },
+        UiImage::new(asset_server.load(assets::FACE_ON_CONTINUE)),
     ));
 
     // positions the menu options
