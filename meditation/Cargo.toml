@@ -3,13 +3,18 @@ name = "meditation"
 version.workspace = true
 edition.workspace = true
 
+[lib]
+path = "src/lib.rs"
+
+
 [dependencies]
 bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true
-bevy_webp_anim = { path = "../bevy-webp-anim" }
 bevy.workspace = true
-common-physics = { path = "../common/physics" }
-common-visuals = { path = "../common/visuals" }
+bevy_webp_anim.workspace = true
+common-physics.workspace = true
+common-visuals.workspace = true
+main_game_lib.workspace = true
 itertools.workspace = true
 lazy_static.workspace = true
 rand.workspace = true

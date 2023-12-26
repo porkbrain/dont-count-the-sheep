@@ -4,6 +4,8 @@ package.edition = "2021"
 package.version = "0.1.0"
 resolver = "2"
 members = [
+    "main_game",
+    "main_game_lib",
     "meditation",
     "bevy-webp-anim",
     "bevy-magic-light-2d",
@@ -15,13 +17,18 @@ members = [
 bevy = "0.12"
 bevy_magic_light_2d = { path = "bevy-magic-light-2d" }
 bevy_pixel_camera = "0.12"
+bevy_webp_anim = { path = "bevy-webp-anim" }
+common-physics = { path = "common/physics" }
+common-visuals = { path = "common/visuals" }
 crossbeam-channel = "0.5"
 image = "0.24"
 itertools = "0.12"
 lazy_static = "1.4"
+main_game_lib = { path = "main_game_lib" }
 rand = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
+meditation = { path = "meditation" }
 
 [profile.release]
 codegen-units = 1

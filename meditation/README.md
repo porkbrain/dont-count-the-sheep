@@ -2,6 +2,10 @@
 
 Help Winnie to concentrate.
 
+Player controls "weather" sprite.
+The controls are WASD (or arrow keys) to move and move+space to activate the special.
+The sprite should feel floaty as if you were playing Smashbros Puff after 3 Red Bulls®.
+
 ## Score
 
 Player gets points for each destroyed distraction.
