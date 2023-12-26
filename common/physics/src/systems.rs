@@ -2,7 +2,8 @@ use bevy::prelude::*;
 
 use crate::Velocity;
 
-pub(crate) fn apply_velocity(
+/// You need to register this system in your app.
+pub fn apply_velocity(
     mut query: Query<(&mut Transform, &Velocity)>,
     time: Res<Time>,
 ) {

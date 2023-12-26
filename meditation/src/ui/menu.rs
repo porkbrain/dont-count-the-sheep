@@ -95,6 +95,8 @@ pub(super) fn close(
 /// The order of the systems is important.
 /// We simulate ESC to close the menu.
 /// So we need to select before we close.
+///
+/// TODO: transition into a quitting state
 pub(super) fn select(
     mut menu: Query<&mut Menu>,
     mut keyboard: ResMut<Input<KeyCode>>,

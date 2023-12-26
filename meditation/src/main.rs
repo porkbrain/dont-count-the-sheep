@@ -38,8 +38,8 @@ use common_physics::PoissonsEquation;
 use gravity::Gravity;
 use prelude::*;
 
-/// This will eventually be exported to the main game bin as this workspace
-/// member becomes a library.
+/// TODO: This will eventually be exported to the main game crate as this
+/// workspace member becomes a library.
 #[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash)]
 enum GlobalGameState {
     /// Dummy state so that we can do loading transitions.
@@ -96,10 +96,14 @@ fn main() {
         bevy_magic_light_2d::Plugin,
         PixelCameraPlugin,
         bevy_webp_anim::Plugin,
-        common_physics::Plugin,
         common_visuals::Plugin,
     ));
 
+    app.add_systems(
+        FixedUpdate,
+        common_physics::systems::apply_velocity
+            .run_if(in_state(GlobalGameState::MeditationInGame)),
+    );
     app.add_plugins((
         ui::Plugin,
         climate::Plugin,
@@ -117,8 +121,10 @@ fn main() {
     );
 
     #[cfg(feature = "dev")]
-    // TODO: run in state
-    app.add_systems(Last, (path::visualize,));
+    app.add_systems(
+        Last,
+        path::visualize.run_if(in_state(GlobalGameState::MeditationInGame)),
+    );
 
     #[cfg(feature = "dev-poissons")]
     common_physics::poissons_equation::register_visualization::<
