@@ -1,7 +1,4 @@
 //! The background of the game comprises a starry sky and a shooting star.
-//!
-//! TODO: lower light intensity of stars and galaxies as more distractions come
-//! in, and increase hellish red light from the edges or edge distractions.
 
 use bevy::{math::vec3, render::view::RenderLayers};
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;

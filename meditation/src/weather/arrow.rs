@@ -1,13 +1,12 @@
 //! When weather is off screen we show a little arrow pointing to it on the edge
 //! of the screen closest to the point where weather is.
-//!
-//! TODO: fix light
 
 use std::f32::consts::PI;
 
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
 use crate::{
+    cameras::BackgroundLightScene,
     consts::{VISIBLE_HEIGHT, VISIBLE_WIDTH},
     prelude::*,
     weather::consts::ARROW_DISTANCE_FROM_EDGE,
@@ -41,6 +40,7 @@ pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             visibility: Visibility::Hidden,
             ..default()
         },
+        BackgroundLightScene,
         OmniLightSource2D {
             intensity: 0.75,
             color: Color::hex(LIGHT_COLOR).unwrap(),

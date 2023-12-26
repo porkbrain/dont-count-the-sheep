@@ -99,16 +99,9 @@ pub(super) fn try_spawn_next(
             // TODO: sound
             video.spawn(parent, &asset_server);
 
-            const DISTRACTION_OCCLUDER_SIZE: f32 = 4.5;
-
             parent.spawn((
                 DistractionOccluder,
-                SpatialBundle {
-                    transform: Transform::from_translation(Vec3::new(
-                        0.0, 0.0, 100.0, // TODO
-                    )),
-                    ..default()
-                },
+                SpatialBundle { ..default() },
                 BackgroundLightScene,
                 LightOccluder2D {
                     h_size: Vec2::new(

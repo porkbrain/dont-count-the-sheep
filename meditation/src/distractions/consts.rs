@@ -27,7 +27,7 @@ pub(crate) const HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 150.0;
 pub(crate) const PUSH_BACK_FORCE_WEATHER_DISTANCE: f32 = 80.0;
 /// If light is shone on the distraction, it has a chance to crack.
 pub(crate) const CRACK_CHANCE_PER_SECOND: f32 = 1.0;
-
+pub(crate) const DISTRACTION_OCCLUDER_SIZE: f32 = 4.5;
 /// Plays static as on old TVs.
 pub(crate) const STATIC_ATLAS_FRAMES: usize = 5;
 /// How long each frame of static is shown.

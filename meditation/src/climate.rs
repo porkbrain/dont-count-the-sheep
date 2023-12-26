@@ -17,9 +17,6 @@ use crate::{
 /// Climate casts light rays.
 /// We achieve those light rays by orbiting occluders around the climate.
 /// How strong are they?
-///
-/// TODO: If I had two cameras, I could spawn different light intensities for
-/// background differently than for objects.
 const LIGHT_INTENSITY: f32 = 3.0;
 /// How far do the rays reach?
 const FALLOFF_LIGHT_SIZE: f32 = 400.0;
