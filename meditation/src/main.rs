@@ -80,7 +80,7 @@ fn main() {
         weather::Plugin,
         cameras::Plugin,
     ))
-    .insert_resource(ClearColor(Color::hex(background::COLOR).unwrap()))
+    .insert_resource(ClearColor(background::COLOR))
     .insert_resource(gravity::field())
     .add_systems(Startup, (setup, background::spawn));
 

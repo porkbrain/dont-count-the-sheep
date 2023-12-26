@@ -5,14 +5,9 @@ use std::{
 
 use bevy::time::Stopwatch;
 
-use crate::prelude::*;
+use crate::{climate::ClimateLightMode, prelude::*};
 
 use super::consts::*;
-
-const HOT_DEDUCTION: usize = 80;
-const HOT_DEDUCTION_INTERVAL: Duration = from_millis(5_000);
-const COLD_DEDUCTION: usize = 100;
-const COLD_DEDUCTION_INTERVAL: Duration = from_millis(10_000);
 
 #[derive(Component)]
 pub(crate) struct Score {
@@ -49,9 +44,14 @@ pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 pub(super) fn update(
+    game: Query<&Game, Without<Paused>>,
     mut score: Query<(&mut Score, &mut Text)>,
     time: Res<Time>,
 ) {
+    if game.is_empty() {
+        return;
+    }
+
     let Ok((mut score, mut text)) = score.get_single_mut() else {
         return;
     };
@@ -77,8 +77,9 @@ impl Default for Score {
         Self {
             total: 0,
             last_deduction: stopwatch_at(from_millis(0)),
-            deduction_per_interval: COLD_DEDUCTION,
-            deduction_interval: COLD_DEDUCTION_INTERVAL,
+            deduction_per_interval: ClimateLightMode::default().deduction(),
+            deduction_interval: ClimateLightMode::default()
+                .deduction_interval(),
         }
     }
 }
@@ -90,13 +91,11 @@ impl Display for Score {
 }
 
 impl Score {
-    pub(crate) fn set_hot(&mut self) {
-        self.deduction_per_interval = HOT_DEDUCTION;
-        self.deduction_interval = HOT_DEDUCTION_INTERVAL;
+    pub(crate) fn set_deduction_interval(&mut self, interval: Duration) {
+        self.deduction_interval = interval;
     }
 
-    pub(crate) fn set_cold(&mut self) {
-        self.deduction_per_interval = COLD_DEDUCTION;
-        self.deduction_interval = COLD_DEDUCTION_INTERVAL;
+    pub(crate) fn set_deduction(&mut self, deduction: usize) {
+        self.deduction_per_interval = deduction;
     }
 }

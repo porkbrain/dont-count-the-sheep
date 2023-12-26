@@ -5,7 +5,7 @@ use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
 use crate::{cameras::BG_RENDER_LAYER, prelude::*, BackgroundLightScene};
 
-pub(crate) const COLOR: &str = "#0d0e1f";
+pub(crate) const COLOR: Color = Color::rgb(0.050980393, 0.05490196, 0.12156863);
 const STAR_LIGHT_COLOR: &str = "#dbcbff";
 
 pub(crate) const TWINKLE_DURATION: Duration = from_millis(250);
@@ -178,4 +178,14 @@ fn spawn_light_sources(commands: &mut Commands) {
             ..default()
         },
     ));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_matches_bg_color() {
+        assert_eq!(Color::hex("#0d0e1f").unwrap(), COLOR);
+    }
 }

@@ -29,12 +29,17 @@ pub(super) struct Spawner {
 /// If we don't have another video to spawn of if too crowded, then we do
 /// nothing.
 pub(super) fn try_spawn_next(
+    game: Query<&Game, Without<Paused>>,
     mut spawner: ResMut<Spawner>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut commands: Commands,
     time: Res<Time>,
 ) {
+    if game.is_empty() {
+        return;
+    }
+
     spawner.last_spawned_at.tick(time.delta());
 
     if spawner.active.len() >= MAX_DISTRACTIONS {

@@ -3,10 +3,10 @@
 
 use std::f32::consts::PI;
 
-use bevy::{render::view::RenderLayers, time::Stopwatch};
+use bevy::{render::view::RenderLayers, time::Stopwatch, utils::Instant};
 use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
+use common_visuals::ColorExt;
 use itertools::Itertools;
-use rand::{thread_rng, Rng};
 
 use crate::{
     cameras::{BackgroundLightScene, OBJ_RENDER_LAYER},
@@ -20,8 +20,6 @@ use crate::{
 const LIGHT_INTENSITY: f32 = 3.0;
 /// How far do the rays reach?
 const FALLOFF_LIGHT_SIZE: f32 = 400.0;
-const LIGHT_COLOR_HOT: Color = Color::rgb(0.6, 0.3, 0.1);
-const LIGHT_COLOR_COLD: &str = crate::background::COLOR;
 /// Determines how many rays are casted.
 const OCCLUDER_COUNT: usize = 4;
 /// Inversely proportional to the ray size.
@@ -32,6 +30,20 @@ const OCCLUDER_DISTANCE: f32 = 40.0;
 /// We calculate the distribution around for the occluder[1] (0th starts at 0).
 const INITIAL_ROTATION: f32 = 2.0 * PI / OCCLUDER_COUNT as f32;
 const INITIAL_HALF_ROTATION: f32 = INITIAL_ROTATION / 2.0;
+/// When the mode is [`LightMode::Hot`], we deduct this much from the score.
+const HOT_DEDUCTION: usize = 80;
+/// How often do we deduct from the score when the mode is [`LightMode::Hot`].
+const HOT_DEDUCTION_INTERVAL: Duration = from_millis(5_000);
+/// TODO: Something less warm
+const LIGHT_COLOR_HOT: Color = Color::rgb(0.6, 0.3, 0.1);
+/// Purply cold color.
+const LIGHT_COLOR_COLD: Color = crate::background::COLOR;
+/// When the mode is [`LightMode::Cold`], we deduct this much from the score.
+const COLD_DEDUCTION: usize = 100;
+/// How often do we deduct from the score when the mode is [`LightMode::Cold`].
+const COLD_DEDUCTION_INTERVAL: Duration = from_millis(10_000);
+/// How long does it take for the light to change color when changing mode.
+const LIGHT_COLOR_TRANSITION: Duration = from_millis(2500);
 
 #[derive(Component)]
 pub(crate) struct Climate {
@@ -39,7 +51,9 @@ pub(crate) struct Climate {
     current_path_since: Stopwatch,
     /// Timer for the rays of light.
     /// Allows us to pause the ray animation when the game is paused.
-    rays_timer: Stopwatch,
+    rays_animation: Stopwatch,
+    /// When was the mode changed and the mode itself.
+    mode: (Instant, ClimateLightMode),
 }
 /// Source of light at the center of the climate.
 #[derive(Component)]
@@ -47,9 +61,17 @@ struct ClimateLight;
 /// Evenly distributed around the climate, they shape the light into rays.
 #[derive(Component)]
 struct ClimateOccluder {
+    /// Each occluder is characterized by its initial rotation.
     initial_rotation: f32,
 }
+#[derive(Default, Clone, Copy)]
+pub(crate) enum ClimateLightMode {
+    #[default]
+    Hot,
+    Cold,
+}
 
+/// Debug tool.
 /// Point which is shown when being lit by the climate.
 #[cfg(feature = "dev")]
 #[derive(Component)]
@@ -61,7 +83,15 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn)
             .register_type::<LightOccluder2D>()
-            .add_systems(Update, (follow_curve, move_occluders));
+            .add_systems(
+                Update,
+                (
+                    toggle_mode,
+                    smoothly_transition_light_color,
+                    follow_curve,
+                    move_occluders,
+                ),
+            );
 
         #[cfg(feature = "dev")]
         app.add_systems(Update, visualize_raypoints);
@@ -88,7 +118,9 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             BackgroundLightScene,
             OmniLightSource2D {
                 intensity: LIGHT_INTENSITY,
-                color: LIGHT_COLOR_HOT,
+                // little starting animation which changes light to the default
+                // color within the first few seconds
+                color: (!ClimateLightMode::default()).color(),
                 falloff: Vec3::new(
                     FALLOFF_LIGHT_SIZE,
                     FALLOFF_LIGHT_SIZE,
@@ -129,6 +161,8 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     #[cfg(feature = "dev")]
     for _ in 0..10000 {
+        use rand::{thread_rng, Rng};
+
         // spawns random points across the screen that will be lit by the rays
 
         let x = thread_rng().gen_range(-320.0..320.0);
@@ -147,35 +181,48 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     }
 }
 
-/// TODO: based on some player action
-/// TODO: consider smooth transition
-// fn change_light(
-//     game: Query<&Game, Without<Paused>>,
-//     mut light: Query<&mut OmniLightSource2D, With<Climate>>,
-//     mut score: Query<&mut crate::ui::Score>,
-//     time: Res<Time>,
-// ) {
-//     if game.is_empty() {
-//         return;
-//     }
+/// TODO: bette decide on something else than shift?
+fn toggle_mode(
+    mut climate: Query<&mut Climate>,
+    mut score: Query<&mut crate::ui::Score>,
+    keyboard: Res<Input<KeyCode>>,
+) {
+    if !keyboard.just_pressed(KeyCode::ShiftLeft) {
+        return;
+    }
 
-//     let mut light = light.single_mut();
-//     let mut score = score.single_mut();
+    let mut climate = climate.single_mut();
+    let mut score = score.single_mut();
 
-//     // toss a coin with chance X per second whether we change light color
-//     const LIGHT_COLOR_CHANGE_CHANCE_PER_SECOND_INVERSE: f64 = 15.0;
-//     if thread_rng().gen_bool(
-//         time.delta_seconds_f64() /
-// LIGHT_COLOR_CHANGE_CHANCE_PER_SECOND_INVERSE,     ) {
-//         light.color = if light.color == LIGHT_COLOR_HOT {
-//             score.set_hot();
-//             Color::hex(LIGHT_COLOR_COLD).unwrap()
-//         } else {
-//             score.set_cold();
-//             LIGHT_COLOR_HOT
-//         };
-//     }
-// }
+    let new_mode = !climate.mode.1;
+    climate.mode = (Instant::now(), new_mode);
+    score.set_deduction(new_mode.deduction());
+    score.set_deduction_interval(new_mode.deduction_interval());
+}
+
+fn smoothly_transition_light_color(
+    game: Query<&Game, Without<Paused>>,
+    mut climate: Query<(&Climate, &mut OmniLightSource2D)>,
+) {
+    if game.is_empty() {
+        return;
+    }
+
+    let (climate, mut light) = climate.single_mut();
+
+    // change color of the light based on climate.mode smoothly
+    let (changed_at, mode) = climate.mode;
+    let elapsed = changed_at.elapsed();
+
+    if elapsed > LIGHT_COLOR_TRANSITION {
+        light.color = mode.color();
+        return;
+    }
+
+    let t =
+        (elapsed.as_secs_f32() / LIGHT_COLOR_TRANSITION.as_secs_f32()).min(1.0);
+    light.color = light.color.lerp(mode.color(), t);
+}
 
 /// Distractions have something similar, but with some extra logic to change
 /// path.
@@ -190,7 +237,7 @@ fn follow_curve(
 
     let (mut climate, mut transform) = climate.single_mut();
 
-    climate.rays_timer.tick(time.delta());
+    climate.rays_animation.tick(time.delta());
     climate.current_path_since.tick(time.delta());
 
     let z = transform.translation.z;
@@ -230,13 +277,13 @@ fn move_occluders(
 impl Climate {
     pub(crate) fn pause(&mut self) -> &mut Self {
         self.current_path_since.pause();
-        self.rays_timer.pause();
+        self.rays_animation.pause();
         self
     }
 
     pub(crate) fn resume(&mut self) -> &mut Self {
         self.current_path_since.unpause();
-        self.rays_timer.unpause();
+        self.rays_animation.unpause();
         self
     }
 
@@ -275,19 +322,54 @@ impl Climate {
 
     #[inline]
     fn change_in_ray_angle_over_time(&self) -> f32 {
-        (self.rays_timer.elapsed_secs() * 0.25) % INITIAL_ROTATION
+        (self.rays_animation.elapsed_secs() * 0.25) % INITIAL_ROTATION
     }
 
     fn new() -> Self {
         Self {
             path: LevelPath::InfinitySign,
             current_path_since: Stopwatch::default(),
-            rays_timer: Stopwatch::default(),
+            rays_animation: Stopwatch::default(),
+            mode: (Instant::now(), default()),
         }
     }
 
     fn path_segment(&self) -> (usize, f32) {
         self.path.segment(&self.current_path_since.elapsed())
+    }
+}
+
+impl ClimateLightMode {
+    fn color(self) -> Color {
+        match self {
+            ClimateLightMode::Hot => LIGHT_COLOR_HOT,
+            ClimateLightMode::Cold => LIGHT_COLOR_COLD,
+        }
+    }
+
+    pub(crate) fn deduction(self) -> usize {
+        match self {
+            ClimateLightMode::Hot => HOT_DEDUCTION,
+            ClimateLightMode::Cold => COLD_DEDUCTION,
+        }
+    }
+
+    pub(crate) fn deduction_interval(self) -> Duration {
+        match self {
+            ClimateLightMode::Hot => HOT_DEDUCTION_INTERVAL,
+            ClimateLightMode::Cold => COLD_DEDUCTION_INTERVAL,
+        }
+    }
+}
+
+impl std::ops::Not for ClimateLightMode {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            ClimateLightMode::Hot => ClimateLightMode::Cold,
+            ClimateLightMode::Cold => ClimateLightMode::Hot,
+        }
     }
 }
 
@@ -381,7 +463,9 @@ mod tests {
             climate.angle_between_closest_ray_and_point(climate_pos, target);
         approximately_eq(PI / 3.0 - PI / 4.0, first_angle).unwrap();
 
-        climate.rays_timer.tick(Duration::from_secs_f32(1.0 / FPS));
+        climate
+            .rays_animation
+            .tick(Duration::from_secs_f32(1.0 / FPS));
 
         // shouldn't be a big change
         let second_angle =
@@ -394,8 +478,10 @@ mod tests {
         let mut max: f32 = 0.0;
         let mut min = f32::MAX;
         let mut prev_angle = second_angle;
-        while climate.rays_timer.elapsed() <= PLAY_FOR {
-            climate.rays_timer.tick(Duration::from_secs_f32(1.0 / FPS));
+        while climate.rays_animation.elapsed() <= PLAY_FOR {
+            climate
+                .rays_animation
+                .tick(Duration::from_secs_f32(1.0 / FPS));
 
             let new_angle = climate
                 .angle_between_closest_ray_and_point(climate_pos, target);
@@ -427,14 +513,18 @@ mod tests {
         // this is tested above, here we are focused on moving the climate
         let first_angle =
             climate.angle_between_closest_ray_and_point(climate_pos, target);
-        climate.rays_timer.tick(Duration::from_secs_f32(1.0 / FPS));
+        climate
+            .rays_animation
+            .tick(Duration::from_secs_f32(1.0 / FPS));
         let second_angle =
             climate.angle_between_closest_ray_and_point(climate_pos, target);
         let expected_step = (first_angle.abs() - second_angle.abs()).abs();
 
         let mut prev_angle = second_angle;
-        while climate.rays_timer.elapsed() <= PLAY_FOR {
-            climate.rays_timer.tick(Duration::from_secs_f32(1.0 / FPS));
+        while climate.rays_animation.elapsed() <= PLAY_FOR {
+            climate
+                .rays_animation
+                .tick(Duration::from_secs_f32(1.0 / FPS));
 
             climate_pos += vec2(
                 thread_rng().gen_range(-1.0..1.0),
