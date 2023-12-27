@@ -18,11 +18,7 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-fn spawn(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-) {
+fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         BedroomEntity,
         RenderLayers::layer(BG_RENDER_LAYER),
@@ -37,21 +33,29 @@ fn spawn(
         },
     ));
 
-    commands.spawn((
-        BedroomEntity,
-        RenderLayers::layer(BG_RENDER_LAYER),
-        SpriteBundle {
-            texture: asset_server.load(assets::BEDROOM_FURNITURE),
-            transform: Transform::from_translation(Vec3::new(
-                0.0,
-                0.0,
-                zindex::BEDROOM_FURNITURE,
-            )),
-            ..default()
-        },
-    ));
-
-    next_state.set(GlobalGameState::InApartment);
+    for (asset, zindex) in [
+        (
+            assets::BEDROOM_FURNITURE1,
+            zindex::BEDROOM_FURNITURE_DISTANT,
+        ),
+        (assets::BEDROOM_FURNITURE2, zindex::BEDROOM_FURNITURE_MIDDLE),
+        (
+            assets::BEDROOM_FURNITURE3,
+            zindex::BEDROOM_FURNITURE_CLOSEST,
+        ),
+    ] {
+        commands.spawn((
+            BedroomEntity,
+            RenderLayers::layer(BG_RENDER_LAYER),
+            SpriteBundle {
+                texture: asset_server.load(asset),
+                transform: Transform::from_translation(Vec3::new(
+                    0.0, 0.0, zindex,
+                )),
+                ..default()
+            },
+        ));
+    }
 }
 
 fn despawn(query: Query<Entity, With<BedroomEntity>>, mut commands: Commands) {

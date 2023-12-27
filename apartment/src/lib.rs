@@ -5,6 +5,7 @@
 mod assets;
 mod bedroom;
 mod cameras;
+mod characters;
 mod consts;
 mod prelude;
 mod zindex;
@@ -19,7 +20,7 @@ pub fn add(app: &mut App) {
 
     debug!("Adding plugins");
 
-    app.add_plugins((cameras::Plugin, bedroom::Plugin));
+    app.add_plugins((cameras::Plugin, bedroom::Plugin, characters::Plugin));
 
     debug!("Adding game loop");
 

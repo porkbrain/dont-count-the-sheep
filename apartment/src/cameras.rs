@@ -4,6 +4,7 @@ use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use crate::prelude::*;
 
 pub(crate) const BG_RENDER_LAYER: u8 = 2;
+pub(crate) const CHARACTERS_RENDER_LAYER: u8 = 1;
 pub(crate) const PIXEL_ZOOM: f32 = 3.0;
 
 pub(crate) struct Plugin;
@@ -27,7 +28,11 @@ fn spawn(mut commands: Commands) {
         CameraEntity,
         PixelZoom::Fixed(PIXEL_ZOOM as i32),
         PixelViewport,
-        RenderLayers::layer(BG_RENDER_LAYER),
+        RenderLayers::from_layers(&[
+            0, // for FPS and other debug tools
+            BG_RENDER_LAYER,
+            CHARACTERS_RENDER_LAYER,
+        ]),
         Camera2dBundle {
             camera: Camera {
                 hdr: true,

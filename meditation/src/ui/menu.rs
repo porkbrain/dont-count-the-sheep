@@ -101,7 +101,9 @@ pub(super) fn select(
 
     let curr_selection = menu.selection;
 
-    if keyboard.just_pressed(KeyCode::Return) {
+    if keyboard.just_pressed(KeyCode::Return)
+        || keyboard.just_pressed(KeyCode::Space)
+    {
         debug!("Going with {curr_selection:?}");
 
         match curr_selection {
