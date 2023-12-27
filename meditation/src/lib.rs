@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::type_complexity)]
+#![allow(clippy::too_many_arguments)]
 
 mod assets;
 mod background;
@@ -15,13 +16,16 @@ mod ui;
 mod weather;
 mod zindex;
 
-use cameras::BackgroundLightScene;
 use common_physics::PoissonsEquation;
 use gravity::Gravity;
 use main_game_lib::GlobalGameStateTransitionStack;
 use prelude::*;
 
 pub fn add(app: &mut App) {
+    info!("Adding meditation to app");
+
+    debug!("Adding plugins");
+
     app.add_plugins((
         ui::Plugin,
         climate::Plugin,
@@ -34,7 +38,7 @@ pub fn add(app: &mut App) {
     // TODO: compose this plugin
     app.add_plugins(bevy_webp_anim::Plugin);
 
-    // visuals
+    debug!("Adding visuals");
 
     app.add_systems(
         FixedUpdate,
@@ -53,7 +57,7 @@ pub fn add(app: &mut App) {
         ),
     );
 
-    // physics
+    debug!("Adding physics");
 
     app.add_systems(
         FixedUpdate,
@@ -65,9 +69,15 @@ pub fn add(app: &mut App) {
         GlobalGameState::MeditationInGame,
     );
 
-    // game loop
+    debug!("Adding game loop");
 
     app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn);
+
+    app.add_systems(
+        Last,
+        all_loaded.run_if(in_state(GlobalGameState::MeditationLoading)),
+    );
+
     app.add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
 
     app.add_systems(
@@ -75,7 +85,8 @@ pub fn add(app: &mut App) {
         all_cleaned_up.run_if(in_state(GlobalGameState::MeditationQuitting)),
     );
 
-    // dev
+    #[cfg(feature = "dev")]
+    debug!("Adding dev");
 
     #[cfg(feature = "dev")]
     app.add_systems(
@@ -90,19 +101,14 @@ pub fn add(app: &mut App) {
         gravity::ChangeOfBasis,
         _,
     >(app, GlobalGameState::MeditationInGame);
+
+    info!("Added meditation to app");
 }
 
-fn spawn(
-    mut commands: Commands,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-) {
-    info!("Loading meditation game");
-
+fn spawn(mut commands: Commands) {
     debug!("Spawning resources ClearColor and PoissonsEquation<Gravity>");
     commands.insert_resource(ClearColor(background::COLOR));
     commands.insert_resource(gravity::field());
-
-    next_state.set(GlobalGameState::MeditationInGame);
 }
 
 fn despawn(mut commands: Commands) {
@@ -112,10 +118,18 @@ fn despawn(mut commands: Commands) {
     commands.remove_resource::<PoissonsEquation<Gravity>>();
 }
 
+fn all_loaded(mut next_state: ResMut<NextState<GlobalGameState>>) {
+    info!("Entering meditation game");
+
+    next_state.set(GlobalGameState::MeditationInGame);
+}
+
 fn all_cleaned_up(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
 ) {
+    info!("Leaving meditation game");
+
     match stack.pop_next_for(GlobalGameState::MeditationQuitting) {
         // possible restart or change of game loop
         Some(next) => next_state.set(next),

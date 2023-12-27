@@ -1,3 +1,5 @@
+pub mod prelude;
+
 use bevy::{app::AppExit, prelude::*, window::WindowTheme};
 use bevy_pixel_camera::PixelCameraPlugin;
 
@@ -6,6 +8,14 @@ pub enum GlobalGameState {
     /// Dummy state so that we can do loading transitions.
     #[default]
     Blank,
+
+    /// Sets up the apartment game in the background.
+    ApartmentLoading,
+    /// Player is at apartment.
+    InApartment,
+    /// Despawn apartment game resources.
+    ApartmentQuitting,
+
     /// Change the game state to this state to run systems that setup the
     /// meditation game in the background.
     /// Nothing is shown to the player yet.
@@ -18,6 +28,7 @@ pub enum GlobalGameState {
     /// Change the game state to this state to run systems that clean up the
     /// meditation game in the background.
     MeditationQuitting,
+
     /// Performs all necessary cleanup and exits the game.
     Exit,
 }
@@ -25,10 +36,15 @@ pub enum GlobalGameState {
 /// What are the allowed transitions between game states?
 #[derive(Debug)]
 pub enum GlobalGameStateTransition {
-    /// Restart the game.
+    /// Restart the game
     MeditationQuittingToMeditationLoading,
-    /// This won't be needed once we have game loop.
-    MeditationQuittingToExit,
+    /// Exit back to the apartment
+    MeditationQuittingToApartment,
+
+    /// Play the meditation mini game
+    ApartmentQuittingToMeditationLoading,
+    /// Quit the game
+    ApartmentQuittingToExit,
 }
 
 /// Certain states have multiple allowed transitions.
@@ -48,7 +64,7 @@ pub fn windowed_app() -> App {
         DefaultPlugins
             .set(bevy::log::LogPlugin {
                 level: bevy::log::Level::WARN,
-                filter: "meditation=trace,meditation::weather::sprite=debug"
+                filter: "apartment=trace,meditation=trace,meditation::weather::sprite=debug"
                     .to_string(),
             })
             .set(ImagePlugin::default_nearest())
@@ -102,7 +118,13 @@ impl GlobalGameStateTransitionStack {
                 Some(MeditationQuittingToMeditationLoading),
                 MeditationQuitting,
             ) => Some(MeditationLoading),
-            (Some(MeditationQuittingToExit), MeditationQuitting) => Some(Exit),
+            (Some(MeditationQuittingToApartment), MeditationQuitting) => {
+                Some(ApartmentLoading)
+            }
+            (Some(ApartmentQuittingToExit), ApartmentQuitting) => Some(Exit),
+            (Some(ApartmentQuittingToMeditationLoading), ApartmentQuitting) => {
+                Some(MeditationLoading)
+            }
             (Some(transition), state) => {
                 error!(
                     "Next transition {transition:?} does not match {state:?}"

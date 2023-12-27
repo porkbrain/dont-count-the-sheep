@@ -176,6 +176,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "apartment"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_pixel_camera",
+ "main_game_lib",
+]
+
+[[package]]
 name = "approx"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2358,6 +2367,7 @@ dependencies = [
 name = "main_game"
 version = "0.1.0"
 dependencies = [
+ "apartment",
  "bevy",
  "main_game_lib",
  "meditation",

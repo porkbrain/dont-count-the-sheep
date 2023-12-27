@@ -111,7 +111,9 @@ pub(super) fn select(
                 next_state.set(GlobalGameState::MeditationQuitting);
             }
             Selection::Quit => {
-                stack.push(GlobalGameStateTransition::MeditationQuittingToExit);
+                stack.push(
+                    GlobalGameStateTransition::MeditationQuittingToApartment,
+                );
                 next_state.set(GlobalGameState::MeditationQuitting);
             }
         }

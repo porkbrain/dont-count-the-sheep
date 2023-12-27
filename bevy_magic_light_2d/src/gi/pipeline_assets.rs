@@ -42,10 +42,9 @@ impl<T> LightPassPipelineAssets<T> {
     }
 }
 
-#[rustfmt::skip]
 pub fn system_prepare_pipeline_assets<T: LightScene>(
-    render_device:         Res<RenderDevice>,
-    render_queue:          Res<RenderQueue>,
+    render_device: Res<RenderDevice>,
+    render_queue: Res<RenderQueue>,
     mut gi_compute_assets: ResMut<LightPassPipelineAssets<T>>,
 ) {
     gi_compute_assets.write_buffer(&render_device, &render_queue);
@@ -88,6 +87,11 @@ pub fn system_extract_pipeline_assets<T: LightScene>(
     mut gpu_pipeline_assets: ResMut<LightPassPipelineAssets<T>>,
     mut gpu_frame_counter: Local<i32>,
 ) {
+    let Ok((camera, camera_global_transform)) = query_camera.get_single()
+    else {
+        return;
+    };
+
     let light_pass_config = &res_light_settings.light_pass_params;
 
     *gpu_target_sizes = **res_target_sizes;
@@ -148,37 +152,30 @@ pub fn system_extract_pipeline_assets<T: LightScene>(
     }
 
     {
-        if let Ok((camera, camera_global_transform)) = query_camera.get_single()
-        {
-            let camera_params = gpu_pipeline_assets.camera_params.get_mut();
-            let projection = camera.projection_matrix();
-            let inverse_projection = projection.inverse();
-            let view = camera_global_transform.compute_matrix();
-            let inverse_view = view.inverse();
+        let camera_params = gpu_pipeline_assets.camera_params.get_mut();
+        let projection = camera.projection_matrix();
+        let inverse_projection = projection.inverse();
+        let view = camera_global_transform.compute_matrix();
+        let inverse_view = view.inverse();
 
-            camera_params.view_proj = projection * inverse_view;
-            camera_params.inverse_view_proj = view * inverse_projection;
-            camera_params.screen_size = Vec2::new(
-                gpu_target_sizes.primary_target_size.x,
-                gpu_target_sizes.primary_target_size.y,
-            );
-            camera_params.screen_size_inv = Vec2::new(
-                1.0 / gpu_target_sizes.primary_target_size.x,
-                1.0 / gpu_target_sizes.primary_target_size.y,
-            );
+        camera_params.view_proj = projection * inverse_view;
+        camera_params.inverse_view_proj = view * inverse_projection;
+        camera_params.screen_size = Vec2::new(
+            gpu_target_sizes.primary_target_size.x,
+            gpu_target_sizes.primary_target_size.y,
+        );
+        camera_params.screen_size_inv = Vec2::new(
+            1.0 / gpu_target_sizes.primary_target_size.x,
+            1.0 / gpu_target_sizes.primary_target_size.y,
+        );
 
-            let scale = 2.0;
-            camera_params.sdf_scale = Vec2::splat(scale);
-            camera_params.inv_sdf_scale = Vec2::splat(1. / scale);
+        let scale = 2.0;
+        camera_params.sdf_scale = Vec2::splat(scale);
+        camera_params.inv_sdf_scale = Vec2::splat(1. / scale);
 
-            let probes = gpu_pipeline_assets.probes.get_mut();
-            probes.data[*gpu_frame_counter as usize].camera_pose =
-                camera_global_transform.translation().truncate();
-        } else {
-            log::warn!("Failed to get camera");
-            let probes = gpu_pipeline_assets.probes.get_mut();
-            probes.data[*gpu_frame_counter as usize].camera_pose = Vec2::ZERO;
-        }
+        let probes = gpu_pipeline_assets.probes.get_mut();
+        probes.data[*gpu_frame_counter as usize].camera_pose =
+            camera_global_transform.translation().truncate();
     }
 
     {

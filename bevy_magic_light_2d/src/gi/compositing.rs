@@ -156,6 +156,7 @@ pub fn setup_post_processing_camera<T: LightScene>(
     let layer = RenderLayers::layer(T::render_layer_index());
 
     commands.spawn((
+        T::default(),
         PostProcessingQuad,
         MaterialMesh2dBundle {
             mesh: T::post_processing_quad().into(),
@@ -170,6 +171,7 @@ pub fn setup_post_processing_camera<T: LightScene>(
     ));
 
     commands.spawn((
+        T::default(),
         Name::new("post_processing_camera"),
         Camera2dBundle {
             camera: Camera {

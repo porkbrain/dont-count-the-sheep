@@ -123,7 +123,7 @@ impl Spawner {
             active: HashSet::default(),
             out_of_those_are_verbal: 0,
             sampler: (0, {
-                let mut all_videos = ALL_VIDEOS.clone();
+                let mut all_videos = ALL_VIDEOS;
                 all_videos.shuffle(&mut rand::thread_rng());
                 all_videos
             }),
