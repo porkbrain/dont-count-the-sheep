@@ -23,6 +23,7 @@ pub fn add(app: &mut App) {
 
     debug!("Adding game loop");
 
+    app.add_systems(OnEnter(GlobalGameState::ApartmentLoading), spawn);
     app.add_systems(
         Last,
         all_loaded.run_if(in_state(GlobalGameState::ApartmentLoading)),
@@ -34,6 +35,7 @@ pub fn add(app: &mut App) {
             .run_if(in_state(GlobalGameState::InApartment)),
     );
 
+    app.add_systems(OnEnter(GlobalGameState::ApartmentQuitting), despawn);
     app.add_systems(
         Last,
         all_cleaned_up.run_if(in_state(GlobalGameState::ApartmentQuitting)),
@@ -66,6 +68,18 @@ fn open_meditation(
         );
         next_state.set(GlobalGameState::ApartmentQuitting);
     }
+}
+
+fn spawn(mut commands: Commands) {
+    debug!("Spawning resources ClearColor");
+
+    commands.insert_resource(ClearColor(PRIMARY_COLOR));
+}
+
+fn despawn(mut commands: Commands) {
+    debug!("Despawning resources ClearColor");
+
+    commands.remove_resource::<ClearColor>();
 }
 
 fn all_loaded(mut next_state: ResMut<NextState<GlobalGameState>>) {

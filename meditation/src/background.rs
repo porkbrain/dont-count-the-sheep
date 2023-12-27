@@ -8,7 +8,7 @@ use crate::{
     prelude::*,
 };
 
-pub(crate) const COLOR: Color = Color::rgb(0.050980393, 0.05490196, 0.12156863);
+pub(crate) const COLOR: Color = PRIMARY_COLOR;
 const STAR_LIGHT_COLOR: &str = "#dbcbff";
 
 const TWINKLE_DURATION: Duration = from_millis(250);
@@ -212,14 +212,4 @@ fn spawn_light_sources(commands: &mut Commands) {
             ..default()
         },
     ));
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_matches_bg_color() {
-        assert_eq!(Color::hex("#0d0e1f").unwrap(), COLOR);
-    }
 }

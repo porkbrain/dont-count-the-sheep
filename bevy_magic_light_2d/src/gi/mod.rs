@@ -41,6 +41,9 @@ const WORKGROUP_SIZE: u32 = 8;
 /// component.
 /// It won't remove the resources from the render world, but it will remove
 /// camera and quad.
+///
+/// TODO: Sucks that we cannot really remove the whole plugin from the render
+/// world.
 pub trait LightScene:
     Component + TypePath + Send + Sync + Sized + Clone + Default + 'static
 {

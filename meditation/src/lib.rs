@@ -72,14 +72,12 @@ pub fn add(app: &mut App) {
     debug!("Adding game loop");
 
     app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn);
-
     app.add_systems(
         Last,
         all_loaded.run_if(in_state(GlobalGameState::MeditationLoading)),
     );
 
     app.add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
-
     app.add_systems(
         Last,
         all_cleaned_up.run_if(in_state(GlobalGameState::MeditationQuitting)),
