@@ -2,7 +2,16 @@ use bevy::{render::view::RenderLayers, sprite::Anchor};
 use bevy_grid_squared::{square, Square};
 use common_layout::{IntoMap, SquareKind};
 
-use crate::{cameras::CHARACTERS_RENDER_LAYER, prelude::*, Apartment};
+use crate::{
+    cameras::CHARACTERS_RENDER_LAYER, layout::add_z_based_on_y, prelude::*,
+    Apartment,
+};
+
+const WINNIE_ATLAS_COLS: usize = 15;
+const WINNIE_ATLAS_ROWS: usize = 1;
+const WINNIE_WIDTH: f32 = 19.0;
+const WINNIE_HEIGHT: f32 = 35.0;
+const WINNIE_ATLAS_PADDING: f32 = 1.0;
 
 /// Useful for despawning entities when leaving the apartment.
 #[derive(Component)]
@@ -45,7 +54,11 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
     let initial_square = square(-10, 5);
     let translation = add_z_based_on_y(
         Apartment::layout().square_to_world_pos(initial_square),
@@ -58,12 +71,20 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         CharacterEntity,
         RenderLayers::layer(CHARACTERS_RENDER_LAYER),
-        SpriteBundle {
-            sprite: Sprite {
+        SpriteSheetBundle {
+            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                asset_server.load(assets::WINNIE_ATLAS),
+                vec2(WINNIE_WIDTH, WINNIE_HEIGHT),
+                WINNIE_ATLAS_COLS,
+                WINNIE_ATLAS_ROWS,
+                Some(vec2(WINNIE_ATLAS_PADDING, 0.0)),
+                None,
+            )),
+            sprite: TextureAtlasSprite {
                 anchor: Anchor::BottomCenter,
+                index: 0,
                 ..default()
             },
-            texture: asset_server.load(assets::DEBUG_CHARACTER),
             transform: Transform::from_translation(translation),
             ..default()
         },
@@ -213,14 +234,4 @@ fn animate_movement(
 
         transform.translation = add_z_based_on_y(from.lerp(to, lerp_factor));
     }
-}
-
-fn add_z_based_on_y(v: Vec2) -> Vec3 {
-    // this is stupid 'n' simple but since the room does not
-    // require anything more complex for now, let's roll with it
-    v.extend(if v.y > -22.0 {
-        zindex::BEDROOM_FURNITURE_MIDDLE - 0.1
-    } else {
-        zindex::BEDROOM_FURNITURE_MIDDLE + 0.1
-    })
 }

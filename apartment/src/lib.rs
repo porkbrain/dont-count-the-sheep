@@ -3,7 +3,6 @@
 #![allow(clippy::type_complexity)]
 
 mod assets;
-mod bedroom;
 mod cameras;
 mod characters;
 mod consts;
@@ -23,7 +22,7 @@ pub fn add(app: &mut App) {
 
     debug!("Adding plugins");
 
-    app.add_plugins((cameras::Plugin, bedroom::Plugin, characters::Plugin));
+    app.add_plugins((cameras::Plugin, layout::Plugin, characters::Plugin));
 
     debug!("Adding map layout");
 
