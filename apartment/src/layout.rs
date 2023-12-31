@@ -14,6 +14,13 @@ lazy_static! {
     };
 }
 
+pub(crate) mod zones {
+    pub(crate) const MEDITATION: u8 = 0;
+    pub(crate) const BED: u8 = 1;
+    pub(crate) const TEA: u8 = 2;
+    pub(crate) const DOOR: u8 = 3;
+}
+
 #[derive(Component, TypePath)]
 pub(crate) struct Apartment;
 

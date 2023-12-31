@@ -3,6 +3,7 @@ use bevy_grid_squared::direction::Direction as GridDirection;
 use bevy_grid_squared::{square, Square};
 use common_layout::{IntoMap, SquareKind};
 
+use crate::layout::zones;
 use crate::{
     cameras::CHARACTERS_RENDER_LAYER, layout::add_z_based_on_y, prelude::*,
     Apartment,
@@ -13,6 +14,10 @@ const WINNIE_ATLAS_ROWS: usize = 1;
 const WINNIE_WIDTH: f32 = 19.0;
 const WINNIE_HEIGHT: f32 = 35.0;
 const WINNIE_ATLAS_PADDING: f32 = 1.0;
+/// How long does it take to move one square.
+const STEP_TIME: Duration = from_millis(50);
+/// How often do we change the animation frame.
+const STEP_ANIMATION_ALTERNATION: Duration = from_millis(250);
 
 /// Useful for despawning entities when leaving the apartment.
 #[derive(Component)]
@@ -35,6 +40,11 @@ struct ControllableTarget {
     planned: Option<(Square, GridDirection)>,
 }
 
+/// When the character gets closer to certain zones, show UI to make it easier
+/// to visually identify what's going on.
+#[derive(Component)]
+struct TransparentOverlay;
+
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -44,7 +54,8 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             Update,
-            (move_around.run_if(in_state(GlobalGameState::InApartment)),),
+            (move_around, load_zone_overlay)
+                .run_if(in_state(GlobalGameState::InApartment)),
         )
         .add_systems(
             FixedUpdate,
@@ -92,6 +103,26 @@ fn spawn(
             ..default()
         },
     ));
+
+    commands.spawn((
+        TransparentOverlay,
+        CharacterEntity,
+        RenderLayers::layer(CHARACTERS_RENDER_LAYER),
+        SpriteBundle {
+            texture: asset_server.load(assets::WINNIE_MEDITATING),
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                0.0,
+                zindex::BEDROOM_FURNITURE_DISTANT + 0.1,
+            )),
+            visibility: Visibility::Hidden,
+            sprite: Sprite {
+                color: Color::WHITE.with_a(0.5),
+                ..default()
+            },
+            ..default()
+        },
+    ));
 }
 
 fn despawn(
@@ -104,8 +135,6 @@ fn despawn(
 }
 
 /// Use keyboard to move around.
-/// WASD
-/// TODO: Add arrows and key bindings.
 fn move_around(
     keyboard: Res<Input<KeyCode>>,
     map: Res<common_layout::Map<Apartment>>,
@@ -113,23 +142,11 @@ fn move_around(
 ) {
     use GridDirection::*;
 
-    let Ok(mut character) = character.get_single_mut() else {
-        return;
-    };
-
-    if character
-        .walking_to
-        .as_ref()
-        .and_then(|to| to.planned)
-        .is_some()
-    {
-        return;
-    }
-
-    let up = keyboard.pressed(KeyCode::W);
-    let down = keyboard.pressed(KeyCode::S);
-    let left = keyboard.pressed(KeyCode::A);
-    let right = keyboard.pressed(KeyCode::D);
+    let up = keyboard.pressed(KeyCode::W) || keyboard.pressed(KeyCode::Up);
+    let down = keyboard.pressed(KeyCode::S) || keyboard.pressed(KeyCode::Down);
+    let left = keyboard.pressed(KeyCode::A) || keyboard.pressed(KeyCode::Left);
+    let right =
+        keyboard.pressed(KeyCode::D) || keyboard.pressed(KeyCode::Right);
 
     let up = up && !down;
     let down = down && !up;
@@ -157,18 +174,27 @@ fn move_around(
         return;
     };
 
+    let Ok(mut character) = character.get_single_mut() else {
+        return;
+    };
+
+    if character
+        .walking_to
+        .as_ref()
+        .and_then(|to| to.planned)
+        .is_some()
+    {
+        return;
+    }
+
     // exhaustive match in case of future changes
     let is_available = |square: Square| match map.get(&square) {
         None => Apartment::contains(square),
-        Some(SquareKind::None) => true,
+        Some(SquareKind::None | SquareKind::Zone(_)) => true,
         Some(SquareKind::Object | SquareKind::Wall) => false,
     };
 
-    let plan_from = character
-        .walking_to
-        .as_ref()
-        .map(|to| to.square)
-        .unwrap_or(character.walking_from);
+    let plan_from = character.current_square();
 
     let target = next_steps.into_iter().find_map(|direction| {
         let target = plan_from.neighbor(direction);
@@ -190,24 +216,18 @@ fn move_around(
     }
 }
 
+/// Transform is queried separately so that we can listen to just changes to it
+/// when deciding whether to show some proximity UI.
 fn animate_movement(
-    mut character: Query<(
-        &mut Controllable,
-        &mut Transform,
-        &mut TextureAtlasSprite,
-    )>,
+    mut character: Query<(&mut Controllable, &mut TextureAtlasSprite)>,
+    mut transform: Query<&mut Transform, With<Controllable>>,
     time: Res<Time>,
 ) {
     use GridDirection::*;
 
-    let Ok((mut character, mut transform, mut sprite)) =
-        character.get_single_mut()
-    else {
+    let Ok((mut character, mut sprite)) = character.get_single_mut() else {
         return;
     };
-
-    const STEP_SECS: f32 = 0.05; // TODO
-    const STEP_ALTERNATION_SECS: f32 = 0.25; // TODO
 
     let Some(walking_to) = character.walking_to.as_mut() else {
         return;
@@ -217,13 +237,14 @@ fn animate_movement(
 
     let lerp_factor = walking_to.for_this_long.elapsed_secs()
         / if let Top | Bottom | Left | Right = walking_to.direction {
-            STEP_SECS
+            STEP_TIME.as_secs_f32()
         } else {
             // we need to walk a bit slower when walking diagonally because
             // we cover more distance
-            STEP_SECS * 2.0f32.sqrt()
+            STEP_TIME.as_secs_f32() * 2.0f32.sqrt()
         };
 
+    let mut transform = transform.single_mut();
     let to = Apartment::layout().square_to_world_pos(walking_to.square);
 
     if lerp_factor >= 1.0 {
@@ -248,8 +269,9 @@ fn animate_movement(
 
         character.walking_from = new_from;
     } else {
-        let extra = (time.elapsed_seconds() / STEP_ALTERNATION_SECS).floor()
-            as usize
+        let extra = (time.elapsed_seconds()
+            / STEP_ANIMATION_ALTERNATION.as_secs_f32())
+        .floor() as usize
             % 2;
 
         sprite.index = match walking_to.direction {
@@ -263,5 +285,59 @@ fn animate_movement(
             Apartment::layout().square_to_world_pos(character.walking_from);
 
         transform.translation = add_z_based_on_y(from.lerp(to, lerp_factor));
+    }
+}
+
+/// Zone overlay is a half transparent image that shows up when the character
+/// gets close to certain zones.
+/// We hide it if the character is not close to any zone.
+/// We change the image to the appropriate one based on the zone.
+fn load_zone_overlay(
+    map: Res<common_layout::Map<Apartment>>,
+    character: Query<&Controllable, Changed<Transform>>,
+    mut overlay: Query<
+        (&mut Visibility, &mut Handle<Image>),
+        With<TransparentOverlay>,
+    >,
+    asset_server: Res<AssetServer>,
+) {
+    let Ok(character) = character.get_single() else {
+        return;
+    };
+
+    let (mut visibility, mut image) = overlay.single_mut();
+
+    let square = character.current_square();
+    let (new_visibility, new_image) = match map.get(&square) {
+        Some(SquareKind::Zone(zones::MEDITATION)) => {
+            (Visibility::Visible, Some(assets::WINNIE_MEDITATING))
+        }
+        Some(SquareKind::Zone(zones::BED)) => {
+            (Visibility::Visible, Some(assets::WINNIE_SLEEPING))
+        }
+        Some(SquareKind::Zone(zones::DOOR)) => {
+            unimplemented!()
+        }
+        Some(SquareKind::Zone(zones::TEA)) => {
+            unimplemented!()
+        }
+        _ => (Visibility::Hidden, None),
+    };
+
+    *visibility = new_visibility;
+
+    if let Some(new_image) = new_image {
+        *image = asset_server
+            .get_handle(new_image)
+            .unwrap_or_else(|| asset_server.load(new_image));
+    }
+}
+
+impl Controllable {
+    fn current_square(&self) -> Square {
+        self.walking_to
+            .as_ref()
+            .map(|to| to.square)
+            .unwrap_or(self.walking_from)
     }
 }

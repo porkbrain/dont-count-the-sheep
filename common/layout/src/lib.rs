@@ -64,10 +64,11 @@ pub struct Map<T: IntoMap> {
 
 #[derive(Clone, Copy, Serialize, Deserialize, Default, Eq, PartialEq)]
 pub enum SquareKind {
-    Wall,
-    Object,
     #[default]
     None,
+    Wall,
+    Object,
+    Zone(u8),
 }
 
 impl<T: IntoMap> Map<T> {
@@ -199,27 +200,43 @@ mod map_maker {
     }
 
     impl SquareKind {
+        const MAX_ZONE: u8 = 4;
+
         fn color(self) -> Color {
+            let colors: [Color; Self::MAX_ZONE as usize + 1] = [
+                Color::RED.with_a(0.5),
+                Color::BLUE.with_a(0.5),
+                Color::GREEN.with_a(0.5),
+                Color::YELLOW.with_a(0.5),
+                Color::PURPLE.with_a(0.5),
+            ];
+
             match self {
-                Self::Wall => Color::rgba(1.0, 0.0, 0.0, 0.5),
-                Self::Object => Color::rgba(1.0, 1.0, 1.0, 0.5),
-                Self::None => Color::rgba(0.0, 0.0, 0.0, 0.25),
+                Self::None => Color::BLACK.with_a(0.25),
+                Self::Wall => Color::BLACK.with_a(0.95),
+                Self::Object => Color::WHITE.with_a(0.5),
+                // if you want more zones, add more colors :-)
+                Self::Zone(a) => colors[a as usize],
             }
         }
 
         fn next(self) -> Self {
             match self {
-                Self::Wall => Self::Object,
                 Self::Object => Self::None,
                 Self::None => Self::Wall,
+                Self::Wall => Self::Zone(0),
+                Self::Zone(Self::MAX_ZONE) => Self::Object,
+                Self::Zone(a) => Self::Zone(a + 1),
             }
         }
 
         fn prev(self) -> Self {
             match self {
-                Self::Wall => Self::None,
-                Self::Object => Self::Wall,
+                Self::Object => Self::Zone(Self::MAX_ZONE),
                 Self::None => Self::Object,
+                Self::Wall => Self::None,
+                Self::Zone(0) => Self::Wall,
+                Self::Zone(a) => Self::Zone(a - 1),
             }
         }
     }

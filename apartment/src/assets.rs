@@ -10,4 +10,7 @@ pub(crate) const KITCHEN_FURNITURE3: &str = "apartment/kitchen_furniture3.png";
 
 pub(crate) const WINNIE_ATLAS: &str = "apartment/winnie_atlas.png";
 
+pub(crate) const WINNIE_SLEEPING: &str = "apartment/sleeping.png";
+pub(crate) const WINNIE_MEDITATING: &str = "apartment/meditating.png";
+
 pub(crate) const APARTMENT_MAP: &str = "apartment/map.ron";
