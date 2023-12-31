@@ -183,6 +183,7 @@ dependencies = [
  "bevy_grid_squared",
  "bevy_pixel_camera",
  "common_assets",
+ "common_layout",
  "lazy_static",
  "main_game_lib",
  "ron",
@@ -1356,6 +1357,17 @@ dependencies = [
  "ron",
  "serde",
  "thiserror",
+]
+
+[[package]]
+name = "common_layout"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_grid_squared",
+ "common_assets",
+ "ron",
+ "serde",
 ]
 
 [[package]]

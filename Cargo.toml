@@ -9,6 +9,7 @@ members = [
     "bevy_magic_light_2d",
     "bevy_webp_anim",
     "common/assets",
+    "common/layout",
     "common/physics",
     "common/visuals",
     "main_game_lib",
@@ -24,6 +25,7 @@ bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
 bevy_pixel_camera = "0.12"
 bevy_webp_anim = { path = "bevy_webp_anim" }
 common_assets = { path = "common/assets" }
+common_layout = { path = "common/layout" }
 common_physics = { path = "common/physics" }
 common_visuals = { path = "common/visuals" }
 crossbeam-channel = "0.5"

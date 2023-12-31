@@ -1,4 +1,5 @@
 pub mod prelude;
+pub mod vec2_ext;
 
 use bevy::{app::AppExit, prelude::*, window::WindowTheme};
 use bevy_pixel_camera::PixelCameraPlugin;

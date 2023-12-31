@@ -1,12 +1,8 @@
 use bevy::{render::view::RenderLayers, sprite::Anchor};
 use bevy_grid_squared::{square, Square};
+use common_layout::{IntoMap, SquareKind};
 
-use crate::{
-    cameras::CHARACTERS_RENDER_LAYER,
-    layout::{self, IntoMap, SquareKind},
-    prelude::*,
-    Apartment,
-};
+use crate::{cameras::CHARACTERS_RENDER_LAYER, prelude::*, Apartment};
 
 /// Useful for despawning entities when leaving the apartment.
 #[derive(Component)]
@@ -88,7 +84,7 @@ fn despawn(
 /// TODO: Add arrows and key bindings.
 fn move_around(
     keyboard: Res<Input<KeyCode>>,
-    map: Res<layout::Map<Apartment>>,
+    map: Res<common_layout::Map<Apartment>>,
     mut character: Query<&mut Controllable>,
 ) {
     use bevy_grid_squared::direction::Direction;

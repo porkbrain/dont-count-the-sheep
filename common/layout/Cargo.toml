@@ -1,0 +1,14 @@
+[package]
+name = "common_layout"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+common_assets.workspace = true
+bevy_grid_squared.workspace = true
+serde.workspace = true
+ron = { workspace = true, optional = true }
+
+[features]
+dev = ["ron"]
