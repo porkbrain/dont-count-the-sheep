@@ -207,42 +207,43 @@ pub(crate) fn loading_special(
 
 fn unit_circle_angle(key: &Input<KeyCode>) -> Option<Radians> {
     use KeyCode::*;
-    let pressed_left = key.pressed(Left)
+
+    let left = key.pressed(Left)
         || key.just_released(Left)
         || key.pressed(A)
         || key.just_released(A);
-    let pressed_right = key.pressed(Right)
+    let right = key.pressed(Right)
         || key.just_released(Right)
         || key.pressed(D)
         || key.just_released(D);
-    let pressed_down = key.pressed(Down)
+    let down = key.pressed(Down)
         || key.just_released(Down)
         || key.pressed(S)
         || key.just_released(S);
-    let pressed_up = key.pressed(Up)
+    let up = key.pressed(Up)
         || key.just_released(Up)
         || key.pressed(W)
         || key.just_released(W);
 
-    let angle = if pressed_left && !pressed_right {
-        if pressed_up && !pressed_down {
+    let angle = if left && !right {
+        if up && !down {
             3.0 * PI / 4.0 // ←↑ = ↖
-        } else if pressed_down && !pressed_up {
+        } else if down && !up {
             5.0 * PI / 4.0 // ←↓ = ↙
         } else {
             PI // ←
         }
-    } else if pressed_right && !pressed_left {
-        if pressed_up && !pressed_down {
+    } else if right && !left {
+        if up && !down {
             PI / 4.0 // ↑→ = ↗
-        } else if pressed_down && !pressed_up {
+        } else if down && !up {
             7.0 * PI / 4.0 // ↓→ = ↘
         } else {
             2.0 * PI // →
         }
-    } else if pressed_down && !pressed_up {
+    } else if down && !up {
         3.0 * PI / 2.0 // ↓
-    } else if pressed_up && !pressed_down {
+    } else if up && !down {
         PI / 2.0 // ↑ (default)
     } else {
         return None;

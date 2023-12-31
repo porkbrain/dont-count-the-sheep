@@ -5,7 +5,7 @@ mod menu;
 mod score;
 
 mod consts {
-    use crate::cameras::PIXEL_ZOOM;
+    use main_game_lib::PIXEL_ZOOM;
 
     use super::*;
 

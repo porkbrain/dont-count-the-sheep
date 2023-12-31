@@ -1,11 +1,11 @@
 use bevy::render::view::RenderLayers;
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
+use main_game_lib::PIXEL_ZOOM;
 
 use crate::prelude::*;
 
 pub(crate) const BG_RENDER_LAYER: u8 = 2;
 pub(crate) const CHARACTERS_RENDER_LAYER: u8 = 1;
-pub(crate) const PIXEL_ZOOM: f32 = 3.0;
 
 pub(crate) struct Plugin;
 

@@ -1,0 +1,17 @@
+[package]
+name = "bevy_grid_squared"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+bevy.workspace = true
+
+[dependencies.serde]
+default-features = false
+features = ["derive"]
+optional = true
+version = "1"
+
+[features]
+
+serde = ["dep:serde"]

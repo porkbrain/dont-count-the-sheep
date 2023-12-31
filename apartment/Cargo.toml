@@ -7,9 +7,14 @@ edition.workspace = true
 path = "src/lib.rs"
 
 [dependencies]
+bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true
 bevy.workspace = true
+common_assets.workspace = true
+lazy_static.workspace = true
 main_game_lib.workspace = true
+ron.workspace = true
+serde.workspace = true
 
 [features]
 dev = ["bevy/glam_assert"]

@@ -4,31 +4,36 @@ package.edition = "2021"
 package.version = "0.1.0"
 resolver = "2"
 members = [
+    "apartment",
+    "bevy_grid_squared",
     "bevy_magic_light_2d",
     "bevy_webp_anim",
+    "common/assets",
     "common/physics",
     "common/visuals",
-    "apartment",
     "main_game_lib",
     "main_game",
     "meditation",
 ]
 
 [workspace.dependencies]
+apartment = { path = "apartment" }
 bevy = "0.12"
+bevy_grid_squared = { path = "bevy_grid_squared", features = ["serde"] }
 bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
 bevy_pixel_camera = "0.12"
 bevy_webp_anim = { path = "bevy_webp_anim" }
+common_assets = { path = "common/assets" }
 common_physics = { path = "common/physics" }
 common_visuals = { path = "common/visuals" }
 crossbeam-channel = "0.5"
-apartment = { path = "apartment" }
 image = "0.24"
 itertools = "0.12"
 lazy_static = "1.4"
 main_game_lib = { path = "main_game_lib" }
 meditation = { path = "meditation" }
 rand = "0.8"
+ron = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
 

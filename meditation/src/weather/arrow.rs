@@ -4,11 +4,10 @@
 use std::f32::consts::PI;
 
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
+use main_game_lib::{VISIBLE_HEIGHT, VISIBLE_WIDTH};
 
 use crate::{
-    cameras::BackgroundLightScene,
-    consts::{VISIBLE_HEIGHT, VISIBLE_WIDTH},
-    prelude::*,
+    cameras::BackgroundLightScene, prelude::*,
     weather::consts::ARROW_DISTANCE_FROM_EDGE,
 };
 

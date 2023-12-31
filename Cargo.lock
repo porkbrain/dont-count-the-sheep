@@ -180,8 +180,13 @@ name = "apartment"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_grid_squared",
  "bevy_pixel_camera",
+ "common_assets",
+ "lazy_static",
  "main_game_lib",
+ "ron",
+ "serde",
 ]
 
 [[package]]
@@ -627,6 +632,14 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "bevy_grid_squared"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "serde",
 ]
 
 [[package]]
@@ -1333,6 +1346,16 @@ checksum = "35ed6e9d84f0b51a7f52daf1c7d71dd136fd7a3f41a8462b8cdb8c78d920fad4"
 dependencies = [
  "bytes",
  "memchr",
+]
+
+[[package]]
+name = "common_assets"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "ron",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]

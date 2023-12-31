@@ -1,8 +1,8 @@
 use main_game_lib::{
-    GlobalGameStateTransition, GlobalGameStateTransitionStack,
+    GlobalGameStateTransition, GlobalGameStateTransitionStack, PIXEL_ZOOM,
 };
 
-use crate::{cameras::PIXEL_ZOOM, prelude::*};
+use crate::prelude::*;
 
 use super::consts::*;
 

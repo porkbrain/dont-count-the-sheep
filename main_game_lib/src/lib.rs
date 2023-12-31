@@ -3,6 +3,13 @@ pub mod prelude;
 use bevy::{app::AppExit, prelude::*, window::WindowTheme};
 use bevy_pixel_camera::PixelCameraPlugin;
 
+/// What's shown on screen.
+pub const VISIBLE_WIDTH: f32 = 640.0;
+/// What's shown on screen.
+pub const VISIBLE_HEIGHT: f32 = 360.0;
+/// One pixel is 3x3 pixels on screen.
+pub const PIXEL_ZOOM: f32 = 3.0;
+
 #[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GlobalGameState {
     /// Dummy state so that we can do loading transitions.

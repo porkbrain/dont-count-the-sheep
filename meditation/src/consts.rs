@@ -1,7 +1,4 @@
-/// What's shown on screen.
-pub(crate) const VISIBLE_WIDTH: f32 = 640.0;
-/// What's shown on screen.
-pub(crate) const VISIBLE_HEIGHT: f32 = 360.0;
+use main_game_lib::{VISIBLE_HEIGHT, VISIBLE_WIDTH};
 
 /// The stage is bigger than what's shown on screen.
 pub(crate) const GRAVITY_STAGE_WIDTH: f32 = VISIBLE_WIDTH * 1.25;

@@ -13,10 +13,9 @@ use bevy_magic_light_2d::{
     SceneCamera,
 };
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
+use main_game_lib::PIXEL_ZOOM;
 
 use crate::prelude::*;
-
-pub(crate) const PIXEL_ZOOM: f32 = 3.0;
 
 pub(crate) const OBJ_RENDER_LAYER: u8 = 1;
 pub(crate) const BG_RENDER_LAYER: u8 = 2;

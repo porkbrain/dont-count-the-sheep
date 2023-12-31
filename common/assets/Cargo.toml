@@ -1,0 +1,10 @@
+[package]
+name = "common_assets"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+ron.workspace = true

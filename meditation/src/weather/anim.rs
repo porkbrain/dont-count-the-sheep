@@ -1,6 +1,7 @@
 use super::{consts::*, mode, sprite, ActionEvent, WeatherBody, WeatherFace};
 use crate::prelude::*;
 use bevy::{core_pipeline::bloom::BloomSettings, time::Stopwatch};
+use main_game_lib::{VISIBLE_HEIGHT, VISIBLE_WIDTH};
 use std::{
     cmp::Ordering,
     f32::consts::{E, PI},
@@ -435,11 +436,7 @@ pub(super) fn update_camera_on_special(
             }
         };
 
-        Vec3::new(
-            freedom(crate::consts::VISIBLE_WIDTH),
-            freedom(crate::consts::VISIBLE_HEIGHT),
-            0.0,
-        )
+        Vec3::new(freedom(VISIBLE_WIDTH), freedom(VISIBLE_HEIGHT), 0.0)
     }
 
     struct CameraUpdateArgs {
