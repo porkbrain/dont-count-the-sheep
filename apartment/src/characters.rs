@@ -112,40 +112,37 @@ fn move_around(
     let left = left && !right;
     let right = right && !left;
 
-    // The preferred direction - and if not available, the alternatives.
-    // The alternatives must be exclusive, ie. if both are available then none
-    // is chosen.
-    let (main, (a, b)) = if up && left {
-        (Direction::TopLeft, (Direction::Top, Direction::Left))
+    // Ordered by priority.
+    let next_steps = if up && left {
+        [Direction::TopLeft, Direction::Top, Direction::Left]
     } else if up && right {
-        (Direction::TopRight, (Direction::Top, Direction::Right))
+        [Direction::TopRight, Direction::Top, Direction::Right]
     } else if down && left {
-        (Direction::BottomLeft, (Direction::Bottom, Direction::Left))
+        [Direction::BottomLeft, Direction::Bottom, Direction::Left]
     } else if down && right {
-        (
-            Direction::BottomRight,
-            (Direction::Bottom, Direction::Right),
-        )
+        [Direction::BottomRight, Direction::Bottom, Direction::Right]
     } else if left {
-        (Direction::Left, (Direction::TopLeft, Direction::BottomLeft))
+        [Direction::Left, Direction::TopLeft, Direction::BottomLeft]
     } else if right {
-        (
+        [
             Direction::Right,
-            (Direction::TopRight, Direction::BottomRight),
-        )
+            Direction::TopRight,
+            Direction::BottomRight,
+        ]
     } else if down {
-        (
+        [
             Direction::Bottom,
-            (Direction::BottomLeft, Direction::BottomRight),
-        )
+            Direction::BottomLeft,
+            Direction::BottomRight,
+        ]
     } else if up {
-        (Direction::Top, (Direction::TopLeft, Direction::TopRight))
+        [Direction::Top, Direction::TopLeft, Direction::TopRight]
     } else {
         return;
     };
 
     // exhaustive match in case of future changes
-    let is_empty = |square: Square| match map.get(&square) {
+    let is_available = |square: Square| match map.get(&square) {
         None => Apartment::contains(square),
         Some(SquareKind::None) => true,
         Some(SquareKind::Object | SquareKind::Wall) => false,
@@ -157,23 +154,10 @@ fn move_around(
         .map(|to| to.square)
         .unwrap_or(character.walking_from);
 
-    // preferably go there if possible
-    let main_square = plan_from.neighbor(main);
-
-    let target_square = if is_empty(main_square) {
-        Some(main_square)
-    } else {
-        // these are alternatives
-        let a_square = plan_from.neighbor(a);
-        let b_square = plan_from.neighbor(b);
-
-        match (is_empty(a_square), is_empty(b_square)) {
-            (true, false) => Some(a_square),
-            (false, true) => Some(b_square),
-            // cannot decide or cannot go anywhere
-            (true, true) | (false, false) => None,
-        }
-    };
+    let target_square = next_steps.into_iter().find_map(|direction| {
+        let target = plan_from.neighbor(direction);
+        is_available(target).then_some(target)
+    });
 
     if let Some(target_square) = target_square {
         if let Some(walking_to) = &mut character.walking_to {
@@ -232,14 +216,11 @@ fn animate_movement(
 }
 
 fn add_z_based_on_y(v: Vec2) -> Vec3 {
-    // by a lucky chance, we can use 0.0 as the delimiter between the
-    // layers
-    //
-    // this is stupid but simple and since the room does not
-    // require anything more complex, let's roll with it
-    v.extend(if v.y > 0.0 {
-        zindex::BEDROOM_FURNITURE_MIDDLE - 0.25
+    // this is stupid 'n' simple but since the room does not
+    // require anything more complex for now, let's roll with it
+    v.extend(if v.y > -22.0 {
+        zindex::BEDROOM_FURNITURE_MIDDLE - 0.1
     } else {
-        zindex::BEDROOM_FURNITURE_MIDDLE + 0.25
+        zindex::BEDROOM_FURNITURE_MIDDLE + 0.1
     })
 }

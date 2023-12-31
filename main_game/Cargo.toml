@@ -11,4 +11,4 @@ path = "src/main.rs"
 bevy.workspace = true
 main_game_lib.workspace = true
 meditation.workspace = true
-apartment = { workspace = true, features = ["dev"] }
+apartment = { workspace = true, features = [] }
