@@ -1,4 +1,5 @@
 use bevy::{render::view::RenderLayers, sprite::Anchor};
+use bevy_grid_squared::direction::Direction as GridDirection;
 use bevy_grid_squared::{square, Square};
 use common_layout::{IntoMap, SquareKind};
 
@@ -28,8 +29,10 @@ struct Controllable {
 
 struct ControllableTarget {
     square: Square,
+    /// Used for animations.
+    direction: GridDirection,
     for_this_long: Stopwatch,
-    planned: Option<Square>,
+    planned: Option<(Square, GridDirection)>,
 }
 
 pub(crate) struct Plugin;
@@ -108,7 +111,7 @@ fn move_around(
     map: Res<common_layout::Map<Apartment>>,
     mut character: Query<&mut Controllable>,
 ) {
-    use bevy_grid_squared::direction::Direction;
+    use GridDirection::*;
 
     let Ok(mut character) = character.get_single_mut() else {
         return;
@@ -135,29 +138,21 @@ fn move_around(
 
     // Ordered by priority.
     let next_steps = if up && left {
-        [Direction::TopLeft, Direction::Top, Direction::Left]
+        [TopLeft, Top, Left]
     } else if up && right {
-        [Direction::TopRight, Direction::Top, Direction::Right]
+        [TopRight, Top, Right]
     } else if down && left {
-        [Direction::BottomLeft, Direction::Bottom, Direction::Left]
+        [BottomLeft, Bottom, Left]
     } else if down && right {
-        [Direction::BottomRight, Direction::Bottom, Direction::Right]
+        [BottomRight, Bottom, Right]
     } else if left {
-        [Direction::Left, Direction::TopLeft, Direction::BottomLeft]
+        [Left, TopLeft, BottomLeft]
     } else if right {
-        [
-            Direction::Right,
-            Direction::TopRight,
-            Direction::BottomRight,
-        ]
+        [Right, TopRight, BottomRight]
     } else if down {
-        [
-            Direction::Bottom,
-            Direction::BottomLeft,
-            Direction::BottomRight,
-        ]
+        [Bottom, BottomLeft, BottomRight]
     } else if up {
-        [Direction::Top, Direction::TopLeft, Direction::TopRight]
+        [Top, TopLeft, TopRight]
     } else {
         return;
     };
@@ -175,18 +170,19 @@ fn move_around(
         .map(|to| to.square)
         .unwrap_or(character.walking_from);
 
-    let target_square = next_steps.into_iter().find_map(|direction| {
+    let target = next_steps.into_iter().find_map(|direction| {
         let target = plan_from.neighbor(direction);
-        is_available(target).then_some(target)
+        is_available(target).then_some((target, direction))
     });
 
-    if let Some(target_square) = target_square {
+    if let Some((target_square, direction)) = target {
         if let Some(walking_to) = &mut character.walking_to {
             debug_assert!(walking_to.planned.is_none());
-            walking_to.planned = Some(target_square);
+            walking_to.planned = Some((target_square, direction));
         } else {
             character.walking_to = Some(ControllableTarget {
                 square: target_square,
+                direction,
                 for_this_long: Stopwatch::new(),
                 planned: None,
             });
@@ -195,14 +191,23 @@ fn move_around(
 }
 
 fn animate_movement(
-    mut character: Query<(&mut Controllable, &mut Transform)>,
+    mut character: Query<(
+        &mut Controllable,
+        &mut Transform,
+        &mut TextureAtlasSprite,
+    )>,
     time: Res<Time>,
 ) {
-    let Ok((mut character, mut transform)) = character.get_single_mut() else {
+    use GridDirection::*;
+
+    let Ok((mut character, mut transform, mut sprite)) =
+        character.get_single_mut()
+    else {
         return;
     };
 
-    const STEP_DURATION_SECS: f32 = 0.05; // TODO
+    const STEP_SECS: f32 = 0.05; // TODO
+    const STEP_ALTERNATION_SECS: f32 = 0.25; // TODO
 
     let Some(walking_to) = character.walking_to.as_mut() else {
         return;
@@ -210,8 +215,14 @@ fn animate_movement(
 
     walking_to.for_this_long.tick(time.delta());
 
-    let lerp_factor =
-        walking_to.for_this_long.elapsed_secs() / STEP_DURATION_SECS;
+    let lerp_factor = walking_to.for_this_long.elapsed_secs()
+        / if let Top | Bottom | Left | Right = walking_to.direction {
+            STEP_SECS
+        } else {
+            // we need to walk a bit slower when walking diagonally because
+            // we cover more distance
+            STEP_SECS * 2.0f32.sqrt()
+        };
 
     let to = Apartment::layout().square_to_world_pos(walking_to.square);
 
@@ -220,15 +231,34 @@ fn animate_movement(
 
         transform.translation = add_z_based_on_y(to);
 
-        if let Some(planned) = walking_to.planned.take() {
+        if let Some((new_square, new_direction)) = walking_to.planned.take() {
             walking_to.for_this_long.reset();
-            walking_to.square = planned;
+            walking_to.square = new_square;
+            walking_to.direction = new_direction;
         } else {
+            sprite.index = match walking_to.direction {
+                Bottom => 0,
+                Top => 1,
+                Right | TopRight | BottomRight => 6,
+                Left | TopLeft | BottomLeft => 9,
+            };
+
             character.walking_to = None;
         }
 
         character.walking_from = new_from;
     } else {
+        let extra = (time.elapsed_seconds() / STEP_ALTERNATION_SECS).floor()
+            as usize
+            % 2;
+
+        sprite.index = match walking_to.direction {
+            Top => 2 + extra,
+            Bottom => 4 + extra,
+            Right | TopRight | BottomRight => 7 + extra,
+            Left | TopLeft | BottomLeft => 10 + extra,
+        };
+
         let from =
             Apartment::layout().square_to_world_pos(character.walking_from);
 

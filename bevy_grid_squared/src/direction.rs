@@ -1,5 +1,6 @@
 use crate::Square;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Direction {
     // ↑
     Top,
