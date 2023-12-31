@@ -14,9 +14,17 @@ struct CharacterEntity;
 
 #[derive(Component)]
 struct Controllable {
+    /// If no target then this is the current position.
+    /// If there's a target, current position is interpolated between this and
+    /// the target.
+    walking_from: Square,
+    walking_to: Option<ControllableTarget>,
+}
+
+struct ControllableTarget {
     square: Square,
-    next: Option<Square>,
-    movement_timer: Stopwatch,
+    for_this_long: Stopwatch,
+    planned: Option<Square>,
 }
 
 pub(crate) struct Plugin;
@@ -42,11 +50,15 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let initial_square = square(-10, 5);
+    let translation = add_z_based_on_y(
+        Apartment::layout().square_to_world_pos(initial_square),
+    );
+
     commands.spawn((
         Controllable {
-            square: square(-10, 5),
-            next: None,
-            movement_timer: Stopwatch::new(),
+            walking_from: initial_square,
+            walking_to: None,
         },
         CharacterEntity,
         RenderLayers::layer(CHARACTERS_RENDER_LAYER),
@@ -56,10 +68,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             texture: asset_server.load(assets::DEBUG_CHARACTER),
-            transform: Transform::from_translation(Vec3::new(
-                0.0, 0.0,
-                100.0, // TODO: this must be variable based on movement
-            )),
+            transform: Transform::from_translation(translation),
             ..default()
         },
     ));
@@ -88,7 +97,12 @@ fn move_around(
         return;
     };
 
-    if character.next.is_some() {
+    if character
+        .walking_to
+        .as_ref()
+        .and_then(|to| to.planned)
+        .is_some()
+    {
         return;
     }
 
@@ -136,20 +150,26 @@ fn move_around(
 
     // exhaustive match in case of future changes
     let is_empty = |square: Square| match map.get(&square) {
-        None => true, // TODO: check not out of bounds
+        None => Apartment::contains(square),
         Some(SquareKind::None) => true,
         Some(SquareKind::Object | SquareKind::Wall) => false,
     };
 
+    let plan_from = character
+        .walking_to
+        .as_ref()
+        .map(|to| to.square)
+        .unwrap_or(character.walking_from);
+
     // preferably go there if possible
-    let main_square = character.square.neighbor(main);
+    let main_square = plan_from.neighbor(main);
 
     let target_square = if is_empty(main_square) {
         Some(main_square)
     } else {
         // these are alternatives
-        let a_square = character.square.neighbor(a);
-        let b_square = character.square.neighbor(b);
+        let a_square = plan_from.neighbor(a);
+        let b_square = plan_from.neighbor(b);
 
         match (is_empty(a_square), is_empty(b_square)) {
             (true, false) => Some(a_square),
@@ -160,7 +180,16 @@ fn move_around(
     };
 
     if let Some(target_square) = target_square {
-        character.next = Some(target_square);
+        if let Some(walking_to) = &mut character.walking_to {
+            debug_assert!(walking_to.planned.is_none());
+            walking_to.planned = Some(target_square);
+        } else {
+            character.walking_to = Some(ControllableTarget {
+                square: target_square,
+                for_this_long: Stopwatch::new(),
+                planned: None,
+            });
+        }
     }
 }
 
@@ -174,43 +203,47 @@ fn animate_movement(
 
     const STEP_DURATION_SECS: f32 = 0.05; // TODO
 
-    character.movement_timer.tick(time.delta());
+    let Some(walking_to) = character.walking_to.as_mut() else {
+        return;
+    };
 
-    {
-        let elapsed = character.movement_timer.elapsed_secs();
-        if elapsed > STEP_DURATION_SECS {
-            character.movement_timer.reset();
-            character
-                .movement_timer
-                .tick(Duration::from_secs_f32(elapsed - STEP_DURATION_SECS));
+    walking_to.for_this_long.tick(time.delta());
 
-            character.square =
-                character.next.take().unwrap_or(character.square);
+    let lerp_factor =
+        walking_to.for_this_long.elapsed_secs() / STEP_DURATION_SECS;
+
+    let to = Apartment::layout().square_to_world_pos(walking_to.square);
+
+    if lerp_factor >= 1.0 {
+        let new_from = walking_to.square;
+
+        transform.translation = add_z_based_on_y(to);
+
+        if let Some(planned) = walking_to.planned.take() {
+            walking_to.for_this_long.reset();
+            walking_to.square = planned;
+        } else {
+            character.walking_to = None;
         }
-    }
 
-    {
-        let expected_position =
-            Apartment::layout().square_to_world_pos(character.square);
-        let new_position = transform.translation.lerp(
-            expected_position.extend(0.0),
-            (character.movement_timer.elapsed_secs() / STEP_DURATION_SECS)
-                .min(1.0),
-        );
-        transform.translation = new_position;
-        update_z_based_on_y(&mut transform.translation);
+        character.walking_from = new_from;
+    } else {
+        let from =
+            Apartment::layout().square_to_world_pos(character.walking_from);
+
+        transform.translation = add_z_based_on_y(from.lerp(to, lerp_factor));
     }
 }
 
-fn update_z_based_on_y(t: &mut Vec3) {
+fn add_z_based_on_y(v: Vec2) -> Vec3 {
     // by a lucky chance, we can use 0.0 as the delimiter between the
     // layers
     //
     // this is stupid but simple and since the room does not
     // require anything more complex, let's roll with it
-    if t.y > 0.0 {
-        t.z = zindex::BEDROOM_FURNITURE_MIDDLE - 0.1;
+    v.extend(if v.y > 0.0 {
+        zindex::BEDROOM_FURNITURE_MIDDLE - 0.25
     } else {
-        t.z = zindex::BEDROOM_FURNITURE_MIDDLE + 0.1;
-    }
+        zindex::BEDROOM_FURNITURE_MIDDLE + 0.25
+    })
 }

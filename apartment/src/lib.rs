@@ -61,6 +61,17 @@ impl IntoMap for Apartment {
     }
 }
 
+impl Apartment {
+    fn contains(square: Square) -> bool {
+        let [min_x, max_x, min_y, max_y] = Self::bounds();
+
+        square.x >= min_x
+            && square.x <= max_x
+            && square.y >= min_y
+            && square.y <= max_y
+    }
+}
+
 pub fn add(app: &mut App) {
     info!("Adding apartment to app");
 
