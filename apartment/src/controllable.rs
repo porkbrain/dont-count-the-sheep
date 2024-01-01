@@ -147,16 +147,17 @@ fn move_around(
 ) {
     use GridDirection::*;
 
-    let up = keyboard.pressed(KeyCode::W) || keyboard.pressed(KeyCode::Up);
-    let down = keyboard.pressed(KeyCode::S) || keyboard.pressed(KeyCode::Down);
-    let left = keyboard.pressed(KeyCode::A) || keyboard.pressed(KeyCode::Left);
-    let right =
-        keyboard.pressed(KeyCode::D) || keyboard.pressed(KeyCode::Right);
+    let (up, down, left, right) = {
+        let up = keyboard.pressed(KeyCode::W) || keyboard.pressed(KeyCode::Up);
+        let down =
+            keyboard.pressed(KeyCode::S) || keyboard.pressed(KeyCode::Down);
+        let left =
+            keyboard.pressed(KeyCode::A) || keyboard.pressed(KeyCode::Left);
+        let right =
+            keyboard.pressed(KeyCode::D) || keyboard.pressed(KeyCode::Right);
 
-    let up = up && !down;
-    let down = down && !up;
-    let left = left && !right;
-    let right = right && !left;
+        (up && !down, down && !up, left && !right, right && !left)
+    };
 
     // Ordered by priority.
     let next_steps = if up && left {
