@@ -17,12 +17,12 @@ pub struct Square {
     pub y: i32,
 }
 
-pub fn square(x: i32, y: i32) -> Square {
+pub const fn square(x: i32, y: i32) -> Square {
     Square::new(x, y)
 }
 
 impl Square {
-    pub fn new(x: i32, y: i32) -> Self {
+    pub const fn new(x: i32, y: i32) -> Self {
         Self { x, y }
     }
 }

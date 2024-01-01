@@ -18,6 +18,13 @@ const WINNIE_ATLAS_PADDING: f32 = 1.0;
 const STEP_TIME: Duration = from_millis(50);
 /// How often do we change the animation frame.
 const STEP_ANIMATION_ALTERNATION: Duration = from_millis(250);
+/// When the apartment is loaded, the character is spawned facing this
+/// direction.
+/// TODO: it will depend on the system actually
+const INITIAL_DIRECTION: GridDirection = GridDirection::Bottom;
+/// When the apartment is loaded, the character is spawned at this square.
+/// TODO: it will depend on the system actually
+const INITIAL_SQUARE: Square = square(-10, 5);
 
 /// Useful for despawning entities when leaving the apartment.
 #[derive(Component)]
@@ -30,12 +37,12 @@ struct Controllable {
     /// the target.
     walking_from: Square,
     walking_to: Option<ControllableTarget>,
+    /// Used for animations.
+    direction: GridDirection,
 }
 
 struct ControllableTarget {
     square: Square,
-    /// Used for animations.
-    direction: GridDirection,
     for_this_long: Stopwatch,
     planned: Option<(Square, GridDirection)>,
 }
@@ -73,14 +80,10 @@ fn spawn(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    let initial_square = square(-10, 5);
-    let translation = add_z_based_on_y(
-        Apartment::layout().square_to_world_pos(initial_square),
-    );
-
     commands.spawn((
         Controllable {
-            walking_from: initial_square,
+            direction: INITIAL_DIRECTION,
+            walking_from: INITIAL_SQUARE,
             walking_to: None,
         },
         CharacterEntity,
@@ -99,7 +102,9 @@ fn spawn(
                 index: 0,
                 ..default()
             },
-            transform: Transform::from_translation(translation),
+            transform: Transform::from_translation(add_z_based_on_y(
+                Apartment::layout().square_to_world_pos(INITIAL_SQUARE),
+            )),
             ..default()
         },
     ));
@@ -196,23 +201,29 @@ fn move_around(
 
     let plan_from = character.current_square();
 
-    let target = next_steps.into_iter().find_map(|direction| {
+    let target = next_steps.iter().copied().find_map(|direction| {
         let target = plan_from.neighbor(direction);
         is_available(target).then_some((target, direction))
     });
 
     if let Some((target_square, direction)) = target {
+        character.direction = direction;
+
         if let Some(walking_to) = &mut character.walking_to {
             debug_assert!(walking_to.planned.is_none());
             walking_to.planned = Some((target_square, direction));
         } else {
             character.walking_to = Some(ControllableTarget {
                 square: target_square,
-                direction,
                 for_this_long: Stopwatch::new(),
                 planned: None,
             });
         }
+    } else {
+        // Cannot move anywhere, but would like to? At least direction the
+        // sprite towards the attempted direction.
+
+        character.direction = next_steps[0];
     }
 }
 
@@ -229,14 +240,24 @@ fn animate_movement(
         return;
     };
 
+    let current_direction = character.direction;
+    let standing_still_sprite_index = match current_direction {
+        Bottom => 0,
+        Top => 1,
+        Right | TopRight | BottomRight => 6,
+        Left | TopLeft | BottomLeft => 9,
+    };
+
     let Some(walking_to) = character.walking_to.as_mut() else {
+        sprite.index = standing_still_sprite_index;
+
         return;
     };
 
     walking_to.for_this_long.tick(time.delta());
 
     let lerp_factor = walking_to.for_this_long.elapsed_secs()
-        / if let Top | Bottom | Left | Right = walking_to.direction {
+        / if let Top | Bottom | Left | Right = current_direction {
             STEP_TIME.as_secs_f32()
         } else {
             // we need to walk a bit slower when walking diagonally because
@@ -255,14 +276,9 @@ fn animate_movement(
         if let Some((new_square, new_direction)) = walking_to.planned.take() {
             walking_to.for_this_long.reset();
             walking_to.square = new_square;
-            walking_to.direction = new_direction;
+            character.direction = new_direction;
         } else {
-            sprite.index = match walking_to.direction {
-                Bottom => 0,
-                Top => 1,
-                Right | TopRight | BottomRight => 6,
-                Left | TopLeft | BottomLeft => 9,
-            };
+            sprite.index = standing_still_sprite_index;
 
             character.walking_to = None;
         }
@@ -274,7 +290,7 @@ fn animate_movement(
         .floor() as usize
             % 2;
 
-        sprite.index = match walking_to.direction {
+        sprite.index = match current_direction {
             Top => 2 + extra,
             Bottom => 4 + extra,
             Right | TopRight | BottomRight => 7 + extra,
