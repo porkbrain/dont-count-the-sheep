@@ -1,5 +1,6 @@
 mod black_hole;
 mod consts;
+mod effects;
 mod react;
 mod spawner;
 mod videos;
@@ -51,6 +52,7 @@ impl bevy::app::Plugin for Plugin {
                     follow_curve,
                     react::to_environment,
                     react::to_weather_special.after(weather::loading_special),
+                    effects::propel_bolt,
                     destroyed
                         .after(react::to_weather_special)
                         .after(react::to_environment),

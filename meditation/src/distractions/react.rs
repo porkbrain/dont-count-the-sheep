@@ -1,6 +1,7 @@
 use bevy::render::view::RenderLayers;
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
+use super::effects::get_bolt_bundle_with_respect_to_origin_at_zero;
 use super::{
     consts::*, Distraction, DistractionDestroyedEvent, DistractionEntity,
     DistractionOccluder,
@@ -128,36 +129,72 @@ pub(super) fn to_environment(
         let weather_ray_bath = {
             let d = weather.translation.distance(distraction_pos.translation);
 
-            1.0 / (d / HALF_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE + 1.0)
+            let max = NONE_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE;
+            if d >= max {
+                0.0
+            } else {
+                (-d + max).sqrt() / max.sqrt()
+            }
         };
+        let weather_push_back_force_contrib =
+            weather_ray_bath * PUSH_BACK_FORCE_WEATHER_DISTANCE;
 
         // between [0; 1], how much is the distraction being lit by the climate
         let climate_ray_bath = climate.ray_bath(
             climate_transform.translation.truncate(),
             distraction_pos.translation.truncate(),
         );
+        let climate_push_back_force_contrib =
+            climate_ray_bath * PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS;
 
         //
         // 2.
         //
 
         // positive if pushed away from climate
-        let push_back_force = PUSH_BACK_FORCE_AT_REST
-            + weather_ray_bath * PUSH_BACK_FORCE_WEATHER_DISTANCE
-            + climate_ray_bath * PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS;
+        let push_back_force_with_weather_contrib = PUSH_BACK_FORCE_AT_REST
+            + weather_push_back_force_contrib
+            + climate_push_back_force_contrib;
 
         //
         // 3.
         //
 
-        let crack_chance = CRACK_CHANCE_PER_SECOND * time.delta_seconds();
-
         // TODO: balance, more predictable, clamp the time
-        let should_crack =
-            push_back_force > 45.0 && rand::random::<f32>() < crack_chance;
+        let dice_roll = rand::random::<f32>();
+
+        let should_crack = |push_back_force: f32| {
+            const MAX_FORCE: f32 = PUSH_BACK_FORCE_AT_REST
+                + PUSH_BACK_FORCE_WEATHER_DISTANCE
+                + PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS;
+
+            let crack_chance_per_second = 2.0 * push_back_force / MAX_FORCE;
+            let crack_chance = crack_chance_per_second * time.delta_seconds();
+
+            dice_roll < crack_chance
+        };
+
+        let should_crack_with_weather_contrib =
+            should_crack(push_back_force_with_weather_contrib);
 
         let is_on_last_crack = sprite.index == MAX_CRACKS - 1;
-        if should_crack && !is_on_last_crack {
+        if should_crack_with_weather_contrib && !is_on_last_crack {
+            // no real weather push back force was applied to tip the scales
+            // in favor of cracking
+            let would_ve_cracked_anyway = should_crack(
+                PUSH_BACK_FORCE_AT_REST + climate_push_back_force_contrib,
+            );
+            if !would_ve_cracked_anyway {
+                let bolt_entity = commands
+                    .spawn(get_bolt_bundle_with_respect_to_origin_at_zero(
+                        &asset_server,
+                        distraction_pos.translation.truncate(),
+                        weather.translation.truncate(),
+                    ))
+                    .id();
+                commands.entity(distraction_entity).add_child(bolt_entity);
+            }
+
             sprite.index += 1;
 
             let is_on_second_to_last_crack = sprite.index == MAX_CRACKS - 2;
@@ -203,7 +240,7 @@ pub(super) fn to_environment(
 
                 commands.entity(distraction_entity).add_child(static_entity);
             }
-        } else if should_crack && is_on_last_crack {
+        } else if should_crack_with_weather_contrib && is_on_last_crack {
             //
             // 4.
             //
@@ -230,7 +267,7 @@ pub(super) fn to_environment(
         occluder_pos.translation = (distraction_pos.translation
             - climate_transform.translation)
             .normalize()
-            * push_back_force;
+            * push_back_force_with_weather_contrib;
     }
 
     // increase jitter intensity as more distractions are spawned

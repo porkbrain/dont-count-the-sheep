@@ -26,13 +26,13 @@ fn spawn_video(
     asset_server: Res<AssetServer>,
     mut commands: Commands,
 ) {
-    let fps = 60.0;
+    let fps = 30.0;
 
     commands.spawn(bevy_webp_anim::WebpBundle {
         remote_control: webp
             .add_and_wait_for_asset_load(asset_server.load("bunny.webp"), fps),
         sprite: Sprite {
-            // Because the handle is 1x1 when created and the rendering
+            // Because the handle is empty when created and the rendering
             // pipeline doesn't update the size when the actual video
             // frames are being loaded into the handle, we inform the
             // pipeline about the size.

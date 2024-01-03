@@ -48,7 +48,7 @@ pub(super) fn try_spawn_next(
     }
 
     let spawn_chance_per_second =
-        DISTRACTION_SPAWN_CHANCES_PER_SECOND[spawner.active.len()];
+        SPAWN_CHANCES_PER_SECOND[spawner.active.len()];
     if random::<f32>() > spawn_chance_per_second * time.delta_seconds() {
         return;
     }
@@ -109,10 +109,7 @@ pub(super) fn try_spawn_next(
                 SpatialBundle { ..default() },
                 BackgroundLightScene,
                 LightOccluder2D {
-                    h_size: Vec2::new(
-                        DISTRACTION_OCCLUDER_SIZE,
-                        DISTRACTION_OCCLUDER_SIZE,
-                    ),
+                    h_size: Vec2::new(OCCLUDER_SIZE, OCCLUDER_SIZE),
                 },
             ));
         });

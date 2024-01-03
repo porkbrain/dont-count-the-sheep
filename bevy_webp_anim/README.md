@@ -1,6 +1,6 @@
-# `bevy-webp-anim`
+# `bevy_webp_anim`
 
-Plugin for loading animated webp images in bevy.
+Plugin for loading and playing animated webp images in bevy.
 We make the assumption that any webp file loaded with the provided `WebpLoader` is an animation.
 The actual decoding of the frames is done by the [`image`] crate.
 

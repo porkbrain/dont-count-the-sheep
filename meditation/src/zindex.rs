@@ -18,6 +18,7 @@ pub(crate) const DISTRACTION_VIDEO: f32 = -0.2; // children so start at 0
 pub(crate) const DISTRACTION_STATIC: f32 = -0.1; // children so start at 0
 pub(crate) const DISTRACTION_CRACK: f32 = DISTRACTION_BASE;
 pub(crate) const DISTRACTION_FRAME: f32 = 0.1; // children so start at 0
+pub(crate) const DISTRACTION_BOLT: f32 = 0.2; // children so start at 0
 
 pub(crate) const WEATHER: f32 = 4.0;
 pub(crate) const WEATHER_ARROW: f32 = WEATHER;
