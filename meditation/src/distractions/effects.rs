@@ -50,16 +50,14 @@ pub(crate) mod bolt {
         }
     }
 
+    #[inline]
     pub(crate) fn get_bundle_with_respect_to_origin_at_zero(
         asset_server: &Res<AssetServer>,
-        distraction: Pos2,
-        weather: Pos2,
+        from_with_respect_to_distraction_as_origin: Pos2,
     ) -> impl Bundle {
-        let change_of_basis_from = weather - distraction;
-
         (
             Bolt {
-                from: change_of_basis_from,
+                from: from_with_respect_to_distraction_as_origin,
                 spawned_at: Instant::now(),
             },
             RenderLayers::layer(OBJ_RENDER_LAYER),
@@ -67,12 +65,14 @@ pub(crate) mod bolt {
                 texture: asset_server.load(assets::BOLT),
                 transform: {
                     let mut t = Transform::from_translation(
-                        change_of_basis_from.extend(zindex::DISTRACTION_BOLT),
+                        from_with_respect_to_distraction_as_origin
+                            .extend(zindex::DISTRACTION_BOLT),
                     );
 
                     // we need to rotate the bolt to face the towards
                     // the destination
-                    let a = (Vec2::ZERO - change_of_basis_from)
+                    let a = (Vec2::ZERO
+                        - from_with_respect_to_distraction_as_origin)
                         .angle_between(vec2(1.0, 0.0));
                     t.rotate_z(-a);
 
@@ -141,6 +141,10 @@ pub(crate) mod black_hole {
                 BeginAnimationAtRandom {
                     chance_per_second: BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND,
                     frame_time: BLACK_HOLE_FRAME_TIME,
+                    with_min_life: Some((
+                        BLACK_HOLE_MIN_LIFE,
+                        Stopwatch::new(),
+                    )),
                 },
                 RenderLayers::layer(BG_RENDER_LAYER),
             ))

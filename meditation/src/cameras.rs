@@ -1,6 +1,3 @@
-//! TODO: despawn cameras including the lighting one
-//! perhaps for the lighting one we can use `T = ()` and keep it
-
 use bevy::{
     core_pipeline::clear_color::ClearColorConfig,
     render::{camera::RenderTarget, view::RenderLayers},

@@ -93,7 +93,12 @@ pub(super) fn to_environment(
         ),
     >,
     mut distractions: Query<
-        (Entity, &Distraction, &Transform, &mut TextureAtlasSprite),
+        (
+            Entity,
+            &mut Distraction,
+            &Transform,
+            &mut TextureAtlasSprite,
+        ),
         (
             Without<Climate>,
             Without<Weather>,
@@ -116,7 +121,7 @@ pub(super) fn to_environment(
     };
 
     for (distraction_id, mut occluder_pos) in distraction_occluders.iter_mut() {
-        let (distraction_entity, distraction, distraction_pos, mut sprite) =
+        let (distraction_entity, mut distraction, distraction_pos, mut sprite) =
             distractions
                 .get_mut(distraction_id.get())
                 .expect("Each occluder should have a distraction parent");
@@ -152,9 +157,11 @@ pub(super) fn to_environment(
         //
 
         // positive if pushed away from climate
-        let push_back_force_with_weather_contrib = PUSH_BACK_FORCE_AT_REST
-            + weather_push_back_force_contrib
-            + climate_push_back_force_contrib;
+        let push_back_force_without_weather_contrib =
+            PUSH_BACK_FORCE_AT_REST + climate_push_back_force_contrib;
+        let push_back_force_with_weather_contrib =
+            push_back_force_without_weather_contrib
+                + weather_push_back_force_contrib;
 
         //
         // 3.
@@ -181,18 +188,22 @@ pub(super) fn to_environment(
         if should_crack_with_weather_contrib && !is_on_last_crack {
             // no real weather push back force was applied to tip the scales
             // in favor of cracking
-            let would_ve_cracked_anyway = should_crack(
-                PUSH_BACK_FORCE_AT_REST + climate_push_back_force_contrib,
-            );
+            let would_ve_cracked_anyway =
+                should_crack(push_back_force_without_weather_contrib);
             if !would_ve_cracked_anyway {
+                // with respect to origin at zero
+                let change_of_basis_from = weather.translation.truncate()
+                    - distraction_pos.translation.truncate();
+
                 let bolt_entity = commands
                     .spawn(get_bundle_with_respect_to_origin_at_zero(
                         &asset_server,
-                        distraction_pos.translation.truncate(),
-                        weather.translation.truncate(),
+                        change_of_basis_from,
                     ))
                     .id();
                 commands.entity(distraction_entity).add_child(bolt_entity);
+
+                distraction.jitter += change_of_basis_from.abs().normalize();
             }
 
             sprite.index += 1;

@@ -101,6 +101,34 @@ pub(super) fn try_spawn_next(
                 },
             ));
 
+            parent.spawn((
+                RenderLayers::layer(OBJ_RENDER_LAYER),
+                SpriteSheetBundle {
+                    texture_atlas: texture_atlases.add(
+                        TextureAtlas::from_grid(
+                            asset_server.load(assets::TENTACLE_ATLAS),
+                            vec2(
+                                DISTRACTION_SPRITE_SIZE,
+                                DISTRACTION_SPRITE_SIZE,
+                            ),
+                            TENTACLE_ATLAS_COLS,
+                            1,
+                            None,
+                            None,
+                        ),
+                    ),
+                    sprite: TextureAtlasSprite::new(
+                        random::<usize>() % TENTACLE_ATLAS_COLS,
+                    ),
+                    transform: Transform::from_translation(Vec3::new(
+                        0.0,
+                        0.0,
+                        zindex::DISTRACTION_TENTACLES,
+                    )),
+                    ..default()
+                },
+            ));
+
             // TODO: add sound
             video.spawn(parent, &mut webp, &asset_server);
 

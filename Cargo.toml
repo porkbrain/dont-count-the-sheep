@@ -7,7 +7,6 @@ members = [
     "apartment",
     "bevy_grid_squared",
     "bevy_magic_light_2d",
-    "bevy_webp_anim",
     "common/assets",
     "common/layout",
     "common/physics",
@@ -23,7 +22,7 @@ bevy = "0.12"
 bevy_grid_squared = { path = "bevy_grid_squared", features = ["serde"] }
 bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
 bevy_pixel_camera = "0.12"
-bevy_webp_anim = { path = "bevy_webp_anim" }
+bevy_webp_anim = "0.1"
 common_assets = { path = "common/assets" }
 common_layout = { path = "common/layout" }
 common_physics = { path = "common/physics" }

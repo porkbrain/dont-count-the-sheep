@@ -11,7 +11,7 @@ mod consts {
 
     pub(crate) const BIG_FONT_SIZE: f32 = 45.0;
     pub(crate) const SMALL_FONT_SIZE: f32 = BIG_FONT_SIZE - 10.0;
-    pub(crate) const FONT: &str = "fonts/fffforwa.ttf";
+    pub(crate) const FONT: &str = "fonts/shaperka.ttf";
     /// Used to highlight some text.
     pub(crate) const HIGHLIGHT_COLOR: &str = "#ffea63";
 

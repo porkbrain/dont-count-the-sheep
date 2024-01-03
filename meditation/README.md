@@ -35,17 +35,3 @@ The blue light (see section [Lighting][#lighting] below) also slows down the tem
 The light transitions between two colors.
 Every time you press `Shift`, the light changes.
 From bright yellowy which burns the distraction faster, to dark blue which slows the distractions down so that you can collect them more easily.
-
-## Other
-
-The black hole should have some minimum life time.
-
-When two screens meet, one or both of them should become 75% or 50% transparent respectively.
-
-Every time there's a crack that wouldn't be without weather, do a little animation of
-a lightning strike coming from weather to the crack.
-Since weather only affects small distances, the lightning could always be short and not look too distorted.
-
-When showing score, crack the egg on record.
-
-Reap rewards based on score.

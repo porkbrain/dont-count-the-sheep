@@ -6,8 +6,10 @@ mod videos;
 
 use bevy::time::Stopwatch;
 use common_physics::PoissonsEquationUpdateEvent;
+use rand::random;
 use videos::Video;
 
+use self::consts::{JITTER_ON_HIT_INTENSITY, JITTER_ON_HIT_TIME_PENALTY};
 use crate::{gravity::Gravity, path::LevelPath, prelude::*, weather};
 
 #[derive(Component)]
@@ -16,6 +18,10 @@ pub(crate) struct Distraction {
     current_path_since: Stopwatch,
     path: LevelPath,
     transition_into: Option<LevelPath>,
+    /// Applies random jitter in a direction.
+    /// When a distraction cracks, it jitters in a direction of where the blow
+    /// came if it was caused by the weather.
+    jitter: Vec2,
 }
 #[derive(Component)]
 struct DistractionOccluder;
@@ -89,8 +95,10 @@ fn follow_curve(
     mut distraction: Query<(&mut Distraction, &mut Transform)>,
     time: Res<Time>,
 ) {
+    let dt = time.delta();
+
     for (mut distraction, mut transform) in distraction.iter_mut() {
-        distraction.current_path_since.tick(time.delta());
+        distraction.current_path_since.tick(dt);
 
         let z = transform.translation.z;
         let (seg_index, seg_t) = distraction.path_segment();
@@ -112,7 +120,18 @@ fn follow_curve(
 
         let seg = &distraction.path.segments()[seg_index];
 
-        transform.translation = seg.position(seg_t).extend(z);
+        let random_sign = if random::<bool>() { 1.0 } else { -1.0 };
+        let jitter = distraction.jitter * random_sign * JITTER_ON_HIT_INTENSITY;
+        let expected_position = seg.position(seg_t) + jitter;
+
+        transform.translation = expected_position.extend(z);
+        // dampen the jitter over time
+        distraction.jitter = {
+            let j = distraction.jitter
+                * (1.0 - JITTER_ON_HIT_TIME_PENALTY * dt.as_secs_f32());
+
+            j.max(Vec2::ZERO)
+        };
     }
 }
 
@@ -179,6 +198,7 @@ impl Distraction {
             path: LevelPath::random_intro(),
             current_path_since: Stopwatch::new(),
             transition_into: None,
+            jitter: Vec2::ZERO,
         }
     }
 }

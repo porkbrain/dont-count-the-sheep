@@ -28,6 +28,8 @@ pub(crate) const CRACK_ATLAS: &str =
 pub(crate) const DISTRACTION_FRAME: &str =
     "meditation/textures/distractions/frame.png";
 pub(crate) const BOLT: &str = "meditation/textures/distractions/bolt.png";
+pub(crate) const TENTACLE_ATLAS: &str =
+    "meditation/textures/distractions/tentacle_atlas.png";
 
 pub(crate) const MENU_BOX: &str = "meditation/ui/menu_box.png";
 pub(crate) const FACE_ON_CONTINUE: &str = "meditation/ui/face_on_continue.png";

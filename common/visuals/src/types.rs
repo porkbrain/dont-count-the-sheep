@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy::{prelude::*, utils::Instant};
+use bevy::{prelude::*, time::Stopwatch, utils::Instant};
 
 #[derive(Component)]
 pub struct Animation {
@@ -35,10 +35,11 @@ pub enum AnimationEnd {
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(pub(crate) Timer);
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct BeginAnimationAtRandom {
     pub chance_per_second: f32,
     pub frame_time: Duration,
+    pub with_min_life: Option<(Duration, Stopwatch)>,
 }
 
 /// Shows entity at random for a given duration.

@@ -52,13 +52,23 @@ pub fn advance_animation(
 /// [`AnimationTimer`] component to the entity.
 pub fn begin_animation_at_random(
     mut query: Query<
-        (Entity, &BeginAnimationAtRandom, &mut Visibility),
+        (Entity, &mut BeginAnimationAtRandom, &mut Visibility),
         Without<AnimationTimer>,
     >,
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    for (entity, settings, mut visibility) in &mut query {
+    for (entity, mut settings, mut visibility) in &mut query {
+        if let Some((min_life, ref mut stopwatch)) =
+            settings.with_min_life.as_mut()
+        {
+            stopwatch.tick(time.delta());
+            if stopwatch.elapsed() < *min_life {
+                continue;
+            }
+        }
+        settings.with_min_life = None;
+
         if rand::random::<f32>()
             < settings.chance_per_second * time.delta_seconds()
         {

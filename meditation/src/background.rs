@@ -108,6 +108,7 @@ fn spawn_shooting_star(
         BeginAnimationAtRandom {
             chance_per_second: SHOOTING_STAR_CHANCE_PER_SECOND,
             frame_time: SHOOTING_STAR_FRAME_TIME,
+            ..default()
         },
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(

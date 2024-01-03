@@ -1072,6 +1072,8 @@ dependencies = [
 [[package]]
 name = "bevy_webp_anim"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b417a81bcc21674db13b5690bf58e3d347993073b89adbd7d33d7c1209b0b717"
 dependencies = [
  "bevy",
  "image",
