@@ -1,23 +1,30 @@
-use bevy::prelude::*;
-use bevy::render::render_resource::{StorageBuffer, UniformBuffer};
-use bevy::render::renderer::{RenderDevice, RenderQueue};
-use bevy::render::Extract;
+use bevy::{
+    prelude::*,
+    render::{
+        render_resource::{StorageBuffer, UniformBuffer},
+        renderer::{RenderDevice, RenderQueue},
+        Extract,
+    },
+};
 use rand::{thread_rng, Rng};
 
-use crate::gi::constants::GI_SCREEN_PROBE_SIZE;
-use crate::gi::resource::ComputedTargetSizes;
-use crate::gi::types::{
-    LightOccluder2D, OmniLightSource2D, SkylightLight2D, SkylightMask2D,
-};
-use crate::gi::types_gpu::{
-    GpuCameraParams, GpuLightOccluder2D, GpuLightOccluderBuffer,
-    GpuLightPassParams, GpuLightSourceBuffer, GpuOmniLightSource,
-    GpuProbeDataBuffer, GpuSkylightMaskBuffer, GpuSkylightMaskData,
-};
-use crate::prelude::BevyMagicLight2DSettings;
-use crate::SceneCamera;
-
 use super::LightScene;
+use crate::{
+    gi::{
+        constants::GI_SCREEN_PROBE_SIZE,
+        resource::ComputedTargetSizes,
+        types::{
+            LightOccluder2D, OmniLightSource2D, SkylightLight2D, SkylightMask2D,
+        },
+        types_gpu::{
+            GpuCameraParams, GpuLightOccluder2D, GpuLightOccluderBuffer,
+            GpuLightPassParams, GpuLightSourceBuffer, GpuOmniLightSource,
+            GpuProbeDataBuffer, GpuSkylightMaskBuffer, GpuSkylightMaskData,
+        },
+    },
+    prelude::BevyMagicLight2DSettings,
+    SceneCamera,
+};
 
 #[rustfmt::skip]
 #[derive(Default, Resource)]

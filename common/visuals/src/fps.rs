@@ -2,8 +2,10 @@
 //!
 //! [https://bevy-cheatbook.github.io/cookbook/print-framerate.html]
 
-use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
-use bevy::prelude::*;
+use bevy::{
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+    prelude::*,
+};
 
 /// Marker to find the container entity so we can show/hide the FPS counter
 #[derive(Component)]

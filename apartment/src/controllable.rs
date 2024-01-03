@@ -1,11 +1,13 @@
 use bevy::{render::view::RenderLayers, sprite::Anchor};
-use bevy_grid_squared::direction::Direction as GridDirection;
-use bevy_grid_squared::{square, Square};
+use bevy_grid_squared::{
+    direction::Direction as GridDirection, square, Square,
+};
 use common_layout::{IntoMap, SquareKind};
 
-use crate::layout::zones;
 use crate::{
-    cameras::CHARACTERS_RENDER_LAYER, layout::add_z_based_on_y, prelude::*,
+    cameras::CHARACTERS_RENDER_LAYER,
+    layout::{add_z_based_on_y, zones},
+    prelude::*,
     Apartment,
 };
 

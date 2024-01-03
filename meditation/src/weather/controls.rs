@@ -1,11 +1,13 @@
+use std::f32::consts::PI;
+
+use bevy::time::Stopwatch;
+use common_physics::PoissonsEquation;
+
 use super::{anim::SparkEffect, consts::*, mode, ActionEvent};
 use crate::{
     gravity::{ChangeOfBasis, Gravity},
     prelude::*,
 };
-use bevy::time::Stopwatch;
-use common_physics::PoissonsEquation;
-use std::f32::consts::PI;
 
 /// Controls when in normal mode.
 pub(super) fn normal(

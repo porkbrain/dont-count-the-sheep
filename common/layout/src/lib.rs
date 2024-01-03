@@ -2,12 +2,12 @@
 //! Where can the character go? Where are the walls? Where are the immovable
 //! objects?
 
-use bevy::prelude::*;
-use bevy::utils::hashbrown::HashMap;
+use std::marker::PhantomData;
+
+use bevy::{prelude::*, utils::hashbrown::HashMap};
 use bevy_grid_squared::{Square, SquareLayout};
 use common_assets::RonLoader;
 use serde::{Deserialize, Serialize};
-use std::marker::PhantomData;
 
 pub fn register<T: IntoMap, S: States>(
     app: &mut App,
@@ -126,8 +126,9 @@ impl<T: IntoMap> Map<T> {
 
 #[cfg(feature = "dev")]
 mod map_maker {
-    use super::*;
     use bevy::window::PrimaryWindow;
+
+    use super::*;
 
     #[derive(Component)]
     pub(super) struct SquareSprite;

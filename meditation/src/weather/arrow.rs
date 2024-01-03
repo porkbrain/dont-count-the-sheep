@@ -6,12 +6,11 @@ use std::f32::consts::PI;
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use main_game_lib::{VISIBLE_HEIGHT, VISIBLE_WIDTH};
 
+use super::{consts::MAX_ARROW_PUSH_BACK, Weather, WeatherEntity};
 use crate::{
     cameras::BackgroundLightScene, prelude::*,
     weather::consts::ARROW_DISTANCE_FROM_EDGE,
 };
-
-use super::{consts::MAX_ARROW_PUSH_BACK, Weather, WeatherEntity};
 
 /// The arrow is lit by a light source.
 const LIGHT_COLOR: &str = "#d9ff75";

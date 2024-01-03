@@ -1,10 +1,12 @@
 //! Creates a field that satisfies the poisson equation.
 //! The field must be at least 3x3, and the edges are set to 0.
 
-use crate::prelude::*;
 use common_physics::{GridCoords, PoissonsEquation};
 
-use crate::consts::{GRAVITY_STAGE_HEIGHT, GRAVITY_STAGE_WIDTH};
+use crate::{
+    consts::{GRAVITY_STAGE_HEIGHT, GRAVITY_STAGE_WIDTH},
+    prelude::*,
+};
 
 pub(crate) const OPTIMAL_OVERCORRECTION_FACTOR: f32 = 1.9926682;
 
@@ -83,9 +85,8 @@ impl common_physics::WorldDimensions for ChangeOfBasis {
 
 #[cfg(test)]
 mod tests {
-    use crate::consts::{GRAVITY_STAGE_HEIGHT, GRAVITY_STAGE_WIDTH};
-
     use super::*;
+    use crate::consts::{GRAVITY_STAGE_HEIGHT, GRAVITY_STAGE_WIDTH};
 
     #[test]
     fn it_translates_from_canvas_to_grid() {

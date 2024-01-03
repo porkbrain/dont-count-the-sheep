@@ -11,11 +11,11 @@ mod mode;
 mod sprite;
 
 use bevy::render::view::RenderLayers;
+use bevy_magic_light_2d::gi::types::LightOccluder2D;
 pub(crate) use controls::loading_special;
 
 use self::consts::*;
 use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
-use bevy_magic_light_2d::gi::types::LightOccluder2D;
 
 #[derive(Event, Clone, Copy)]
 pub(crate) enum ActionEvent {

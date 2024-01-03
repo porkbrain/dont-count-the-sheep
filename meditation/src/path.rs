@@ -13,9 +13,9 @@
 //! Then I scale them up by 4 to get the final result.
 
 use bevy::math::cubic_splines::CubicCurve;
+use LevelPath::*;
 
 use crate::prelude::*;
-use LevelPath::*;
 
 /// Scales up from an imaginary 128x72 grid to the game's 640x360 grid.
 const F: f32 = 4.65;

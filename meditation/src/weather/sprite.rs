@@ -1,6 +1,7 @@
+use std::time::{Duration, Instant};
+
 use super::{consts, ActionEvent};
 use crate::prelude::*;
-use std::time::{Duration, Instant};
 
 #[derive(Component)]
 pub(super) struct Transition {

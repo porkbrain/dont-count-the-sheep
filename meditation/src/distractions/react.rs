@@ -1,13 +1,13 @@
 use bevy::render::view::RenderLayers;
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
-use super::effects::get_bolt_bundle_with_respect_to_origin_at_zero;
 use super::{
-    consts::*, Distraction, DistractionDestroyedEvent, DistractionEntity,
+    consts::*, effects::bolt::get_bundle_with_respect_to_origin_at_zero,
+    Distraction, DistractionDestroyedEvent, DistractionEntity,
     DistractionOccluder,
 };
-use crate::cameras::OBJ_RENDER_LAYER;
 use crate::{
+    cameras::OBJ_RENDER_LAYER,
     climate::Climate,
     prelude::*,
     weather::{self, Weather},
@@ -186,7 +186,7 @@ pub(super) fn to_environment(
             );
             if !would_ve_cracked_anyway {
                 let bolt_entity = commands
-                    .spawn(get_bolt_bundle_with_respect_to_origin_at_zero(
+                    .spawn(get_bundle_with_respect_to_origin_at_zero(
                         &asset_server,
                         distraction_pos.translation.truncate(),
                         weather.translation.truncate(),

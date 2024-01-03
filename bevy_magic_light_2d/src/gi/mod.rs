@@ -1,29 +1,37 @@
 use std::marker::PhantomData;
 
-use bevy::asset::load_internal_asset;
-use bevy::prelude::*;
-use bevy::render::extract_resource::ExtractResourcePlugin;
-use bevy::render::render_graph::{self, RenderGraph};
-use bevy::render::render_resource::*;
-use bevy::render::renderer::RenderContext;
-use bevy::render::{Render, RenderApp, RenderSet};
-use bevy::sprite::Material2dPlugin;
-use bevy::window::{PrimaryWindow, WindowResized};
+use bevy::{
+    asset::load_internal_asset,
+    prelude::*,
+    render::{
+        extract_resource::ExtractResourcePlugin,
+        render_graph::{self, RenderGraph},
+        render_resource::*,
+        renderer::RenderContext,
+        Render, RenderApp, RenderSet,
+    },
+    sprite::Material2dPlugin,
+    window::{PrimaryWindow, WindowResized},
+};
 
 use self::pipeline::GiTargets;
-use crate::gi::compositing::{
-    setup_post_processing_camera, CameraTargets, PostProcessingMaterial,
+use crate::{
+    gi::{
+        compositing::{
+            setup_post_processing_camera, CameraTargets, PostProcessingMaterial,
+        },
+        pipeline::{
+            system_queue_bind_groups, system_setup_gi_pipeline,
+            GiTargetsWrapper, LightPassPipeline, LightPassPipelineBindGroups,
+        },
+        pipeline_assets::{
+            system_extract_pipeline_assets, system_prepare_pipeline_assets,
+            LightPassPipelineAssets,
+        },
+        resource::ComputedTargetSizes,
+    },
+    prelude::BevyMagicLight2DSettings,
 };
-use crate::gi::pipeline::{
-    system_queue_bind_groups, system_setup_gi_pipeline, GiTargetsWrapper,
-    LightPassPipeline, LightPassPipelineBindGroups,
-};
-use crate::gi::pipeline_assets::{
-    system_extract_pipeline_assets, system_prepare_pipeline_assets,
-    LightPassPipelineAssets,
-};
-use crate::gi::resource::ComputedTargetSizes;
-use crate::prelude::BevyMagicLight2DSettings;
 
 mod constants;
 mod pipeline;

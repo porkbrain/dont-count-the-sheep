@@ -1,11 +1,10 @@
-use crate::cameras::BG_RENDER_LAYER;
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::{Square, SquareLayout};
 use common_layout::IntoMap;
 use lazy_static::lazy_static;
 use main_game_lib::{vec2_ext::Vec2Ext, PIXEL_ZOOM};
 
-use crate::prelude::*;
+use crate::{cameras::BG_RENDER_LAYER, prelude::*};
 
 lazy_static! {
     static ref LAYOUT: SquareLayout = SquareLayout {

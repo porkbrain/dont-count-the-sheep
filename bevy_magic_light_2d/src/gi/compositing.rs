@@ -1,23 +1,25 @@
 use std::marker::PhantomData;
 
-use bevy::core_pipeline::bloom::BloomSettings;
-use bevy::pbr::{MAX_CASCADES_PER_LIGHT, MAX_DIRECTIONAL_LIGHTS};
-use bevy::prelude::*;
-use bevy::reflect::TypePath;
-use bevy::render::mesh::MeshVertexBufferLayout;
-use bevy::render::render_resource::{
-    AsBindGroup, Extent3d, RenderPipelineDescriptor, ShaderDefVal, ShaderRef,
-    SpecializedMeshPipelineError, TextureDescriptor, TextureDimension,
-    TextureFormat, TextureUsages,
+use bevy::{
+    core_pipeline::bloom::BloomSettings,
+    pbr::{MAX_CASCADES_PER_LIGHT, MAX_DIRECTIONAL_LIGHTS},
+    prelude::*,
+    reflect::TypePath,
+    render::{
+        mesh::MeshVertexBufferLayout,
+        render_resource::{
+            AsBindGroup, Extent3d, RenderPipelineDescriptor, ShaderDefVal,
+            ShaderRef, SpecializedMeshPipelineError, TextureDescriptor,
+            TextureDimension, TextureFormat, TextureUsages,
+        },
+        texture::BevyDefault,
+        view::RenderLayers,
+    },
+    sprite::{Material2d, Material2dKey, MaterialMesh2dBundle},
 };
-use bevy::render::texture::BevyDefault;
-use bevy::render::view::RenderLayers;
-use bevy::sprite::{Material2d, Material2dKey, MaterialMesh2dBundle};
-
-use crate::gi::pipeline::GiTargetsWrapper;
-use crate::gi::resource::ComputedTargetSizes;
 
 use super::LightScene;
+use crate::gi::{pipeline::GiTargetsWrapper, resource::ComputedTargetSizes};
 
 #[derive(Component)]
 pub struct PostProcessingQuad;

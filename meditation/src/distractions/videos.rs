@@ -1,4 +1,3 @@
-use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
 use bevy::render::view::RenderLayers;
 use bevy_webp_anim::WebpAnimator;
 use rand::random;
@@ -7,6 +6,7 @@ use super::{
     consts::{VIDEO_FPS, VIDEO_SIZE},
     DistractionEntity,
 };
+use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
 
 /// This gets shuffled so order doesn't matter.
 pub(crate) const ALL_VIDEOS: [Video; 10] = [

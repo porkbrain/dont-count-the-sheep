@@ -1,10 +1,11 @@
-use bevy::math::Vec3Swizzles;
-use bevy::prelude::{Mat4, Vec2, Vec3, Vec4};
-use bevy::render::render_resource::ShaderType;
-use bevy::transform::components::GlobalTransform;
+use bevy::{
+    math::Vec3Swizzles,
+    prelude::{Mat4, Vec2, Vec3, Vec4},
+    render::render_resource::ShaderType,
+    transform::components::GlobalTransform,
+};
 
-use crate::gi::constants::GI_SCREEN_PROBE_SIZE;
-use crate::gi::types::OmniLightSource2D;
+use crate::gi::{constants::GI_SCREEN_PROBE_SIZE, types::OmniLightSource2D};
 
 #[rustfmt::skip]
 #[derive(Default, Clone, ShaderType)]

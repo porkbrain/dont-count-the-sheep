@@ -1,8 +1,8 @@
-pub use crate::GlobalGameState;
-pub use bevy::math::vec2;
-pub use bevy::prelude::*;
-pub use bevy::time::Stopwatch;
 pub use std::time::Duration;
+
+pub use bevy::{math::vec2, prelude::*, time::Stopwatch};
+
+pub use crate::GlobalGameState;
 
 pub type Pos2 = Vec2;
 

@@ -1,4 +1,3 @@
-mod black_hole;
 mod consts;
 mod effects;
 mod react;
@@ -7,10 +6,9 @@ mod videos;
 
 use bevy::time::Stopwatch;
 use common_physics::PoissonsEquationUpdateEvent;
-
-use crate::path::LevelPath;
-use crate::{gravity::Gravity, prelude::*, weather};
 use videos::Video;
+
+use crate::{gravity::Gravity, path::LevelPath, prelude::*, weather};
 
 #[derive(Component)]
 pub(crate) struct Distraction {
@@ -52,7 +50,7 @@ impl bevy::app::Plugin for Plugin {
                     follow_curve,
                     react::to_environment,
                     react::to_weather_special.after(weather::loading_special),
-                    effects::propel_bolt,
+                    effects::bolt::propel,
                     destroyed
                         .after(react::to_weather_special)
                         .after(react::to_environment),
@@ -155,7 +153,7 @@ fn destroyed(
         }
 
         trace!("Spawning black hole");
-        black_hole::spawn(
+        effects::black_hole::spawn(
             &mut commands,
             &asset_server,
             &mut texture_atlases,

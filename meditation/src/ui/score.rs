@@ -5,9 +5,8 @@ use std::{
 
 use bevy::time::Stopwatch;
 
-use crate::{climate::ClimateLightMode, prelude::*};
-
 use super::consts::*;
+use crate::{climate::ClimateLightMode, prelude::*};
 
 #[derive(Component)]
 pub(crate) struct Score {

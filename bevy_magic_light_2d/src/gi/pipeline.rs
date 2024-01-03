@@ -1,22 +1,28 @@
 use std::marker::PhantomData;
 
-use bevy::prelude::*;
-use bevy::render::extract_resource::ExtractResource;
-use bevy::render::render_asset::RenderAssets;
-use bevy::render::render_resource::*;
-use bevy::render::renderer::RenderDevice;
-use bevy::render::texture::{
-    ImageAddressMode, ImageFilterMode, ImageSampler, ImageSamplerDescriptor,
-};
-
-use crate::gi::pipeline_assets::LightPassPipelineAssets;
-use crate::gi::resource::ComputedTargetSizes;
-use crate::gi::types_gpu::{
-    GpuCameraParams, GpuLightOccluderBuffer, GpuLightPassParams,
-    GpuLightSourceBuffer, GpuProbeDataBuffer, GpuSkylightMaskBuffer,
+use bevy::{
+    prelude::*,
+    render::{
+        extract_resource::ExtractResource,
+        render_asset::RenderAssets,
+        render_resource::*,
+        renderer::RenderDevice,
+        texture::{
+            ImageAddressMode, ImageFilterMode, ImageSampler,
+            ImageSamplerDescriptor,
+        },
+    },
 };
 
 use super::LightScene;
+use crate::gi::{
+    pipeline_assets::LightPassPipelineAssets,
+    resource::ComputedTargetSizes,
+    types_gpu::{
+        GpuCameraParams, GpuLightOccluderBuffer, GpuLightPassParams,
+        GpuLightSourceBuffer, GpuProbeDataBuffer, GpuSkylightMaskBuffer,
+    },
+};
 
 const SDF_TARGET_FORMAT: TextureFormat = TextureFormat::R16Float;
 const SS_PROBE_TARGET_FORMAT: TextureFormat = TextureFormat::Rgba16Float;

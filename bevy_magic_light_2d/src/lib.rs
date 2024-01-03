@@ -3,10 +3,10 @@
 pub mod gi;
 pub mod prelude;
 
-pub use gi::Plugin;
+use std::marker::PhantomData;
 
 use bevy::ecs::component::Component;
-use std::marker::PhantomData;
+pub use gi::Plugin;
 
 #[derive(Component, Default)]
 pub struct SceneCamera<T>(PhantomData<T>);

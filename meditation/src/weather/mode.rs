@@ -3,9 +3,8 @@ use bevy::{
     time::{Stopwatch, Time},
 };
 
-use crate::prelude::{stopwatch_at, Radians};
-
 use super::consts::{MIN_DASH_DELAY, MIN_DIP_DELAY, MIN_JUMP_DELAY};
+use crate::prelude::{stopwatch_at, Radians};
 
 #[derive(Component)]
 pub(super) struct Normal {

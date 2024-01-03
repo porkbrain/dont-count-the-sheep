@@ -2,7 +2,6 @@ use bevy::prelude::*;
 
 #[cfg(feature = "poissons-eq-visualization")]
 use crate::{GridCoords, VectorArrow, WorldDimensions};
-
 use crate::{PoissonsEquation, PoissonsEquationUpdateEvent};
 
 /// Run it on [`Last`] schedule.

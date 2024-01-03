@@ -2,9 +2,8 @@ use main_game_lib::{
     GlobalGameStateTransition, GlobalGameStateTransitionStack, PIXEL_ZOOM,
 };
 
-use crate::prelude::*;
-
 use super::consts::*;
+use crate::prelude::*;
 
 #[derive(Component)]
 pub(super) struct Menu {

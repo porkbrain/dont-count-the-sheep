@@ -1,15 +1,13 @@
 use std::{collections::BTreeMap, marker::PhantomData};
 
-use bevy::render::render_resource::{
-    Extent3d, TextureDimension, TextureFormat,
+use bevy::{
+    prelude::*,
+    render::render_resource::{Extent3d, TextureDimension, TextureFormat},
+    utils::Uuid,
 };
-use bevy::{prelude::*, utils::Uuid};
-use image::codecs::webp::WebPDecoder;
-use image::AnimationDecoder;
+use image::{codecs::webp::WebPDecoder, AnimationDecoder};
 use tokio::sync::mpsc::{Receiver, Sender};
-
-pub use tokio::runtime;
-pub use tokio::sync::mpsc::error::TryRecvError;
+pub use tokio::{runtime, sync::mpsc::error::TryRecvError};
 
 /// See [`WebpAnimator::prepared_frames_count`].
 pub const DEFAULT_PREPARED_FRAMES_COUNT: usize = 16;

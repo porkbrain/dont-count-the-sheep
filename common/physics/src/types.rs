@@ -1,9 +1,9 @@
 use std::ops::AddAssign;
 
+use bevy::prelude::*;
+
 #[cfg(feature = "poissons-eq")]
 pub use crate::poissons_equation::types::*;
-
-use bevy::prelude::*;
 
 #[derive(Default, Deref, DerefMut, Debug, Clone, Copy, PartialEq)]
 pub struct Radians(f32);

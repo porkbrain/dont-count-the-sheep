@@ -4,10 +4,9 @@ pub mod loader;
 pub mod systems;
 pub mod types;
 
+use bevy::{app::App, asset::AssetApp};
 pub use loader::*;
 pub use types::*;
-
-use bevy::{app::App, asset::AssetApp};
 
 /// Registers the webp asset type.
 ///

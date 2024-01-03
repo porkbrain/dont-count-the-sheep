@@ -45,9 +45,8 @@ impl<I> ExactSizeIterator for ExactSizeSquareIterator<I> where
 
 #[cfg(test)]
 mod tests {
-    use crate::square;
-
     use super::*;
+    use crate::square;
 
     #[test]
     fn it_has_correct_size() {
