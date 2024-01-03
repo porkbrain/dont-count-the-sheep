@@ -5,6 +5,7 @@ use crate::{
 };
 use bevy::{render::view::RenderLayers, time::Stopwatch, utils::HashSet};
 use bevy_magic_light_2d::gi::types::LightOccluder2D;
+use bevy_webp_anim::WebpAnimator;
 use rand::{random, seq::SliceRandom};
 
 use super::{
@@ -31,6 +32,7 @@ pub(super) struct Spawner {
 /// nothing.
 pub(super) fn try_spawn_next(
     mut spawner: ResMut<Spawner>,
+    mut webp: ResMut<WebpAnimator>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut commands: Commands,
@@ -99,9 +101,8 @@ pub(super) fn try_spawn_next(
                 },
             ));
 
-            // TODO: vary videos, add sound
-            // TODO: preload frames and share them between videos
-            video.spawn(parent, &asset_server);
+            // TODO: add sound
+            video.spawn(parent, &mut webp, &asset_server);
 
             parent.spawn((
                 DistractionOccluder,

@@ -10,7 +10,7 @@ use crate::prelude::*;
 lazy_static! {
     static ref LAYOUT: SquareLayout = SquareLayout {
         square_size: 4.0,
-        origin: vec2(356.0, 175.0).from_top_left_into_centered(),
+        origin: vec2(356.0, 175.0).as_top_left_into_centered(),
     };
 }
 
@@ -116,7 +116,7 @@ impl IntoMap for Apartment {
 
     fn cursor_position_to_square(p: Vec2) -> Square {
         Self::layout()
-            .world_pos_to_square((p / PIXEL_ZOOM).from_top_left_into_centered())
+            .world_pos_to_square((p / PIXEL_ZOOM).as_top_left_into_centered())
     }
 }
 

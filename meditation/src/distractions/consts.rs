@@ -16,6 +16,9 @@ pub(crate) const MAX_VERBAL_VIDEOS_AT_ONCE: usize = 1;
 pub(crate) const WEATHER_SPECIAL_HITBOX_RADIUS: f32 = 35.0;
 /// The actual pixel size of the image.
 pub(crate) const DISTRACTION_SPRITE_SIZE: f32 = 100.0;
+/// Each video is the same square.
+pub(crate) const VIDEO_SIZE: Vec2 = Vec2::new(32.0, 32.0);
+pub(crate) const VIDEO_FPS: f32 = 60.0;
 /// As more light is shone, more cracks appear on the distraction.
 pub(crate) const MAX_CRACKS: usize = 5;
 /// By default, occluder is pushed towards the climate.

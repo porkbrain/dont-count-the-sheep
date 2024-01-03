@@ -1,8 +1,12 @@
 use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
 use bevy::render::view::RenderLayers;
+use bevy_webp_anim::WebpAnimator;
 use rand::random;
 
-use super::DistractionEntity;
+use super::{
+    consts::{VIDEO_FPS, VIDEO_SIZE},
+    DistractionEntity,
+};
 
 /// This gets shuffled so order doesn't matter.
 pub(crate) const ALL_VIDEOS: [Video; 10] = [
@@ -23,11 +27,11 @@ pub(super) enum Video {
     // Group 1 comprises verbal videos.
     Alex,
     Fragrance,
+    Knight,
 
     // Group 2 comprises videos with sound/music only.
     Bunny,
     Dance,
-    Knight,
     Mukbang,
     Panda,
     Puppy,
@@ -43,15 +47,17 @@ impl Video {
     pub(super) fn spawn(
         self,
         parent: &mut ChildBuilder,
+        webp: &mut ResMut<WebpAnimator>,
         asset_server: &Res<AssetServer>,
     ) {
         parent.spawn((
             DistractionEntity,
             RenderLayers::layer(OBJ_RENDER_LAYER),
             bevy_webp_anim::WebpBundle {
-                animation: asset_server.load(self.asset_path()),
-                frame_rate: bevy_webp_anim::FrameRate::new(2),
-                sprite: Sprite { ..default() },
+                remote_control: webp.add_and_wait_for_asset_load(
+                    asset_server.load(self.asset_path()),
+                    VIDEO_FPS,
+                ),
                 transform: {
                     let mut t = Transform::from_translation(Vec3::new(
                         0.0,
@@ -66,6 +72,16 @@ impl Video {
                     t.scale = Vec3::splat(1.0 - 0.01);
 
                     t
+                },
+                sprite: Sprite {
+                    // Because the handle is 1x1 when created and the rendering
+                    // pipeline doesn't update the size when the actual video
+                    // frames are being loaded into the handle, we inform the
+                    // pipeline about the size.
+                    // Otherwise, if the center of the video goes off screen,
+                    // it won't be rendered at all.
+                    custom_size: Some(VIDEO_SIZE),
+                    ..default()
                 },
                 ..default()
             },

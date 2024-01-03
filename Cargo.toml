@@ -28,8 +28,6 @@ common_assets = { path = "common/assets" }
 common_layout = { path = "common/layout" }
 common_physics = { path = "common/physics" }
 common_visuals = { path = "common/visuals" }
-crossbeam-channel = "0.5"
-image = "0.24"
 itertools = "0.12"
 lazy_static = "1.4"
 main_game_lib = { path = "main_game_lib" }

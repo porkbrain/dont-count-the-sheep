@@ -94,6 +94,7 @@ pub fn windowed_app() -> App {
         PixelCameraPlugin,
         bevy_magic_light_2d::Plugin,
         common_visuals::Plugin,
+        bevy_webp_anim::Plugin,
     ));
 
     app.add_systems(OnEnter(GlobalGameState::Exit), exit);

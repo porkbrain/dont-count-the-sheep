@@ -16,6 +16,7 @@ mod ui;
 mod weather;
 mod zindex;
 
+use bevy_webp_anim::WebpAnimator;
 use common_physics::PoissonsEquation;
 use gravity::Gravity;
 use main_game_lib::GlobalGameStateTransitionStack;
@@ -35,9 +36,6 @@ pub fn add(app: &mut App) {
         background::Plugin,
     ));
 
-    // TODO: compose this plugin
-    app.add_plugins(bevy_webp_anim::Plugin);
-
     debug!("Adding visuals");
 
     app.add_systems(
@@ -47,14 +45,18 @@ pub fn add(app: &mut App) {
     );
     app.add_systems(
         Update,
-        (
-            common_visuals::systems::begin_animation_at_random
-                .run_if(in_state(GlobalGameState::MeditationInGame)),
-            common_visuals::systems::flicker
-                .run_if(in_state(GlobalGameState::MeditationInGame)),
-            common_visuals::systems::flicker
-                .run_if(in_state(GlobalGameState::MeditationInMenu)),
-        ),
+        ((
+            common_visuals::systems::begin_animation_at_random,
+            common_visuals::systems::flicker,
+            bevy_webp_anim::systems::start_loaded_videos::<()>,
+            bevy_webp_anim::systems::load_next_frame,
+        )
+            .run_if(in_state(GlobalGameState::MeditationInGame)),),
+    );
+    app.add_systems(
+        Update,
+        (common_visuals::systems::flicker
+            .run_if(in_state(GlobalGameState::MeditationInMenu)),),
     );
 
     debug!("Adding physics");
@@ -104,16 +106,18 @@ pub fn add(app: &mut App) {
 }
 
 fn spawn(mut commands: Commands) {
-    debug!("Spawning resources ClearColor and PoissonsEquation<Gravity>");
+    debug!("Spawning resources");
     commands.insert_resource(ClearColor(background::COLOR));
     commands.insert_resource(gravity::field());
+    commands.init_resource::<WebpAnimator>();
 }
 
 fn despawn(mut commands: Commands) {
-    debug!("Despawning resources ClearColor and PoissonsEquation<Gravity>");
+    debug!("Despawning resources");
 
     commands.remove_resource::<ClearColor>();
     commands.remove_resource::<PoissonsEquation<Gravity>>();
+    commands.remove_resource::<WebpAnimator>();
 }
 
 fn all_loaded(mut next_state: ResMut<NextState<GlobalGameState>>) {
