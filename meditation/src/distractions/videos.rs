@@ -2,10 +2,7 @@ use bevy::render::view::RenderLayers;
 use bevy_webp_anim::WebpAnimator;
 use rand::random;
 
-use super::{
-    consts::{VIDEO_FPS, VIDEO_SIZE},
-    DistractionEntity,
-};
+use super::consts::{VIDEO_FPS, VIDEO_SIZE};
 use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
 
 /// This gets shuffled so order doesn't matter.
@@ -51,7 +48,6 @@ impl Video {
         asset_server: &Res<AssetServer>,
     ) {
         parent.spawn((
-            DistractionEntity,
             RenderLayers::layer(OBJ_RENDER_LAYER),
             bevy_webp_anim::WebpBundle {
                 remote_control: webp.add_and_wait_for_asset_load(

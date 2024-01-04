@@ -73,11 +73,6 @@ pub(crate) enum ClimateLightMode {
     Cold,
 }
 
-/// Any entity that's spawned in this module.
-/// Useful for despawning.
-#[derive(Component)]
-struct ClimateEntity;
-
 /// Debug tool.
 /// Point which is shown when being lit by the climate.
 #[cfg(feature = "dev")]
@@ -89,7 +84,6 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn)
-            .add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn)
             .add_systems(
                 Update,
                 (
@@ -114,6 +108,10 @@ impl bevy::app::Plugin for Plugin {
             Update,
             visualize_raypoints
                 .run_if(in_state(GlobalGameState::MeditationInGame)),
+        )
+        .add_systems(
+            OnEnter(GlobalGameState::MeditationQuitting),
+            despawn_raypoints,
         );
     }
 
@@ -126,7 +124,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             Climate::new(),
-            ClimateEntity,
+            BackgroundLightScene,
             AngularVelocity::default(),
             SpatialBundle {
                 transform: Transform::from_translation(Vec3::new(
@@ -136,7 +134,6 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
                 )),
                 ..default()
             },
-            BackgroundLightScene,
             OmniLightSource2D {
                 intensity: LIGHT_INTENSITY,
                 // little starting animation which changes light to the default
@@ -165,7 +162,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
 
         commands.spawn((
             ClimateOccluder { initial_rotation },
-            ClimateEntity,
+            BackgroundLightScene,
             SpatialBundle {
                 transform: {
                     let mut t = Transform::default();
@@ -177,7 +174,6 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             LightOccluder2D {
                 h_size: Vec2::new(OCCLUDER_SIZE, OCCLUDER_SIZE),
             },
-            BackgroundLightScene,
         ));
     }
 
@@ -190,23 +186,25 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         let x = thread_rng().gen_range(-320.0..320.0);
         let y = thread_rng().gen_range(-180.0..180.0);
 
-        commands
-            .spawn((RayPoint, ClimateEntity))
-            .insert(SpriteBundle {
-                sprite: Sprite {
-                    color: Color::rgba(0.0, 1.0, 0.0, 1.0),
-                    custom_size: Some(vec2(1.0, 1.0)),
-                    ..default()
-                },
-                transform: Transform::from_translation(Vec3::new(x, y, 100.)),
-                visibility: Visibility::Hidden,
+        commands.spawn(RayPoint).insert(SpriteBundle {
+            sprite: Sprite {
+                color: Color::rgba(0.0, 1.0, 0.0, 1.0),
+                custom_size: Some(vec2(1.0, 1.0)),
                 ..default()
-            });
+            },
+            transform: Transform::from_translation(Vec3::new(x, y, 100.)),
+            visibility: Visibility::Hidden,
+            ..default()
+        });
     }
 }
 
-fn despawn(mut commands: Commands, bg: Query<Entity, With<ClimateEntity>>) {
-    for entity in bg.iter() {
+#[cfg(feature = "dev")]
+fn despawn_raypoints(
+    mut commands: Commands,
+    raypoints: Query<Entity, With<RayPoint>>,
+) {
+    for entity in raypoints.iter() {
         commands.entity(entity).despawn_recursive();
     }
 }

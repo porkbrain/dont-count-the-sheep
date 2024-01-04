@@ -6,7 +6,7 @@ use std::f32::consts::PI;
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use main_game_lib::{VISIBLE_HEIGHT, VISIBLE_WIDTH};
 
-use super::{consts::MAX_ARROW_PUSH_BACK, Weather, WeatherEntity};
+use super::{consts::MAX_ARROW_PUSH_BACK, Weather};
 use crate::{
     cameras::BackgroundLightScene, prelude::*,
     weather::consts::ARROW_DISTANCE_FROM_EDGE,
@@ -28,7 +28,7 @@ enum OffScreen {
 pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Arrow,
-        WeatherEntity,
+        BackgroundLightScene,
         SpriteBundle {
             texture: asset_server.load(assets::WEATHER_ARROW),
             transform: Transform::from_translation(Vec3::new(
@@ -39,7 +39,6 @@ pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             visibility: Visibility::Hidden,
             ..default()
         },
-        BackgroundLightScene,
         OmniLightSource2D {
             intensity: 0.75,
             color: Color::hex(LIGHT_COLOR).unwrap(),

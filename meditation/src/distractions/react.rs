@@ -3,8 +3,7 @@ use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
 use super::{
     consts::*, effects::bolt::get_bundle_with_respect_to_origin_at_zero,
-    Distraction, DistractionDestroyedEvent, DistractionEntity,
-    DistractionOccluder,
+    Distraction, DistractionDestroyedEvent, DistractionOccluder,
 };
 use crate::{
     cameras::OBJ_RENDER_LAYER,
@@ -41,7 +40,7 @@ pub(super) fn to_weather_special(
         let distance_to_weather = translation.distance(weather_translation);
 
         if distance_to_weather <= WEATHER_SPECIAL_HITBOX_RADIUS {
-            debug!("Distraction destroy by special event sent");
+            debug!("Distraction destroy by special event sent ({entity:?})");
             score.send(DistractionDestroyedEvent {
                 video: distraction.video,
                 by_special: true,
@@ -215,7 +214,6 @@ pub(super) fn to_environment(
 
                 let static_entity = commands
                     .spawn((
-                        DistractionEntity,
                         Animation {
                             on_last_frame: AnimationEnd::Loop,
                             first: first_frame,
@@ -256,13 +254,12 @@ pub(super) fn to_environment(
             // 4.
             //
 
-            debug!("Distraction destroy event sent");
+            debug!("Distraction destroy event sent ({distraction_entity:?})");
             score.send(DistractionDestroyedEvent {
                 video: distraction.video,
                 by_special: false,
                 at_translation: distraction_pos.translation.truncate(),
             });
-
             commands.entity(distraction_entity).despawn_recursive();
         }
 

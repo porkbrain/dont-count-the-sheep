@@ -114,7 +114,8 @@ pub(crate) mod black_hole {
                   _visibility,
                   commands,
                   _time| {
-                // delete the black hole
+                debug!("Despawning black hole ({entity:?})");
+
                 commands.entity(entity).despawn_recursive();
 
                 // remove gravity influence

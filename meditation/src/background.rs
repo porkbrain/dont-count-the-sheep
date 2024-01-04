@@ -134,12 +134,11 @@ fn spawn_shooting_star(
 fn spawn_light_sources(commands: &mut Commands) {
     // top right star
     commands.spawn((
-        BackgroundEntity,
+        BackgroundLightScene,
         SpatialBundle {
             transform: Transform::from_translation(vec3(-187.0, 122.0, 0.0)),
             ..default()
         },
-        BackgroundLightScene,
         OmniLightSource2D {
             intensity: 0.5,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
@@ -151,12 +150,11 @@ fn spawn_light_sources(commands: &mut Commands) {
 
     // top left star
     commands.spawn((
-        BackgroundEntity,
+        BackgroundLightScene,
         SpatialBundle {
             transform: Transform::from_translation(vec3(235.0, 67.0, 0.0)),
             ..default()
         },
-        BackgroundLightScene,
         OmniLightSource2D {
             intensity: 0.5,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
@@ -168,12 +166,11 @@ fn spawn_light_sources(commands: &mut Commands) {
 
     // bottom left galaxy
     commands.spawn((
-        BackgroundEntity,
+        BackgroundLightScene,
         SpatialBundle {
             transform: Transform::from_translation(vec3(140.0, -45.0, 0.0)),
             ..default()
         },
-        BackgroundLightScene,
         OmniLightSource2D {
             intensity: GALAXY_LIGHT_INTENSITY,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
@@ -184,12 +181,11 @@ fn spawn_light_sources(commands: &mut Commands) {
 
     // bottom right galaxy
     commands.spawn((
-        BackgroundEntity,
+        BackgroundLightScene,
         SpatialBundle {
             transform: Transform::from_translation(vec3(-280.0, -55.0, 0.0)),
             ..default()
         },
-        BackgroundLightScene,
         OmniLightSource2D {
             intensity: GALAXY_LIGHT_INTENSITY,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
@@ -200,12 +196,11 @@ fn spawn_light_sources(commands: &mut Commands) {
 
     // top center galaxy
     commands.spawn((
-        BackgroundEntity,
+        BackgroundLightScene,
         SpatialBundle {
             transform: Transform::from_translation(vec3(-20.0, 150.0, 0.0)),
             ..default()
         },
-        BackgroundLightScene,
         OmniLightSource2D {
             intensity: GALAXY_LIGHT_INTENSITY,
             color: Color::hex(STAR_LIGHT_COLOR).unwrap(),

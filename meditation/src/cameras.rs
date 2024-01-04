@@ -17,6 +17,8 @@ use crate::prelude::*;
 pub(crate) const OBJ_RENDER_LAYER: u8 = 1;
 pub(crate) const BG_RENDER_LAYER: u8 = 2;
 
+/// All entities with this component are part of the background light scene.
+/// Also, they will get despawned by query in this plugin.
 #[derive(Component, Default, Clone, TypePath)]
 pub(crate) struct BackgroundLightScene;
 

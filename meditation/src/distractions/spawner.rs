@@ -134,8 +134,8 @@ pub(super) fn try_spawn_next(
 
             parent.spawn((
                 DistractionOccluder,
-                SpatialBundle { ..default() },
                 BackgroundLightScene,
+                SpatialBundle { ..default() },
                 LightOccluder2D {
                     h_size: Vec2::new(OCCLUDER_SIZE, OCCLUDER_SIZE),
                 },
