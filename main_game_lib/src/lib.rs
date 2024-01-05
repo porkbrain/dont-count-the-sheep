@@ -1,8 +1,10 @@
 pub mod prelude;
+pub mod store;
 pub mod vec2_ext;
 
 use bevy::{app::AppExit, prelude::*, window::WindowTheme};
 use bevy_pixel_camera::PixelCameraPlugin;
+pub use store::*;
 
 /// What's shown on screen.
 pub const VISIBLE_WIDTH: f32 = 640.0;
@@ -66,13 +68,14 @@ pub fn windowed_app() -> App {
     let mut app = App::new();
 
     app.add_state::<GlobalGameState>();
+    app.insert_resource(GlobalStore::new());
     app.insert_resource(GlobalGameStateTransitionStack::default());
 
     app.add_plugins(
         DefaultPlugins
             .set(bevy::log::LogPlugin {
                 level: bevy::log::Level::WARN,
-                filter: "apartment=trace,meditation=trace,meditation::weather::sprite=debug"
+                filter: "main_game_lib=trace,apartment=trace,meditation=trace,meditation::weather::sprite=debug"
                     .to_string(),
             })
             .set(ImagePlugin::default_nearest())

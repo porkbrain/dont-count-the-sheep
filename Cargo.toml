@@ -33,6 +33,8 @@ main_game_lib = { path = "main_game_lib" }
 meditation = { path = "meditation" }
 rand = "0.8"
 ron = "0.8"
+rusqlite = { version = "0.30", features = ["bundled"] }
+rusqlite_migration = "1.1"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0"
 

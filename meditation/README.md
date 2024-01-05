@@ -28,7 +28,7 @@ Modest goal as it is, I postulate that it will have a desirable effect on the
 player's behavior.
 You cannot just doodle on the screen, you have to be active.
 
-The blue light (see section [Lighting][#lighting] below) also slows down the tempo of score reduction.
+The blue light (see section [Lighting](#lighting) below) also slows down the tempo of score reduction.
 
 ## Lightning
 

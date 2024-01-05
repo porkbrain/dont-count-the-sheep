@@ -9,3 +9,7 @@ bevy_pixel_camera.workspace = true
 bevy_webp_anim.workspace = true
 bevy.workspace = true
 common_visuals.workspace = true
+ron.workspace = true
+rusqlite_migration.workspace = true
+rusqlite.workspace = true
+serde.workspace = true

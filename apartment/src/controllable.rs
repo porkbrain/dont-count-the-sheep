@@ -1,8 +1,7 @@
 use bevy::{render::view::RenderLayers, sprite::Anchor};
-use bevy_grid_squared::{
-    direction::Direction as GridDirection, square, Square,
-};
+use bevy_grid_squared::{direction::Direction as GridDirection, Square};
 use common_layout::{IntoMap, SquareKind};
+use main_game_lib::{ApartmentStore, GlobalStore};
 
 use crate::{
     cameras::CHARACTERS_RENDER_LAYER,
@@ -17,16 +16,13 @@ const WINNIE_WIDTH: f32 = 19.0;
 const WINNIE_HEIGHT: f32 = 35.0;
 const WINNIE_ATLAS_PADDING: f32 = 1.0;
 /// How long does it take to move one square.
-const STEP_TIME: Duration = from_millis(50);
-/// How often do we change the animation frame.
-const STEP_ANIMATION_ALTERNATION: Duration = from_millis(250);
+const DEFAULT_STEP_TIME: Duration = from_millis(50);
 /// When the apartment is loaded, the character is spawned facing this
 /// direction.
 /// TODO: it will depend on the system actually
 const INITIAL_DIRECTION: GridDirection = GridDirection::Bottom;
 /// When the apartment is loaded, the character is spawned at this square.
-/// TODO: it will depend on the system actually
-const INITIAL_SQUARE: Square = square(-10, 5);
+const DEFAULT_INITIAL_POSITION: Vec2 = vec2(-15.0, 15.0);
 
 /// Useful for despawning entities when leaving the apartment.
 #[derive(Component)]
@@ -34,6 +30,7 @@ struct CharacterEntity;
 
 #[derive(Component)]
 struct Controllable {
+    step_time: Duration,
     /// If no target then this is the current position.
     /// If there's a target, current position is interpolated between this and
     /// the target.
@@ -45,7 +42,7 @@ struct Controllable {
 
 struct ControllableTarget {
     square: Square,
-    for_this_long: Stopwatch,
+    since: Stopwatch,
     planned: Option<(Square, GridDirection)>,
 }
 
@@ -81,12 +78,32 @@ fn spawn(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    store: Res<GlobalStore>,
 ) {
+    let initial_position = store
+        .position_on_load()
+        .get()
+        .unwrap_or(DEFAULT_INITIAL_POSITION);
+    let walking_from =
+        Apartment::layout().world_pos_to_square(initial_position);
+    store.position_on_load().remove();
+
+    let walking_to = store
+        .walk_to_onload()
+        .get()
+        .map(|pos| Apartment::layout().world_pos_to_square(pos))
+        .map(ControllableTarget::new);
+    store.walk_to_onload().remove();
+
+    let step_time = store.step_time_onload().get().unwrap_or(DEFAULT_STEP_TIME);
+    store.step_time_onload().remove();
+
     commands.spawn((
         Controllable {
+            step_time,
             direction: INITIAL_DIRECTION,
-            walking_from: INITIAL_SQUARE,
-            walking_to: None,
+            walking_from,
+            walking_to,
         },
         CharacterEntity,
         RenderLayers::layer(CHARACTERS_RENDER_LAYER),
@@ -105,7 +122,7 @@ fn spawn(
                 ..default()
             },
             transform: Transform::from_translation(add_z_based_on_y(
-                Apartment::layout().square_to_world_pos(INITIAL_SQUARE),
+                initial_position,
             )),
             ..default()
         },
@@ -209,6 +226,7 @@ fn move_around(
         is_available(target).then_some((target, direction))
     });
 
+    character.step_time = DEFAULT_STEP_TIME;
     if let Some((target_square, direction)) = target {
         character.direction = direction;
 
@@ -216,11 +234,7 @@ fn move_around(
             debug_assert!(walking_to.planned.is_none());
             walking_to.planned = Some((target_square, direction));
         } else {
-            character.walking_to = Some(ControllableTarget {
-                square: target_square,
-                for_this_long: Stopwatch::new(),
-                planned: None,
-            });
+            character.walking_to = Some(ControllableTarget::new(target_square));
         }
     } else {
         // Cannot move anywhere, but would like to? At least direction the
@@ -244,6 +258,7 @@ fn animate_movement(
     };
 
     let current_direction = character.direction;
+    let step_time = character.step_time;
     let standing_still_sprite_index = match current_direction {
         Bottom => 0,
         Top => 1,
@@ -257,15 +272,15 @@ fn animate_movement(
         return;
     };
 
-    walking_to.for_this_long.tick(time.delta());
+    walking_to.since.tick(time.delta());
 
-    let lerp_factor = walking_to.for_this_long.elapsed_secs()
+    let lerp_factor = walking_to.since.elapsed_secs()
         / if let Top | Bottom | Left | Right = current_direction {
-            STEP_TIME.as_secs_f32()
+            step_time.as_secs_f32()
         } else {
             // we need to walk a bit slower when walking diagonally because
             // we cover more distance
-            STEP_TIME.as_secs_f32() * 2.0f32.sqrt()
+            step_time.as_secs_f32() * 2.0f32.sqrt()
         };
 
     let mut transform = transform.single_mut();
@@ -277,7 +292,7 @@ fn animate_movement(
         transform.translation = add_z_based_on_y(to);
 
         if let Some((new_square, new_direction)) = walking_to.planned.take() {
-            walking_to.for_this_long.reset();
+            walking_to.since.reset();
             walking_to.square = new_square;
             character.direction = new_direction;
         } else {
@@ -288,9 +303,8 @@ fn animate_movement(
 
         character.walking_from = new_from;
     } else {
-        let extra = (time.elapsed_seconds()
-            / STEP_ANIMATION_ALTERNATION.as_secs_f32())
-        .floor() as usize
+        let extra = (time.elapsed_seconds() / (step_time.as_secs_f32() * 5.0))
+            .floor() as usize
             % 2;
 
         sprite.index = match current_direction {
@@ -358,5 +372,15 @@ impl Controllable {
             .as_ref()
             .map(|to| to.square)
             .unwrap_or(self.walking_from)
+    }
+}
+
+impl ControllableTarget {
+    fn new(square: Square) -> Self {
+        Self {
+            square,
+            since: Stopwatch::new(),
+            planned: None,
+        }
     }
 }

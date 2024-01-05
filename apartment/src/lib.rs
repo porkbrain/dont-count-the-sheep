@@ -11,7 +11,8 @@ mod prelude;
 mod zindex;
 
 use main_game_lib::{
-    GlobalGameStateTransition, GlobalGameStateTransitionStack,
+    ApartmentStore, GlobalGameStateTransition, GlobalGameStateTransitionStack,
+    GlobalStore,
 };
 use prelude::*;
 
@@ -73,12 +74,16 @@ fn open_meditation(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     keyboard: ResMut<Input<KeyCode>>,
+    store: Res<GlobalStore>,
 ) {
     if keyboard.just_pressed(KeyCode::M) {
         stack.push(
             GlobalGameStateTransition::ApartmentQuittingToMeditationLoading,
         );
         next_state.set(GlobalGameState::ApartmentQuitting);
+        store.position_on_load().set(vec2(25.0, 60.0)); // TODO
+        store.walk_to_onload().set(vec2(25.0, 45.0)); // TODO
+        store.step_time_onload().set(from_millis(1000)); // TODO
     }
 }
 
