@@ -10,7 +10,7 @@ use rand::random;
 use videos::Video;
 
 use self::consts::{JITTER_ON_HIT_INTENSITY, JITTER_ON_HIT_TIME_PENALTY};
-use crate::{gravity::Gravity, path::LevelPath, prelude::*, weather};
+use crate::{gravity::Gravity, hoshi, path::LevelPath, prelude::*};
 
 #[derive(Component)]
 pub(crate) struct Distraction {
@@ -20,7 +20,7 @@ pub(crate) struct Distraction {
     transition_into: Option<LevelPath>,
     /// Applies random jitter in a direction.
     /// When a distraction cracks, it jitters in a direction of where the blow
-    /// came if it was caused by the weather.
+    /// came if it was caused by the Hoshi.
     jitter: Vec2,
 }
 #[derive(Component)]
@@ -37,7 +37,7 @@ struct DistractionDestroyedEvent {
     video: Video,
     /// Where the distraction was when it was destroyed.
     at_translation: Vec2,
-    /// Whether the distraction was destroyed by the weather special or by
+    /// Whether the distraction was destroyed by the Hoshi special or by
     /// just accumulating cracks.
     by_special: bool,
 }
@@ -55,10 +55,10 @@ impl bevy::app::Plugin for Plugin {
                     spawner::try_spawn_next,
                     follow_curve,
                     react::to_environment,
-                    react::to_weather_special.after(weather::loading_special),
+                    react::to_hoshi_special.after(hoshi::loading_special),
                     effects::bolt::propel,
                     destroyed
-                        .after(react::to_weather_special)
+                        .after(react::to_hoshi_special)
                         .after(react::to_environment),
                 )
                     .run_if(in_state(GlobalGameState::MeditationInGame)),
@@ -135,7 +135,7 @@ fn follow_curve(
     }
 }
 
-/// Either distraction is destroyed by the weather special or by accumulating
+/// Either distraction is destroyed by the Hoshi special or by accumulating
 /// cracks.
 fn destroyed(
     mut score: Query<&mut crate::ui::Score>,

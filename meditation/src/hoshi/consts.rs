@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 pub(crate) const DEFAULT_TRANSFORM: Transform = Transform {
-    translation: Vec3::new(0.0, 0.0, zindex::WEATHER),
+    translation: Vec3::new(0.0, 0.0, zindex::HOSHI),
     rotation: Quat::from_array([0.0, 0.0, 0.0, 1.0]),
     scale: Vec3::new(1.0, 1.0, 1.0),
 };
@@ -9,12 +9,12 @@ pub(crate) const DEFAULT_TRANSFORM: Transform = Transform {
 /// Cannot jump more times in a row than this before resetting
 pub(crate) const MAX_JUMPS: usize = 4;
 
-/// How fast does weather rotate towards its velocity vector
+/// How fast does Hoshi rotate towards its velocity vector
 pub(crate) const ROTATION_SPEED: f32 = 2.0;
 
 pub(crate) use physics::*;
 mod physics {
-    /// How much does gravity affect weather.
+    /// How much does gravity affect Hoshi.
     /// The gravity gradient comes from a poisson equation.
     /// We use a default stage gradient from 0.0 at the top to 1.0 at the
     /// bottom. This is multiplied by this constant to achieve the desired
@@ -22,21 +22,21 @@ mod physics {
     pub(crate) const GRAVITY_MULTIPLIER: f32 = 8000.0;
 
     /// Caps gravity effect.
-    /// If weather is falling faster than this it slows down.
+    /// If Hoshi is falling faster than this it slows down.
     pub(crate) const TERMINAL_VELOCITY: f32 = -108.0;
-    /// How fast does weather go from dip to terminal velocity.
+    /// How fast does Hoshi go from dip to terminal velocity.
     pub(crate) const SLOWDOWN_TO_TERMINAL_VELOCITY_FACTOR: f32 = 0.5;
 
-    /// When left/right is pressed while up/down then weather gets an extra kick
+    /// When left/right is pressed while up/down then Hoshi gets an extra kick
     pub(crate) const HORIZONTAL_VELOCITY_BOOST_WHEN_JUMP_OR_DIP: f32 = 64.0;
-    /// When down is pressed, weather's vertical velocity is set to this value
+    /// When down is pressed, Hoshi's vertical velocity is set to this value
     pub(crate) const VERTICAL_VELOCITY_ON_DIP: f32 = -216.0;
-    /// When left/right is pressed, weather gets an extra kick
+    /// When left/right is pressed, Hoshi gets an extra kick
     pub(crate) const DASH_VELOCITY_BOOST: f32 = 64.0;
     /// The jump function uses this to calculate the jump strength
     pub(crate) const VELOCITY_ON_JUMP: [f32; super::MAX_JUMPS] =
         [150.0, 140.0, 130.0, 120.0];
-    /// When special is fired weather gets an extra kick in the chosen direction
+    /// When special is fired Hoshi gets an extra kick in the chosen direction
     pub(crate) const VELOCITY_BOOST_ON_SPECIAL: f32 = 256.0;
 }
 
@@ -54,7 +54,7 @@ mod timings_of_actions {
         from_millis(100);
     /// Pressing down does nothing if the last dip was less than this
     pub(crate) const MIN_DIP_DELAY: Duration = MIN_JUMP_DELAY;
-    /// Maximum amount of time weather can be selecting the angle of its special
+    /// Maximum amount of time Hoshi can be selecting the angle of its special
     /// before it fires
     pub(crate) const SPECIAL_LOADING_TIME: Duration = from_millis(750);
 }
@@ -150,7 +150,7 @@ mod camera_effects_on_special {
 pub(crate) use arrow::*;
 mod arrow {
     pub(crate) const ARROW_DISTANCE_FROM_EDGE: f32 = 25.0;
-    /// The closer weather is the more the arrow is pushed back from the edge.
+    /// The closer Hoshi is the more the arrow is pushed back from the edge.
     pub(crate) const MAX_ARROW_PUSH_BACK: f32 = 15.0;
 }
 

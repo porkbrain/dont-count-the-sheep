@@ -21,5 +21,5 @@ pub(crate) const DISTRACTION_TENTACLES: f32 = 0.1; // children so start at 0
 pub(crate) const DISTRACTION_FRAME: f32 = 0.2; // children so start at 0
 pub(crate) const DISTRACTION_BOLT: f32 = 0.3; // children so start at 0
 
-pub(crate) const WEATHER: f32 = 4.0;
-pub(crate) const WEATHER_ARROW: f32 = WEATHER;
+pub(crate) const HOSHI: f32 = 4.0;
+pub(crate) const HOSHI_ARROW: f32 = HOSHI;

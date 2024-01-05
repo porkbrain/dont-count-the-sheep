@@ -8,38 +8,38 @@ use super::{
 use crate::{
     cameras::OBJ_RENDER_LAYER,
     climate::Climate,
+    hoshi::{self, Hoshi},
     prelude::*,
-    weather::{self, Weather},
 };
 
-/// If weather is very close and does special, the distraction is destroyed.
-pub(super) fn to_weather_special(
+/// If Hoshi is very close and does special, the distraction is destroyed.
+pub(super) fn to_hoshi_special(
     mut score: EventWriter<DistractionDestroyedEvent>,
-    mut weather_actions: EventReader<weather::ActionEvent>,
-    weather: Query<&Transform, (With<Weather>, Without<Distraction>)>,
-    distractions: Query<(Entity, &Distraction, &Transform), Without<Weather>>,
+    mut hoshi_actions: EventReader<hoshi::ActionEvent>,
+    hoshi: Query<&Transform, (With<Hoshi>, Without<Distraction>)>,
+    distractions: Query<(Entity, &Distraction, &Transform), Without<Hoshi>>,
     mut commands: Commands,
 ) {
     // it's possible that the game is paused the same frame as the event being
     // emitted, but that's so unlikely that we don't care
-    let fired_special = weather_actions
+    let fired_special = hoshi_actions
         .read()
-        .any(|a| matches!(a, weather::ActionEvent::FiredSpecial));
+        .any(|a| matches!(a, hoshi::ActionEvent::FiredSpecial));
     if !fired_special {
         return;
     }
 
-    let Ok(weather_transform) = weather.get_single() else {
+    let Ok(hoshi_transform) = hoshi.get_single() else {
         return;
     };
 
-    let weather_translation = weather_transform.translation.truncate();
+    let hoshi_translation = hoshi_transform.translation.truncate();
 
     for (entity, distraction, transform) in distractions.iter() {
         let translation = transform.translation.truncate();
-        let distance_to_weather = translation.distance(weather_translation);
+        let distance_to_hoshi = translation.distance(hoshi_translation);
 
-        if distance_to_weather <= WEATHER_SPECIAL_HITBOX_RADIUS {
+        if distance_to_hoshi <= HOSHI_SPECIAL_HITBOX_RADIUS {
             debug!("Distraction destroy by special event sent ({entity:?})");
             score.send(DistractionDestroyedEvent {
                 video: distraction.video,
@@ -55,7 +55,7 @@ pub(super) fn to_weather_special(
 
 /// For each distraction:
 /// 1. Check whether light is being cast on it (depends on rays from climate and
-///    weather proximity)
+///    Hoshi proximity)
 /// 2. If it is, increase push back on distraction's occluder otherwise decrease
 ///    it
 /// 3. If light is being cast on the distraction by climate, roll a dice to
@@ -68,16 +68,16 @@ pub(super) fn to_environment(
     mut climate: Query<
         (&Climate, &Transform, &mut OmniLightSource2D),
         (
-            Without<Weather>,
+            Without<Hoshi>,
             Without<Distraction>,
             Without<DistractionOccluder>,
         ),
     >,
-    weather: Query<
+    hoshi: Query<
         &Transform,
         (
             Without<Climate>,
-            With<Weather>,
+            With<Hoshi>,
             Without<Distraction>,
             Without<DistractionOccluder>,
         ),
@@ -86,7 +86,7 @@ pub(super) fn to_environment(
         (&Parent, &mut Transform),
         (
             Without<Climate>,
-            Without<Weather>,
+            Without<Hoshi>,
             Without<Distraction>,
             With<DistractionOccluder>,
         ),
@@ -100,7 +100,7 @@ pub(super) fn to_environment(
         ),
         (
             Without<Climate>,
-            Without<Weather>,
+            Without<Hoshi>,
             Without<DistractionOccluder>,
         ),
     >,
@@ -110,7 +110,7 @@ pub(super) fn to_environment(
     mut score: EventWriter<DistractionDestroyedEvent>,
     mut commands: Commands,
 ) {
-    let Ok(weather) = weather.get_single() else {
+    let Ok(hoshi) = hoshi.get_single() else {
         return;
     };
     let Ok((climate, climate_transform, mut climate_light)) =
@@ -129,19 +129,19 @@ pub(super) fn to_environment(
         // 1.
         //
 
-        // between [0; 1], increases as weather gets closer to distraction
-        let weather_ray_bath = {
-            let d = weather.translation.distance(distraction_pos.translation);
+        // between [0; 1], increases as Hoshi gets closer to distraction
+        let hoshi_ray_bath = {
+            let d = hoshi.translation.distance(distraction_pos.translation);
 
-            let max = NONE_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE;
+            let max = NONE_OF_HOSHI_PUSH_BACK_FORCE_AT_DISTANCE;
             if d >= max {
                 0.0
             } else {
                 (-d + max).sqrt() / max.sqrt()
             }
         };
-        let weather_push_back_force_contrib =
-            weather_ray_bath * PUSH_BACK_FORCE_WEATHER_DISTANCE;
+        let hoshi_push_back_force_contrib =
+            hoshi_ray_bath * PUSH_BACK_FORCE_HOSHI_DISTANCE;
 
         // between [0; 1], how much is the distraction being lit by the climate
         let climate_ray_bath = climate.ray_bath(
@@ -156,11 +156,11 @@ pub(super) fn to_environment(
         //
 
         // positive if pushed away from climate
-        let push_back_force_without_weather_contrib =
+        let push_back_force_without_hoshi_contrib =
             PUSH_BACK_FORCE_AT_REST + climate_push_back_force_contrib;
-        let push_back_force_with_weather_contrib =
-            push_back_force_without_weather_contrib
-                + weather_push_back_force_contrib;
+        let push_back_force_with_hoshi_contrib =
+            push_back_force_without_hoshi_contrib
+                + hoshi_push_back_force_contrib;
 
         //
         // 3.
@@ -171,7 +171,7 @@ pub(super) fn to_environment(
 
         let should_crack = |push_back_force: f32| {
             const MAX_FORCE: f32 = PUSH_BACK_FORCE_AT_REST
-                + PUSH_BACK_FORCE_WEATHER_DISTANCE
+                + PUSH_BACK_FORCE_HOSHI_DISTANCE
                 + PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS;
 
             let crack_chance_per_second = 2.0 * push_back_force / MAX_FORCE;
@@ -180,18 +180,18 @@ pub(super) fn to_environment(
             dice_roll < crack_chance
         };
 
-        let should_crack_with_weather_contrib =
-            should_crack(push_back_force_with_weather_contrib);
+        let should_crack_with_hoshi_contrib =
+            should_crack(push_back_force_with_hoshi_contrib);
 
         let is_on_last_crack = sprite.index == MAX_CRACKS - 1;
-        if should_crack_with_weather_contrib && !is_on_last_crack {
-            // no real weather push back force was applied to tip the scales
+        if should_crack_with_hoshi_contrib && !is_on_last_crack {
+            // no real Hoshi push back force was applied to tip the scales
             // in favor of cracking
             let would_ve_cracked_anyway =
-                should_crack(push_back_force_without_weather_contrib);
+                should_crack(push_back_force_without_hoshi_contrib);
             if !would_ve_cracked_anyway {
                 // with respect to origin at zero
-                let change_of_basis_from = weather.translation.truncate()
+                let change_of_basis_from = hoshi.translation.truncate()
                     - distraction_pos.translation.truncate();
 
                 let bolt_entity = commands
@@ -249,7 +249,7 @@ pub(super) fn to_environment(
 
                 commands.entity(distraction_entity).add_child(static_entity);
             }
-        } else if should_crack_with_weather_contrib && is_on_last_crack {
+        } else if should_crack_with_hoshi_contrib && is_on_last_crack {
             //
             // 4.
             //
@@ -275,7 +275,7 @@ pub(super) fn to_environment(
         occluder_pos.translation = (distraction_pos.translation
             - climate_transform.translation)
             .normalize()
-            * push_back_force_with_weather_contrib;
+            * push_back_force_with_hoshi_contrib;
     }
 
     // increase jitter intensity as more distractions are spawned

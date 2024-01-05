@@ -68,14 +68,14 @@ pub fn windowed_app() -> App {
     let mut app = App::new();
 
     app.add_state::<GlobalGameState>();
-    app.insert_resource(GlobalStore::new());
+    app.init_resource::<GlobalStore>();
     app.insert_resource(GlobalGameStateTransitionStack::default());
 
     app.add_plugins(
         DefaultPlugins
             .set(bevy::log::LogPlugin {
                 level: bevy::log::Level::WARN,
-                filter: "main_game_lib=trace,apartment=trace,meditation=trace,meditation::weather::sprite=debug"
+                filter: "main_game_lib=trace,apartment=trace,meditation=trace,meditation::hoshi::sprite=debug"
                     .to_string(),
             })
             .set(ImagePlugin::default_nearest())

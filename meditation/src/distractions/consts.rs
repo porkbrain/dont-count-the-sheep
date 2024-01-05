@@ -13,7 +13,7 @@ pub(crate) const SPAWN_CHANCES_PER_SECOND: [f32; MAX_DISTRACTIONS] =
 pub(crate) const MAX_VERBAL_VIDEOS_AT_ONCE: usize = 1;
 /// If special is casted within this distance of the distraction, then destroy
 /// it.
-pub(crate) const WEATHER_SPECIAL_HITBOX_RADIUS: f32 = 35.0;
+pub(crate) const HOSHI_SPECIAL_HITBOX_RADIUS: f32 = 35.0;
 /// The actual pixel size of the image.
 pub(crate) const DISTRACTION_SPRITE_SIZE: f32 = 100.0;
 /// Each video is the same square.
@@ -24,9 +24,9 @@ pub(crate) const MAX_CRACKS: usize = 5;
 /// By default, occluder is pushed towards the climate.
 pub(crate) const PUSH_BACK_FORCE_AT_REST: f32 = -20.0;
 pub(crate) const PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 40.0;
-/// Beyond this distance, the occluder is simply not affected by weather.
-pub(crate) const NONE_OF_WEATHER_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 169.0;
-pub(crate) const PUSH_BACK_FORCE_WEATHER_DISTANCE: f32 = 80.0;
+/// Beyond this distance, the occluder is simply not affected by Hoshi.
+pub(crate) const NONE_OF_HOSHI_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 169.0;
+pub(crate) const PUSH_BACK_FORCE_HOSHI_DISTANCE: f32 = 80.0;
 pub(crate) const OCCLUDER_SIZE: f32 = 5.5;
 /// Plays static as on old TVs.
 pub(crate) const STATIC_ATLAS_FRAMES: usize = 5;
@@ -47,10 +47,10 @@ pub(crate) const BLACK_HOLE_FRAME_TIME: Duration = from_millis(40);
 /// Otherwise it looks odd when the black hole disappears instantly.
 pub(crate) const BLACK_HOLE_MIN_LIFE: Duration = from_millis(1000);
 
-/// How long does it take for the bolt to travel from weather to the
+/// How long does it take for the bolt to travel from Hoshi to the
 /// distraction.
 pub(crate) const BOLT_LIFETIME: Duration = from_millis(200);
-/// How many pixels the distraction jitters when hit by the weather special.
+/// How many pixels the distraction jitters when hit by the Hoshi special.
 pub(crate) const JITTER_ON_HIT_INTENSITY: f32 = 4.0;
 /// In 1/x seconds the jitter will be gone.
 pub(crate) const JITTER_ON_HIT_TIME_PENALTY: f32 = 4.0;

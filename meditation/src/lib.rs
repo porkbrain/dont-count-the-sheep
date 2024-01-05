@@ -10,10 +10,10 @@ mod climate;
 mod consts;
 mod distractions;
 mod gravity;
+mod hoshi;
 mod path;
 mod prelude;
 mod ui;
-mod weather;
 mod zindex;
 
 use bevy_webp_anim::WebpAnimator;
@@ -31,7 +31,7 @@ pub fn add(app: &mut App) {
         ui::Plugin,
         climate::Plugin,
         distractions::Plugin,
-        weather::Plugin,
+        hoshi::Plugin,
         cameras::Plugin,
         background::Plugin,
     ));

@@ -14,7 +14,7 @@ use crate::{
 pub(crate) mod bolt {
     use super::*;
 
-    /// Special effect that goes from weather to a distraction that it hit.
+    /// Special effect that goes from Hoshi to a distraction that it hit.
     #[derive(Component)]
     pub(crate) struct Bolt {
         /// Relative to the distraction it's about to hit.

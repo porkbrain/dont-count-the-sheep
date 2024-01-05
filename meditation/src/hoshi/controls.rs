@@ -12,7 +12,7 @@ use crate::{
 /// Controls when in normal mode.
 pub(super) fn normal(
     mut broadcast: EventWriter<ActionEvent>,
-    mut weather: Query<
+    mut hoshi: Query<
         (Entity, &mut mode::Normal, &mut Velocity, &Transform),
         Without<SparkEffect>, // to make bevy be sure there won't be conflicts
     >,
@@ -22,7 +22,7 @@ pub(super) fn normal(
     gravity: Res<PoissonsEquation<Gravity>>,
     time: Res<Time>,
 ) {
-    let Ok((entity, mut mode, mut vel, transform)) = weather.get_single_mut()
+    let Ok((entity, mut mode, mut vel, transform)) = hoshi.get_single_mut()
     else {
         return;
     };
@@ -172,12 +172,12 @@ pub(super) fn normal(
 /// Controls while loading special.
 pub(crate) fn loading_special(
     mut broadcast: EventWriter<ActionEvent>,
-    mut weather: Query<(Entity, &mut mode::LoadingSpecial, &mut Velocity)>,
+    mut hoshi: Query<(Entity, &mut mode::LoadingSpecial, &mut Velocity)>,
     mut commands: Commands,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
 ) {
-    let Ok((entity, mut mode, mut vel)) = weather.get_single_mut() else {
+    let Ok((entity, mut mode, mut vel)) = hoshi.get_single_mut() else {
         return;
     };
     mode.tick(&time);
@@ -199,7 +199,7 @@ pub(crate) fn loading_special(
             can_use_special: false,
         });
 
-        // fires weather into the direction given by the angle
+        // fires Hoshi into the direction given by the angle
         vel.x = mode.angle.cos() * VELOCITY_BOOST_ON_SPECIAL;
         vel.y = mode.angle.sin() * VELOCITY_BOOST_ON_SPECIAL;
 

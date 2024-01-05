@@ -1,7 +1,4 @@
-//! Weather is an entity that is controlled by the player.
-//! It's called weather because it has to follow the climate entity around the
-//! screen but is somewhat free.
-//! Reminds me of the analogy made by Niel deGrasse Tyson.
+//! Hoshi is an entity that is controlled by the player.
 
 mod anim;
 mod arrow;
@@ -20,7 +17,7 @@ use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
 #[derive(Event, Clone, Copy)]
 pub(crate) enum ActionEvent {
     StartLoadingSpecial {
-        /// Where was the weather when the special was started.
+        /// Where was the Hoshi when the special was started.
         at_translation: Vec2,
     },
     Jumped,
@@ -33,16 +30,16 @@ pub(crate) enum ActionEvent {
 }
 
 #[derive(Component)]
-pub(crate) struct Weather;
+pub(crate) struct Hoshi;
 #[derive(Component)]
-struct WeatherBody;
+struct HoshiBody;
 #[derive(Component)]
-struct WeatherFace;
+struct HoshiFace;
 
 /// Any entity spawned by this plugin has this component.
 /// Useful for despawning.
 #[derive(Component)]
-struct WeatherEntity;
+struct HoshiEntity;
 
 pub(crate) struct Plugin;
 
@@ -86,15 +83,15 @@ fn spawn(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut commands: Commands,
 ) {
-    debug!("Spawning weather entities");
+    debug!("Spawning Hoshi entities");
 
     //
     // 1.
     //
     let parent = commands
         .spawn((
-            Weather,
-            WeatherEntity,
+            Hoshi,
+            HoshiEntity,
             mode::Normal::default(),
             Velocity::default(),
             AngularVelocity::default(), // for animation
@@ -113,7 +110,7 @@ fn spawn(
     //
     let body = commands
         .spawn((
-            WeatherBody,
+            HoshiBody,
             RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
@@ -138,7 +135,7 @@ fn spawn(
     //
     let face = commands
         .spawn((
-            WeatherFace,
+            HoshiFace,
             RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
@@ -163,7 +160,7 @@ fn spawn(
     //
     commands.spawn((
         anim::SparkEffect,
-        WeatherEntity,
+        HoshiEntity,
         RenderLayers::layer(OBJ_RENDER_LAYER),
         Animation {
             on_last_frame: AnimationEnd::Custom(Box::new(
@@ -199,14 +196,11 @@ fn spawn(
     //
     // 5.
     //
-    commands.spawn((WeatherEntity, anim::CameraState::default()));
+    commands.spawn((HoshiEntity, anim::CameraState::default()));
 }
 
-fn despawn(
-    mut commands: Commands,
-    entities: Query<Entity, With<WeatherEntity>>,
-) {
-    debug!("Spawning weather entities");
+fn despawn(mut commands: Commands, entities: Query<Entity, With<HoshiEntity>>) {
+    debug!("Spawning Hoshi entities");
 
     for entity in entities.iter() {
         commands.entity(entity).despawn_recursive();

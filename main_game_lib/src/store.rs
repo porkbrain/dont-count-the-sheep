@@ -28,7 +28,7 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
             let conn = self.store.lock().unwrap();
             conn.query_row(
                 "SELECT value FROM kv WHERE key = ?",
-                &[&self.key],
+                [&self.key],
                 |row| row.get(0),
             )
             .optional()
@@ -57,7 +57,7 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
             conn.execute(
                 "INSERT INTO kv (key, value) VALUES (?, ?)
                 ON CONFLICT (key) DO UPDATE SET value = excluded.value",
-                &[&self.key, &raw_value.as_str()],
+                [&self.key, &raw_value.as_str()],
             )
             .expect("Cannot insert into SQLite");
         }
@@ -74,7 +74,7 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
 
         {
             let conn = self.store.lock().unwrap();
-            conn.execute("DELETE FROM kv WHERE key = ?", &[&self.key])
+            conn.execute("DELETE FROM kv WHERE key = ?", [&self.key])
                 .expect("Cannot delete from SQLite");
         }
 
@@ -129,6 +129,12 @@ impl GlobalStore {
 
     fn entry<T>(&self, key: &'static str) -> Entry<'_, T> {
         Entry::new(&self.conn, key)
+    }
+}
+
+impl Default for GlobalStore {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

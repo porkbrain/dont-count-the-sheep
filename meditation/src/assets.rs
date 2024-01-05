@@ -9,13 +9,11 @@ pub(crate) fn twinkle(i: usize) -> String {
 pub(crate) const CLIMATE_DEFAULT: &str =
     "meditation/textures/climate/default.png";
 
-pub(crate) const WEATHER_ARROW: &str = "meditation/textures/weather/arrow.png";
-pub(crate) const BODY_ATLAS: &str =
-    "meditation/textures/weather/body_atlas.png";
+pub(crate) const HOSHI_ARROW: &str = "meditation/textures/hoshi/arrow.png";
+pub(crate) const BODY_ATLAS: &str = "meditation/textures/hoshi/body_atlas.png";
 pub(crate) const SPARK_ATLAS: &str =
-    "meditation/textures/weather/spark_atlas.png";
-pub(crate) const FACE_ATLAS: &str =
-    "meditation/textures/weather/face_atlas.png";
+    "meditation/textures/hoshi/spark_atlas.png";
+pub(crate) const FACE_ATLAS: &str = "meditation/textures/hoshi/face_atlas.png";
 
 pub(crate) const BLACKHOLE_ATLAS: &str =
     "meditation/textures/distractions/blackhole_atlas.png";

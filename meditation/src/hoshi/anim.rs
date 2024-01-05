@@ -6,7 +6,7 @@ use std::{
 use bevy::{core_pipeline::bloom::BloomSettings, time::Stopwatch};
 use main_game_lib::{VISIBLE_HEIGHT, VISIBLE_WIDTH};
 
-use super::{consts::*, mode, sprite, ActionEvent, WeatherBody, WeatherFace};
+use super::{consts::*, mode, sprite, ActionEvent, HoshiBody, HoshiFace};
 use crate::prelude::*;
 
 #[derive(Component, Default, Clone)]
@@ -18,7 +18,7 @@ pub(super) enum CameraState {
         /// When did the effect start.
         /// Used to calculate phase and smooth out the animation.
         fired: Stopwatch,
-        /// Where was the weather when the special was started.
+        /// Where was the Hoshi when the special was started.
         look_at: Vec2,
     },
 }
@@ -29,16 +29,16 @@ pub(super) struct SparkEffect;
 /// It always take the same time to load special.
 /// That's because it's a very timing critical animation.
 ///
-/// 1. Abruptly slow down weather to be still.
-/// 2. Render spark's atlas first frame in place of weather's body, make it a
-///    bit bigger and shrink it to below its normal size.
+/// 1. Abruptly slow down Hoshi to be still.
+/// 2. Render spark's atlas first frame in place of Hoshi's body, make it a bit
+///    bigger and shrink it to below its normal size.
 /// 4. The time it takes to shrink is almost the same as the time it takes to
 ///    load special. The animation is resumed bit earlier before the special is
 ///    loaded.
-/// 5. Weather is off to Mars or wherever while last few frames are playing in
-///    place. That's why the effect sprite is not a child of weather.
+/// 5. Hoshi is off to Mars or wherever while last few frames are playing in
+///    place. That's why the effect sprite is not a child of hoshi.
 pub(super) fn sprite_loading_special(
-    mut weather: Query<(&mode::LoadingSpecial, &mut Velocity, &Transform)>,
+    mut hoshi: Query<(&mode::LoadingSpecial, &mut Velocity, &Transform)>,
     mut set: ParamSet<(
         Query<
             (Entity, &mut TextureAtlasSprite, &mut Transform),
@@ -50,17 +50,17 @@ pub(super) fn sprite_loading_special(
         >,
         Query<
             &mut TextureAtlasSprite,
-            (With<WeatherBody>, Without<mode::LoadingSpecial>),
+            (With<HoshiBody>, Without<mode::LoadingSpecial>),
         >,
         Query<
             &mut TextureAtlasSprite,
-            (With<WeatherFace>, Without<mode::LoadingSpecial>),
+            (With<HoshiFace>, Without<mode::LoadingSpecial>),
         >,
     )>,
     mut commands: Commands,
     time: Res<Time>,
 ) {
-    let Ok((mode, mut vel, transform)) = weather.get_single_mut() else {
+    let Ok((mode, mut vel, transform)) = hoshi.get_single_mut() else {
         return;
     };
 
@@ -99,7 +99,7 @@ pub(super) fn sprite_loading_special(
                 dt / WHEN_LOADING_SPECIAL_STOP_MOVEMENT_WITHIN.as_secs_f32();
             vel.x -= vel.x * dt_prime;
             vel.y -= vel.y * dt_prime;
-            // make spark effect stick with weather until fired
+            // make spark effect stick with Hoshi until fired
             spark_transform.translation.x = transform.translation.x;
             spark_transform.translation.y = transform.translation.y;
         }
@@ -119,7 +119,7 @@ pub(super) fn sprite_loading_special(
 /// Additionally there's a cooldown on the sprite change.
 pub(super) fn sprite(
     mut broadcast: EventReader<ActionEvent>,
-    mut weather: Query<
+    mut hoshi: Query<
         (
             &Velocity,
             &AngularVelocity,
@@ -130,14 +130,14 @@ pub(super) fn sprite(
     >,
     mut body: Query<
         &mut TextureAtlasSprite,
-        (With<WeatherBody>, Without<WeatherFace>),
+        (With<HoshiBody>, Without<HoshiFace>),
     >,
     mut face: Query<
         (&mut Visibility, &mut TextureAtlasSprite),
-        (With<WeatherFace>, Without<WeatherBody>),
+        (With<HoshiFace>, Without<HoshiBody>),
     >,
 ) {
-    let Ok((vel, angvel, transform, mut transition)) = weather.get_single_mut()
+    let Ok((vel, angvel, transform, mut transition)) = hoshi.get_single_mut()
     else {
         return;
     };
@@ -284,13 +284,13 @@ fn sprite_under_no_latest_action_of_interest(
 }
 
 pub(super) fn rotate(
-    mut weather: Query<
+    mut hoshi: Query<
         (&Velocity, &mut AngularVelocity, &mut Transform),
         With<mode::Normal>,
     >,
     time: Res<Time>,
 ) {
-    let Ok((vel, mut angvel, mut transform)) = weather.get_single_mut() else {
+    let Ok((vel, mut angvel, mut transform)) = hoshi.get_single_mut() else {
         return;
     };
 
@@ -353,7 +353,7 @@ pub(super) fn rotate(
     angvel.0 -= angvel.0 * 0.75 * dt;
 }
 
-/// Zooms in on weather and makes it glow when special is being loaded,
+/// Zooms in on Hoshi and makes it glow when special is being loaded,
 /// then resets to initial state.
 ///
 /// We need to do this for each camera in case there are more.

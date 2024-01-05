@@ -8,7 +8,7 @@ use crate::prelude::{stopwatch_at, Radians};
 
 #[derive(Component)]
 pub(super) struct Normal {
-    /// weather has a limited number of jumps before it must reset
+    /// Hoshi has a limited number of jumps before it must reset
     /// via the [`Climate`]
     pub(super) jumps: usize,
     /// there's a minimum delay between jumps
@@ -17,7 +17,7 @@ pub(super) struct Normal {
     pub(super) last_dash: Stopwatch,
     /// there's a minimum delay between dips
     pub(super) last_dip: Stopwatch,
-    /// weather can only use its special ability once per reset
+    /// Hoshi can only use its special ability once per reset
     pub(super) can_use_special: bool,
 }
 
@@ -28,7 +28,7 @@ pub(crate) struct LoadingSpecial {
     pub(super) angle: Radians,
     /// special mode has a set duration after which it fires
     pub(super) activated: Stopwatch,
-    /// once special is fired, weather can only do the same amount of jumps
+    /// once special is fired, Hoshi can only do the same amount of jumps
     /// as it had before
     pub(super) jumps: usize,
 }

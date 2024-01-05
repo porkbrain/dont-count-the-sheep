@@ -10,7 +10,7 @@ pub(super) struct Transition {
     current_face: FaceKind,
     current_face_set_at: Instant,
     /// This is updated each time an action is received in
-    /// [`crate::weather::anim::sprite`].
+    /// [`crate::hoshi::anim::sprite`].
     last_action: Option<(ActionEvent, Instant)>,
 }
 
