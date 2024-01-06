@@ -1,6 +1,3 @@
-//! TODO: some nice animation possibly synced with music that restores jumps and
-//! specials
-
 use std::f32::consts::PI;
 
 use bevy::{render::view::RenderLayers, time::Stopwatch, utils::Instant};
@@ -36,7 +33,7 @@ const TOGGLE_MODE_KEY: KeyCode = KeyCode::ShiftLeft;
 const HOT_DEDUCTION: usize = 80;
 /// How often do we deduct from the score when the mode is [`LightMode::Hot`].
 const HOT_DEDUCTION_INTERVAL: Duration = from_millis(5_000);
-/// TODO: Something less warm
+/// Burns distractions, so should reflect that.
 const LIGHT_COLOR_HOT: Color = Color::rgb(0.6, 0.3, 0.1);
 /// Purply cold color.
 const LIGHT_COLOR_COLD: Color = crate::background::COLOR;

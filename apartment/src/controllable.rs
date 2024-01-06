@@ -1,7 +1,13 @@
-use bevy::{render::view::RenderLayers, sprite::Anchor};
+use bevy::{
+    input::common_conditions::input_just_pressed, render::view::RenderLayers,
+    sprite::Anchor,
+};
 use bevy_grid_squared::{direction::Direction as GridDirection, Square};
 use common_layout::{IntoMap, SquareKind};
-use main_game_lib::{ApartmentStore, GlobalStore};
+use main_game_lib::{
+    ApartmentStore, GlobalGameStateTransition, GlobalGameStateTransitionStack,
+    GlobalStore,
+};
 
 use crate::{
     cameras::CHARACTERS_RENDER_LAYER,
@@ -19,10 +25,16 @@ const WINNIE_ATLAS_PADDING: f32 = 1.0;
 const DEFAULT_STEP_TIME: Duration = from_millis(50);
 /// When the apartment is loaded, the character is spawned facing this
 /// direction.
-/// TODO: it will depend on the system actually
 const INITIAL_DIRECTION: GridDirection = GridDirection::Bottom;
 /// When the apartment is loaded, the character is spawned at this square.
 const DEFAULT_INITIAL_POSITION: Vec2 = vec2(-15.0, 15.0);
+/// Upon going to the meditation minigame we set this value so that once the
+/// game is closed, the character is spawned next to the meditation chair.
+const POSITION_ON_LOAD_FROM_MEDITATION: Vec2 = vec2(25.0, 60.0);
+/// And it does a little animation of walking down.
+const WALK_TO_ONLOAD_FROM_MEDITATION: Vec2 = vec2(25.0, 45.0);
+/// Walk down slowly otherwise it'll happen before the player even sees it.
+const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(1000);
 
 /// Useful for despawning entities when leaving the apartment.
 #[derive(Component)]
@@ -60,7 +72,12 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             Update,
-            (move_around, load_zone_overlay)
+            (
+                move_around,
+                load_zone_overlay,
+                start_meditation_minigame_if_near_chair
+                    .run_if(input_just_pressed(KeyCode::Space)),
+            )
                 .run_if(in_state(GlobalGameState::InApartment)),
         )
         .add_systems(
@@ -319,6 +336,32 @@ fn animate_movement(
 
         transform.translation = add_z_based_on_y(from.lerp(to, lerp_factor));
     }
+}
+
+/// Will change the game state to meditation minigame.
+fn start_meditation_minigame_if_near_chair(
+    mut stack: ResMut<GlobalGameStateTransitionStack>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    store: Res<GlobalStore>,
+    map: Res<common_layout::Map<Apartment>>,
+
+    character: Query<&Controllable>,
+) {
+    let square = character.single().current_square();
+    if !matches!(map.get(&square), Some(SquareKind::Zone(zones::MEDITATION))) {
+        return;
+    }
+
+    store
+        .position_on_load()
+        .set(POSITION_ON_LOAD_FROM_MEDITATION);
+    store.walk_to_onload().set(WALK_TO_ONLOAD_FROM_MEDITATION);
+    store
+        .step_time_onload()
+        .set(STEP_TIME_ONLOAD_FROM_MEDITATION);
+
+    stack.push(GlobalGameStateTransition::ApartmentQuittingToMeditationLoading);
+    next_state.set(GlobalGameState::ApartmentQuitting);
 }
 
 /// Zone overlay is a half transparent image that shows up when the character

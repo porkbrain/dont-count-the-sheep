@@ -166,7 +166,6 @@ pub(super) fn to_environment(
         // 3.
         //
 
-        // TODO: balance, more predictable, clamp the time
         let dice_roll = rand::random::<f32>();
 
         let should_crack = |push_back_force: f32| {
