@@ -10,7 +10,13 @@ use rand::random;
 use videos::Video;
 
 use self::consts::{JITTER_ON_HIT_INTENSITY, JITTER_ON_HIT_TIME_PENALTY};
-use crate::{gravity::Gravity, hoshi, path::LevelPath, prelude::*};
+use crate::{
+    climate::{Climate, ClimateLightMode},
+    gravity::Gravity,
+    hoshi,
+    path::LevelPath,
+    prelude::*,
+};
 
 #[derive(Component)]
 pub(crate) struct Polpo {
@@ -92,13 +98,19 @@ fn despawn(mut commands: Commands, entities: Query<Entity, With<PolpoEntity>>) {
 
 /// Climate has something similar, but without the level up logic.
 fn follow_curve(
+    climate: Query<&Climate>,
     mut polpos: Query<(&mut Polpo, &mut Transform)>,
     time: Res<Time>,
 ) {
-    let dt = time.delta();
+    let dt_multiplier = match climate.single().mode() {
+        ClimateLightMode::Hot => 1.25,
+        ClimateLightMode::Cold => 0.75,
+    };
+
+    let dt = time.delta_seconds() * dt_multiplier;
 
     for (mut polpo, mut transform) in polpos.iter_mut() {
-        polpo.current_path_since.tick(dt);
+        polpo.current_path_since.tick(Duration::from_secs_f32(dt));
 
         let z = transform.translation.z;
         let (seg_index, seg_t) = polpo.path_segment();
@@ -127,8 +139,7 @@ fn follow_curve(
         transform.translation = expected_position.extend(z);
         // dampen the jitter over time
         polpo.jitter = {
-            let j = polpo.jitter
-                * (1.0 - JITTER_ON_HIT_TIME_PENALTY * dt.as_secs_f32());
+            let j = polpo.jitter * (1.0 - JITTER_ON_HIT_TIME_PENALTY * dt);
 
             j.max(Vec2::ZERO)
         };

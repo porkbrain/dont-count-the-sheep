@@ -45,6 +45,11 @@ const COLD_DEDUCTION: usize = 100;
 const COLD_DEDUCTION_INTERVAL: Duration = from_millis(10_000);
 /// How long does it take for the light to change color when changing mode.
 const LIGHT_COLOR_TRANSITION: Duration = from_millis(2500);
+/// The pushback force scales from 0 to this value based on the angle between
+/// the nearest climate ray and the Polpo.
+pub(crate) const HOT_PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 45.0;
+/// The pushback force is different for hot and cold.
+pub(crate) const COLD_PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 35.0;
 
 #[derive(Component)]
 pub(crate) struct Climate {
@@ -302,6 +307,10 @@ fn move_occluders(
 }
 
 impl Climate {
+    pub(crate) fn mode(&self) -> ClimateLightMode {
+        self.mode.1
+    }
+
     /// In interval [0, 1], how strongly is target lit by the climate?
     /// This ignores any possible obstacle in the way and just computes angle
     /// between the closest ray and the target.
@@ -322,6 +331,15 @@ impl Climate {
         /         h.powi(to_the_power_of)
     }
 
+    fn new() -> Self {
+        Self {
+            path: LevelPath::InfinitySign,
+            current_path_since: Stopwatch::default(),
+            rays_animation: Stopwatch::default(),
+            mode: (Instant::now(), default()),
+        }
+    }
+
     fn angle_between_closest_ray_and_point(
         &self,
         climate_pos: Vec2,
@@ -340,25 +358,20 @@ impl Climate {
         (self.rays_animation.elapsed_secs() * 0.25) % INITIAL_ROTATION
     }
 
-    fn new() -> Self {
-        Self {
-            path: LevelPath::InfinitySign,
-            current_path_since: Stopwatch::default(),
-            rays_animation: Stopwatch::default(),
-            mode: (Instant::now(), default()),
-        }
-    }
-
     fn path_segment(&self) -> (usize, f32) {
         self.path.segment(&self.current_path_since.elapsed())
     }
 }
 
 impl ClimateLightMode {
-    fn color(self) -> Color {
+    pub(crate) fn push_back_force_fully_casted_in_climate_rays(self) -> f32 {
         match self {
-            ClimateLightMode::Hot => LIGHT_COLOR_HOT,
-            ClimateLightMode::Cold => LIGHT_COLOR_COLD,
+            ClimateLightMode::Hot => {
+                HOT_PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS
+            }
+            ClimateLightMode::Cold => {
+                COLD_PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS
+            }
         }
     }
 
@@ -373,6 +386,13 @@ impl ClimateLightMode {
         match self {
             ClimateLightMode::Hot => HOT_DEDUCTION_INTERVAL,
             ClimateLightMode::Cold => COLD_DEDUCTION_INTERVAL,
+        }
+    }
+
+    fn color(self) -> Color {
+        match self {
+            ClimateLightMode::Hot => LIGHT_COLOR_HOT,
+            ClimateLightMode::Cold => LIGHT_COLOR_COLD,
         }
     }
 }

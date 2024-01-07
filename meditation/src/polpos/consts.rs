@@ -18,16 +18,15 @@ pub(crate) const HOSHI_SPECIAL_HITBOX_RADIUS: f32 = 35.0;
 pub(crate) const POLPO_SPRITE_SIZE: f32 = 100.0;
 /// Each video is the same square.
 pub(crate) const VIDEO_SIZE: Vec2 = Vec2::new(32.0, 32.0);
-pub(crate) const VIDEO_FPS: f32 = 60.0;
+pub(crate) const VIDEO_FPS: f32 = 30.0;
 /// As more light is shone, more cracks appear on the Polpo.
 pub(crate) const MAX_CRACKS: usize = 5;
 /// By default, occluder is pushed towards the climate.
 pub(crate) const PUSH_BACK_FORCE_AT_REST: f32 = -20.0;
-pub(crate) const PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS: f32 = 40.0;
 /// Beyond this distance, the occluder is simply not affected by Hoshi.
 pub(crate) const NONE_OF_HOSHI_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 169.0;
 pub(crate) const PUSH_BACK_FORCE_HOSHI_DISTANCE: f32 = 80.0;
-pub(crate) const OCCLUDER_SIZE: f32 = 5.5;
+pub(crate) const OCCLUDER_SIZE: f32 = 6.5;
 /// Plays static as on old TVs.
 pub(crate) const STATIC_ATLAS_FRAMES: usize = 5;
 /// How long each frame of static is shown.

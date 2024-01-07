@@ -106,16 +106,23 @@ pub(super) fn to_environment(
         return;
     };
 
+    let push_back_force_fully_casted_in_climate_rays = climate
+        .mode()
+        .push_back_force_fully_casted_in_climate_rays();
+    let max_force: f32 = PUSH_BACK_FORCE_AT_REST
+        + PUSH_BACK_FORCE_HOSHI_DISTANCE
+        + push_back_force_fully_casted_in_climate_rays;
+
     for (polpo_id, mut occluder_pos) in polpo_occluders.iter_mut() {
         let (polpo_entity, mut polpo, polpo_pos, mut sprite) = polpos
             .get_mut(polpo_id.get())
-            .expect("Each occluder should have a polpo parent");
+            .expect("Each occluder should have a Polpo parent");
 
         //
         // 1.
         //
 
-        // between [0; 1], increases as Hoshi gets closer to polpo
+        // between [0; 1], increases as Hoshi gets closer to Polpo
         let hoshi_ray_bath = {
             let d = hoshi.translation.distance(polpo_pos.translation);
 
@@ -129,13 +136,13 @@ pub(super) fn to_environment(
         let hoshi_push_back_force_contrib =
             hoshi_ray_bath * PUSH_BACK_FORCE_HOSHI_DISTANCE;
 
-        // between [0; 1], how much is the polpo being lit by the climate
+        // between [0; 1], how much is the Polpo being lit by the climate
         let climate_ray_bath = climate.ray_bath(
             climate_transform.translation.truncate(),
             polpo_pos.translation.truncate(),
         );
         let climate_push_back_force_contrib =
-            climate_ray_bath * PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS;
+            climate_ray_bath * push_back_force_fully_casted_in_climate_rays;
 
         //
         // 2.
@@ -155,11 +162,7 @@ pub(super) fn to_environment(
         let dice_roll = rand::random::<f32>();
 
         let should_crack = |push_back_force: f32| {
-            const MAX_FORCE: f32 = PUSH_BACK_FORCE_AT_REST
-                + PUSH_BACK_FORCE_HOSHI_DISTANCE
-                + PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS;
-
-            let crack_chance_per_second = 2.0 * push_back_force / MAX_FORCE;
+            let crack_chance_per_second = 2.0 * push_back_force / max_force;
             let crack_chance = crack_chance_per_second * time.delta_seconds();
 
             dice_roll < crack_chance
@@ -261,5 +264,5 @@ pub(super) fn to_environment(
 
     // increase jitter intensity as more polpos are spawned
     climate_light.jitter_intensity =
-        (polpos.iter().len() as f32 / 5.0).min(1.0);
+        (polpos.iter().len() as f32 / 5.0).min(2.0);
 }
