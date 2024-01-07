@@ -3,10 +3,12 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use bevy::{ecs::system::Resource, math::Vec2, prelude::trace, utils::Instant};
+use bevy::utils::Instant;
 use rusqlite::OptionalExtension;
 use rusqlite_migration::{Migrations, M};
 use serde::{de::DeserializeOwned, Serialize};
+
+use crate::prelude::*;
 
 #[derive(Resource)]
 pub struct GlobalStore {
@@ -38,11 +40,10 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
         let value =
             Some(ron::from_str(&raw_value).expect("Cannot deserialize"));
 
-        trace!(
-            "Entry::get({}) took {}ms",
-            self.key,
-            now.elapsed().as_millis()
-        );
+        let ms = now.elapsed().as_millis();
+        if ms > 1 {
+            warn!("Entry::get({}) took {}ms", self.key, ms);
+        }
 
         value
     }
@@ -62,11 +63,10 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
             .expect("Cannot insert into SQLite");
         }
 
-        trace!(
-            "Entry::set({}) took {}ms",
-            self.key,
-            now.elapsed().as_millis()
-        );
+        let ms = now.elapsed().as_millis();
+        if ms > 1 {
+            warn!("Entry::set({}) took {}ms", self.key, ms);
+        }
     }
 
     pub fn remove(&self) {

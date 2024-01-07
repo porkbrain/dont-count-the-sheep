@@ -1,8 +1,9 @@
 pub use std::time::Duration;
 
 pub use bevy::{math::vec2, prelude::*, time::Stopwatch};
+pub use leafwing_input_manager::action_state::ActionState;
 
-pub use crate::GlobalGameState;
+pub use crate::{GlobalAction, GlobalGameState};
 
 pub type Pos2 = Vec2;
 

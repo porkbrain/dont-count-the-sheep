@@ -15,6 +15,7 @@ common_physics.workspace = true
 common_visuals.workspace = true
 itertools.workspace = true
 lazy_static.workspace = true
+leafwing-input-manager.workspace = true
 main_game_lib.workspace = true
 rand.workspace = true
 

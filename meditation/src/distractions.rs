@@ -4,7 +4,7 @@ mod react;
 mod spawner;
 mod videos;
 
-use bevy::time::Stopwatch;
+use bevy::{ecs::event::event_update_condition, time::Stopwatch};
 use common_physics::PoissonsEquationUpdateEvent;
 use rand::random;
 use videos::Video;
@@ -55,9 +55,14 @@ impl bevy::app::Plugin for Plugin {
                     spawner::try_spawn_next,
                     follow_curve,
                     react::to_environment,
-                    react::to_hoshi_special.after(hoshi::loading_special),
+                    react::to_hoshi_special
+                        .run_if(event_update_condition::<hoshi::ActionEvent>)
+                        .after(hoshi::loading_special),
                     effects::bolt::propel,
                     destroyed
+                        .run_if(
+                            event_update_condition::<DistractionDestroyedEvent>,
+                        )
                         .after(react::to_hoshi_special)
                         .after(react::to_environment),
                 )
@@ -146,12 +151,6 @@ fn destroyed(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    if events.is_empty() {
-        return;
-    }
-
-    let mut score = score.single_mut();
-
     for DistractionDestroyedEvent {
         video,
         at_translation,
@@ -160,6 +159,7 @@ fn destroyed(
     {
         debug!("Received distraction destroyed event (special: {by_special})");
 
+        let mut score = score.single_mut();
         // the further away the distraction is, the more points it's worth
         *score += at_translation.length() as usize;
         // notify the spawner that the distraction is gone

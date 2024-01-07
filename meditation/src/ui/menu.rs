@@ -50,82 +50,41 @@ pub(super) fn despawn(mut commands: Commands, menu: Query<Entity, With<Menu>>) {
 
 pub(super) fn open(
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut keyboard: ResMut<Input<KeyCode>>,
+    mut controls: ResMut<ActionState<GlobalAction>>,
 ) {
-    if !keyboard.just_pressed(KeyCode::Escape) {
-        return;
-    }
-
     debug!("Pausing to open menu");
-    keyboard.clear(); // prevent accidental immediate unpausing
+    // prevent accidental immediate unpausing
+    controls.consume(GlobalAction::Cancel);
 
     next_state.set(GlobalGameState::MeditationInMenu);
 }
 
 pub(super) fn close(
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut keyboard: ResMut<Input<KeyCode>>,
+    mut controls: ResMut<ActionState<GlobalAction>>,
 ) {
-    if !keyboard.just_pressed(KeyCode::Escape) {
-        return;
-    }
-
     debug!("Closing menu and unpausing");
-
-    // prevent accidental immediate unpausing
-    keyboard.clear();
-    // we simulate press to close the menu, so we need to simulate release
-    keyboard.release(KeyCode::Escape);
+    // prevent accidental immediate pausing
+    controls.consume(GlobalAction::Cancel);
 
     next_state.set(GlobalGameState::MeditationInGame);
 }
 
-/// The order of the systems is important.
-/// We simulate ESC to close the menu.
-/// So we need to select before we close.
-pub(super) fn select(
-    mut stack: ResMut<GlobalGameStateTransitionStack>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
+pub(super) fn change_selection(
+    controls: Res<ActionState<GlobalAction>>,
+    asset_server: Res<AssetServer>,
+
     mut menu: Query<&mut Menu>,
     mut selection_marker: Query<
         (&mut Style, &mut UiImage),
         With<SelectionMarker>,
     >,
-    mut keyboard: ResMut<Input<KeyCode>>,
-    asset_server: Res<AssetServer>,
 ) {
-    let Ok(mut menu) = menu.get_single_mut() else {
-        return;
-    };
-
+    let mut menu = menu.single_mut();
     let curr_selection = menu.selection;
 
-    if keyboard.just_pressed(KeyCode::Return)
-        || keyboard.just_pressed(KeyCode::Space)
-    {
-        debug!("Going with {curr_selection:?}");
-
-        match curr_selection {
-            Selection::Resume => keyboard.press(KeyCode::Escape),
-            Selection::Restart => {
-                stack.push(GlobalGameStateTransition::MeditationQuittingToMeditationLoading);
-                next_state.set(GlobalGameState::MeditationQuitting);
-            }
-            Selection::Quit => {
-                stack.push(
-                    GlobalGameStateTransition::MeditationQuittingToApartment,
-                );
-                next_state.set(GlobalGameState::MeditationQuitting);
-            }
-        }
-
-        return;
-    }
-
-    let pressed_up =
-        keyboard.just_pressed(KeyCode::Up) || keyboard.just_pressed(KeyCode::W);
-    let pressed_down = keyboard.just_pressed(KeyCode::Down)
-        || keyboard.just_pressed(KeyCode::S);
+    let pressed_up = controls.just_pressed(GlobalAction::MoveUp);
+    let pressed_down = controls.just_pressed(GlobalAction::MoveDown);
 
     let new_selection = if pressed_up {
         Some(curr_selection.prev())
@@ -152,6 +111,34 @@ pub(super) fn select(
             Selection::Restart => assets::FACE_ON_RESTART,
             Selection::Quit => assets::FACE_ON_EXIT,
         }));
+    }
+}
+
+/// The order of the systems is important.
+/// We simulate ESC to close the menu.
+/// So we need to select before we close.
+pub(super) fn select(
+    mut stack: ResMut<GlobalGameStateTransitionStack>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut controls: ResMut<ActionState<GlobalAction>>,
+
+    menu: Query<&Menu>,
+) {
+    let curr_selection = menu.single().selection;
+
+    debug!("Going with {curr_selection:?}");
+
+    match curr_selection {
+        Selection::Resume => controls.press(GlobalAction::Cancel),
+        Selection::Restart => {
+            stack.push(GlobalGameStateTransition::MeditationQuittingToMeditationLoading);
+            next_state.set(GlobalGameState::MeditationQuitting);
+        }
+        Selection::Quit => {
+            stack
+                .push(GlobalGameStateTransition::MeditationQuittingToApartment);
+            next_state.set(GlobalGameState::MeditationQuitting);
+        }
     }
 }
 

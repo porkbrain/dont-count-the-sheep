@@ -358,7 +358,10 @@ pub(super) fn rotate(
 ///
 /// We need to do this for each camera in case there are more.
 pub(super) fn update_camera_on_special(
+    mut commands: Commands,
     mut action: EventReader<ActionEvent>,
+    time: Res<Time>,
+
     mut state: Query<&mut CameraState>,
     mut cameras: Query<
         (
@@ -369,8 +372,6 @@ pub(super) fn update_camera_on_special(
         ),
         With<Camera>,
     >,
-    mut commands: Commands,
-    time: Res<Time>,
 ) {
     let mut state = state.single_mut();
 

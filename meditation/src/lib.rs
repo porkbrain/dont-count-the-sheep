@@ -129,8 +129,12 @@ fn all_loaded(mut next_state: ResMut<NextState<GlobalGameState>>) {
 fn all_cleaned_up(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut controls: ResMut<ActionState<GlobalAction>>,
 ) {
     info!("Leaving meditation game");
+
+    // be a good guy and don't invade other game loops with our controls
+    controls.consume_all();
 
     match stack.pop_next_for(GlobalGameState::MeditationQuitting) {
         // possible restart or change of game loop

@@ -10,8 +10,9 @@ mod layout;
 mod prelude;
 mod zindex;
 
+use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
-    GlobalGameStateTransition, GlobalGameStateTransitionStack,
+    GlobalAction, GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 use prelude::*;
 
@@ -55,7 +56,7 @@ pub fn add(app: &mut App) {
     info!("Added apartment to app");
 }
 
-/// Temp. solution: press ESC to quit.
+/// TODO: Temp. solution: press ESC to quit.
 fn close_game(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
@@ -95,8 +96,12 @@ fn all_loaded(
 fn all_cleaned_up(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut controls: ResMut<ActionState<GlobalAction>>,
 ) {
     info!("Leaving apartment");
+
+    // be a good guy and don't invade other game loops with our controls
+    controls.consume_all();
 
     match stack.pop_next_for(GlobalGameState::ApartmentQuitting) {
         // possible restart or change of game loop

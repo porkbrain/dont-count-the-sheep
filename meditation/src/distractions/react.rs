@@ -14,11 +14,12 @@ use crate::{
 
 /// If Hoshi is very close and does special, the distraction is destroyed.
 pub(super) fn to_hoshi_special(
+    mut commands: Commands,
     mut score: EventWriter<DistractionDestroyedEvent>,
     mut hoshi_actions: EventReader<hoshi::ActionEvent>,
+
     hoshi: Query<&Transform, (With<Hoshi>, Without<Distraction>)>,
     distractions: Query<(Entity, &Distraction, &Transform), Without<Hoshi>>,
-    mut commands: Commands,
 ) {
     // it's possible that the game is paused the same frame as the event being
     // emitted, but that's so unlikely that we don't care

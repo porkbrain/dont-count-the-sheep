@@ -1,12 +1,10 @@
-use bevy::{
-    input::common_conditions::input_just_pressed, render::view::RenderLayers,
-    sprite::Anchor,
-};
+use bevy::{render::view::RenderLayers, sprite::Anchor};
 use bevy_grid_squared::{direction::Direction as GridDirection, Square};
 use common_layout::{IntoMap, SquareKind};
+use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
-    ApartmentStore, GlobalGameStateTransition, GlobalGameStateTransitionStack,
-    GlobalStore,
+    interaction_pressed, move_action_pressed, ApartmentStore, GlobalAction,
+    GlobalGameStateTransition, GlobalGameStateTransitionStack, GlobalStore,
 };
 
 use crate::{
@@ -32,9 +30,9 @@ const DEFAULT_INITIAL_POSITION: Vec2 = vec2(-15.0, 15.0);
 /// game is closed, the character is spawned next to the meditation chair.
 const POSITION_ON_LOAD_FROM_MEDITATION: Vec2 = vec2(25.0, 60.0);
 /// And it does a little animation of walking down.
-const WALK_TO_ONLOAD_FROM_MEDITATION: Vec2 = vec2(25.0, 45.0);
+const WALK_TO_ONLOAD_FROM_MEDITATION: Vec2 = vec2(25.0, 40.0);
 /// Walk down slowly otherwise it'll happen before the player even sees it.
-const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(1000);
+const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(750);
 
 /// Useful for despawning entities when leaving the apartment.
 #[derive(Component)]
@@ -73,14 +71,15 @@ impl bevy::app::Plugin for Plugin {
         app.add_systems(
             Update,
             (
-                move_around,
+                move_around.run_if(move_action_pressed()),
                 load_zone_overlay,
                 start_meditation_minigame_if_near_chair
-                    .run_if(input_just_pressed(KeyCode::Space)),
+                    .run_if(interaction_pressed()),
             )
                 .run_if(in_state(GlobalGameState::InApartment)),
-        )
-        .add_systems(
+        );
+
+        app.add_systems(
             FixedUpdate,
             animate_movement.run_if(in_state(GlobalGameState::InApartment)),
         );
@@ -177,48 +176,28 @@ fn despawn(
 
 /// Use keyboard to move around.
 fn move_around(
-    keyboard: Res<Input<KeyCode>>,
     map: Res<common_layout::Map<Apartment>>,
+    controls: Res<ActionState<GlobalAction>>,
+
     mut character: Query<&mut Controllable>,
 ) {
     use GridDirection::*;
 
-    let (up, down, left, right) = {
-        let up = keyboard.pressed(KeyCode::W) || keyboard.pressed(KeyCode::Up);
-        let down =
-            keyboard.pressed(KeyCode::S) || keyboard.pressed(KeyCode::Down);
-        let left =
-            keyboard.pressed(KeyCode::A) || keyboard.pressed(KeyCode::Left);
-        let right =
-            keyboard.pressed(KeyCode::D) || keyboard.pressed(KeyCode::Right);
-
-        (up && !down, down && !up, left && !right, right && !left)
+    let next_steps = match controls.get_pressed().last() {
+        Some(GlobalAction::MoveUp) => [Top, TopLeft, TopRight],
+        Some(GlobalAction::MoveDown) => [Bottom, BottomLeft, BottomRight],
+        Some(GlobalAction::MoveLeft) => [Left, TopLeft, BottomLeft],
+        Some(GlobalAction::MoveRight) => [Right, TopRight, BottomRight],
+        Some(GlobalAction::MoveUpLeft) => [TopLeft, Top, Left],
+        Some(GlobalAction::MoveUpRight) => [TopRight, Top, Right],
+        Some(GlobalAction::MoveDownLeft) => [BottomLeft, Bottom, Left],
+        Some(GlobalAction::MoveDownRight) => [BottomRight, Bottom, Right],
+        _ => {
+            return;
+        }
     };
 
-    // Ordered by priority.
-    let next_steps = if up && left {
-        [TopLeft, Top, Left]
-    } else if up && right {
-        [TopRight, Top, Right]
-    } else if down && left {
-        [BottomLeft, Bottom, Left]
-    } else if down && right {
-        [BottomRight, Bottom, Right]
-    } else if left {
-        [Left, TopLeft, BottomLeft]
-    } else if right {
-        [Right, TopRight, BottomRight]
-    } else if down {
-        [Bottom, BottomLeft, BottomRight]
-    } else if up {
-        [Top, TopLeft, TopRight]
-    } else {
-        return;
-    };
-
-    let Ok(mut character) = character.get_single_mut() else {
-        return;
-    };
+    let mut character = character.single_mut();
 
     if character
         .walking_to
@@ -320,9 +299,10 @@ fn animate_movement(
 
         character.walking_from = new_from;
     } else {
-        let extra = (time.elapsed_seconds() / (step_time.as_secs_f32() * 5.0))
-            .floor() as usize
-            % 2;
+        let animation_step_time =
+            animation_step_secs(step_time.as_secs_f32(), current_direction);
+        let extra =
+            (time.elapsed_seconds() / animation_step_time).floor() as usize % 2;
 
         sprite.index = match current_direction {
             Top => 2 + extra,
@@ -426,4 +406,14 @@ impl ControllableTarget {
             planned: None,
         }
     }
+}
+
+/// How often we change walking frame based on how fast we're walking from
+/// square to square.
+fn animation_step_secs(step_secs: f32, dir: GridDirection) -> f32 {
+    match dir {
+        GridDirection::Top | GridDirection::Bottom => step_secs * 5.0,
+        _ => step_secs * 3.5,
+    }
+    .clamp(0.1, 0.5)
 }

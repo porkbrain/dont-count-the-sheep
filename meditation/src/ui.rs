@@ -37,6 +37,8 @@ mod consts {
         Val::Px(5.0 * PIXEL_ZOOM);
 }
 
+use leafwing_input_manager::common_conditions::action_just_pressed;
+use main_game_lib::move_action_pressed;
 pub(crate) use score::Score;
 
 use crate::prelude::*;
@@ -57,18 +59,30 @@ impl bevy::app::Plugin for Plugin {
         )
         .add_systems(
             Update,
-            menu::open.run_if(in_state(GlobalGameState::MeditationInGame)),
+            menu::open
+                .run_if(in_state(GlobalGameState::MeditationInGame))
+                .run_if(action_just_pressed(GlobalAction::Cancel)),
+        )
+        .add_systems(
+            Update,
+            menu::change_selection
+                .run_if(in_state(GlobalGameState::MeditationInMenu))
+                .run_if(move_action_pressed())
+                .before(menu::select),
         )
         .add_systems(
             Update,
             // order important bcs we simulate ESC to close
             menu::select
                 .run_if(in_state(GlobalGameState::MeditationInMenu))
+                .run_if(action_just_pressed(GlobalAction::Interact))
                 .before(menu::close),
         )
         .add_systems(
             Update,
-            menu::close.run_if(in_state(GlobalGameState::MeditationInMenu)),
+            menu::close
+                .run_if(in_state(GlobalGameState::MeditationInMenu))
+                .run_if(action_just_pressed(GlobalAction::Cancel)),
         )
         .add_systems(
             OnEnter(GlobalGameState::MeditationQuitting),

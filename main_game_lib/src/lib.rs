@@ -1,9 +1,14 @@
+pub mod action;
 pub mod prelude;
 pub mod store;
 pub mod vec2_ext;
 
+pub use action::*;
 use bevy::{app::AppExit, prelude::*, window::WindowTheme};
 use bevy_pixel_camera::PixelCameraPlugin;
+use leafwing_input_manager::{
+    action_state::ActionState, plugin::InputManagerPlugin,
+};
 pub use store::*;
 
 /// What's shown on screen.
@@ -70,6 +75,8 @@ pub fn windowed_app() -> App {
     app.add_state::<GlobalGameState>();
     app.init_resource::<GlobalStore>();
     app.insert_resource(GlobalGameStateTransitionStack::default());
+    app.init_resource::<ActionState<GlobalAction>>()
+        .insert_resource(GlobalAction::input_map());
 
     app.add_plugins(
         DefaultPlugins
@@ -98,6 +105,7 @@ pub fn windowed_app() -> App {
         bevy_magic_light_2d::Plugin,
         common_visuals::Plugin,
         bevy_webp_anim::Plugin,
+        InputManagerPlugin::<GlobalAction>::default(),
     ));
 
     app.add_systems(OnEnter(GlobalGameState::Exit), exit);

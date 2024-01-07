@@ -11,16 +11,17 @@ use crate::{
 
 /// Controls when in normal mode.
 pub(super) fn normal(
-    mut broadcast: EventWriter<ActionEvent>,
-    mut hoshi: Query<
-        (Entity, &mut mode::Normal, &mut Velocity, &Transform),
-        Without<SparkEffect>, // to make bevy be sure there won't be conflicts
-    >,
-    mut spark: Query<(&mut Transform, &mut Visibility), With<SparkEffect>>,
     mut commands: Commands,
-    keyboard: Res<Input<KeyCode>>,
+    mut broadcast: EventWriter<ActionEvent>,
+    controls: Res<ActionState<GlobalAction>>,
     gravity: Res<PoissonsEquation<Gravity>>,
     time: Res<Time>,
+
+    mut hoshi: Query<
+        (Entity, &mut mode::Normal, &mut Velocity, &Transform),
+        Without<SparkEffect>,
+    >,
+    mut spark: Query<(&mut Transform, &mut Visibility), With<SparkEffect>>,
 ) {
     let Ok((entity, mut mode, mut vel, transform)) = hoshi.get_single_mut()
     else {
@@ -28,18 +29,8 @@ pub(super) fn normal(
     };
     mode.tick(&time);
 
-    let pressed_space = keyboard.pressed(KeyCode::Space);
-    let pressed_left =
-        keyboard.pressed(KeyCode::Left) || keyboard.pressed(KeyCode::A);
-    let pressed_right =
-        keyboard.pressed(KeyCode::Right) || keyboard.pressed(KeyCode::D);
-    let pressed_down =
-        keyboard.pressed(KeyCode::Down) || keyboard.pressed(KeyCode::S);
-    let pressed_up =
-        keyboard.pressed(KeyCode::Up) || keyboard.pressed(KeyCode::W);
-
-    if mode.can_use_special && pressed_space {
-        if let Some(angle) = unit_circle_angle(&keyboard) {
+    if mode.can_use_special && controls.pressed(GlobalAction::Interact) {
+        if let Some(angle) = unit_circle_angle(&controls) {
             debug!("Send loading special");
             broadcast.send(ActionEvent::StartLoadingSpecial {
                 at_translation: transform.translation.truncate(),
@@ -61,6 +52,19 @@ pub(super) fn normal(
             return;
         }
     }
+
+    let pressed_left = controls.pressed(GlobalAction::MoveLeft)
+        || controls.pressed(GlobalAction::MoveDownLeft)
+        || controls.pressed(GlobalAction::MoveUpLeft);
+    let pressed_right = controls.pressed(GlobalAction::MoveRight)
+        || controls.pressed(GlobalAction::MoveDownRight)
+        || controls.pressed(GlobalAction::MoveUpRight);
+    let pressed_down = controls.pressed(GlobalAction::MoveDown)
+        || controls.pressed(GlobalAction::MoveDownLeft)
+        || controls.pressed(GlobalAction::MoveDownRight);
+    let pressed_up = controls.pressed(GlobalAction::MoveUp)
+        || controls.pressed(GlobalAction::MoveUpLeft)
+        || controls.pressed(GlobalAction::MoveUpRight);
 
     let dt = time.delta_seconds();
     let gvec = gravity.gradient_at(ChangeOfBasis::from(*transform))
@@ -171,11 +175,12 @@ pub(super) fn normal(
 
 /// Controls while loading special.
 pub(crate) fn loading_special(
-    mut broadcast: EventWriter<ActionEvent>,
-    mut hoshi: Query<(Entity, &mut mode::LoadingSpecial, &mut Velocity)>,
     mut commands: Commands,
-    keyboard: Res<Input<KeyCode>>,
+    mut broadcast: EventWriter<ActionEvent>,
     time: Res<Time>,
+    controls: Res<ActionState<GlobalAction>>,
+
+    mut hoshi: Query<(Entity, &mut mode::LoadingSpecial, &mut Velocity)>,
 ) {
     let Ok((entity, mut mode, mut vel)) = hoshi.get_single_mut() else {
         return;
@@ -185,7 +190,7 @@ pub(crate) fn loading_special(
     let elapsed = mode.activated.elapsed();
 
     // see whether the player has changed the direction
-    if let Some(angle) = unit_circle_angle(&keyboard) {
+    if let Some(angle) = unit_circle_angle(&controls) {
         mode.angle = angle;
     }
 
@@ -207,46 +212,25 @@ pub(crate) fn loading_special(
     }
 }
 
-fn unit_circle_angle(key: &Input<KeyCode>) -> Option<Radians> {
-    use KeyCode::*;
+fn unit_circle_angle(a: &ActionState<GlobalAction>) -> Option<Radians> {
+    use GlobalAction::*;
 
-    let left = key.pressed(Left)
-        || key.just_released(Left)
-        || key.pressed(A)
-        || key.just_released(A);
-    let right = key.pressed(Right)
-        || key.just_released(Right)
-        || key.pressed(D)
-        || key.just_released(D);
-    let down = key.pressed(Down)
-        || key.just_released(Down)
-        || key.pressed(S)
-        || key.just_released(S);
-    let up = key.pressed(Up)
-        || key.just_released(Up)
-        || key.pressed(W)
-        || key.just_released(W);
-
-    let angle = if left && !right {
-        if up && !down {
-            3.0 * PI / 4.0 // ←↑ = ↖
-        } else if down && !up {
-            5.0 * PI / 4.0 // ←↓ = ↙
-        } else {
-            PI // ←
-        }
-    } else if right && !left {
-        if up && !down {
-            PI / 4.0 // ↑→ = ↗
-        } else if down && !up {
-            7.0 * PI / 4.0 // ↓→ = ↘
-        } else {
-            2.0 * PI // →
-        }
-    } else if down && !up {
+    let angle = if a.pressed(MoveLeft) {
+        PI // ←
+    } else if a.pressed(MoveRight) {
+        2.0 * PI // →
+    } else if a.pressed(MoveUp) {
+        PI / 2.0 // ↑
+    } else if a.pressed(MoveDown) {
         3.0 * PI / 2.0 // ↓
-    } else if up && !down {
-        PI / 2.0 // ↑ (default)
+    } else if a.pressed(MoveUpLeft) {
+        3.0 * PI / 4.0 // ↖
+    } else if a.pressed(MoveUpRight) {
+        PI / 4.0 // ↗
+    } else if a.pressed(MoveDownRight) {
+        7.0 * PI / 4.0 // ↘
+    } else if a.pressed(MoveDownLeft) {
+        5.0 * PI / 4.0 // ↙
     } else {
         return None;
     };

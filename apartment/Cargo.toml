@@ -16,6 +16,7 @@ lazy_static.workspace = true
 main_game_lib.workspace = true
 ron.workspace = true
 serde.workspace = true
+leafwing-input-manager.workspace = true
 
 [features]
 dev = ["bevy/glam_assert", "common_layout/dev"]

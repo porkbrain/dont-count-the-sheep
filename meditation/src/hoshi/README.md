@@ -3,7 +3,9 @@
 Help Winnie to concentrate.
 
 Player controls character called Hoshi.
-The controls are WASD (or arrow keys) to move and move + `Space` to activate the special.
+The controls are classically the global movement keys (defaults to `WASD`) and
+the interact key (defaults to `Space`) to activate the special.
+The interact key must be pressed in conjunction with a movement key.
 The sprite should feel floaty as if you were playing Smashbros Puff after 3 Red Bulls®.
 
 ## Features

@@ -1,12 +1,16 @@
 use std::f32::consts::PI;
 
-use bevy::{render::view::RenderLayers, time::Stopwatch, utils::Instant};
+use bevy::{
+    ecs::event::event_update_condition, render::view::RenderLayers,
+    time::Stopwatch, utils::Instant,
+};
 use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
 use common_visuals::ColorExt;
 use itertools::Itertools;
 
 use crate::{
     cameras::{BackgroundLightScene, OBJ_RENDER_LAYER},
+    hoshi,
     path::LevelPath,
     prelude::*,
 };
@@ -27,8 +31,6 @@ const OCCLUDER_DISTANCE: f32 = 40.0;
 /// We calculate the distribution around for the occluder[1] (0th starts at 0).
 const INITIAL_ROTATION: f32 = 2.0 * PI / OCCLUDER_COUNT as f32;
 const INITIAL_HALF_ROTATION: f32 = INITIAL_ROTATION / 2.0;
-/// What to press to toggle the light mode.
-const TOGGLE_MODE_KEY: KeyCode = KeyCode::ShiftLeft;
 /// When the mode is [`LightMode::Hot`], we deduct this much from the score.
 const HOT_DEDUCTION: usize = 80;
 /// How often do we deduct from the score when the mode is [`LightMode::Hot`].
@@ -84,11 +86,17 @@ impl bevy::app::Plugin for Plugin {
             .add_systems(
                 Update,
                 (
-                    toggle_mode,
+                    toggle_mode
+                        .run_if(event_update_condition::<hoshi::ActionEvent>)
+                        .after(hoshi::loading_special),
                     smoothly_transition_light_color,
-                    follow_curve,
                     move_occluders,
                 )
+                    .run_if(in_state(GlobalGameState::MeditationInGame)),
+            )
+            .add_systems(
+                FixedUpdate,
+                follow_curve
                     .run_if(in_state(GlobalGameState::MeditationInGame)),
             )
             .add_systems(
@@ -206,16 +214,22 @@ fn despawn_raypoints(
     }
 }
 
-/// Changes the mode of the climate.
+/// Changes the mode of the climate on hoshi's special.
 /// See readme for the game to understand what this means.
 /// In short: we change light color, how score is deducted and how strong is
 /// the ray on the distractions.
 fn toggle_mode(
+    mut action: EventReader<hoshi::ActionEvent>,
+
     mut climate: Query<&mut Climate>,
     mut score: Query<&mut crate::ui::Score>,
-    keyboard: Res<Input<KeyCode>>,
 ) {
-    if !keyboard.just_pressed(TOGGLE_MODE_KEY) {
+    let just_started_loading = action.read().any(|e| match e {
+        hoshi::ActionEvent::FiredSpecial => true,
+        _ => false,
+    });
+
+    if !just_started_loading {
         return;
     }
 
