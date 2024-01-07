@@ -42,7 +42,7 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
 
         let ms = now.elapsed().as_millis();
         if ms > 1 {
-            warn!("Entry::get({}) took {}ms", self.key, ms);
+            warn!("Entry::get({}) took {ms}ms", self.key);
         }
 
         value
@@ -65,7 +65,7 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
 
         let ms = now.elapsed().as_millis();
         if ms > 1 {
-            warn!("Entry::set({}) took {}ms", self.key, ms);
+            warn!("Entry::set({}) took {ms}ms", self.key);
         }
     }
 
@@ -78,11 +78,10 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
                 .expect("Cannot delete from SQLite");
         }
 
-        trace!(
-            "Entry::remove({}) took {}ms",
-            self.key,
-            now.elapsed().as_millis()
-        );
+        let ms = now.elapsed().as_millis();
+        if ms > 1 {
+            warn!("Entry::remove({}) took {ms}ms", self.key);
+        }
     }
 }
 

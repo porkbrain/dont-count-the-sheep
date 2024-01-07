@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
 use bevy::{
-    core_pipeline::bloom::BloomSettings,
     pbr::{MAX_CASCADES_PER_LIGHT, MAX_DIRECTIONAL_LIGHTS},
     prelude::*,
     reflect::TypePath,
@@ -130,7 +129,7 @@ impl<T: LightScene> Material2d for PostProcessingMaterial<T> {
     }
 }
 
-pub fn setup_post_processing_camera<T: LightScene>(
+pub fn setup_post_processing_quad<T: LightScene>(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<PostProcessingMaterial<T>>>,
@@ -170,24 +169,5 @@ pub fn setup_post_processing_camera<T: LightScene>(
             ..default()
         },
         layer,
-    ));
-
-    commands.spawn((
-        T::default(),
-        Name::new("post_processing_camera"),
-        Camera2dBundle {
-            camera: Camera {
-                order: T::camera_order(),
-                hdr: true,
-                ..default()
-            },
-            ..Camera2dBundle::default()
-        },
-        BloomSettings {
-            intensity: 0.1,
-            ..default()
-        },
-        layer,
-        UiCameraConfig { show_ui: false },
     ));
 }

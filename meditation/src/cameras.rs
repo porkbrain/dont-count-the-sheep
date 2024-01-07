@@ -1,10 +1,10 @@
 use bevy::{
-    core_pipeline::clear_color::ClearColorConfig,
+    core_pipeline::{bloom::BloomSettings, clear_color::ClearColorConfig},
     render::{camera::RenderTarget, view::RenderLayers},
 };
 use bevy_magic_light_2d::{
     gi::{
-        compositing::{setup_post_processing_camera, CameraTargets},
+        compositing::{setup_post_processing_quad, CameraTargets},
         LightScene,
     },
     SceneCamera,
@@ -28,11 +28,15 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(GlobalGameState::MeditationLoading),
-            BackgroundLightScene::setup_post_processing_camera_system(),
+            (
+                BackgroundLightScene::setup_post_processing_quad_system(),
+                spawn_bg_render_camera
+                    .after(setup_post_processing_quad::<BackgroundLightScene>),
+            ),
         );
         app.add_systems(
-            OnEnter(GlobalGameState::MeditationLoading),
-            spawn.after(setup_post_processing_camera::<BackgroundLightScene>),
+            OnEnter(GlobalGameState::MeditationInGame),
+            spawn_cameras,
         );
         app.add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
 
@@ -50,16 +54,32 @@ impl LightScene for BackgroundLightScene {
     fn render_layer_index() -> u8 {
         (RenderLayers::TOTAL_LAYERS - 2) as u8
     }
-
-    fn camera_order() -> isize {
-        1
-    }
 }
 
-fn spawn(
-    mut commands: Commands,
-    bg_camera_targets: Res<CameraTargets<BackgroundLightScene>>,
-) {
+/// These cameras render into the game window.
+/// We spawn them last after everything else is ready to avoid things just
+/// popping into existence X frames later.
+fn spawn_cameras(mut commands: Commands) {
+    info!("Spawning cameras");
+
+    commands.spawn((
+        BackgroundLightScene,
+        Camera2dBundle {
+            camera: Camera {
+                order: 1,
+                hdr: true,
+                ..default()
+            },
+            ..Camera2dBundle::default()
+        },
+        BloomSettings {
+            intensity: 0.1,
+            ..default()
+        },
+        RenderLayers::layer(BackgroundLightScene::render_layer_index()),
+        UiCameraConfig { show_ui: false },
+    ));
+
     commands.spawn((
         BackgroundLightScene,
         PixelZoom::Fixed(PIXEL_ZOOM as i32),
@@ -77,6 +97,15 @@ fn spawn(
             ..default()
         },
     ));
+}
+
+/// This camera does not render into a window, but into a quad that's then
+/// rendered by whichever camera renders the layer [`LightScene::render_layer`].
+fn spawn_bg_render_camera(
+    mut commands: Commands,
+    bg_camera_targets: Res<CameraTargets<BackgroundLightScene>>,
+) {
+    info!("Spawning bg render camera");
 
     commands
         .spawn((

@@ -18,7 +18,7 @@ use self::pipeline::GiTargets;
 use crate::{
     gi::{
         compositing::{
-            setup_post_processing_camera, CameraTargets, PostProcessingMaterial,
+            setup_post_processing_quad, CameraTargets, PostProcessingMaterial,
         },
         pipeline::{
             system_queue_bind_groups, system_setup_gi_pipeline,
@@ -59,7 +59,6 @@ pub trait LightScene:
     /// order.
     const HANDLE_START: u128;
 
-    fn camera_order() -> isize;
     fn render_layer_index() -> u8;
 
     fn light_pass() -> String {
@@ -69,8 +68,8 @@ pub trait LightScene:
     /// Call this every time you want to add the light camera.
     /// You can them remove it by despawning all entities that have the
     /// [`LightScene`] component.
-    fn setup_post_processing_camera_system() -> impl IntoSystemConfigs<()> {
-        setup_post_processing_camera::<Self>
+    fn setup_post_processing_quad_system() -> impl IntoSystemConfigs<()> {
+        setup_post_processing_quad::<Self>
             .after(system_setup_gi_pipeline::<Self>)
     }
 

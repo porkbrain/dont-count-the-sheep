@@ -120,7 +120,21 @@ fn despawn(mut commands: Commands) {
     commands.remove_resource::<WebpAnimator>();
 }
 
-fn all_loaded(mut next_state: ResMut<NextState<GlobalGameState>>) {
+fn all_loaded(
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    asset_server: Res<AssetServer>,
+
+    images: Query<&Handle<Image>>,
+) {
+    let all_images_loaded = images
+        .iter()
+        .all(|image| asset_server.is_loaded_with_dependencies(image));
+
+    if !all_images_loaded {
+        trace!("Not all images loaded yet");
+        return;
+    }
+
     info!("Entering meditation game");
 
     next_state.set(GlobalGameState::MeditationInGame);

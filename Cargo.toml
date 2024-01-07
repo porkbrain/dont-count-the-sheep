@@ -18,7 +18,7 @@ members = [
 
 [workspace.dependencies]
 apartment = { path = "apartment" }
-bevy = "0.12"
+bevy = "0.12.1"
 bevy_grid_squared = { path = "bevy_grid_squared", features = ["serde"] }
 bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
 bevy_pixel_camera = "0.12"
