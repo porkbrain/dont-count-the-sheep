@@ -2,8 +2,8 @@ use bevy::render::view::RenderLayers;
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 
 use super::{
-    consts::*, effects::bolt::get_bundle_with_respect_to_origin_at_zero,
-    Distraction, DistractionDestroyedEvent, DistractionOccluder,
+    consts::*, effects::bolt::get_bundle_with_respect_to_origin_at_zero, Polpo,
+    PolpoDestroyedEvent, PolpoOccluder,
 };
 use crate::{
     cameras::OBJ_RENDER_LAYER,
@@ -12,14 +12,14 @@ use crate::{
     prelude::*,
 };
 
-/// If Hoshi is very close and does special, the distraction is destroyed.
+/// If Hoshi is very close and does special, the polpo is destroyed.
 pub(super) fn to_hoshi_special(
     mut commands: Commands,
-    mut score: EventWriter<DistractionDestroyedEvent>,
+    mut score: EventWriter<PolpoDestroyedEvent>,
     mut hoshi_actions: EventReader<hoshi::ActionEvent>,
 
-    hoshi: Query<&Transform, (With<Hoshi>, Without<Distraction>)>,
-    distractions: Query<(Entity, &Distraction, &Transform), Without<Hoshi>>,
+    hoshi: Query<&Transform, (With<Hoshi>, Without<Polpo>)>,
+    polpos: Query<(Entity, &Polpo, &Transform), Without<Hoshi>>,
 ) {
     // it's possible that the game is paused the same frame as the event being
     // emitted, but that's so unlikely that we don't care
@@ -36,79 +36,65 @@ pub(super) fn to_hoshi_special(
 
     let hoshi_translation = hoshi_transform.translation.truncate();
 
-    for (entity, distraction, transform) in distractions.iter() {
+    for (entity, polpo, transform) in polpos.iter() {
         let translation = transform.translation.truncate();
         let distance_to_hoshi = translation.distance(hoshi_translation);
 
         if distance_to_hoshi <= HOSHI_SPECIAL_HITBOX_RADIUS {
-            debug!("Distraction destroy by special event sent ({entity:?})");
-            score.send(DistractionDestroyedEvent {
-                video: distraction.video,
+            debug!("Polpo destroy by special event sent ({entity:?})");
+            score.send(PolpoDestroyedEvent {
+                video: polpo.video,
                 by_special: true,
                 at_translation: translation,
             });
             commands.entity(entity).despawn_recursive();
 
-            // ... go to next, can destroy multiple distractions per special
+            // ... go to next, can destroy multiple Polpos per special
         }
     }
 }
 
-/// For each distraction:
+/// For each Polpo:
 /// 1. Check whether light is being cast on it (depends on rays from climate and
 ///    Hoshi proximity)
-/// 2. If it is, increase push back on distraction's occluder otherwise decrease
-///    it
-/// 3. If light is being cast on the distraction by climate, roll a dice to
-///    crack it which adds a crack sprite to the distraction
-/// 4. Remember number of cracks and if more than limit, destroy the distraction
-/// 5. Find the line between climate and the distraction and place the occluder
-///    on that line. Distance from center being the distraction's distance plus
-///    the push back.
+/// 2. If it is, increase push back on Polpo's occluder otherwise decrease it
+/// 3. If light is being cast on the Polpo by climate, roll a dice to crack it
+///    which adds a crack sprite to the Polpo
+/// 4. Remember number of cracks and if more than limit, destroy the Polpo
+/// 5. Find the line between climate and the Polpo and place the occluder on
+///    that line. Distance from center being the Polpo's distance plus the push
+///    back.
 pub(super) fn to_environment(
     mut climate: Query<
         (&Climate, &Transform, &mut OmniLightSource2D),
-        (
-            Without<Hoshi>,
-            Without<Distraction>,
-            Without<DistractionOccluder>,
-        ),
+        (Without<Hoshi>, Without<Polpo>, Without<PolpoOccluder>),
     >,
     hoshi: Query<
         &Transform,
         (
             Without<Climate>,
             With<Hoshi>,
-            Without<Distraction>,
-            Without<DistractionOccluder>,
+            Without<Polpo>,
+            Without<PolpoOccluder>,
         ),
     >,
-    mut distraction_occluders: Query<
+    mut polpo_occluders: Query<
         (&Parent, &mut Transform),
         (
             Without<Climate>,
             Without<Hoshi>,
-            Without<Distraction>,
-            With<DistractionOccluder>,
+            Without<Polpo>,
+            With<PolpoOccluder>,
         ),
     >,
-    mut distractions: Query<
-        (
-            Entity,
-            &mut Distraction,
-            &Transform,
-            &mut TextureAtlasSprite,
-        ),
-        (
-            Without<Climate>,
-            Without<Hoshi>,
-            Without<DistractionOccluder>,
-        ),
+    mut polpos: Query<
+        (Entity, &mut Polpo, &Transform, &mut TextureAtlasSprite),
+        (Without<Climate>, Without<Hoshi>, Without<PolpoOccluder>),
     >,
     time: Res<Time>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut score: EventWriter<DistractionDestroyedEvent>,
+    mut score: EventWriter<PolpoDestroyedEvent>,
     mut commands: Commands,
 ) {
     let Ok(hoshi) = hoshi.get_single() else {
@@ -120,19 +106,18 @@ pub(super) fn to_environment(
         return;
     };
 
-    for (distraction_id, mut occluder_pos) in distraction_occluders.iter_mut() {
-        let (distraction_entity, mut distraction, distraction_pos, mut sprite) =
-            distractions
-                .get_mut(distraction_id.get())
-                .expect("Each occluder should have a distraction parent");
+    for (polpo_id, mut occluder_pos) in polpo_occluders.iter_mut() {
+        let (polpo_entity, mut polpo, polpo_pos, mut sprite) = polpos
+            .get_mut(polpo_id.get())
+            .expect("Each occluder should have a polpo parent");
 
         //
         // 1.
         //
 
-        // between [0; 1], increases as Hoshi gets closer to distraction
+        // between [0; 1], increases as Hoshi gets closer to polpo
         let hoshi_ray_bath = {
-            let d = hoshi.translation.distance(distraction_pos.translation);
+            let d = hoshi.translation.distance(polpo_pos.translation);
 
             let max = NONE_OF_HOSHI_PUSH_BACK_FORCE_AT_DISTANCE;
             if d >= max {
@@ -144,10 +129,10 @@ pub(super) fn to_environment(
         let hoshi_push_back_force_contrib =
             hoshi_ray_bath * PUSH_BACK_FORCE_HOSHI_DISTANCE;
 
-        // between [0; 1], how much is the distraction being lit by the climate
+        // between [0; 1], how much is the polpo being lit by the climate
         let climate_ray_bath = climate.ray_bath(
             climate_transform.translation.truncate(),
-            distraction_pos.translation.truncate(),
+            polpo_pos.translation.truncate(),
         );
         let climate_push_back_force_contrib =
             climate_ray_bath * PUSH_BACK_FORCE_FULLY_CASTED_IN_CLIMATE_RAYS;
@@ -192,7 +177,7 @@ pub(super) fn to_environment(
             if !would_ve_cracked_anyway {
                 // with respect to origin at zero
                 let change_of_basis_from = hoshi.translation.truncate()
-                    - distraction_pos.translation.truncate();
+                    - polpo_pos.translation.truncate();
 
                 let bolt_entity = commands
                     .spawn(get_bundle_with_respect_to_origin_at_zero(
@@ -200,9 +185,9 @@ pub(super) fn to_environment(
                         change_of_basis_from,
                     ))
                     .id();
-                commands.entity(distraction_entity).add_child(bolt_entity);
+                commands.entity(polpo_entity).add_child(bolt_entity);
 
-                distraction.jitter += change_of_basis_from.abs().normalize();
+                polpo.jitter += change_of_basis_from.abs().normalize();
             }
 
             sprite.index += 1;
@@ -229,10 +214,7 @@ pub(super) fn to_environment(
                         texture_atlas: texture_atlases.add(
                             TextureAtlas::from_grid(
                                 asset_server.load(assets::TV_STATIC_ATLAS),
-                                vec2(
-                                    DISTRACTION_SPRITE_SIZE,
-                                    DISTRACTION_SPRITE_SIZE,
-                                ),
+                                vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
                                 STATIC_ATLAS_FRAMES,
                                 1,
                                 None,
@@ -241,44 +223,43 @@ pub(super) fn to_environment(
                         ),
                         sprite: TextureAtlasSprite::new(first_frame),
                         transform: Transform::from_translation(
-                            vec2(0.0, 0.0).extend(zindex::DISTRACTION_STATIC),
+                            vec2(0.0, 0.0).extend(zindex::POLPO_STATIC),
                         ),
                         ..default()
                     })
                     .id();
 
-                commands.entity(distraction_entity).add_child(static_entity);
+                commands.entity(polpo_entity).add_child(static_entity);
             }
         } else if should_crack_with_hoshi_contrib && is_on_last_crack {
             //
             // 4.
             //
 
-            debug!("Distraction destroy event sent ({distraction_entity:?})");
-            score.send(DistractionDestroyedEvent {
-                video: distraction.video,
+            debug!("Polpo destroy event sent ({polpo_entity:?})");
+            score.send(PolpoDestroyedEvent {
+                video: polpo.video,
                 by_special: false,
-                at_translation: distraction_pos.translation.truncate(),
+                at_translation: polpo_pos.translation.truncate(),
             });
-            commands.entity(distraction_entity).despawn_recursive();
+            commands.entity(polpo_entity).despawn_recursive();
         }
 
         //
         // 5.
         //
 
-        // On a line between climate and distraction, pushed back behind the
-        // distraction by push_back_force.
+        // On a line between climate and polpo, pushed back behind the
+        // polpo by push_back_force.
         //
         // Our fork of the lighting dependency uses global transform instead of
         // transform, so the translation is relative to the entity.
-        occluder_pos.translation = (distraction_pos.translation
-            - climate_transform.translation)
-            .normalize()
-            * push_back_force_with_hoshi_contrib;
+        occluder_pos.translation =
+            (polpo_pos.translation - climate_transform.translation).normalize()
+                * push_back_force_with_hoshi_contrib;
     }
 
-    // increase jitter intensity as more distractions are spawned
+    // increase jitter intensity as more polpos are spawned
     climate_light.jitter_intensity =
-        (distractions.iter().len() as f32 / 5.0).min(1.0);
+        (polpos.iter().len() as f32 / 5.0).min(1.0);
 }

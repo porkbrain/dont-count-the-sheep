@@ -13,31 +13,31 @@ use self::consts::{JITTER_ON_HIT_INTENSITY, JITTER_ON_HIT_TIME_PENALTY};
 use crate::{gravity::Gravity, hoshi, path::LevelPath, prelude::*};
 
 #[derive(Component)]
-pub(crate) struct Distraction {
+pub(crate) struct Polpo {
     video: Video,
     current_path_since: Stopwatch,
     path: LevelPath,
     transition_into: Option<LevelPath>,
     /// Applies random jitter in a direction.
-    /// When a distraction cracks, it jitters in a direction of where the blow
+    /// When Polpo cracks, it jitters in a direction of where the blow
     /// came if it was caused by the Hoshi.
     jitter: Vec2,
 }
 #[derive(Component)]
-struct DistractionOccluder;
+struct PolpoOccluder;
 
 /// Anything that's spawned in this module has this entity.
 /// Useful for despawning.
 #[derive(Component)]
-struct DistractionEntity;
+struct PolpoEntity;
 
 #[derive(Event)]
-struct DistractionDestroyedEvent {
-    /// Which video was playing on the distraction.
+struct PolpoDestroyedEvent {
+    /// Which video was playing on the Polpo's screen.
     video: Video,
-    /// Where the distraction was when it was destroyed.
+    /// Where the Polpo was when it was destroyed.
     at_translation: Vec2,
-    /// Whether the distraction was destroyed by the Hoshi special or by
+    /// Whether the Polpo was destroyed by the Hoshi special or by
     /// just accumulating cracks.
     by_special: bool,
 }
@@ -48,7 +48,7 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn)
             .add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn)
-            .add_event::<DistractionDestroyedEvent>()
+            .add_event::<PolpoDestroyedEvent>()
             .add_systems(
                 Update,
                 (
@@ -60,9 +60,7 @@ impl bevy::app::Plugin for Plugin {
                         .after(hoshi::loading_special),
                     effects::bolt::propel,
                     destroyed
-                        .run_if(
-                            event_update_condition::<DistractionDestroyedEvent>,
-                        )
+                        .run_if(event_update_condition::<PolpoDestroyedEvent>)
                         .after(react::to_hoshi_special)
                         .after(react::to_environment),
                 )
@@ -81,15 +79,12 @@ fn spawn(mut commands: Commands) {
     commands.insert_resource(spawner::Spawner::new());
 }
 
-fn despawn(
-    mut commands: Commands,
-    entities: Query<Entity, With<DistractionEntity>>,
-) {
+fn despawn(mut commands: Commands, entities: Query<Entity, With<PolpoEntity>>) {
     debug!("Despawning Spawner");
 
     commands.remove_resource::<spawner::Spawner>();
 
-    debug!("Despawning distractions");
+    debug!("Despawning Polpos");
     for entity in entities.iter() {
         commands.entity(entity).despawn_recursive();
     }
@@ -97,42 +92,42 @@ fn despawn(
 
 /// Climate has something similar, but without the level up logic.
 fn follow_curve(
-    mut distraction: Query<(&mut Distraction, &mut Transform)>,
+    mut polpos: Query<(&mut Polpo, &mut Transform)>,
     time: Res<Time>,
 ) {
     let dt = time.delta();
 
-    for (mut distraction, mut transform) in distraction.iter_mut() {
-        distraction.current_path_since.tick(dt);
+    for (mut polpo, mut transform) in polpos.iter_mut() {
+        polpo.current_path_since.tick(dt);
 
         let z = transform.translation.z;
-        let (seg_index, seg_t) = distraction.path_segment();
+        let (seg_index, seg_t) = polpo.path_segment();
 
-        let at_least_one_lap = distraction.laps() > 0;
+        let at_least_one_lap = polpo.laps() > 0;
         let at_lap_beginning = seg_index == 0 && seg_t < 2. / 60.;
-        let ready_to_transition = distraction.transition_into.is_some();
+        let ready_to_transition = polpo.transition_into.is_some();
 
         if at_lap_beginning && at_least_one_lap && ready_to_transition {
-            distraction.current_path_since.reset();
-            distraction.path = distraction.transition_into.take().unwrap();
+            polpo.current_path_since.reset();
+            polpo.path = polpo.transition_into.take().unwrap();
         } else if !ready_to_transition {
-            // roll a dice to see if distraction levels up
+            // roll a dice to see if Polpo levels up
             // let should_level_up = rand::random::<f32>() < 0.8; // TODO
             let should_level_up = true;
-            distraction.transition_into =
-                Some(distraction.path.transition_into(should_level_up));
+            polpo.transition_into =
+                Some(polpo.path.transition_into(should_level_up));
         }
 
-        let seg = &distraction.path.segments()[seg_index];
+        let seg = &polpo.path.segments()[seg_index];
 
         let random_sign = if random::<bool>() { 1.0 } else { -1.0 };
-        let jitter = distraction.jitter * random_sign * JITTER_ON_HIT_INTENSITY;
+        let jitter = polpo.jitter * random_sign * JITTER_ON_HIT_INTENSITY;
         let expected_position = seg.position(seg_t) + jitter;
 
         transform.translation = expected_position.extend(z);
         // dampen the jitter over time
-        distraction.jitter = {
-            let j = distraction.jitter
+        polpo.jitter = {
+            let j = polpo.jitter
                 * (1.0 - JITTER_ON_HIT_TIME_PENALTY * dt.as_secs_f32());
 
             j.max(Vec2::ZERO)
@@ -140,33 +135,33 @@ fn follow_curve(
     }
 }
 
-/// Either distraction is destroyed by the Hoshi special or by accumulating
+/// Either Polpo is destroyed by the Hoshi's special or by accumulating
 /// cracks.
 fn destroyed(
     mut score: Query<&mut crate::ui::Score>,
     mut spawner: ResMut<spawner::Spawner>,
-    mut events: EventReader<DistractionDestroyedEvent>,
+    mut events: EventReader<PolpoDestroyedEvent>,
     mut gravity: EventWriter<PoissonsEquationUpdateEvent<Gravity>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    for DistractionDestroyedEvent {
+    for PolpoDestroyedEvent {
         video,
         at_translation,
         by_special,
     } in events.read()
     {
-        debug!("Received distraction destroyed event (special: {by_special})");
+        debug!("Received Polpo destroyed event (special: {by_special})");
 
         let mut score = score.single_mut();
-        // the further away the distraction is, the more points it's worth
+        // the further away the Polpo is, the more points it's worth
         *score += at_translation.length() as usize;
-        // notify the spawner that the distraction is gone
+        // notify the spawner that the Polpo is gone
         spawner.despawn(*video);
 
         if !by_special {
-            // TODO: some animation of the distraction falling apart
+            // TODO: some animation of the Polpo falling apart
 
             continue;
         }
@@ -182,7 +177,7 @@ fn destroyed(
     }
 }
 
-impl Distraction {
+impl Polpo {
     fn path_segment(&self) -> (usize, f32) {
         self.path.segment(&self.current_path_since.elapsed())
     }

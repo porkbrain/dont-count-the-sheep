@@ -3,16 +3,14 @@ use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use bevy_webp_anim::WebpAnimator;
 use rand::{random, seq::SliceRandom};
 
-use super::{
-    consts::*, videos::ALL_VIDEOS, Distraction, DistractionOccluder, Video,
-};
+use super::{consts::*, videos::ALL_VIDEOS, Polpo, PolpoOccluder, Video};
 use crate::{
     cameras::{BackgroundLightScene, OBJ_RENDER_LAYER},
-    distractions::DistractionEntity,
+    polpos::PolpoEntity,
     prelude::*,
 };
 
-/// Manages spawning of distractions.
+/// Manages spawning of Polpos.
 #[derive(Resource, Debug)]
 pub(super) struct Spawner {
     /// What videos are currently active.
@@ -24,7 +22,7 @@ pub(super) struct Spawner {
     /// When choosing the next video, we iterate over this array based on the
     /// last index (the first tuple member.)
     sampler: (usize, [Video; 10]),
-    /// When was the last distraction spawned.
+    /// When was the last Polpo spawned.
     last_spawned_at: Stopwatch,
 }
 
@@ -40,7 +38,7 @@ pub(super) fn try_spawn_next(
 ) {
     spawner.last_spawned_at.tick(time.delta());
 
-    if spawner.active.len() >= MAX_DISTRACTIONS {
+    if spawner.active.len() >= MAX_POLPOS {
         return;
     }
     if spawner.last_spawned_at.elapsed() < MIN_DELAY_BETWEEN_SPAWNS {
@@ -61,22 +59,22 @@ pub(super) fn try_spawn_next(
 
     spawner.last_spawned_at.reset();
 
-    let distraction = Distraction::new(video);
+    let polpo = Polpo::new(video);
 
     let translation = {
-        let (seg_index, seg_t) = distraction.path_segment();
-        let seg = &distraction.path.segments()[seg_index];
-        seg.position(seg_t).extend(zindex::DISTRACTION_CRACK)
+        let (seg_index, seg_t) = polpo.path_segment();
+        let seg = &polpo.path.segments()[seg_index];
+        seg.position(seg_t).extend(zindex::POLPO_CRACK)
     };
 
     commands
-        .spawn((distraction, DistractionEntity))
+        .spawn((polpo, PolpoEntity))
         .insert((
             RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load(assets::CRACK_ATLAS),
-                    vec2(DISTRACTION_SPRITE_SIZE, DISTRACTION_SPRITE_SIZE),
+                    vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
                     MAX_CRACKS,
                     1,
                     None,
@@ -91,11 +89,11 @@ pub(super) fn try_spawn_next(
             parent.spawn((
                 RenderLayers::layer(OBJ_RENDER_LAYER),
                 SpriteBundle {
-                    texture: asset_server.load(assets::DISTRACTION_FRAME),
+                    texture: asset_server.load(assets::POLPO_FRAME),
                     transform: Transform::from_translation(Vec3::new(
                         0.0,
                         0.0,
-                        zindex::DISTRACTION_FRAME,
+                        zindex::POLPO_FRAME,
                     )),
                     ..default()
                 },
@@ -107,10 +105,7 @@ pub(super) fn try_spawn_next(
                     texture_atlas: texture_atlases.add(
                         TextureAtlas::from_grid(
                             asset_server.load(assets::TENTACLE_ATLAS),
-                            vec2(
-                                DISTRACTION_SPRITE_SIZE,
-                                DISTRACTION_SPRITE_SIZE,
-                            ),
+                            vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
                             TENTACLE_ATLAS_COLS,
                             1,
                             None,
@@ -123,7 +118,7 @@ pub(super) fn try_spawn_next(
                     transform: Transform::from_translation(Vec3::new(
                         0.0,
                         0.0,
-                        zindex::DISTRACTION_TENTACLES,
+                        zindex::POLPO_TENTACLES,
                     )),
                     ..default()
                 },
@@ -133,7 +128,7 @@ pub(super) fn try_spawn_next(
             video.spawn(parent, &mut webp, &asset_server);
 
             parent.spawn((
-                DistractionOccluder,
+                PolpoOccluder,
                 BackgroundLightScene,
                 SpatialBundle { ..default() },
                 LightOccluder2D {
@@ -179,7 +174,7 @@ impl Spawner {
             let next_index = (*last_index + 1) % videos.len();
             if started_at_index == next_index {
                 // We've iterated over all videos and nothing was suitable.
-                // Already too many distractions spawned.
+                // Already too many polpos spawned.
                 return None;
             }
 

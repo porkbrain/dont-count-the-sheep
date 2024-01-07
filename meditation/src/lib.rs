@@ -8,10 +8,10 @@ mod background;
 mod cameras;
 mod climate;
 mod consts;
-mod distractions;
 mod gravity;
 mod hoshi;
 mod path;
+mod polpos;
 mod prelude;
 mod ui;
 mod zindex;
@@ -30,7 +30,7 @@ pub fn add(app: &mut App) {
     app.add_plugins((
         ui::Plugin,
         climate::Plugin,
-        distractions::Plugin,
+        polpos::Plugin,
         hoshi::Plugin,
         cameras::Plugin,
         background::Plugin,

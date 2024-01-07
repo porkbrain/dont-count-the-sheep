@@ -16,18 +16,17 @@ pub(crate) const SPARK_ATLAS: &str =
 pub(crate) const FACE_ATLAS: &str = "meditation/textures/hoshi/face_atlas.png";
 
 pub(crate) const BLACKHOLE_ATLAS: &str =
-    "meditation/textures/distractions/blackhole_atlas.png";
+    "meditation/textures/polpo/blackhole_atlas.png";
 pub(crate) const BLACKHOLE_FLICKER: &str =
-    "meditation/textures/distractions/blackhole_flicker.png";
+    "meditation/textures/polpo/blackhole_flicker.png";
 pub(crate) const TV_STATIC_ATLAS: &str =
-    "meditation/textures/distractions/static_atlas.png";
+    "meditation/textures/polpo/static_atlas.png";
 pub(crate) const CRACK_ATLAS: &str =
-    "meditation/textures/distractions/crack_atlas.png";
-pub(crate) const DISTRACTION_FRAME: &str =
-    "meditation/textures/distractions/frame.png";
-pub(crate) const BOLT: &str = "meditation/textures/distractions/bolt.png";
+    "meditation/textures/polpo/crack_atlas.png";
+pub(crate) const POLPO_FRAME: &str = "meditation/textures/polpo/frame.png";
+pub(crate) const BOLT: &str = "meditation/textures/polpo/bolt.png";
 pub(crate) const TENTACLE_ATLAS: &str =
-    "meditation/textures/distractions/tentacle_atlas.png";
+    "meditation/textures/polpo/tentacle_atlas.png";
 
 pub(crate) const MENU_BOX: &str = "meditation/ui/menu_box.png";
 pub(crate) const FACE_ON_CONTINUE: &str = "meditation/ui/face_on_continue.png";
@@ -35,22 +34,22 @@ pub(crate) const FACE_ON_RESTART: &str = "meditation/ui/face_on_restart.png";
 pub(crate) const FACE_ON_EXIT: &str = "meditation/ui/face_on_exit.png";
 
 pub(crate) const VIDEO_ALEX: &str =
-    "meditation/textures/distractions/videos/alex.webp";
+    "meditation/textures/polpo/videos/alex.webp";
 pub(crate) const VIDEO_BUNNY: &str =
-    "meditation/textures/distractions/videos/bunny.webp";
+    "meditation/textures/polpo/videos/bunny.webp";
 pub(crate) const VIDEO_DANCE: &str =
-    "meditation/textures/distractions/videos/dance.webp";
+    "meditation/textures/polpo/videos/dance.webp";
 pub(crate) const VIDEO_FRAGRANCE: &str =
-    "meditation/textures/distractions/videos/fragrance.webp";
+    "meditation/textures/polpo/videos/fragrance.webp";
 pub(crate) const VIDEO_KNIGHT: &str =
-    "meditation/textures/distractions/videos/knight.webp";
+    "meditation/textures/polpo/videos/knight.webp";
 pub(crate) const VIDEO_MUKBANG: &str =
-    "meditation/textures/distractions/videos/mukbang.webp";
+    "meditation/textures/polpo/videos/mukbang.webp";
 pub(crate) const VIDEO_PANDA: &str =
-    "meditation/textures/distractions/videos/panda.webp";
+    "meditation/textures/polpo/videos/panda.webp";
 pub(crate) const VIDEO_PUPPY: &str =
-    "meditation/textures/distractions/videos/puppy.webp";
+    "meditation/textures/polpo/videos/puppy.webp";
 pub(crate) const VIDEO_SANDWICH: &str =
-    "meditation/textures/distractions/videos/sandwich.webp";
+    "meditation/textures/polpo/videos/sandwich.webp";
 pub(crate) const VIDEO_VAMPIRE: &str =
-    "meditation/textures/distractions/videos/vampire.webp";
+    "meditation/textures/polpo/videos/vampire.webp";

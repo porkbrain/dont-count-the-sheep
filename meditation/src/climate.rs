@@ -35,7 +35,7 @@ const INITIAL_HALF_ROTATION: f32 = INITIAL_ROTATION / 2.0;
 const HOT_DEDUCTION: usize = 80;
 /// How often do we deduct from the score when the mode is [`LightMode::Hot`].
 const HOT_DEDUCTION_INTERVAL: Duration = from_millis(5_000);
-/// Burns distractions, so should reflect that.
+/// Burns Polpos, so should reflect that.
 const LIGHT_COLOR_HOT: Color = Color::rgb(0.6, 0.3, 0.1);
 /// Purply cold color.
 const LIGHT_COLOR_COLD: Color = crate::background::COLOR;
@@ -217,7 +217,7 @@ fn despawn_raypoints(
 /// Changes the mode of the climate on hoshi's special.
 /// See readme for the game to understand what this means.
 /// In short: we change light color, how score is deducted and how strong is
-/// the ray on the distractions.
+/// the ray on the Polpos.
 fn toggle_mode(
     mut action: EventReader<hoshi::ActionEvent>,
 
@@ -261,7 +261,7 @@ fn smoothly_transition_light_color(
     light.color = light.color.lerp(mode.color(), t);
 }
 
-/// Distractions have something similar, but with some extra logic to change
+/// Polpos have something similar, but with some extra logic to change their
 /// path.
 fn follow_curve(
     mut climate: Query<(&mut Climate, &mut Transform)>,

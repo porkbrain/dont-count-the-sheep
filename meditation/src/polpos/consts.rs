@@ -1,25 +1,25 @@
 use crate::prelude::*;
 
-/// How long to wait between spawning distractions.
+/// How long to wait between spawning Polpos.
 pub(crate) const MIN_DELAY_BETWEEN_SPAWNS: Duration = from_millis(2000);
-/// How many distractions can be active at once.
-pub(crate) const MAX_DISTRACTIONS: usize = 6;
-/// Spawn chance based on how many distractions are already active.
-pub(crate) const SPAWN_CHANCES_PER_SECOND: [f32; MAX_DISTRACTIONS] =
+/// How many Polpos can be active at once.
+pub(crate) const MAX_POLPOS: usize = 6;
+/// Spawn chance based on how many Polpos are already active.
+pub(crate) const SPAWN_CHANCES_PER_SECOND: [f32; MAX_POLPOS] =
     [1.0, 0.9, 0.75, 0.5, 0.3, 0.25];
 /// Since some videos are verbal, we don't want to play too many of them at
 /// once.
 /// Play more of the non-verbal ones to not overwhelm the player.
 pub(crate) const MAX_VERBAL_VIDEOS_AT_ONCE: usize = 1;
-/// If special is casted within this distance of the distraction, then destroy
+/// If special is casted within this distance of the Polpo, then destroy
 /// it.
 pub(crate) const HOSHI_SPECIAL_HITBOX_RADIUS: f32 = 35.0;
 /// The actual pixel size of the image.
-pub(crate) const DISTRACTION_SPRITE_SIZE: f32 = 100.0;
+pub(crate) const POLPO_SPRITE_SIZE: f32 = 100.0;
 /// Each video is the same square.
 pub(crate) const VIDEO_SIZE: Vec2 = Vec2::new(32.0, 32.0);
 pub(crate) const VIDEO_FPS: f32 = 60.0;
-/// As more light is shone, more cracks appear on the distraction.
+/// As more light is shone, more cracks appear on the Polpo.
 pub(crate) const MAX_CRACKS: usize = 5;
 /// By default, occluder is pushed towards the climate.
 pub(crate) const PUSH_BACK_FORCE_AT_REST: f32 = -20.0;
@@ -48,9 +48,9 @@ pub(crate) const BLACK_HOLE_FRAME_TIME: Duration = from_millis(40);
 pub(crate) const BLACK_HOLE_MIN_LIFE: Duration = from_millis(1000);
 
 /// How long does it take for the bolt to travel from Hoshi to the
-/// distraction.
+/// Polpo.
 pub(crate) const BOLT_LIFETIME: Duration = from_millis(200);
-/// How many pixels the distraction jitters when hit by the Hoshi special.
+/// How many pixels the Polpo jitters when hit by the Hoshi special.
 pub(crate) const JITTER_ON_HIT_INTENSITY: f32 = 4.0;
 /// In 1/x seconds the jitter will be gone.
 pub(crate) const JITTER_ON_HIT_TIME_PENALTY: f32 = 4.0;

@@ -59,8 +59,8 @@ impl Video {
                         0.0,
                         0.0,
                         // add some randomness to the z-index for deterministic
-                        // ordering of multiple distractions
-                        zindex::DISTRACTION_VIDEO + random::<f32>() * 0.1,
+                        // ordering of multiple Polpos
+                        zindex::POLPO_VIDEO + random::<f32>() * 0.1,
                     ));
 
                     // there's a bug where the video every so slightly goes out
