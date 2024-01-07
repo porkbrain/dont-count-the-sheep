@@ -3,7 +3,6 @@
 #![allow(clippy::type_complexity)]
 #![allow(clippy::too_many_arguments)]
 
-mod assets;
 mod background;
 mod cameras;
 mod climate;
@@ -16,10 +15,15 @@ mod prelude;
 mod ui;
 mod zindex;
 
+use bevy::utils::Instant;
 use bevy_webp_anim::WebpAnimator;
 use common_physics::PoissonsEquation;
+use consts::WAIT_FOR_LOADING_AT_LEAST;
 use gravity::Gravity;
-use main_game_lib::GlobalGameStateTransitionStack;
+use main_game_lib::{
+    loading_screen::{self, LoadingScreenState},
+    GlobalGameStateTransitionStack,
+};
 use prelude::*;
 
 pub fn add(app: &mut App) {
@@ -73,10 +77,20 @@ pub fn add(app: &mut App) {
 
     debug!("Adding game loop");
 
+    // 1. start the spawning process (the loading screen is already started)
     app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn);
+    // 2. when everything is loaded, finish the loading process by transitioning
+    //    to the next loading state (this will also spawn the camera)
     app.add_systems(
         Last,
-        all_loaded.run_if(in_state(GlobalGameState::MeditationLoading)),
+        finish_when_everything_loaded
+            .run_if(in_state(GlobalGameState::MeditationLoading))
+            .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
+    );
+    // 3. ready to enter the game when the loading screen is completely gone
+    app.add_systems(
+        OnEnter(LoadingScreenState::DespawnLoadingScreen),
+        enter_the_game.run_if(in_state(GlobalGameState::MeditationLoading)),
     );
 
     app.add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
@@ -86,28 +100,29 @@ pub fn add(app: &mut App) {
     );
 
     #[cfg(feature = "dev")]
-    debug!("Adding dev");
+    {
+        debug!("Adding dev");
 
-    #[cfg(feature = "dev")]
-    app.add_systems(
-        Last,
-        path::visualize.run_if(in_state(GlobalGameState::MeditationInGame)),
-    );
+        app.add_systems(
+            Last,
+            path::visualize.run_if(in_state(GlobalGameState::MeditationInGame)),
+        );
 
-    #[cfg(feature = "dev-poissons")]
-    common_physics::poissons_equation::register_visualization::<
-        gravity::Gravity,
-        gravity::ChangeOfBasis,
-        gravity::ChangeOfBasis,
-        _,
-    >(app, GlobalGameState::MeditationInGame);
+        #[cfg(feature = "dev-poissons")]
+        common_physics::poissons_equation::register_visualization::<
+            gravity::Gravity,
+            gravity::ChangeOfBasis,
+            gravity::ChangeOfBasis,
+            _,
+        >(app, GlobalGameState::MeditationInGame);
+    }
 
     info!("Added meditation to app");
 }
 
 fn spawn(mut commands: Commands) {
     debug!("Spawning resources");
-    commands.insert_resource(ClearColor(background::COLOR));
+
     commands.insert_resource(gravity::field());
     commands.init_resource::<WebpAnimator>();
 }
@@ -115,28 +130,37 @@ fn spawn(mut commands: Commands) {
 fn despawn(mut commands: Commands) {
     debug!("Despawning resources");
 
-    commands.remove_resource::<ClearColor>();
     commands.remove_resource::<PoissonsEquation<Gravity>>();
     commands.remove_resource::<WebpAnimator>();
 }
 
-fn all_loaded(
-    mut next_state: ResMut<NextState<GlobalGameState>>,
+fn finish_when_everything_loaded(
+    mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
     asset_server: Res<AssetServer>,
+
+    mut since: Local<Option<Instant>>,
 
     images: Query<&Handle<Image>>,
 ) {
-    let all_images_loaded = images
-        .iter()
-        .all(|image| asset_server.is_loaded_with_dependencies(image));
+    let all_images_loaded = images.iter().all(|image| {
+        image.is_weak() || asset_server.is_loaded_with_dependencies(image)
+    });
 
     if !all_images_loaded {
-        trace!("Not all images loaded yet");
         return;
     }
 
-    info!("Entering meditation game");
+    let elapsed = since.get_or_insert_with(Instant::now).elapsed();
+    if elapsed > WAIT_FOR_LOADING_AT_LEAST {
+        debug!("All images loaded");
 
+        *since = None;
+        next_loading_state.set(loading_screen::finish_state());
+    }
+}
+
+fn enter_the_game(mut next_state: ResMut<NextState<GlobalGameState>>) {
+    info!("Entering meditation game");
     next_state.set(GlobalGameState::MeditationInGame);
 }
 

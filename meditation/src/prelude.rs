@@ -4,6 +4,6 @@ pub(crate) use common_physics::{
 pub(crate) use common_visuals::{
     Animation, AnimationEnd, AnimationTimer, BeginAnimationAtRandom, Flicker,
 };
-pub(crate) use main_game_lib::prelude::*;
+pub(crate) use main_game_lib::{assets::meditation as assets, prelude::*};
 
-pub(crate) use crate::{assets, zindex};
+pub(crate) use crate::zindex;

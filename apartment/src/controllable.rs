@@ -3,7 +3,8 @@ use bevy_grid_squared::{direction::Direction as GridDirection, Square};
 use common_layout::{IntoMap, SquareKind};
 use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
-    interaction_pressed, move_action_pressed, ApartmentStore, GlobalAction,
+    interaction_pressed, loading_screen::LoadingScreenSettings,
+    move_action_pressed, ApartmentStore, GlobalAction,
     GlobalGameStateTransition, GlobalGameStateTransitionStack, GlobalStore,
 };
 
@@ -66,7 +67,7 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GlobalGameState::ApartmentLoading), spawn)
-            .add_systems(OnEnter(GlobalGameState::ApartmentQuitting), despawn);
+            .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn);
 
         app.add_systems(
             Update,
@@ -197,7 +198,9 @@ fn move_around(
         }
     };
 
-    let mut character = character.single_mut();
+    let Ok(mut character) = character.get_single_mut() else {
+        return;
+    };
 
     if character
         .walking_to
@@ -320,18 +323,25 @@ fn animate_movement(
 
 /// Will change the game state to meditation minigame.
 fn start_meditation_minigame_if_near_chair(
+    mut commands: Commands,
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     store: Res<GlobalStore>,
     map: Res<common_layout::Map<Apartment>>,
 
-    character: Query<&Controllable>,
+    character: Query<(Entity, &Controllable)>,
+    mut overlay: Query<&mut Sprite, With<TransparentOverlay>>,
 ) {
-    let square = character.single().current_square();
+    let Ok((entity, character)) = character.get_single() else {
+        return;
+    };
+
+    let square = character.current_square();
     if !matches!(map.get(&square), Some(SquareKind::Zone(zones::MEDITATION))) {
         return;
     }
 
+    // when we come back, we want to be next to the chair
     store
         .position_on_load()
         .set(POSITION_ON_LOAD_FROM_MEDITATION);
@@ -339,6 +349,14 @@ fn start_meditation_minigame_if_near_chair(
     store
         .step_time_onload()
         .set(STEP_TIME_ONLOAD_FROM_MEDITATION);
+
+    commands.entity(entity).despawn_recursive();
+    overlay.single_mut().color.set_a(1.0);
+
+    commands.insert_resource(LoadingScreenSettings {
+        bg_image_asset: Some(main_game_lib::assets::meditation::LOADING_SCREEN),
+        ..default()
+    });
 
     stack.push(GlobalGameStateTransition::ApartmentQuittingToMeditationLoading);
     next_state.set(GlobalGameState::ApartmentQuitting);

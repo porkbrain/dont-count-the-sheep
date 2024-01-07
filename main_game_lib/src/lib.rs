@@ -1,4 +1,6 @@
 pub mod action;
+pub mod assets;
+pub mod loading_screen;
 pub mod prelude;
 pub mod store;
 pub mod vec2_ext;
@@ -9,6 +11,7 @@ use bevy_pixel_camera::PixelCameraPlugin;
 use leafwing_input_manager::{
     action_state::ActionState, plugin::InputManagerPlugin,
 };
+use prelude::PRIMARY_COLOR;
 pub use store::*;
 
 /// What's shown on screen.
@@ -72,10 +75,11 @@ pub struct GlobalGameStateTransitionStack {
 pub fn windowed_app() -> App {
     let mut app = App::new();
 
-    app.add_state::<GlobalGameState>();
-    app.init_resource::<GlobalStore>();
-    app.insert_resource(GlobalGameStateTransitionStack::default());
-    app.init_resource::<ActionState<GlobalAction>>()
+    app.add_state::<GlobalGameState>()
+        .insert_resource(ClearColor(PRIMARY_COLOR))
+        .init_resource::<GlobalStore>()
+        .insert_resource(GlobalGameStateTransitionStack::default())
+        .init_resource::<ActionState<GlobalAction>>()
         .insert_resource(GlobalAction::input_map());
 
     app.add_plugins(
@@ -106,6 +110,7 @@ pub fn windowed_app() -> App {
         common_visuals::Plugin,
         bevy_webp_anim::Plugin,
         InputManagerPlugin::<GlobalAction>::default(),
+        loading_screen::Plugin,
     ));
 
     app.add_systems(OnEnter(GlobalGameState::Exit), exit);

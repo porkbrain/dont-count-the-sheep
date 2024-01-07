@@ -11,8 +11,8 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GlobalGameState::ApartmentLoading), spawn)
-            .add_systems(OnEnter(GlobalGameState::ApartmentQuitting), despawn);
+        app.add_systems(OnEnter(GlobalGameState::InApartment), spawn)
+            .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn);
     }
 
     fn finish(&self, _: &mut App) {
@@ -24,6 +24,8 @@ impl bevy::app::Plugin for Plugin {
 struct CameraEntity;
 
 fn spawn(mut commands: Commands) {
+    debug!("Spawning camera");
+
     commands.spawn((
         CameraEntity,
         PixelZoom::Fixed(PIXEL_ZOOM as i32),
@@ -45,6 +47,8 @@ fn spawn(mut commands: Commands) {
 }
 
 fn despawn(mut commands: Commands, bg: Query<Entity, With<CameraEntity>>) {
+    debug!("Despawning camera");
+
     for entity in bg.iter() {
         commands.entity(entity).despawn_recursive();
     }

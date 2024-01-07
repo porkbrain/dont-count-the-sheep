@@ -10,7 +10,7 @@ use bevy_magic_light_2d::{
     SceneCamera,
 };
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
-use main_game_lib::PIXEL_ZOOM;
+use main_game_lib::{loading_screen::LoadingScreenState, PIXEL_ZOOM};
 
 use crate::prelude::*;
 
@@ -35,8 +35,8 @@ impl bevy::app::Plugin for Plugin {
             ),
         );
         app.add_systems(
-            OnEnter(GlobalGameState::MeditationInGame),
-            spawn_cameras,
+            OnExit(LoadingScreenState::WaitForSignalToFinish),
+            spawn_cameras.run_if(in_state(GlobalGameState::MeditationLoading)),
         );
         app.add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
 
@@ -60,7 +60,7 @@ impl LightScene for BackgroundLightScene {
 /// We spawn them last after everything else is ready to avoid things just
 /// popping into existence X frames later.
 fn spawn_cameras(mut commands: Commands) {
-    info!("Spawning cameras");
+    debug!("Spawning cameras");
 
     commands.spawn((
         BackgroundLightScene,
@@ -105,7 +105,7 @@ fn spawn_bg_render_camera(
     mut commands: Commands,
     bg_camera_targets: Res<CameraTargets<BackgroundLightScene>>,
 ) {
-    info!("Spawning bg render camera");
+    debug!("Spawning bg render camera");
 
     commands
         .spawn((
@@ -134,9 +134,9 @@ fn spawn_bg_render_camera(
 
 fn despawn(
     mut commands: Commands,
-    camera: Query<Entity, With<BackgroundLightScene>>,
+    entities: Query<Entity, With<BackgroundLightScene>>,
 ) {
-    for entity in camera.iter() {
+    for entity in entities.iter() {
         commands.entity(entity).despawn_recursive();
     }
 }
