@@ -34,22 +34,25 @@ pub enum LoadingScreenState {
     FadeInQuadWhileBgLoading,
     /// 5. Wait
     /// 6. Set visibility of the image to visible
-    /// (if no bg image go to [`LoadingScreenState::WaitForSignalToFinish`])
+    /// (if no bg image go to [`LoadingScreenState::StareAtLoadingScreen`])
     WaitForBgToLoad,
-    /// 7. Fades out and sets the state to [`DoNothing`].
+    /// 7. Fades out and sets the state to [`StareAtLoadingScreen`].
     /// (skipped if no bg image)
     FadeOutQuadToShowBg,
-    /// 8. Now we wait for the loading to be done, user must [`finish_state`].
+    /// 8. If requested, stay on this screen for given amount of time before
+    ///    transitioning to [`LoadingScreenState::WaitForSignalToFinish`].
+    StareAtLoadingScreen,
+    /// 9. Now we wait for the loading to be done, user must [`finish_state`].
     WaitForSignalToFinish,
-    /// 9. Fade in
+    /// 10. Fade in
     /// (if no bg image go to [`LoadingScreenState::FadeOutQuadToShowGame`])
     FadeInQuadToHideBg,
-    /// 10.
+    /// 11.
     /// (skipped if no bg image)
     RemoveBg,
-    /// 11.
-    FadeOutQuadToShowGame,
     /// 12.
+    FadeOutQuadToShowGame,
+    /// 13.
     DespawnLoadingScreen,
 }
 
@@ -64,7 +67,7 @@ pub struct LoadingScreenSettings {
     pub fade_loading_screen_in: Duration,
     pub fade_loading_screen_out: Duration,
     /// If bg image not present, this value is ignored.
-    pub bg_image_shown_for_at_least: Option<Duration>,
+    pub stare_at_loading_screen_for_at_least: Option<Duration>,
 }
 
 /// Set the state to this to open loading screen.
@@ -100,6 +103,11 @@ impl bevy::app::Plugin for Plugin {
             Update,
             fade_in_quad_while_bg_loading
                 .run_if(in_state(LoadingScreenState::FadeInQuadWhileBgLoading)),
+        )
+        .add_systems(
+            Update,
+            stare_at_loading_screen
+                .run_if(in_state(LoadingScreenState::StareAtLoadingScreen)),
         )
         .add_systems(
             Update,
@@ -224,20 +232,11 @@ fn wait_for_bg_to_load(
     mut next_state: ResMut<NextState<LoadingScreenState>>,
     settings: Res<LoadingScreenSettings>,
 
-    mut since: Local<Option<Instant>>,
-
     mut image: Query<(&Handle<Image>, &mut Visibility), With<LoadingImage>>,
 ) {
     if settings.bg_image_asset.is_none() {
-        next_state.set(LoadingScreenState::WaitForSignalToFinish);
+        next_state.set(LoadingScreenState::StareAtLoadingScreen);
         return;
-    }
-
-    if let Some(min) = settings.bg_image_shown_for_at_least {
-        let elapsed = since.get_or_insert_with(|| Instant::now()).elapsed();
-        if min < elapsed {
-            return;
-        }
     }
 
     let (image, mut visibility) = image.single_mut();
@@ -247,9 +246,6 @@ fn wait_for_bg_to_load(
     }
 
     trace!("Bg loaded");
-
-    // reset local state for next time
-    *since = None;
 
     *visibility = Visibility::Visible;
 
@@ -266,12 +262,31 @@ fn fade_out_quad_to_show_bg(
     fade_quad(
         Fade::Out,
         settings.fade_loading_screen_in, // symmetrical
-        // now we wait for the user to call change from state
-        LoadingScreenState::WaitForSignalToFinish,
+        LoadingScreenState::StareAtLoadingScreen,
         time,
         next_state,
         query,
     )
+}
+
+fn stare_at_loading_screen(
+    mut next_state: ResMut<NextState<LoadingScreenState>>,
+    settings: Res<LoadingScreenSettings>,
+
+    mut since: Local<Option<Instant>>,
+) {
+    if let Some(min) = settings.stare_at_loading_screen_for_at_least {
+        let elapsed = since.get_or_insert_with(|| Instant::now()).elapsed();
+        if min > elapsed {
+            return;
+        }
+    }
+
+    // reset local state for next time
+    *since = None;
+
+    // now we wait for the user to call change from state
+    next_state.set(LoadingScreenState::WaitForSignalToFinish);
 }
 
 fn fade_in_quad_to_hide_bg(
@@ -384,7 +399,7 @@ impl Default for LoadingScreenSettings {
             bg_image_asset: None,
             fade_loading_screen_in: DEFAULT_FADE_LOADING_SCREEN_IN,
             fade_loading_screen_out: DEFAULT_FADE_LOADING_SCREEN_OUT,
-            bg_image_shown_for_at_least: None,
+            stare_at_loading_screen_for_at_least: None,
         }
     }
 }
