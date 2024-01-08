@@ -170,6 +170,8 @@ fn despawn(
     mut commands: Commands,
     characters: Query<Entity, With<CharacterEntity>>,
 ) {
+    debug!("Despawning character entities");
+
     for entity in characters.iter() {
         commands.entity(entity).despawn_recursive();
     }

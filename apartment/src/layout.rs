@@ -24,7 +24,7 @@ pub(crate) mod zones {
 pub(crate) struct Apartment;
 
 #[derive(Component)]
-struct ApartmentEntity;
+struct LayoutEntity;
 
 pub(crate) struct Plugin;
 
@@ -62,7 +62,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         ),
     ] {
         commands.spawn((
-            ApartmentEntity,
+            LayoutEntity,
             RenderLayers::layer(BG_RENDER_LAYER),
             SpriteBundle {
                 texture: asset_server.load(asset),
@@ -91,10 +91,9 @@ pub(crate) fn add_z_based_on_y(v: Vec2) -> Vec3 {
     })
 }
 
-fn despawn(
-    query: Query<Entity, With<ApartmentEntity>>,
-    mut commands: Commands,
-) {
+fn despawn(query: Query<Entity, With<LayoutEntity>>, mut commands: Commands) {
+    debug!("Despawning layout entities");
+
     for entity in query.iter() {
         commands.entity(entity).despawn_recursive();
     }

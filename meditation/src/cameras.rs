@@ -66,8 +66,8 @@ fn spawn_cameras(mut commands: Commands) {
         BackgroundLightScene,
         Camera2dBundle {
             camera: Camera {
-                order: 1,
                 hdr: true,
+                order: 1,
                 ..default()
             },
             ..Camera2dBundle::default()

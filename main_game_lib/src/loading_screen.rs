@@ -9,7 +9,7 @@ pub const DEFAULT_FADE_LOADING_SCREEN_IN: Duration = from_millis(500);
 pub const DEFAULT_FADE_LOADING_SCREEN_OUT: Duration = from_millis(100);
 
 /// Dedicated for loading screen.
-const LOADING_SCREEN_LAYER: u8 = 29;
+const LOADING_SCREEN_LAYER: u8 = 21;
 /// Higher than any other.
 const LOADING_SCREEN_ORDER: isize = 10;
 
@@ -136,8 +136,10 @@ fn spawn_loading_screen(
         PixelZoom::Fixed(PIXEL_ZOOM as i32),
         PixelViewport,
         RenderLayers::layer(LOADING_SCREEN_LAYER),
+        UiCameraConfig { show_ui: false },
         Camera2dBundle {
             camera: Camera {
+                hdr: true,
                 order: LOADING_SCREEN_ORDER,
                 ..default()
             },
