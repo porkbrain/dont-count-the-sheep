@@ -1,9 +1,10 @@
 use main_game_lib::{
+    loading_screen::{self, LoadingScreenSettings, LoadingScreenState},
     GlobalGameStateTransition, GlobalGameStateTransitionStack, PIXEL_ZOOM,
 };
 
 use super::consts::*;
-use crate::prelude::*;
+use crate::{consts::*, prelude::*};
 
 #[derive(Component)]
 pub(super) struct Menu {
@@ -118,8 +119,10 @@ pub(super) fn change_selection(
 /// We simulate ESC to close the menu.
 /// So we need to select before we close.
 pub(super) fn select(
+    mut commands: Commands,
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 
     menu: Query<&Menu>,
@@ -131,10 +134,31 @@ pub(super) fn select(
     match curr_selection {
         Selection::Resume => controls.press(GlobalAction::Cancel),
         Selection::Restart => {
+            // just a quick loading screen, no bg
+            commands.insert_resource(LoadingScreenSettings {
+                bg_image_asset: None,
+                fade_loading_screen_in:
+                    ON_RESTART_OR_EXIT_FADE_LOADING_SCREEN_IN,
+                fade_loading_screen_out: ON_RESTART_FADE_LOADING_SCREEN_OUT,
+                ..default()
+            });
+            next_loading_state.set(loading_screen::start_state());
+
             stack.push(GlobalGameStateTransition::MeditationQuittingToMeditationLoading);
             next_state.set(GlobalGameState::MeditationQuitting);
         }
         Selection::Quit => {
+            // just a quick loading screen, no bg
+            commands.insert_resource(LoadingScreenSettings {
+                bg_image_asset: None,
+                fade_loading_screen_in:
+                    ON_RESTART_OR_EXIT_FADE_LOADING_SCREEN_IN,
+                fade_loading_screen_out:
+                    ON_EXIT_TO_APARTMENT_FADE_LOADING_SCREEN_OUT,
+                ..default()
+            });
+            next_loading_state.set(loading_screen::start_state());
+
             stack
                 .push(GlobalGameStateTransition::MeditationQuittingToApartment);
             next_state.set(GlobalGameState::MeditationQuitting);

@@ -1,5 +1,6 @@
 use bevy::{
     core_pipeline::clear_color::ClearColorConfig, render::view::RenderLayers,
+    utils::Instant,
 };
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
 
@@ -19,8 +20,8 @@ const LOADING_SCREEN_ORDER: isize = 10;
 /// Not recommended to use directly as there are race conditions involved if not
 /// handled properly.
 /// Use provided transition systems to change the state:
-/// - [`start`] to begin the loading screen process
-/// - [`finish`] to finish the loading screen process
+/// - [`start_state`] to begin the loading screen process
+/// - [`finish_state`] to finish the loading screen process
 #[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash)]
 pub enum LoadingScreenState {
     #[default]
@@ -33,14 +34,18 @@ pub enum LoadingScreenState {
     FadeInQuadWhileBgLoading,
     /// 5. Wait
     /// 6. Set visibility of the image to visible
+    /// (if no bg image go to [`LoadingScreenState::WaitForSignalToFinish`])
     WaitForBgToLoad,
     /// 7. Fades out and sets the state to [`DoNothing`].
+    /// (skipped if no bg image)
     FadeOutQuadToShowBg,
-    /// 8. Now we wait for the loading to be done, user must call [`finish`].
+    /// 8. Now we wait for the loading to be done, user must [`finish_state`].
     WaitForSignalToFinish,
     /// 9. Fade in
+    /// (if no bg image go to [`LoadingScreenState::FadeOutQuadToShowGame`])
     FadeInQuadToHideBg,
     /// 10.
+    /// (skipped if no bg image)
     RemoveBg,
     /// 11.
     FadeOutQuadToShowGame,
@@ -50,9 +55,16 @@ pub enum LoadingScreenState {
 
 #[derive(Resource)]
 pub struct LoadingScreenSettings {
+    /// If set to none:
+    /// - [`LoadingScreenState::WaitForBgToLoad`] goes straight to
+    ///   [`LoadingScreenState::WaitForSignalToFinish`]
+    /// - [`LoadingScreenState::FadeInQuadToHideBg`] goes straight to
+    ///   [`LoadingScreenState::FadeOutQuadToShowGame`]
     pub bg_image_asset: Option<&'static str>,
     pub fade_loading_screen_in: Duration,
     pub fade_loading_screen_out: Duration,
+    /// If bg image not present, this value is ignored.
+    pub bg_image_shown_for_at_least: Option<Duration>,
 }
 
 /// Set the state to this to open loading screen.
@@ -69,6 +81,9 @@ pub fn start_state() -> LoadingScreenState {
 /// [`LoadingScreenState::WaitForSignalToFinish`].
 pub fn finish_state() -> LoadingScreenState {
     LoadingScreenState::FadeInQuadToHideBg
+}
+pub fn finish(mut next_state: ResMut<NextState<LoadingScreenState>>) {
+    next_state.set(finish_state());
 }
 
 pub struct Plugin;
@@ -172,18 +187,17 @@ fn spawn_loading_screen(
     ));
 
     // bg image
-    commands.spawn((
-        LoadingImage,
-        RenderLayers::layer(LOADING_SCREEN_LAYER),
-        SpriteBundle {
-            texture: settings
-                .bg_image_asset
-                .map(|a| asset_server.load(a))
-                .unwrap_or_default(),
-            visibility: Visibility::Hidden,
-            ..default()
-        },
-    ));
+    if let Some(bg_image_asset) = settings.bg_image_asset {
+        commands.spawn((
+            LoadingImage,
+            RenderLayers::layer(LOADING_SCREEN_LAYER),
+            SpriteBundle {
+                texture: asset_server.load(bg_image_asset),
+                visibility: Visibility::Hidden,
+                ..default()
+            },
+        ));
+    }
 
     next_state.set(LoadingScreenState::FadeInQuadWhileBgLoading);
 }
@@ -208,18 +222,37 @@ fn fade_in_quad_while_bg_loading(
 fn wait_for_bg_to_load(
     asset_server: Res<AssetServer>,
     mut next_state: ResMut<NextState<LoadingScreenState>>,
+    settings: Res<LoadingScreenSettings>,
+
+    mut since: Local<Option<Instant>>,
 
     mut image: Query<(&Handle<Image>, &mut Visibility), With<LoadingImage>>,
 ) {
+    if settings.bg_image_asset.is_none() {
+        next_state.set(LoadingScreenState::WaitForSignalToFinish);
+        return;
+    }
+
+    if let Some(min) = settings.bg_image_shown_for_at_least {
+        let elapsed = since.get_or_insert_with(|| Instant::now()).elapsed();
+        if min < elapsed {
+            return;
+        }
+    }
+
     let (image, mut visibility) = image.single_mut();
 
     if !asset_server.is_loaded_with_dependencies(image) {
         return;
     }
 
+    trace!("Bg loaded");
+
+    // reset local state for next time
+    *since = None;
+
     *visibility = Visibility::Visible;
 
-    trace!("Bg loaded");
     next_state.set(LoadingScreenState::FadeOutQuadToShowBg);
 }
 
@@ -233,7 +266,7 @@ fn fade_out_quad_to_show_bg(
     fade_quad(
         Fade::Out,
         settings.fade_loading_screen_in, // symmetrical
-        // now we wait for the user to call [`finish`]
+        // now we wait for the user to call change from state
         LoadingScreenState::WaitForSignalToFinish,
         time,
         next_state,
@@ -243,11 +276,16 @@ fn fade_out_quad_to_show_bg(
 
 fn fade_in_quad_to_hide_bg(
     time: Res<Time>,
-    next_state: ResMut<NextState<LoadingScreenState>>,
+    mut next_state: ResMut<NextState<LoadingScreenState>>,
     settings: Res<LoadingScreenSettings>,
 
     query: Query<&mut Sprite, With<LoadingQuad>>,
 ) {
+    if settings.bg_image_asset.is_none() {
+        next_state.set(LoadingScreenState::FadeOutQuadToShowGame);
+        return;
+    }
+
     fade_quad(
         Fade::In,
         settings.fade_loading_screen_in, // symmetrical
@@ -334,7 +372,7 @@ fn fade_quad(
 
     sprite.color.set_a(new_alpha.clamp(0.0, 1.0));
 
-    if new_alpha > 1.0 || new_alpha < 0.0 {
+    if !(0.0..=1.0).contains(&new_alpha) {
         trace!("Done quad {fade:?}, next {state_once_done:?}");
         next_state.set(state_once_done);
     }
@@ -346,6 +384,7 @@ impl Default for LoadingScreenSettings {
             bg_image_asset: None,
             fade_loading_screen_in: DEFAULT_FADE_LOADING_SCREEN_IN,
             fade_loading_screen_out: DEFAULT_FADE_LOADING_SCREEN_OUT,
+            bg_image_shown_for_at_least: None,
         }
     }
 }

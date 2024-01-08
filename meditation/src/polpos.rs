@@ -53,7 +53,7 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn)
-            .add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn)
+            .add_systems(OnExit(GlobalGameState::MeditationQuitting), despawn)
             .add_event::<PolpoDestroyedEvent>()
             .add_systems(
                 Update,

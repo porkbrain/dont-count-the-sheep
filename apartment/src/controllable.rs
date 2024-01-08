@@ -10,6 +10,7 @@ use main_game_lib::{
 
 use crate::{
     cameras::CHARACTERS_RENDER_LAYER,
+    consts::WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
     layout::{add_z_based_on_y, zones},
     prelude::*,
     Apartment,
@@ -357,6 +358,9 @@ fn start_meditation_minigame_if_near_chair(
 
     commands.insert_resource(LoadingScreenSettings {
         bg_image_asset: Some(main_game_lib::assets::meditation::LOADING_SCREEN),
+        bg_image_shown_for_at_least: Some(
+            WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
+        ),
         ..default()
     });
 

@@ -18,10 +18,9 @@ mod zindex;
 use bevy::utils::Instant;
 use bevy_webp_anim::WebpAnimator;
 use common_physics::PoissonsEquation;
-use consts::WAIT_FOR_LOADING_AT_LEAST;
 use gravity::Gravity;
 use main_game_lib::{
-    loading_screen::{self, LoadingScreenState},
+    loading_screen::{self, LoadingScreenSettings, LoadingScreenState},
     GlobalGameStateTransitionStack,
 };
 use prelude::*;
@@ -49,18 +48,18 @@ pub fn add(app: &mut App) {
     );
     app.add_systems(
         Update,
-        ((
+        (
             common_visuals::systems::begin_animation_at_random,
             common_visuals::systems::flicker,
             bevy_webp_anim::systems::start_loaded_videos::<()>,
             bevy_webp_anim::systems::load_next_frame,
         )
-            .run_if(in_state(GlobalGameState::MeditationInGame)),),
+            .run_if(in_state(GlobalGameState::MeditationInGame)),
     );
     app.add_systems(
         Update,
-        (common_visuals::systems::flicker
-            .run_if(in_state(GlobalGameState::MeditationInMenu)),),
+        common_visuals::systems::flicker
+            .run_if(in_state(GlobalGameState::MeditationInMenu)),
     );
 
     debug!("Adding physics");
@@ -93,7 +92,7 @@ pub fn add(app: &mut App) {
         enter_the_game.run_if(in_state(GlobalGameState::MeditationLoading)),
     );
 
-    app.add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
+    app.add_systems(OnExit(GlobalGameState::MeditationQuitting), despawn);
     app.add_systems(
         Last,
         all_cleaned_up.run_if(in_state(GlobalGameState::MeditationQuitting)),
@@ -138,8 +137,6 @@ fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
     asset_server: Res<AssetServer>,
 
-    mut since: Local<Option<Instant>>,
-
     images: Query<&Handle<Image>>,
 ) {
     let all_images_loaded = images.iter().all(|image| {
@@ -150,13 +147,9 @@ fn finish_when_everything_loaded(
         return;
     }
 
-    let elapsed = since.get_or_insert_with(Instant::now).elapsed();
-    if elapsed > WAIT_FOR_LOADING_AT_LEAST {
-        debug!("All images loaded");
+    debug!("All images loaded");
 
-        *since = None;
-        next_loading_state.set(loading_screen::finish_state());
-    }
+    next_loading_state.set(loading_screen::finish_state());
 }
 
 fn enter_the_game(mut next_state: ResMut<NextState<GlobalGameState>>) {
@@ -168,8 +161,20 @@ fn all_cleaned_up(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
+    settings: Res<LoadingScreenSettings>,
+
+    mut since: Local<Option<Instant>>,
 ) {
+    // this is reset to None when we're done with the exit animation
+    let elapsed = since.get_or_insert_with(|| Instant::now()).elapsed();
+    if elapsed < settings.fade_loading_screen_in {
+        return;
+    }
+
     info!("Leaving meditation game");
+
+    // reset local state for next time
+    *since = None;
 
     // be a good guy and don't invade other game loops with our controls
     controls.consume_all();

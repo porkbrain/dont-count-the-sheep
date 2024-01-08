@@ -85,7 +85,7 @@ impl bevy::app::Plugin for Plugin {
                 .run_if(action_just_pressed(GlobalAction::Cancel)),
         )
         .add_systems(
-            OnEnter(GlobalGameState::MeditationQuitting),
+            OnExit(GlobalGameState::MeditationQuitting),
             score::despawn,
         );
     }

@@ -38,7 +38,7 @@ impl bevy::app::Plugin for Plugin {
             OnExit(LoadingScreenState::WaitForSignalToFinish),
             spawn_cameras.run_if(in_state(GlobalGameState::MeditationLoading)),
         );
-        app.add_systems(OnEnter(GlobalGameState::MeditationQuitting), despawn);
+        app.add_systems(OnExit(GlobalGameState::MeditationQuitting), despawn);
 
         BackgroundLightScene::build(app);
     }

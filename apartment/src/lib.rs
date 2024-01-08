@@ -42,6 +42,12 @@ pub fn add(app: &mut App) {
         Last,
         all_loaded.run_if(in_state(GlobalGameState::ApartmentLoading)),
     );
+    app.add_systems(
+        Update,
+        loading_screen::finish
+            .run_if(in_state(GlobalGameState::InApartment))
+            .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
+    );
 
     app.add_systems(
         Update,
@@ -56,13 +62,19 @@ pub fn add(app: &mut App) {
     info!("Added apartment to app");
 }
 
-/// TODO: Temp. solution: press ESC to quit.
+/// TODO: Have a global menu with an option to exit the game
 fn close_game(
+    mut commands: Commands,
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    keyboard: ResMut<Input<KeyCode>>,
+    controls: Res<ActionState<GlobalAction>>,
 ) {
-    if keyboard.just_pressed(KeyCode::Escape) {
+    if controls.just_pressed(GlobalAction::Cancel) {
+        commands.insert_resource(LoadingScreenSettings {
+            fade_loading_screen_in: from_millis(150),
+            ..default()
+        });
+
         stack.push(GlobalGameStateTransition::ApartmentQuittingToExit);
         next_state.set(GlobalGameState::ApartmentQuitting);
     }
@@ -95,13 +107,13 @@ fn smooth_exit(
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
     settings: Res<LoadingScreenSettings>,
 
-    mut local: Local<Option<ExitAnimation>>,
+    mut exit_animation: Local<Option<ExitAnimation>>,
 ) {
     // this is reset to None when we're done with the exit animation
     let ExitAnimation {
         since,
         loading_screen_started,
-    } = local.get_or_insert_with(|| ExitAnimation {
+    } = exit_animation.get_or_insert_with(|| ExitAnimation {
         since: Instant::now(),
         loading_screen_started: false,
     });
@@ -119,7 +131,7 @@ fn smooth_exit(
         info!("Leaving apartment");
 
         // reset local state for next time
-        *local = None;
+        *exit_animation = None;
 
         // be a good guy and don't invade other game loops with our controls
         controls.consume_all();

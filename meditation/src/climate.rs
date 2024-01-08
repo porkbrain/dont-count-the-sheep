@@ -120,7 +120,7 @@ impl bevy::app::Plugin for Plugin {
                 .run_if(in_state(GlobalGameState::MeditationInGame)),
         )
         .add_systems(
-            OnEnter(GlobalGameState::MeditationQuitting),
+            OnExit(GlobalGameState::MeditationQuitting),
             despawn_raypoints,
         );
     }
@@ -131,24 +131,26 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let climate = Climate::new();
+    let climate_translation = {
+        let (seg_index, seg_t) = climate.path_segment();
+        let seg = &climate.path.segments()[seg_index];
+
+        seg.position(seg_t).extend(zindex::CLIMATE)
+    };
+
     commands
         .spawn((
-            Climate::new(),
+            climate,
             BackgroundLightScene,
             AngularVelocity::default(),
             SpatialBundle {
-                transform: Transform::from_translation(Vec3::new(
-                    0.0,
-                    0.0,
-                    zindex::CLIMATE,
-                )),
+                transform: Transform::from_translation(climate_translation),
                 ..default()
             },
             OmniLightSource2D {
                 intensity: LIGHT_INTENSITY,
-                // little starting animation which changes light to the default
-                // color within the first few seconds
-                color: (!ClimateLightMode::default()).color(),
+                color: ClimateLightMode::default().color(),
                 falloff: Vec3::new(
                     FALLOFF_LIGHT_SIZE,
                     FALLOFF_LIGHT_SIZE,
@@ -175,7 +177,15 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             BackgroundLightScene,
             SpatialBundle {
                 transform: {
-                    let mut t = Transform::default();
+                    let mut t = Transform::from_translation(
+                        climate_translation
+                            + (vec2(
+                                initial_rotation.sin(),
+                                initial_rotation.cos(),
+                            )
+                            .extend(0.0)
+                                * OCCLUDER_DISTANCE),
+                    );
                     t.rotate_z(-initial_rotation);
                     t
                 },
@@ -229,10 +239,9 @@ fn toggle_mode(
     mut climate: Query<&mut Climate>,
     mut score: Query<&mut crate::ui::Score>,
 ) {
-    let just_started_loading = action.read().any(|e| match e {
-        hoshi::ActionEvent::FiredSpecial => true,
-        _ => false,
-    });
+    let just_started_loading = action
+        .read()
+        .any(|e| matches!(e, hoshi::ActionEvent::FiredSpecial));
 
     if !just_started_loading {
         return;
