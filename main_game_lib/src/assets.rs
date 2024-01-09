@@ -1,6 +1,8 @@
 pub mod apartment {
     pub const BG: &str = "apartment/bg.png";
 
+    pub const CLOUD_ATLAS: &str = "apartment/cloud_atlas.png";
+
     pub const BEDROOM_FURNITURE1: &str = "apartment/bedroom_furniture1.png";
     pub const BEDROOM_FURNITURE2: &str = "apartment/bedroom_furniture2.png";
     pub const BEDROOM_FURNITURE3: &str = "apartment/bedroom_furniture3.png";

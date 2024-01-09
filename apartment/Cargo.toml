@@ -12,11 +12,12 @@ bevy_pixel_camera.workspace = true
 bevy.workspace = true
 common_assets.workspace = true
 common_layout.workspace = true
+common_visuals.workspace = true
 lazy_static.workspace = true
+leafwing-input-manager.workspace = true
 main_game_lib.workspace = true
 ron.workspace = true
 serde.workspace = true
-leafwing-input-manager.workspace = true
 
 [features]
 dev = ["bevy/glam_assert", "common_layout/dev"]

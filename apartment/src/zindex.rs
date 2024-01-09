@@ -4,6 +4,9 @@
 
 pub(crate) const BG: f32 = 0.0;
 
+/// Must be behead the window.
+pub(crate) const CLOUD_ATLAS: f32 = 0.5;
+
 pub(crate) const BEDROOM_FURNITURE_DISTANT: f32 = 1.0;
 pub(crate) const KITCHEN_FURNITURE_DISTANT: f32 = 1.0;
 pub(crate) const KITCHEN_FURNITURE_MIDDLE: f32 = 2.0;

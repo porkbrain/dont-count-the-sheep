@@ -59,6 +59,14 @@ pub fn add(app: &mut App) {
         smooth_exit.run_if(in_state(GlobalGameState::ApartmentQuitting)),
     );
 
+    debug!("Adding visuals");
+
+    app.add_systems(
+        FixedUpdate,
+        common_visuals::systems::advance_animation
+            .run_if(in_state(GlobalGameState::InApartment)),
+    );
+
     info!("Added apartment to app");
 }
 

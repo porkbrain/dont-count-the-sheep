@@ -184,6 +184,7 @@ dependencies = [
  "bevy_pixel_camera",
  "common_assets",
  "common_layout",
+ "common_visuals",
  "lazy_static",
  "leafwing-input-manager",
  "main_game_lib",

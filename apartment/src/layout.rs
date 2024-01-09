@@ -1,10 +1,11 @@
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::{Square, SquareLayout};
 use common_layout::IntoMap;
+use common_visuals::{Animation, AnimationEnd, AnimationTimer};
 use lazy_static::lazy_static;
 use main_game_lib::{vec2_ext::Vec2Ext, PIXEL_ZOOM};
 
-use crate::{cameras::BG_RENDER_LAYER, prelude::*};
+use crate::{cameras::BG_RENDER_LAYER, consts::*, prelude::*};
 
 lazy_static! {
     static ref LAYOUT: SquareLayout = SquareLayout {
@@ -39,7 +40,11 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
     for (asset, zindex) in [
         (assets::BG, zindex::BG),
         (
@@ -73,6 +78,35 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
         ));
     }
+
+    // cloud atlas is rendered on top of the bg but below the furniture
+    commands.spawn((
+        LayoutEntity,
+        RenderLayers::layer(BG_RENDER_LAYER),
+        Animation {
+            on_last_frame: AnimationEnd::Loop,
+            first: 0,
+            last: CLOUD_FRAMES - 1,
+        },
+        AnimationTimer::new(CLOUD_ATLAS_FRAME_TIME, TimerMode::Repeating),
+        SpriteSheetBundle {
+            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                asset_server.load(assets::CLOUD_ATLAS),
+                vec2(CLOUD_WIDTH, CLOUD_HEIGHT),
+                CLOUD_FRAMES,
+                1,
+                Some(vec2(CLOUD_PADDING, 0.0)),
+                None,
+            )),
+            sprite: TextureAtlasSprite::new(0),
+            transform: Transform::from_translation(
+                vec2(249.5, 66.5)
+                    .as_top_left_into_centered()
+                    .extend(zindex::CLOUD_ATLAS),
+            ),
+            ..default()
+        },
+    ));
 }
 
 pub(crate) fn add_z_based_on_y(v: Vec2) -> Vec3 {
