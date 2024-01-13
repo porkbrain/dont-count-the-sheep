@@ -166,7 +166,7 @@ fn all_cleaned_up(
     mut since: Local<Option<Instant>>,
 ) {
     // this is reset to None when we're done with the exit animation
-    let elapsed = since.get_or_insert_with(|| Instant::now()).elapsed();
+    let elapsed = since.get_or_insert_with(Instant::now).elapsed();
     if elapsed < settings.fade_loading_screen_in {
         return;
     }

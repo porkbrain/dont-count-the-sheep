@@ -10,6 +10,8 @@ members = [
     "common/assets",
     "common/layout",
     "common/physics",
+    "common/story_derive",
+    "common/story",
     "common/visuals",
     "main_game_lib",
     "main_game",
@@ -22,10 +24,12 @@ bevy = "0.12.1"
 bevy_grid_squared = { path = "bevy_grid_squared", features = ["serde"] }
 bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
 bevy_pixel_camera = "0.12"
-bevy_webp_anim = "0.1"
+bevy_webp_anim = "0.2"
+bevy-inspector-egui = "0.22"
 common_assets = { path = "common/assets" }
 common_layout = { path = "common/layout" }
 common_physics = { path = "common/physics" }
+common_story = { path = "common/story" }
 common_visuals = { path = "common/visuals" }
 itertools = "0.12"
 lazy_static = "1.4"

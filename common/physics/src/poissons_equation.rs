@@ -1,4 +1,4 @@
-//! https://mattferraro.dev/posts/poissons-equation
+//! <https://mattferraro.dev/posts/poissons-equation>
 
 pub(crate) mod systems;
 pub(crate) mod types;

@@ -1,4 +1,6 @@
-use bevy::render::view::RenderLayers;
+use bevy::{
+    core_pipeline::clear_color::ClearColorConfig, render::view::RenderLayers,
+};
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use main_game_lib::PIXEL_ZOOM;
 
@@ -27,6 +29,7 @@ fn spawn(mut commands: Commands) {
     debug!("Spawning camera");
 
     commands.spawn((
+        Name::from("Apartment camera"),
         CameraEntity,
         PixelZoom::Fixed(PIXEL_ZOOM as i32),
         PixelViewport,
@@ -40,6 +43,24 @@ fn spawn(mut commands: Commands) {
                 hdr: true,
                 order: 1,
                 ..default()
+            },
+            ..default()
+        },
+    ));
+
+    // TODO
+    commands.spawn((
+        Name::from("TODO: dialog camera"),
+        CameraEntity,
+        RenderLayers::layer(25),
+        Camera2dBundle {
+            camera: Camera {
+                hdr: true,
+                order: 12,
+                ..default()
+            },
+            camera_2d: Camera2d {
+                clear_color: ClearColorConfig::None,
             },
             ..default()
         },

@@ -1,0 +1,12 @@
+[package]
+name = "common_story_derive"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+syn = "2.0"
+quote = "1.0"
+proc-macro2 = "1"
+
+[lib]
+proc-macro = true

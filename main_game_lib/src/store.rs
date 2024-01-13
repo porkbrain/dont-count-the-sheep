@@ -1,3 +1,5 @@
+//! TODO: `common_store` crate
+
 use std::{
     marker::PhantomData,
     sync::{Arc, Mutex},

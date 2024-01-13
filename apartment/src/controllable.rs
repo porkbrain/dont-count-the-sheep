@@ -1,6 +1,9 @@
 use bevy::{render::view::RenderLayers, sprite::Anchor};
 use bevy_grid_squared::{direction::Direction as GridDirection, Square};
 use common_layout::{IntoMap, SquareKind};
+use common_story::portrait_dialog::{
+    example::Example1, not_in_portrait_dialog,
+};
 use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
     interaction_pressed, loading_screen::LoadingScreenSettings,
@@ -37,10 +40,10 @@ const WALK_TO_ONLOAD_FROM_MEDITATION: Vec2 = vec2(25.0, 40.0);
 const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(750);
 
 /// Useful for despawning entities when leaving the apartment.
-#[derive(Component)]
+#[derive(Component, Reflect)]
 struct CharacterEntity;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 struct Controllable {
     step_time: Duration,
     /// If no target then this is the current position.
@@ -52,6 +55,7 @@ struct Controllable {
     direction: GridDirection,
 }
 
+#[derive(Reflect)]
 struct ControllableTarget {
     square: Square,
     since: Stopwatch,
@@ -60,7 +64,7 @@ struct ControllableTarget {
 
 /// When the character gets closer to certain zones, show UI to make it easier
 /// to visually identify what's going on.
-#[derive(Component)]
+#[derive(Component, Reflect)]
 struct TransparentOverlay;
 
 pub(crate) struct Plugin;
@@ -77,8 +81,10 @@ impl bevy::app::Plugin for Plugin {
                 load_zone_overlay,
                 start_meditation_minigame_if_near_chair
                     .run_if(interaction_pressed()),
+                start_conversation.run_if(interaction_pressed()),
             )
-                .run_if(in_state(GlobalGameState::InApartment)),
+                .run_if(in_state(GlobalGameState::InApartment))
+                .run_if(not_in_portrait_dialog()),
         );
 
         app.add_systems(
@@ -117,6 +123,7 @@ fn spawn(
     store.step_time_onload().remove();
 
     commands.spawn((
+        Name::from("Controllable"),
         Controllable {
             step_time,
             direction: INITIAL_DIRECTION,
@@ -147,6 +154,7 @@ fn spawn(
     ));
 
     commands.spawn((
+        Name::from("Transparent overlay"),
         TransparentOverlay,
         CharacterEntity,
         RenderLayers::layer(CHARACTERS_RENDER_LAYER),
@@ -324,6 +332,26 @@ fn animate_movement(
     }
 }
 
+/// Test
+fn start_conversation(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    map: Res<common_layout::Map<Apartment>>,
+
+    character: Query<&Controllable>,
+) {
+    let Ok(character) = character.get_single() else {
+        return;
+    };
+
+    let square = character.current_square();
+    if !matches!(map.get(&square), Some(SquareKind::Zone(zones::BED))) {
+        return;
+    }
+
+    Example1::spawn(&mut commands, &asset_server);
+}
+
 /// Will change the game state to meditation minigame.
 fn start_meditation_minigame_if_near_chair(
     mut commands: Commands,
@@ -357,7 +385,7 @@ fn start_meditation_minigame_if_near_chair(
     overlay.single_mut().color.set_a(1.0);
 
     commands.insert_resource(LoadingScreenSettings {
-        bg_image_asset: Some(main_game_lib::assets::meditation::LOADING_SCREEN),
+        bg_image_asset: Some(common_assets::paths::meditation::LOADING_SCREEN),
         stare_at_loading_screen_for_at_least: Some(
             WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
         ),

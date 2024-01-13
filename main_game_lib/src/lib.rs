@@ -1,5 +1,6 @@
+#![feature(trivial_bounds)]
+
 pub mod action;
-pub mod assets;
 pub mod loading_screen;
 pub mod prelude;
 pub mod store;
@@ -7,6 +8,7 @@ pub mod vec2_ext;
 
 pub use action::*;
 use bevy::{app::AppExit, prelude::*, window::WindowTheme};
+use bevy_inspector_egui::quick::{StateInspectorPlugin, WorldInspectorPlugin};
 use bevy_pixel_camera::PixelCameraPlugin;
 use leafwing_input_manager::{
     action_state::ActionState, plugin::InputManagerPlugin,
@@ -21,7 +23,8 @@ pub const VISIBLE_HEIGHT: f32 = 360.0;
 /// One pixel is 3x3 pixels on screen.
 pub const PIXEL_ZOOM: f32 = 3.0;
 
-#[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash)]
+/// TODO: move to own mod
+#[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum GlobalGameState {
     /// Dummy state so that we can do loading transitions.
     #[default]
@@ -52,7 +55,7 @@ pub enum GlobalGameState {
 }
 
 /// What are the allowed transitions between game states?
-#[derive(Debug)]
+#[derive(Debug, Reflect, Clone, Eq, PartialEq)]
 pub enum GlobalGameStateTransition {
     /// Restart the game
     MeditationQuittingToMeditationLoading,
@@ -67,7 +70,7 @@ pub enum GlobalGameStateTransition {
 
 /// Certain states have multiple allowed transitions.
 /// The tip of the stack must always match the current state.
-#[derive(Resource, Debug, Default)]
+#[derive(Resource, Debug, Default, Reflect)]
 pub struct GlobalGameStateTransitionStack {
     stack: Vec<GlobalGameStateTransition>,
 }
@@ -76,18 +79,27 @@ pub fn windowed_app() -> App {
     let mut app = App::new();
 
     app.add_state::<GlobalGameState>()
+        .register_type::<GlobalGameState>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
         .init_resource::<GlobalStore>()
         .insert_resource(GlobalGameStateTransitionStack::default())
+        .register_type::<GlobalGameStateTransitionStack>()
         .init_resource::<ActionState<GlobalAction>>()
+        .register_type::<GlobalAction>()
         .insert_resource(GlobalAction::input_map());
 
     app.add_plugins(
         DefaultPlugins
             .set(bevy::log::LogPlugin {
                 level: bevy::log::Level::WARN,
-                filter: "main_game_lib=trace,apartment=trace,meditation=trace,meditation::hoshi::sprite=debug"
-                    .to_string(),
+                filter: "\
+                main_game_lib=trace,\
+                apartment=trace,\
+                common_story=trace,\
+                meditation=trace,\
+                meditation::hoshi::sprite=debug\
+                "
+                .to_string(),
             })
             .set(ImagePlugin::default_nearest())
             .set(WindowPlugin {
@@ -104,12 +116,18 @@ pub fn windowed_app() -> App {
                 ..default()
             }),
     );
+    // dev only
+    app.add_plugins((
+        WorldInspectorPlugin::new(),
+        StateInspectorPlugin::<GlobalGameState>::default(),
+    ));
+
     app.add_plugins((
         PixelCameraPlugin,
+        InputManagerPlugin::<GlobalAction>::default(),
         bevy_magic_light_2d::Plugin,
         common_visuals::Plugin,
         bevy_webp_anim::Plugin,
-        InputManagerPlugin::<GlobalAction>::default(),
         loading_screen::Plugin,
     ));
 

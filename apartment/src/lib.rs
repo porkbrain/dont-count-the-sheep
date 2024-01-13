@@ -10,9 +10,11 @@ mod prelude;
 mod zindex;
 
 use bevy::utils::Instant;
+use common_story::portrait_dialog::in_portrait_dialog;
 use consts::START_LOADING_SCREEN_AFTER;
 use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
+    interaction_just_pressed,
     loading_screen::{self, LoadingScreenSettings, LoadingScreenState},
     GlobalAction, GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
@@ -65,6 +67,16 @@ pub fn add(app: &mut App) {
         FixedUpdate,
         common_visuals::systems::advance_animation
             .run_if(in_state(GlobalGameState::InApartment)),
+    );
+
+    debug!("Adding story");
+
+    app.add_systems(
+        Last,
+        common_story::portrait_dialog::advance
+            .run_if(in_state(GlobalGameState::InApartment))
+            .run_if(in_portrait_dialog())
+            .run_if(interaction_just_pressed()),
     );
 
     info!("Added apartment to app");

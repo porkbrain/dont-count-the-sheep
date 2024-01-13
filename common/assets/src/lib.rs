@@ -1,3 +1,5 @@
+pub mod paths;
+
 use std::marker::PhantomData;
 
 use bevy::asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext};

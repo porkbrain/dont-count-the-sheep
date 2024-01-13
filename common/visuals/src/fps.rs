@@ -1,6 +1,6 @@
 //! Toggle with F12
 //!
-//! [https://bevy-cheatbook.github.io/cookbook/print-framerate.html]
+//! <https://bevy-cheatbook.github.io/cookbook/print-framerate.html>
 
 use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
@@ -20,6 +20,7 @@ pub(crate) fn spawn(mut commands: Commands) {
     // this is the wrapper/container for the text
     let root = commands
         .spawn((
+            Name::from("FPS counter"),
             FpsRoot,
             NodeBundle {
                 // give it a dark background for readability

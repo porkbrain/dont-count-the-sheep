@@ -24,18 +24,21 @@ pub enum GlobalAction {
 }
 
 pub fn interaction_pressed(
-) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool
-where
-{
+) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
     move |action_state: Res<ActionState<GlobalAction>>| {
         action_state.pressed(GlobalAction::Interact)
     }
 }
 
+pub fn interaction_just_pressed(
+) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
+    move |action_state: Res<ActionState<GlobalAction>>| {
+        action_state.just_pressed(GlobalAction::Interact)
+    }
+}
+
 pub fn move_action_pressed(
-) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool
-where
-{
+) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
     move |action_state: Res<ActionState<GlobalAction>>| {
         action_state.pressed(GlobalAction::MoveUp)
             || action_state.pressed(GlobalAction::MoveDown)

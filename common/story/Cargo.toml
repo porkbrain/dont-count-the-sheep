@@ -1,0 +1,10 @@
+[package]
+name = "common_story"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+common_assets.workspace = true
+common_story_derive = { path = "../story_derive" }
+itertools.workspace = true

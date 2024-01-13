@@ -1,3 +1,8 @@
+pub mod fonts {
+    pub const PIXEL1: &str = "fonts/shaperka.ttf";
+    pub const PENCIL1: &str = "fonts/pencil.ttf";
+}
+
 pub mod apartment {
     pub const BG: &str = "apartment/bg.png";
 
@@ -68,4 +73,23 @@ pub mod meditation {
         "meditation/textures/polpo/videos/sandwich.webp";
     pub const VIDEO_VAMPIRE: &str =
         "meditation/textures/polpo/videos/vampire.webp";
+}
+
+pub mod ui {
+    pub const DIALOG_BUBBLE: &str = "characters/dialog_bubble.png";
+}
+
+pub mod portraits {
+    pub const WINNIE: &str = "characters/portraits/winnie1.png";
+    pub const PHOEBE: &str = "characters/portraits/princess1.png";
+    pub const MARIE: &str = "characters/portraits/widow1.png";
+    pub const BOLT: &str = "characters/portraits/bolt1.png";
+    pub const CAPY: &str = "characters/portraits/capy1.png";
+    pub const CAT: &str = "characters/portraits/cat1.png";
+    pub const EMIL: &str = "characters/portraits/emil1.png";
+    pub const MASTER: &str = "characters/portraits/master1.png";
+    pub const POOPER: &str = "characters/portraits/pooper1.png";
+    pub const REDHEAD: &str = "characters/portraits/redhead1.png";
+    pub const UNNAMED: &str = "characters/portraits/unnamed1.png";
+    pub const OTTER: &str = "characters/portraits/otter1.png";
 }

@@ -45,28 +45,41 @@ fn spawn(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    for (asset, zindex) in [
-        (assets::BG, zindex::BG),
+    for (name, asset, zindex) in [
+        ("Background", assets::BG, zindex::BG),
         (
+            "Bedroom back furniture",
             assets::BEDROOM_FURNITURE1,
             zindex::BEDROOM_FURNITURE_DISTANT,
         ),
-        (assets::BEDROOM_FURNITURE2, zindex::BEDROOM_FURNITURE_MIDDLE),
         (
+            "Bedroom cupboard",
+            assets::BEDROOM_FURNITURE2,
+            zindex::BEDROOM_FURNITURE_MIDDLE,
+        ),
+        (
+            "Bedroom door",
             assets::BEDROOM_FURNITURE3,
             zindex::BEDROOM_FURNITURE_CLOSEST,
         ),
         (
+            "Kitchen countertop",
             assets::KITCHEN_FURNITURE1,
             zindex::KITCHEN_FURNITURE_DISTANT,
         ),
-        (assets::KITCHEN_FURNITURE2, zindex::KITCHEN_FURNITURE_MIDDLE),
         (
+            "Kitchen fridge",
+            assets::KITCHEN_FURNITURE2,
+            zindex::KITCHEN_FURNITURE_MIDDLE,
+        ),
+        (
+            "Kitchen table",
             assets::KITCHEN_FURNITURE3,
             zindex::KITCHEN_FURNITURE_CLOSEST,
         ),
     ] {
         commands.spawn((
+            Name::from(name),
             LayoutEntity,
             RenderLayers::layer(BG_RENDER_LAYER),
             SpriteBundle {
@@ -81,6 +94,7 @@ fn spawn(
 
     // cloud atlas is rendered on top of the bg but below the furniture
     commands.spawn((
+        Name::from("Cloud atlas"),
         LayoutEntity,
         RenderLayers::layer(BG_RENDER_LAYER),
         Animation {

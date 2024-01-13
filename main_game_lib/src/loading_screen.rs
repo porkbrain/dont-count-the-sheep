@@ -1,3 +1,5 @@
+//! TODO: move to common
+
 use bevy::{
     core_pipeline::clear_color::ClearColorConfig, render::view::RenderLayers,
     utils::Instant,
@@ -10,8 +12,10 @@ pub const DEFAULT_FADE_LOADING_SCREEN_IN: Duration = from_millis(500);
 pub const DEFAULT_FADE_LOADING_SCREEN_OUT: Duration = from_millis(100);
 
 /// Dedicated for loading screen.
+/// TODO: organize layers better
 const LOADING_SCREEN_LAYER: u8 = 21;
 /// Higher than any other.
+/// TODO: organize orders better
 const LOADING_SCREEN_ORDER: isize = 10;
 
 /// A state machine where the states are the steps of the loading screen.
@@ -22,7 +26,7 @@ const LOADING_SCREEN_ORDER: isize = 10;
 /// Use provided transition systems to change the state:
 /// - [`start_state`] to begin the loading screen process
 /// - [`finish_state`] to finish the loading screen process
-#[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum LoadingScreenState {
     #[default]
     DoNothing,
@@ -36,7 +40,8 @@ pub enum LoadingScreenState {
     /// 6. Set visibility of the image to visible
     /// (if no bg image go to [`LoadingScreenState::StareAtLoadingScreen`])
     WaitForBgToLoad,
-    /// 7. Fades out and sets the state to [`StareAtLoadingScreen`].
+    /// 7. Fades out and sets the state to
+    ///    [`LoadingScreenState::StareAtLoadingScreen`].
     /// (skipped if no bg image)
     FadeOutQuadToShowBg,
     /// 8. If requested, stay on this screen for given amount of time before
@@ -56,7 +61,7 @@ pub enum LoadingScreenState {
     DespawnLoadingScreen,
 }
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
 pub struct LoadingScreenSettings {
     /// If set to none:
     /// - [`LoadingScreenState::WaitForBgToLoad`] goes straight to
@@ -93,7 +98,8 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<LoadingScreenState>();
+        app.add_state::<LoadingScreenState>()
+            .register_type::<LoadingScreenState>();
 
         app.add_systems(
             OnEnter(LoadingScreenState::SpawnLoadingScreen),
@@ -155,6 +161,7 @@ fn spawn_loading_screen(
     trace!("Spawning loading screen");
 
     commands.spawn((
+        Name::from("Loading screen camera"),
         LoadingCamera,
         PixelZoom::Fixed(PIXEL_ZOOM as i32),
         PixelViewport,
@@ -175,6 +182,7 @@ fn spawn_loading_screen(
 
     // quad
     commands.spawn((
+        Name::from("Loading screen quad"),
         LoadingQuad,
         RenderLayers::layer(LOADING_SCREEN_LAYER),
         SpriteBundle {
@@ -197,6 +205,7 @@ fn spawn_loading_screen(
     // bg image
     if let Some(bg_image_asset) = settings.bg_image_asset {
         commands.spawn((
+            Name::from("Loading screen image"),
             LoadingImage,
             RenderLayers::layer(LOADING_SCREEN_LAYER),
             SpriteBundle {
@@ -276,7 +285,7 @@ fn stare_at_loading_screen(
     mut since: Local<Option<Instant>>,
 ) {
     if let Some(min) = settings.stare_at_loading_screen_for_at_least {
-        let elapsed = since.get_or_insert_with(|| Instant::now()).elapsed();
+        let elapsed = since.get_or_insert_with(Instant::now).elapsed();
         if min > elapsed {
             return;
         }

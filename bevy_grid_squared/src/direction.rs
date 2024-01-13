@@ -1,6 +1,8 @@
+use bevy::reflect::Reflect;
+
 use crate::Square;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Reflect)]
 pub enum Direction {
     /// ↑
     Top,

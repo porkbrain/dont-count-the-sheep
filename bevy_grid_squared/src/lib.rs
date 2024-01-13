@@ -3,14 +3,14 @@ pub mod shapes;
 
 use bevy::prelude::*;
 
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Reflect)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SquareLayout {
     pub square_size: f32,
     pub origin: Vec2,
 }
 
-#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Reflect)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Square {
     pub x: i32,
