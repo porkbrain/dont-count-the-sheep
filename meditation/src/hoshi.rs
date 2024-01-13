@@ -68,10 +68,6 @@ impl bevy::app::Plugin for Plugin {
                     .run_if(in_state(GlobalGameState::MeditationInGame)),
             );
     }
-
-    fn finish(&self, _app: &mut App) {
-        //
-    }
 }
 
 /// 1. spriteless parent which commands the movement

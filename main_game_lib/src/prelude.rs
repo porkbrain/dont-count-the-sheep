@@ -16,7 +16,3 @@ pub fn stopwatch_at(duration: Duration) -> Stopwatch {
     s.tick(duration);
     s
 }
-
-/// `#0d0e1f`
-pub const PRIMARY_COLOR: Color =
-    Color::rgb(0.050980393, 0.05490196, 0.12156863);

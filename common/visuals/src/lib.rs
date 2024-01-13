@@ -13,6 +13,10 @@ use bevy::{
 };
 pub use types::*;
 
+/// `#0d0e1f`
+pub const PRIMARY_COLOR: Color =
+    Color::rgb(0.050980393, 0.05490196, 0.12156863);
+
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -21,10 +25,6 @@ impl bevy::app::Plugin for Plugin {
         app.add_plugins(FrameTimeDiagnosticsPlugin)
             .add_systems(Startup, fps::spawn)
             .add_systems(Update, (fps::update, fps::toggle));
-    }
-
-    fn finish(&self, _app: &mut App) {
-        //
     }
 }
 

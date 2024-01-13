@@ -1,6 +1,6 @@
+use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::PIXEL_ZOOM;
 use main_game_lib::{
-    loading_screen::{self, LoadingScreenSettings, LoadingScreenState},
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 
@@ -142,7 +142,7 @@ pub(super) fn select(
                 fade_loading_screen_out: ON_RESTART_FADE_LOADING_SCREEN_OUT,
                 ..default()
             });
-            next_loading_state.set(loading_screen::start_state());
+            next_loading_state.set(common_loading_screen::start_state());
 
             stack.push(GlobalGameStateTransition::MeditationQuittingToMeditationLoading);
             next_state.set(GlobalGameState::MeditationQuitting);
@@ -157,7 +157,7 @@ pub(super) fn select(
                     ON_EXIT_TO_APARTMENT_FADE_LOADING_SCREEN_OUT,
                 ..default()
             });
-            next_loading_state.set(loading_screen::start_state());
+            next_loading_state.set(common_loading_screen::start_state());
 
             stack
                 .push(GlobalGameStateTransition::MeditationQuittingToApartment);

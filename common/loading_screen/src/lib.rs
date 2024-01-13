@@ -1,25 +1,23 @@
-//! TODO: move to common
+#![feature(trivial_bounds)]
+
+use std::time::Duration;
 
 use bevy::{
-    core_pipeline::clear_color::ClearColorConfig, render::view::RenderLayers,
-    utils::Instant,
+    core_pipeline::clear_color::ClearColorConfig, prelude::*,
+    render::view::RenderLayers, utils::Instant,
 };
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
-use common_visuals::camera::{
-    PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH, PIXEL_ZOOM,
+use common_visuals::{
+    camera::{
+        order, render_layer, PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH,
+        PIXEL_ZOOM,
+    },
+    PRIMARY_COLOR,
 };
 
-use crate::prelude::*;
-
-pub const DEFAULT_FADE_LOADING_SCREEN_IN: Duration = from_millis(500);
-pub const DEFAULT_FADE_LOADING_SCREEN_OUT: Duration = from_millis(100);
-
-/// Dedicated for loading screen.
-/// TODO: organize layers better
-const LOADING_SCREEN_LAYER: u8 = 21;
-/// Higher than any other.
-/// TODO: organize orders better
-const LOADING_SCREEN_ORDER: isize = 10;
+pub const DEFAULT_FADE_LOADING_SCREEN_IN: Duration = Duration::from_millis(500);
+pub const DEFAULT_FADE_LOADING_SCREEN_OUT: Duration =
+    Duration::from_millis(100);
 
 /// A state machine where the states are the steps of the loading screen.
 /// They are executed in order and loop back to the beginning.
@@ -168,12 +166,12 @@ fn spawn_loading_screen(
         LoadingCamera,
         PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
-        RenderLayers::layer(LOADING_SCREEN_LAYER),
+        RenderLayers::layer(render_layer::LOADING),
         UiCameraConfig { show_ui: false },
         Camera2dBundle {
             camera: Camera {
                 hdr: true,
-                order: LOADING_SCREEN_ORDER,
+                order: order::LOADING,
                 ..default()
             },
             camera_2d: Camera2d {
@@ -187,7 +185,7 @@ fn spawn_loading_screen(
     cmd.spawn((
         Name::from("Loading screen quad"),
         LoadingQuad,
-        RenderLayers::layer(LOADING_SCREEN_LAYER),
+        RenderLayers::layer(render_layer::LOADING),
         SpriteBundle {
             sprite: Sprite {
                 color: {
@@ -213,7 +211,7 @@ fn spawn_loading_screen(
         cmd.spawn((
             Name::from("Loading screen image"),
             LoadingImage,
-            RenderLayers::layer(LOADING_SCREEN_LAYER),
+            RenderLayers::layer(render_layer::LOADING),
             SpriteBundle {
                 texture: asset_server.load(bg_image_asset),
                 visibility: Visibility::Hidden,

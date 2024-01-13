@@ -1,16 +1,20 @@
-//! TODO: `common_store` crate
-
 use std::{
     marker::PhantomData,
     sync::{Arc, Mutex},
 };
 
-use bevy::utils::Instant;
+use bevy::{prelude::*, utils::Instant};
 use rusqlite::OptionalExtension;
 use rusqlite_migration::{Migrations, M};
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::prelude::*;
+pub struct Plugin;
+
+impl bevy::app::Plugin for Plugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<GlobalStore>();
+    }
+}
 
 #[derive(Resource)]
 pub struct GlobalStore {

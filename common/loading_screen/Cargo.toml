@@ -1,0 +1,9 @@
+[package]
+name = "common_loading_screen"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+bevy_pixel_camera.workspace = true
+common_visuals.workspace = true

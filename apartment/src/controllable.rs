@@ -1,15 +1,16 @@
 use bevy::{render::view::RenderLayers, sprite::Anchor};
 use bevy_grid_squared::{direction::Direction as GridDirection, Square};
 use common_layout::{IntoMap, SquareKind};
+use common_loading_screen::LoadingScreenSettings;
+use common_store::{ApartmentStore, GlobalStore};
 use common_story::portrait_dialog::{
     example::Example1, not_in_portrait_dialog,
 };
 use common_visuals::camera::render_layer;
 use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
-    interaction_pressed, loading_screen::LoadingScreenSettings,
-    move_action_pressed, ApartmentStore, GlobalAction,
-    GlobalGameStateTransition, GlobalGameStateTransitionStack, GlobalStore,
+    interaction_pressed, move_action_pressed, GlobalAction,
+    GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 
 use crate::{
@@ -91,10 +92,6 @@ impl bevy::app::Plugin for Plugin {
             FixedUpdate,
             animate_movement.run_if(in_state(GlobalGameState::InApartment)),
         );
-    }
-
-    fn finish(&self, _: &mut App) {
-        //
     }
 }
 
@@ -332,7 +329,7 @@ fn animate_movement(
     }
 }
 
-/// TODO: Starting conversion for test purposes only
+/// TODO: This is here for purposes only
 fn start_conversation(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,

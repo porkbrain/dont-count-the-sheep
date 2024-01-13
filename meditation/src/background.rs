@@ -2,7 +2,7 @@
 
 use bevy::{math::vec3, render::view::RenderLayers};
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
-use common_visuals::camera::render_layer;
+use common_visuals::{camera::render_layer, PRIMARY_COLOR};
 
 use crate::{cameras::BackgroundLightScene, prelude::*};
 
@@ -33,10 +33,6 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn)
             .add_systems(OnExit(GlobalGameState::MeditationQuitting), despawn);
-    }
-
-    fn finish(&self, _app: &mut App) {
-        //
     }
 }
 

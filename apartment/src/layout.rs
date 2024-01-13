@@ -37,10 +37,6 @@ impl bevy::app::Plugin for Plugin {
         app.add_systems(OnEnter(GlobalGameState::ApartmentLoading), spawn);
         app.add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn);
     }
-
-    fn finish(&self, _app: &mut App) {
-        //
-    }
 }
 
 fn spawn(

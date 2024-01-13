@@ -17,12 +17,10 @@ mod zindex;
 
 use bevy::utils::Instant;
 use bevy_webp_anim::WebpAnimator;
+use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_physics::PoissonsEquation;
 use gravity::Gravity;
-use main_game_lib::{
-    loading_screen::{self, LoadingScreenSettings, LoadingScreenState},
-    GlobalGameStateTransitionStack,
-};
+use main_game_lib::GlobalGameStateTransitionStack;
 use prelude::*;
 
 pub fn add(app: &mut App) {
@@ -149,7 +147,7 @@ fn finish_when_everything_loaded(
 
     debug!("All images loaded");
 
-    next_loading_state.set(loading_screen::finish_state());
+    next_loading_state.set(common_loading_screen::finish_state());
 }
 
 fn enter_the_game(mut next_state: ResMut<NextState<GlobalGameState>>) {

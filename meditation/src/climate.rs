@@ -121,10 +121,6 @@ impl bevy::app::Plugin for Plugin {
             despawn_raypoints,
         );
     }
-
-    fn finish(&self, _app: &mut App) {
-        //
-    }
 }
 
 fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {

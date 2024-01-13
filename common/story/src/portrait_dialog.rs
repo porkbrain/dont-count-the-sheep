@@ -12,11 +12,10 @@ use bevy::{
     text::{Text2dBounds, TextLayoutInfo},
     utils::Instant,
 };
+use common_visuals::camera::render_layer;
 
 use crate::Character;
 
-/// TODO: organize render layers
-const RENDER_LAYER: u8 = 25;
 const FONT_SIZE: f32 = 21.0;
 const FONT: &str = common_assets::paths::fonts::PENCIL1;
 const PUSH_BUBBLE_TOP: f32 = 290.0;
@@ -179,7 +178,7 @@ fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
     .with_children(|parent| {
         parent.spawn((
             Name::new("Dialog bubble"),
-            RenderLayers::layer(RENDER_LAYER),
+            RenderLayers::layer(render_layer::DIALOG),
             SpriteBundle {
                 transform: Transform::from_translation(Vec3::new(
                     0.0,
@@ -195,7 +194,7 @@ fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
         parent.spawn((
             DialogPortrait,
             Name::new("Dialog portrait"),
-            RenderLayers::layer(RENDER_LAYER),
+            RenderLayers::layer(render_layer::DIALOG),
             SpriteBundle {
                 texture: if let Some(speaker) = initial_speaker {
                     asset_server.load(speaker.portrait_asset_path())
@@ -209,7 +208,7 @@ fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
         parent.spawn((
             DialogText,
             Name::new("Dialog text"),
-            RenderLayers::layer(RENDER_LAYER),
+            RenderLayers::layer(render_layer::DIALOG),
             Text2dBundle {
                 text,
                 transform: Transform::from_translation(Vec3::new(

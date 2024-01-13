@@ -9,7 +9,9 @@ members = [
     "bevy_magic_light_2d",
     "common/assets",
     "common/layout",
+    "common/loading_screen",
     "common/physics",
+    "common/store",
     "common/story_derive",
     "common/story",
     "common/visuals",
@@ -28,7 +30,9 @@ bevy_webp_anim = "0.2"
 bevy-inspector-egui = "0.22"
 common_assets = { path = "common/assets" }
 common_layout = { path = "common/layout" }
+common_loading_screen = { path = "common/loading_screen" }
 common_physics = { path = "common/physics" }
+common_store = { path = "common/store" }
 common_story = { path = "common/story" }
 common_visuals = { path = "common/visuals" }
 itertools = "0.12"

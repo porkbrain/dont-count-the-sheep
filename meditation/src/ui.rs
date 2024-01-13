@@ -90,8 +90,4 @@ impl bevy::app::Plugin for Plugin {
             score::despawn,
         );
     }
-
-    fn finish(&self, _app: &mut App) {
-        //
-    }
 }

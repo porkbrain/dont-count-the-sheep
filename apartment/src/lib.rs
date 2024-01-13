@@ -10,13 +10,13 @@ mod prelude;
 mod zindex;
 
 use bevy::utils::Instant;
+use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_story::portrait_dialog::in_portrait_dialog;
 use consts::START_LOADING_SCREEN_AFTER;
 use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
-    interaction_just_pressed,
-    loading_screen::{self, LoadingScreenSettings, LoadingScreenState},
-    GlobalAction, GlobalGameStateTransition, GlobalGameStateTransitionStack,
+    interaction_just_pressed, GlobalAction, GlobalGameStateTransition,
+    GlobalGameStateTransitionStack,
 };
 use prelude::*;
 
@@ -46,7 +46,7 @@ pub fn add(app: &mut App) {
     );
     app.add_systems(
         Update,
-        loading_screen::finish
+        common_loading_screen::finish
             .run_if(in_state(GlobalGameState::InApartment))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
@@ -149,7 +149,7 @@ fn smooth_exit(
     if !*loading_screen_started && since.elapsed() > START_LOADING_SCREEN_AFTER
     {
         debug!("Transitioning to first loading screen state");
-        next_loading_screen_state.set(loading_screen::start_state());
+        next_loading_screen_state.set(common_loading_screen::start_state());
         *loading_screen_started = true;
     }
 

@@ -184,6 +184,8 @@ dependencies = [
  "bevy_pixel_camera",
  "common_assets",
  "common_layout",
+ "common_loading_screen",
+ "common_store",
  "common_story",
  "common_visuals",
  "lazy_static",
@@ -1462,10 +1464,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "common_loading_screen"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_pixel_camera",
+ "common_visuals",
+]
+
+[[package]]
 name = "common_physics"
 version = "0.1.0"
 dependencies = [
  "bevy",
+]
+
+[[package]]
+name = "common_store"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "ron",
+ "rusqlite",
+ "rusqlite_migration",
+ "serde",
 ]
 
 [[package]]
@@ -2713,12 +2735,10 @@ dependencies = [
  "bevy_magic_light_2d",
  "bevy_pixel_camera",
  "bevy_webp_anim",
+ "common_loading_screen",
+ "common_store",
  "common_visuals",
  "leafwing-input-manager",
- "ron",
- "rusqlite",
- "rusqlite_migration",
- "serde",
 ]
 
 [[package]]
@@ -2748,6 +2768,7 @@ dependencies = [
  "bevy_pixel_camera",
  "bevy_webp_anim",
  "common_assets",
+ "common_loading_screen",
  "common_physics",
  "common_visuals",
  "itertools",

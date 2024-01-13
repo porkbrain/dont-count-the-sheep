@@ -73,10 +73,6 @@ impl bevy::app::Plugin for Plugin {
                     .run_if(in_state(GlobalGameState::MeditationInGame)),
             );
     }
-
-    fn finish(&self, _app: &mut App) {
-        //
-    }
 }
 
 fn spawn(mut cmd: Commands) {

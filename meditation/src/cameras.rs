@@ -10,8 +10,8 @@ use bevy_magic_light_2d::{
     SceneCamera,
 };
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
+use common_loading_screen::LoadingScreenState;
 use common_visuals::camera::{order, render_layer, PIXEL_ZOOM};
-use main_game_lib::loading_screen::LoadingScreenState;
 
 use crate::prelude::*;
 

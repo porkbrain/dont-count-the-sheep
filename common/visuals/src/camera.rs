@@ -11,10 +11,12 @@ pub mod render_layer {
     pub const OBJ: u8 = 1;
     pub const DIALOG: u8 = 25;
     pub const LIGHT: u8 = 29;
+    pub const LOADING: u8 = 21;
 }
 
 pub mod order {
     pub const DEFAULT: isize = 1;
     pub const LIGHT: isize = 2;
+    pub const LOADING: isize = 10;
     pub const DIALOG: isize = 12;
 }

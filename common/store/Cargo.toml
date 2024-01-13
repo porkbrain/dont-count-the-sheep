@@ -1,0 +1,11 @@
+[package]
+name = "common_store"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+rusqlite_migration.workspace = true
+rusqlite.workspace = true
+serde.workspace = true
+ron.workspace = true
