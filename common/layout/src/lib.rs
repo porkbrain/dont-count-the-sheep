@@ -2,6 +2,8 @@
 //! Where can the character go? Where are the walls? Where are the immovable
 //! objects?
 
+#![deny(missing_docs)]
+
 use std::marker::PhantomData;
 
 use bevy::{prelude::*, utils::hashbrown::HashMap};
@@ -9,6 +11,13 @@ use bevy_grid_squared::{Square, SquareLayout};
 use common_assets::RonLoader;
 use serde::{Deserialize, Serialize};
 
+/// Registers layout map for `T` where `T` is a type implementing [`IntoMap`].
+/// This would be your level layout.
+///
+/// If the `dev` feature is enabled, you can press `Enter` to export the map
+/// to `map.ron` in the current directory.
+/// We draw an overlay with tiles that you can edit with left and right mouse
+/// buttons.
 pub fn register<T: IntoMap, S: States>(
     app: &mut App,
     loading: S,
@@ -45,16 +54,25 @@ pub fn register<T: IntoMap, S: States>(
     }
 }
 
+/// Some map.
 pub trait IntoMap: 'static + Send + Sync + TypePath {
+    /// Size in number of tiles.
     fn bounds() -> [i32; 4];
 
+    /// How large is a tile and how do we translate between world coordinates
+    /// and tile coordinates?
     fn layout() -> &'static SquareLayout;
 
+    /// Path to the map .ron asset.
     fn asset_path() -> &'static str;
 
+    /// Convert a cursor position to a tile.
+    /// This cannot be done with the layout because cursor is relative to the
+    /// window size and starts at top left corner.
     fn cursor_position_to_square(cursor_position: Vec2) -> Square;
 }
 
+/// Holds the tiles in a hash map.
 #[derive(Asset, Resource, Serialize, Deserialize, TypePath)]
 pub struct Map<T: IntoMap> {
     squares: HashMap<Square, SquareKind>,
@@ -62,16 +80,25 @@ pub struct Map<T: IntoMap> {
     phantom: PhantomData<T>,
 }
 
+/// What kind of tiles do we support?
 #[derive(Clone, Copy, Serialize, Deserialize, Default, Eq, PartialEq)]
 pub enum SquareKind {
+    /// No tile.
+    /// Preferably, don't put these into the hash map.
     #[default]
     None,
+    /// A wall that cannot be passed.
     Wall,
+    /// An object that blocks.
     Object,
+    /// A space that can be depended on by the game logic.
+    /// You can match the zone number to a check whether the character is in
+    /// a tile of that zone.
     Zone(u8),
 }
 
 impl<T: IntoMap> Map<T> {
+    /// Get the kind of a tile.
     pub fn get(&self, square: &Square) -> Option<SquareKind> {
         self.squares.get(square).copied()
     }
@@ -112,6 +139,7 @@ fn try_insert_map_as_resource<T: IntoMap>(
 }
 
 impl<T: IntoMap> Map<T> {
+    /// Create a new map with the given squares.
     #[allow(dead_code)]
     pub fn new(squares: HashMap<Square, SquareKind>) -> Self {
         Self {

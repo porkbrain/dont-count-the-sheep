@@ -23,6 +23,7 @@ const ROOT_POS: Vec2 = vec2(-640.0, -360.0);
 const TEXT_BOUNDS: Vec2 = vec2(250.0, 120.0);
 const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 
+/// Will be true if in a dialog that takes away player control.
 pub fn in_portrait_dialog() -> impl FnMut(Option<Res<PortraitDialog>>) -> bool {
     move |dialog| dialog.is_some()
 }
@@ -50,12 +51,15 @@ pub struct PortraitDialog {
     speaker: Option<Character>,
 }
 
+/// The root entity of the dialog UI.
 #[derive(Component)]
 pub struct DialogRoot;
 
+/// A child of the root entity that contains the text.
 #[derive(Component)]
 pub struct DialogText;
 
+/// A child of the root entity that contains the portrait image.
 #[derive(Component)]
 pub struct DialogPortrait;
 
@@ -84,6 +88,8 @@ trait DialogFragment {
     }
 }
 
+/// Call this to load the next step in the dialog.
+/// A step could be some text, or a player choice, etc.
 pub fn advance(
     mut cmd: Commands,
     mut dialog: ResMut<PortraitDialog>,

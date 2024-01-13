@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use bevy::prelude::{AssetServer, Commands};
 use common_story_derive::*;
 

@@ -1,4 +1,5 @@
 #![doc = include_str!("../README.md")]
+#![deny(missing_docs)]
 
 pub mod camera;
 #[cfg(feature = "fps")]
@@ -17,6 +18,7 @@ pub use types::*;
 pub const PRIMARY_COLOR: Color =
     Color::rgb(0.050980393, 0.05490196, 0.12156863);
 
+/// Only registers FPS counter if the `fps` feature is enabled.
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -28,7 +30,9 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
+/// Some useful extensions to the `Color` type.
 pub trait ColorExt {
+    /// <https://github.com/bevyengine/bevy/issues/1402>
     fn lerp(self, other: Self, t: f32) -> Self;
 }
 

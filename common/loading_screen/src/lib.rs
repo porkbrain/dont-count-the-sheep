@@ -1,4 +1,17 @@
+//! A loading screen state machine.
+//! The current system is quite tricky to integrate right and one has to combine
+//! it with the main state machine in a specific way.
+//!
+//! The important state is [`LoadingScreenState::WaitForSignalToFinish`].
+//! When the loading screen enters this state, it expects user call to the
+//! [`finish`] function or change of the state to the [`finish_state`] state.
+//! Once that's done, the loading screen will transition to opacity 0 and
+//! then will despawn.
+//!
+//! Optionally, a background image can be provided.
+
 #![feature(trivial_bounds)]
+#![deny(missing_docs)]
 
 use std::time::Duration;
 
@@ -15,7 +28,9 @@ use common_visuals::{
     PRIMARY_COLOR,
 };
 
-pub const DEFAULT_FADE_LOADING_SCREEN_IN: Duration = Duration::from_millis(500);
+/// Slow fade in is the default, can be changed in [`LoadingScreenSettings`].
+pub const DEFAULT_FADE_LOADING_SCREEN_IN: Duration = Duration::from_millis(400);
+/// Fast fade out is the default, can be changed in [`LoadingScreenSettings`].
 pub const DEFAULT_FADE_LOADING_SCREEN_OUT: Duration =
     Duration::from_millis(100);
 
@@ -29,6 +44,9 @@ pub const DEFAULT_FADE_LOADING_SCREEN_OUT: Duration =
 /// - [`finish_state`] to finish the loading screen process
 #[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum LoadingScreenState {
+    /// This is the state in which the loading screen is not active and waiting
+    /// to be activated.
+    /// Change the state to [`start_state`] to activate the loading screen.
     #[default]
     DoNothing,
     /// 1. Spawn a camera with highest order.
@@ -62,6 +80,9 @@ pub enum LoadingScreenState {
     DespawnLoadingScreen,
 }
 
+/// Settings for the loading screen state machine.
+/// We implement default for this which should be used because the settings will
+/// expand.
 #[derive(Resource, Reflect)]
 pub struct LoadingScreenSettings {
     /// If set to none:
@@ -70,7 +91,11 @@ pub struct LoadingScreenSettings {
     /// - [`LoadingScreenState::FadeInQuadToHideBg`] goes straight to
     ///   [`LoadingScreenState::FadeOutQuadToShowGame`]
     pub bg_image_asset: Option<&'static str>,
+    /// How long does it take to fade in the quad that hides the load out
+    /// scene.
     pub fade_loading_screen_in: Duration,
+    /// How long does it take to fade out the quad that reveals the load in
+    /// scene.
     pub fade_loading_screen_out: Duration,
     /// If bg image not present, this value is ignored.
     pub stare_at_loading_screen_for_at_least: Option<Duration>,
@@ -91,10 +116,14 @@ pub fn start_state() -> LoadingScreenState {
 pub fn finish_state() -> LoadingScreenState {
     LoadingScreenState::FadeInQuadToHideBg
 }
+
+/// Sets the state to [`finish_state`].
 pub fn finish(mut next_state: ResMut<NextState<LoadingScreenState>>) {
     next_state.set(finish_state());
 }
 
+/// Adds the state machine to the app.
+/// Doesn't do anything until the state is set to [`start_state`].
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {

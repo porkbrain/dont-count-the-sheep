@@ -1,3 +1,7 @@
+//! All the assets that the game loads are stored as string paths here.
+
+#![allow(missing_docs)]
+
 pub mod fonts {
     pub const PIXEL1: &str = "fonts/shaperka.ttf";
     pub const PENCIL1: &str = "fonts/pencil.ttf";

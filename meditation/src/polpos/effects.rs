@@ -143,7 +143,7 @@ pub(crate) mod black_hole {
             BeginAnimationAtRandom {
                 chance_per_second: BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND,
                 frame_time: BLACK_HOLE_FRAME_TIME,
-                with_min_life: Some((BLACK_HOLE_MIN_LIFE, Stopwatch::new())),
+                with_min_delay: Some((BLACK_HOLE_MIN_LIFE, Stopwatch::new())),
             },
             RenderLayers::layer(render_layer::BG),
         ))

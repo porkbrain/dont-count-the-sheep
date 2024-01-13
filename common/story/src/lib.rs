@@ -1,5 +1,9 @@
+//! Contains dialog logic and dialog texts.
+//! Basically anything related to the lore is here.
+
 #![feature(round_char_boundary)]
 #![feature(trivial_bounds)]
+#![deny(missing_docs)]
 
 use bevy::{
     core_pipeline::clear_color::ClearColorConfig, prelude::*,
@@ -7,6 +11,7 @@ use bevy::{
 };
 use common_visuals::camera::{order, render_layer};
 
+/// The main dialog type that should take away player control.
 pub mod portrait_dialog;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Reflect)]
@@ -30,9 +35,12 @@ enum Character {
     Otter,
 }
 
+/// Marks the dialog camera.
 #[derive(Component)]
 pub struct DialogCamera;
 
+/// Spawns the dialog camera which has a high order and only renders the dialog
+/// entities.
 pub fn spawn_camera(mut cmd: Commands) {
     cmd.spawn((
         Name::from("Dialog camera"),
@@ -52,6 +60,9 @@ pub fn spawn_camera(mut cmd: Commands) {
     ));
 }
 
+/// Despawns the dialog camera.
+/// By despawning the camera you clean up the existing entities.
+/// Some scenes don't have the dialog.
 pub fn despawn_camera(
     mut cmd: Commands,
     entities: Query<Entity, With<DialogCamera>>,

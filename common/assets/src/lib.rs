@@ -1,3 +1,9 @@
+//! Exports paths to the assets used by the game in [`paths`].
+//! Also exports a [`RonLoader`] for loading assets from .ron files.
+//! We store e.g. level layouts this way.
+
+#![deny(missing_docs)]
+
 pub mod paths;
 
 use std::marker::PhantomData;
@@ -6,17 +12,23 @@ use bevy::asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 
+/// Loads assets from .ron files.
+/// The specific type of asset is determined by the type parameter `T`.
 #[derive(Debug)]
 
 pub struct RonLoader<T>(PhantomData<T>);
 
+/// Errors that can occur when loading assets from .ron files.
 #[non_exhaustive]
 #[derive(Debug, Error)]
 pub enum LoaderError {
+    /// The file could not be loaded, most likely not found.
     #[error("Could load ron file: {0}")]
     Io(#[from] std::io::Error),
+    /// We convert the file bytes into a string, which can fail.
     #[error("Non-utf8 string in ron file: {0}")]
     Utf8(#[from] std::str::Utf8Error),
+    /// The string must be parsable into the `T` type.
     #[error("Could not parse ron file: {0}")]
     Ron(#[from] ron::de::SpannedError),
 }

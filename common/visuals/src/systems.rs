@@ -1,9 +1,14 @@
+//! You ought to register these systems by yourself.
+
 use bevy::prelude::*;
 
 use crate::{
     Animation, AnimationEnd, AnimationTimer, BeginAnimationAtRandom, Flicker,
 };
 
+/// Advances the animation by one frame.
+/// This requires that the [`AnimationTimer`] component is present along with
+/// [`TextureAtlasSprite`] and [`Animation`].
 pub fn advance_animation(
     mut cmd: Commands,
     time: Res<Time>,
@@ -62,14 +67,14 @@ pub fn begin_animation_at_random(
 ) {
     for (entity, mut settings, mut visibility) in &mut query {
         if let Some((min_life, ref mut stopwatch)) =
-            settings.with_min_life.as_mut()
+            settings.with_min_delay.as_mut()
         {
             stopwatch.tick(time.delta());
             if stopwatch.elapsed() < *min_life {
                 continue;
             }
         }
-        settings.with_min_life = None;
+        settings.with_min_delay = None;
 
         if rand::random::<f32>()
             < settings.chance_per_second * time.delta_seconds()
