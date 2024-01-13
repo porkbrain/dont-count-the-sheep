@@ -16,13 +16,6 @@ use leafwing_input_manager::{
 use prelude::PRIMARY_COLOR;
 pub use store::*;
 
-/// What's shown on screen.
-pub const VISIBLE_WIDTH: f32 = 640.0;
-/// What's shown on screen.
-pub const VISIBLE_HEIGHT: f32 = 360.0;
-/// One pixel is 3x3 pixels on screen.
-pub const PIXEL_ZOOM: f32 = 3.0;
-
 /// TODO: move to own mod
 #[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum GlobalGameState {

@@ -1,9 +1,10 @@
 use bevy::render::view::RenderLayers;
 use bevy_webp_anim::WebpAnimator;
+use common_visuals::camera::render_layer;
 use rand::random;
 
 use super::consts::{VIDEO_FPS, VIDEO_SIZE};
-use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
+use crate::prelude::*;
 
 /// This gets shuffled so order doesn't matter.
 pub(crate) const ALL_VIDEOS: [Video; 10] = [
@@ -48,7 +49,7 @@ impl Video {
         asset_server: &Res<AssetServer>,
     ) {
         parent.spawn((
-            RenderLayers::layer(OBJ_RENDER_LAYER),
+            RenderLayers::layer(render_layer::OBJ),
             bevy_webp_anim::WebpBundle {
                 remote_control: webp.add_and_wait_for_asset_load(
                     asset_server.load(self.asset_path()),

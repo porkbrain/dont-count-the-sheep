@@ -5,7 +5,7 @@ mod menu;
 mod score;
 
 mod consts {
-    use main_game_lib::PIXEL_ZOOM;
+    use common_visuals::camera::PIXEL_ZOOM;
 
     use super::*;
 
@@ -17,8 +17,8 @@ mod consts {
 
     pub(crate) const SCORE_EDGE_OFFSET: f32 = 25.0;
 
-    pub(crate) const MENU_BOX_WIDTH: f32 = 215.0 * PIXEL_ZOOM;
-    pub(crate) const MENU_BOX_HEIGHT: f32 = 145.0 * PIXEL_ZOOM;
+    pub(crate) const MENU_BOX_WIDTH: f32 = 215.0 * PIXEL_ZOOM as f32;
+    pub(crate) const MENU_BOX_HEIGHT: f32 = 145.0 * PIXEL_ZOOM as f32;
 
     //
     // These spacings and sizes are arbitrary.
@@ -30,11 +30,12 @@ mod consts {
     pub(crate) const SELECTIONS_TOP_OFFSET: Val = Val::Px(54.0);
     pub(crate) const SELECTIONS_PADDING_TOP: Val = Val::Px(12.0);
 
-    pub(crate) const SELECTION_MARKER_TOP_OFFSET_PX: f32 = 4.5 * PIXEL_ZOOM;
+    pub(crate) const SELECTION_MARKER_TOP_OFFSET_PX: f32 =
+        4.5 * PIXEL_ZOOM as f32;
     pub(crate) const SELECTION_MARKER_TOP_PADDING_PX_PER_SELECTION: f32 =
-        19.0 * PIXEL_ZOOM;
+        19.0 * PIXEL_ZOOM as f32;
     pub(crate) const SELECTION_MARKER_LEFT_OFFSET: Val =
-        Val::Px(5.0 * PIXEL_ZOOM);
+        Val::Px(5.0 * PIXEL_ZOOM as f32);
 }
 
 use leafwing_input_manager::common_conditions::action_just_pressed;

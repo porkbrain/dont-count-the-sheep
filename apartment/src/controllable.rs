@@ -4,6 +4,7 @@ use common_layout::{IntoMap, SquareKind};
 use common_story::portrait_dialog::{
     example::Example1, not_in_portrait_dialog,
 };
+use common_visuals::camera::render_layer;
 use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
     interaction_pressed, loading_screen::LoadingScreenSettings,
@@ -12,7 +13,6 @@ use main_game_lib::{
 };
 
 use crate::{
-    cameras::CHARACTERS_RENDER_LAYER,
     consts::WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
     layout::{add_z_based_on_y, zones},
     prelude::*,
@@ -131,7 +131,7 @@ fn spawn(
             walking_to,
         },
         CharacterEntity,
-        RenderLayers::layer(CHARACTERS_RENDER_LAYER),
+        RenderLayers::layer(render_layer::OBJ),
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                 asset_server.load(assets::WINNIE_ATLAS),
@@ -157,7 +157,7 @@ fn spawn(
         Name::from("Transparent overlay"),
         TransparentOverlay,
         CharacterEntity,
-        RenderLayers::layer(CHARACTERS_RENDER_LAYER),
+        RenderLayers::layer(render_layer::OBJ),
         SpriteBundle {
             texture: asset_server.load(assets::WINNIE_MEDITATING),
             transform: Transform::from_translation(Vec3::new(
@@ -332,7 +332,7 @@ fn animate_movement(
     }
 }
 
-/// TODO
+/// TODO: Starting conversion for test purposes only
 fn start_conversation(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,

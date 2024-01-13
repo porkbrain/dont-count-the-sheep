@@ -4,7 +4,7 @@
 use std::f32::consts::PI;
 
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
-use main_game_lib::{VISIBLE_HEIGHT, VISIBLE_WIDTH};
+use common_visuals::camera::{PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH};
 
 use super::{consts::MAX_ARROW_PUSH_BACK, Hoshi};
 use crate::{
@@ -66,8 +66,8 @@ pub(super) fn point_arrow(
 
     let hoshi_translation = hoshi_transform.translation;
 
-    let is_off_x = hoshi_translation.x.abs() > VISIBLE_WIDTH / 2.0;
-    let is_off_y = hoshi_translation.y.abs() > VISIBLE_HEIGHT / 2.0;
+    let is_off_x = hoshi_translation.x.abs() > PIXEL_VISIBLE_WIDTH / 2.0;
+    let is_off_y = hoshi_translation.y.abs() > PIXEL_VISIBLE_HEIGHT / 2.0;
 
     *visibility = match (is_off_x, is_off_y) {
         // ~
@@ -109,8 +109,10 @@ pub(super) fn point_arrow(
     }
 }
 
-const HORIZONTAL_CORNER: f32 = VISIBLE_WIDTH / 2.0 - ARROW_DISTANCE_FROM_EDGE;
-const VERTICAL_CORNER: f32 = VISIBLE_HEIGHT / 2.0 - ARROW_DISTANCE_FROM_EDGE;
+const HORIZONTAL_CORNER: f32 =
+    PIXEL_VISIBLE_WIDTH / 2.0 - ARROW_DISTANCE_FROM_EDGE;
+const VERTICAL_CORNER: f32 =
+    PIXEL_VISIBLE_HEIGHT / 2.0 - ARROW_DISTANCE_FROM_EDGE;
 
 fn update_arrow_position_and_rotation(
     offscreen: OffScreen,
@@ -120,9 +122,9 @@ fn update_arrow_position_and_rotation(
     let x_signum = hoshi.x.signum();
     let y_signum = hoshi.y.signum();
 
-    let push_back_x =
-        ((hoshi.x.abs() - VISIBLE_WIDTH / 2.0).sqrt()).min(MAX_ARROW_PUSH_BACK);
-    let push_back_y = ((hoshi.y.abs() - VISIBLE_HEIGHT / 2.0).sqrt())
+    let push_back_x = ((hoshi.x.abs() - PIXEL_VISIBLE_WIDTH / 2.0).sqrt())
+        .min(MAX_ARROW_PUSH_BACK);
+    let push_back_y = ((hoshi.y.abs() - PIXEL_VISIBLE_HEIGHT / 2.0).sqrt())
         .min(MAX_ARROW_PUSH_BACK);
 
     match offscreen {

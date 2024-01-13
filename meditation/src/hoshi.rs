@@ -9,10 +9,11 @@ mod sprite;
 
 use bevy::render::view::RenderLayers;
 use bevy_magic_light_2d::gi::types::LightOccluder2D;
+use common_visuals::camera::render_layer;
 pub(crate) use controls::loading_special;
 
 use self::consts::*;
-use crate::{cameras::OBJ_RENDER_LAYER, prelude::*};
+use crate::prelude::*;
 
 #[derive(Event, Clone, Copy)]
 pub(crate) enum ActionEvent {
@@ -111,7 +112,7 @@ fn spawn(
     let body = cmd
         .spawn((
             HoshiBody,
-            RenderLayers::layer(OBJ_RENDER_LAYER),
+            RenderLayers::layer(render_layer::OBJ),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load(assets::BODY_ATLAS),
@@ -136,7 +137,7 @@ fn spawn(
     let face = cmd
         .spawn((
             HoshiFace,
-            RenderLayers::layer(OBJ_RENDER_LAYER),
+            RenderLayers::layer(render_layer::OBJ),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load(assets::FACE_ATLAS),
@@ -161,7 +162,7 @@ fn spawn(
     cmd.spawn((
         anim::SparkEffect,
         HoshiEntity,
-        RenderLayers::layer(OBJ_RENDER_LAYER),
+        RenderLayers::layer(render_layer::OBJ),
         Animation {
             on_last_frame: AnimationEnd::Custom(Box::new(
                 |entity,

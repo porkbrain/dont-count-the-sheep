@@ -1,5 +1,6 @@
 #![doc = include_str!("../README.md")]
 
+pub mod camera;
 #[cfg(feature = "fps")]
 mod fps;
 pub mod systems;

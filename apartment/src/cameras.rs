@@ -1,11 +1,8 @@
 use bevy::render::view::RenderLayers;
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
-use main_game_lib::PIXEL_ZOOM;
+use common_visuals::camera::{order, render_layer, PIXEL_ZOOM};
 
 use crate::prelude::*;
-
-pub(crate) const BG_RENDER_LAYER: u8 = 2;
-pub(crate) const CHARACTERS_RENDER_LAYER: u8 = 1;
 
 pub(crate) struct Plugin;
 
@@ -29,17 +26,17 @@ fn spawn(mut cmd: Commands) {
     cmd.spawn((
         Name::from("Apartment camera"),
         CameraEntity,
-        PixelZoom::Fixed(PIXEL_ZOOM as i32),
+        PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
         RenderLayers::from_layers(&[
             0, // for FPS and other debug tools
-            BG_RENDER_LAYER,
-            CHARACTERS_RENDER_LAYER,
+            render_layer::BG,
+            render_layer::OBJ,
         ]),
         Camera2dBundle {
             camera: Camera {
                 hdr: true,
-                order: 1,
+                order: order::DEFAULT,
                 ..default()
             },
             ..default()

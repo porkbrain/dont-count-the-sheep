@@ -5,6 +5,7 @@ use bevy::{
     core_pipeline::clear_color::ClearColorConfig, prelude::*,
     render::view::RenderLayers,
 };
+use common_visuals::camera::{order, render_layer};
 
 pub mod portrait_dialog;
 
@@ -32,15 +33,15 @@ enum Character {
 #[derive(Component)]
 pub struct DialogCamera;
 
-pub fn spawn(mut cmd: Commands) {
+pub fn spawn_camera(mut cmd: Commands) {
     cmd.spawn((
         Name::from("Dialog camera"),
         DialogCamera,
-        RenderLayers::layer(25), // TODO
+        RenderLayers::layer(render_layer::DIALOG),
         Camera2dBundle {
             camera: Camera {
                 hdr: true,
-                order: 12, // TODO
+                order: order::DIALOG,
                 ..default()
             },
             camera_2d: Camera2d {
@@ -51,7 +52,10 @@ pub fn spawn(mut cmd: Commands) {
     ));
 }
 
-pub fn despawn(mut cmd: Commands, entities: Query<Entity, With<DialogCamera>>) {
+pub fn despawn_camera(
+    mut cmd: Commands,
+    entities: Query<Entity, With<DialogCamera>>,
+) {
     for entity in entities.iter() {
         cmd.entity(entity).despawn_recursive();
     }

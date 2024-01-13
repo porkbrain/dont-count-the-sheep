@@ -5,8 +5,11 @@ use bevy::{
     utils::Instant,
 };
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
+use common_visuals::camera::{
+    PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH, PIXEL_ZOOM,
+};
 
-use crate::{prelude::*, PIXEL_ZOOM, VISIBLE_HEIGHT, VISIBLE_WIDTH};
+use crate::prelude::*;
 
 pub const DEFAULT_FADE_LOADING_SCREEN_IN: Duration = from_millis(500);
 pub const DEFAULT_FADE_LOADING_SCREEN_OUT: Duration = from_millis(100);
@@ -163,7 +166,7 @@ fn spawn_loading_screen(
     cmd.spawn((
         Name::from("Loading screen camera"),
         LoadingCamera,
-        PixelZoom::Fixed(PIXEL_ZOOM as i32),
+        PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
         RenderLayers::layer(LOADING_SCREEN_LAYER),
         UiCameraConfig { show_ui: false },
@@ -192,7 +195,10 @@ fn spawn_loading_screen(
                     c.set_a(0.0);
                     c
                 },
-                custom_size: Some(Vec2::new(VISIBLE_WIDTH, VISIBLE_HEIGHT)),
+                custom_size: Some(Vec2::new(
+                    PIXEL_VISIBLE_WIDTH,
+                    PIXEL_VISIBLE_HEIGHT,
+                )),
                 ..default()
             },
             transform: Transform::from_translation(Vec3::new(

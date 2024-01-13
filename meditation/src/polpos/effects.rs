@@ -6,12 +6,13 @@ use super::{
     PolpoEntity,
 };
 use crate::{
-    cameras::{BG_RENDER_LAYER, OBJ_RENDER_LAYER},
     gravity::{ChangeOfBasis, Gravity},
     prelude::*,
 };
 
 pub(crate) mod bolt {
+    use common_visuals::camera::render_layer;
+
     use super::*;
 
     /// Special effect that goes from Hoshi to a Polpo that it hit.
@@ -60,7 +61,7 @@ pub(crate) mod bolt {
                 from: from_with_respect_to_polpo_as_origin,
                 spawned_at: Instant::now(),
             },
-            RenderLayers::layer(OBJ_RENDER_LAYER),
+            RenderLayers::layer(render_layer::OBJ),
             SpriteBundle {
                 texture: asset_server.load(assets::BOLT),
                 transform: {
@@ -84,6 +85,8 @@ pub(crate) mod bolt {
 }
 
 pub(crate) mod black_hole {
+    use common_visuals::camera::render_layer;
+
     use super::*;
 
     #[derive(Component)]
@@ -142,7 +145,7 @@ pub(crate) mod black_hole {
                 frame_time: BLACK_HOLE_FRAME_TIME,
                 with_min_life: Some((BLACK_HOLE_MIN_LIFE, Stopwatch::new())),
             },
-            RenderLayers::layer(BG_RENDER_LAYER),
+            RenderLayers::layer(render_layer::BG),
         ))
         .insert(SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
@@ -164,7 +167,7 @@ pub(crate) mod black_hole {
                     BLACK_HOLE_FLICKER_CHANCE_PER_SECOND,
                     BLACK_HOLE_FLICKER_DURATION,
                 ),
-                RenderLayers::layer(BG_RENDER_LAYER),
+                RenderLayers::layer(render_layer::OBJ),
                 SpriteBundle {
                     texture: asset_server.load(assets::BLACKHOLE_FLICKER),
                     transform: Transform::from_translation(Vec3::new(

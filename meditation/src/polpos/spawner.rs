@@ -1,14 +1,11 @@
 use bevy::{render::view::RenderLayers, time::Stopwatch, utils::HashSet};
 use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use bevy_webp_anim::WebpAnimator;
+use common_visuals::camera::render_layer;
 use rand::{random, seq::SliceRandom};
 
 use super::{consts::*, videos::ALL_VIDEOS, Polpo, PolpoOccluder, Video};
-use crate::{
-    cameras::{BackgroundLightScene, OBJ_RENDER_LAYER},
-    polpos::PolpoEntity,
-    prelude::*,
-};
+use crate::{cameras::BackgroundLightScene, polpos::PolpoEntity, prelude::*};
 
 /// Manages spawning of Polpos.
 #[derive(Resource, Debug)]
@@ -69,7 +66,7 @@ pub(super) fn try_spawn_next(
 
     cmd.spawn((polpo, PolpoEntity))
         .insert((
-            RenderLayers::layer(OBJ_RENDER_LAYER),
+            RenderLayers::layer(render_layer::OBJ),
             SpriteSheetBundle {
                 texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                     asset_server.load(assets::CRACK_ATLAS),
@@ -86,7 +83,7 @@ pub(super) fn try_spawn_next(
         ))
         .with_children(|parent| {
             parent.spawn((
-                RenderLayers::layer(OBJ_RENDER_LAYER),
+                RenderLayers::layer(render_layer::OBJ),
                 SpriteBundle {
                     texture: asset_server.load(assets::POLPO_FRAME),
                     transform: Transform::from_translation(Vec3::new(
@@ -99,7 +96,7 @@ pub(super) fn try_spawn_next(
             ));
 
             parent.spawn((
-                RenderLayers::layer(OBJ_RENDER_LAYER),
+                RenderLayers::layer(render_layer::OBJ),
                 SpriteSheetBundle {
                     texture_atlas: texture_atlases.add(
                         TextureAtlas::from_grid(

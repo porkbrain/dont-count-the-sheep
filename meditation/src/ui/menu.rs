@@ -1,6 +1,7 @@
+use common_visuals::camera::PIXEL_ZOOM;
 use main_game_lib::{
     loading_screen::{self, LoadingScreenSettings, LoadingScreenState},
-    GlobalGameStateTransition, GlobalGameStateTransitionStack, PIXEL_ZOOM,
+    GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 
 use super::consts::*;
@@ -188,8 +189,8 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
         SelectionMarker,
         NodeBundle {
             style: Style {
-                width: Val::Px(36.0 * PIXEL_ZOOM),
-                height: Val::Px(36.0 * PIXEL_ZOOM),
+                width: Val::Px(36.0 * PIXEL_ZOOM as f32),
+                height: Val::Px(36.0 * PIXEL_ZOOM as f32),
                 top: Val::Px(SELECTION_MARKER_TOP_OFFSET_PX),
                 left: SELECTION_MARKER_LEFT_OFFSET,
                 position_type: PositionType::Absolute,

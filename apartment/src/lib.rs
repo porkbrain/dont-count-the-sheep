@@ -72,11 +72,19 @@ pub fn add(app: &mut App) {
     debug!("Adding story");
 
     app.add_systems(
+        OnEnter(GlobalGameState::ApartmentLoading),
+        common_story::spawn_camera,
+    );
+    app.add_systems(
         Last,
         common_story::portrait_dialog::advance
             .run_if(in_state(GlobalGameState::InApartment))
             .run_if(in_portrait_dialog())
             .run_if(interaction_just_pressed()),
+    );
+    app.add_systems(
+        OnEnter(GlobalGameState::ApartmentQuitting),
+        common_story::despawn_camera,
     );
 
     info!("Added apartment to app");

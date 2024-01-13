@@ -2,11 +2,9 @@
 
 use bevy::{math::vec3, render::view::RenderLayers};
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
+use common_visuals::camera::render_layer;
 
-use crate::{
-    cameras::{BackgroundLightScene, BG_RENDER_LAYER},
-    prelude::*,
-};
+use crate::{cameras::BackgroundLightScene, prelude::*};
 
 pub(crate) const COLOR: Color = PRIMARY_COLOR;
 const STAR_LIGHT_COLOR: &str = "#dbcbff";
@@ -49,7 +47,7 @@ fn spawn(
 ) {
     cmd.spawn((
         BackgroundEntity,
-        RenderLayers::layer(BG_RENDER_LAYER),
+        RenderLayers::layer(render_layer::BG),
         SpriteBundle {
             texture: asset_server.load(assets::BACKGROUND_DEFAULT),
             transform: Transform::from_translation(Vec3::new(
@@ -76,7 +74,7 @@ fn spawn_twinkles(cmd: &mut Commands, asset_server: &Res<AssetServer>) {
     for i in 1..=TWINKLE_COUNT {
         cmd.spawn((
             BackgroundEntity,
-            RenderLayers::layer(BG_RENDER_LAYER),
+            RenderLayers::layer(render_layer::OBJ),
             Flicker::new(TWINKLE_CHANCE_PER_SECOND, TWINKLE_DURATION),
             SpriteBundle {
                 texture: asset_server.load(assets::twinkle(i)),
@@ -104,7 +102,7 @@ fn spawn_shooting_star(
     };
     cmd.spawn((
         BackgroundEntity,
-        RenderLayers::layer(BG_RENDER_LAYER),
+        RenderLayers::layer(render_layer::OBJ),
         BeginAnimationAtRandom {
             chance_per_second: SHOOTING_STAR_CHANCE_PER_SECOND,
             frame_time: SHOOTING_STAR_FRAME_TIME,

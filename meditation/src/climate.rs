@@ -5,14 +5,11 @@ use bevy::{
     time::Stopwatch, utils::Instant,
 };
 use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
-use common_visuals::ColorExt;
+use common_visuals::{camera::render_layer, ColorExt};
 use itertools::Itertools;
 
 use crate::{
-    cameras::{BackgroundLightScene, OBJ_RENDER_LAYER},
-    hoshi,
-    path::LevelPath,
-    prelude::*,
+    cameras::BackgroundLightScene, hoshi, path::LevelPath, prelude::*,
 };
 
 /// Climate casts light rays.
@@ -156,7 +153,7 @@ fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
     ))
     .with_children(|commands| {
         commands.spawn((
-            RenderLayers::layer(OBJ_RENDER_LAYER),
+            RenderLayers::layer(render_layer::OBJ),
             SpriteBundle {
                 texture: asset_server.load(assets::CLIMATE_DEFAULT),
                 ..default()

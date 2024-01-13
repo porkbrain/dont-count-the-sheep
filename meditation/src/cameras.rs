@@ -10,12 +10,10 @@ use bevy_magic_light_2d::{
     SceneCamera,
 };
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
-use main_game_lib::{loading_screen::LoadingScreenState, PIXEL_ZOOM};
+use common_visuals::camera::{order, render_layer, PIXEL_ZOOM};
+use main_game_lib::loading_screen::LoadingScreenState;
 
 use crate::prelude::*;
-
-pub(crate) const OBJ_RENDER_LAYER: u8 = 1;
-pub(crate) const BG_RENDER_LAYER: u8 = 2;
 
 /// All entities with this component are part of the background light scene.
 /// Also, they will get despawned by query in this plugin.
@@ -52,7 +50,7 @@ impl LightScene for BackgroundLightScene {
     const HANDLE_START: u128 = 23475629871623176235;
 
     fn render_layer_index() -> u8 {
-        (RenderLayers::TOTAL_LAYERS - 2) as u8
+        render_layer::LIGHT
     }
 }
 
@@ -67,7 +65,7 @@ fn spawn_cameras(mut cmd: Commands) {
         Camera2dBundle {
             camera: Camera {
                 hdr: true,
-                order: 1,
+                order: order::DEFAULT,
                 ..default()
             },
             ..Camera2dBundle::default()
@@ -82,13 +80,13 @@ fn spawn_cameras(mut cmd: Commands) {
 
     cmd.spawn((
         BackgroundLightScene,
-        PixelZoom::Fixed(PIXEL_ZOOM as i32),
+        PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
-        RenderLayers::layer(OBJ_RENDER_LAYER),
+        RenderLayers::layer(render_layer::OBJ),
         Camera2dBundle {
             camera: Camera {
                 hdr: true,
-                order: 2,
+                order: order::LIGHT,
                 ..default()
             },
             camera_2d: Camera2d {
@@ -110,9 +108,10 @@ fn spawn_bg_render_camera(
     cmd.spawn((
         BackgroundLightScene,
         SceneCamera::<BackgroundLightScene>::default(),
-        PixelZoom::Fixed(PIXEL_ZOOM as i32),
+        PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
-        RenderLayers::from_layers(&[0, BG_RENDER_LAYER]),
+        // TODO: 0 is necessary?
+        RenderLayers::from_layers(&[0, render_layer::BG]),
         UiCameraConfig { show_ui: false },
     ))
     .insert(Camera2dBundle {
@@ -121,6 +120,7 @@ fn spawn_bg_render_camera(
             target: RenderTarget::Image(bg_camera_targets.floor_target.clone()),
             ..default()
         },
+        // TODO: necessary?
         projection: OrthographicProjection {
             near: -2000.0,
             ..default()

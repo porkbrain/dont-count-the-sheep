@@ -1,11 +1,14 @@
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::{Square, SquareLayout};
 use common_layout::IntoMap;
-use common_visuals::{Animation, AnimationEnd, AnimationTimer};
+use common_visuals::{
+    camera::{render_layer, PIXEL_ZOOM},
+    Animation, AnimationEnd, AnimationTimer,
+};
 use lazy_static::lazy_static;
-use main_game_lib::{vec2_ext::Vec2Ext, PIXEL_ZOOM};
+use main_game_lib::vec2_ext::Vec2Ext;
 
-use crate::{cameras::BG_RENDER_LAYER, consts::*, prelude::*};
+use crate::{consts::*, prelude::*};
 
 lazy_static! {
     static ref LAYOUT: SquareLayout = SquareLayout {
@@ -81,7 +84,7 @@ fn spawn(
         cmd.spawn((
             Name::from(name),
             LayoutEntity,
-            RenderLayers::layer(BG_RENDER_LAYER),
+            RenderLayers::layer(render_layer::BG),
             SpriteBundle {
                 texture: asset_server.load(asset),
                 transform: Transform::from_translation(Vec3::new(
@@ -96,7 +99,7 @@ fn spawn(
     cmd.spawn((
         Name::from("Cloud atlas"),
         LayoutEntity,
-        RenderLayers::layer(BG_RENDER_LAYER),
+        RenderLayers::layer(render_layer::BG),
         Animation {
             on_last_frame: AnimationEnd::Loop,
             first: 0,
@@ -161,8 +164,9 @@ impl IntoMap for Apartment {
     }
 
     fn cursor_position_to_square(p: Vec2) -> Square {
-        Self::layout()
-            .world_pos_to_square((p / PIXEL_ZOOM).as_top_left_into_centered())
+        Self::layout().world_pos_to_square(
+            (p / PIXEL_ZOOM as f32).as_top_left_into_centered(),
+        )
     }
 }
 

@@ -1,12 +1,12 @@
 use bevy::render::view::RenderLayers;
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
+use common_visuals::camera::render_layer;
 
 use super::{
     consts::*, effects::bolt::get_bundle_with_respect_to_origin_at_zero, Polpo,
     PolpoDestroyedEvent, PolpoOccluder,
 };
 use crate::{
-    cameras::OBJ_RENDER_LAYER,
     climate::Climate,
     hoshi::{self, Hoshi},
     prelude::*,
@@ -212,7 +212,7 @@ pub(super) fn to_environment(
                             STATIC_ATLAS_FRAME_TIME,
                             TimerMode::Repeating,
                         ),
-                        RenderLayers::layer(OBJ_RENDER_LAYER),
+                        RenderLayers::layer(render_layer::OBJ),
                     ))
                     .insert(SpriteSheetBundle {
                         texture_atlas: texture_atlases.add(

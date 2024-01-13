@@ -1475,6 +1475,7 @@ dependencies = [
  "bevy",
  "common_assets",
  "common_story_derive",
+ "common_visuals",
  "itertools",
 ]
 
