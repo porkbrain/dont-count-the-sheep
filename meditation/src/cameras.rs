@@ -110,7 +110,8 @@ fn spawn_bg_render_camera(
         SceneCamera::<BackgroundLightScene>::default(),
         PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
-        // TODO: 0 is necessary?
+        // For some reason, everything breaks if 0 is not included.
+        // I don't know why.
         RenderLayers::from_layers(&[0, render_layer::BG]),
         UiCameraConfig { show_ui: false },
     ))
@@ -118,11 +119,6 @@ fn spawn_bg_render_camera(
         camera: Camera {
             hdr: true,
             target: RenderTarget::Image(bg_camera_targets.floor_target.clone()),
-            ..default()
-        },
-        // TODO: necessary?
-        projection: OrthographicProjection {
-            near: -2000.0,
             ..default()
         },
         ..default()

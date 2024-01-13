@@ -122,7 +122,6 @@ mod apartment {
 
 impl GlobalStore {
     pub fn new() -> Self {
-        // TODO: persist to disk
         let mut conn = rusqlite::Connection::open_in_memory().unwrap();
 
         migrate(&mut conn);
