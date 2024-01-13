@@ -43,11 +43,11 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn spawn(
-    mut commands: Commands,
+    mut cmd: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    commands.spawn((
+    cmd.spawn((
         BackgroundEntity,
         RenderLayers::layer(BG_RENDER_LAYER),
         SpriteBundle {
@@ -61,20 +61,20 @@ fn spawn(
         },
     ));
 
-    spawn_twinkles(&mut commands, &asset_server);
-    spawn_light_sources(&mut commands);
-    spawn_shooting_star(&mut commands, &asset_server, &mut texture_atlases);
+    spawn_twinkles(&mut cmd, &asset_server);
+    spawn_light_sources(&mut cmd);
+    spawn_shooting_star(&mut cmd, &asset_server, &mut texture_atlases);
 }
 
-fn despawn(mut commands: Commands, bg: Query<Entity, With<BackgroundEntity>>) {
+fn despawn(mut cmd: Commands, bg: Query<Entity, With<BackgroundEntity>>) {
     for entity in bg.iter() {
-        commands.entity(entity).despawn_recursive();
+        cmd.entity(entity).despawn_recursive();
     }
 }
 
-fn spawn_twinkles(commands: &mut Commands, asset_server: &Res<AssetServer>) {
+fn spawn_twinkles(cmd: &mut Commands, asset_server: &Res<AssetServer>) {
     for i in 1..=TWINKLE_COUNT {
-        commands.spawn((
+        cmd.spawn((
             BackgroundEntity,
             RenderLayers::layer(BG_RENDER_LAYER),
             Flicker::new(TWINKLE_CHANCE_PER_SECOND, TWINKLE_DURATION),
@@ -92,7 +92,7 @@ fn spawn_twinkles(commands: &mut Commands, asset_server: &Res<AssetServer>) {
 }
 
 fn spawn_shooting_star(
-    commands: &mut Commands,
+    cmd: &mut Commands,
     asset_server: &Res<AssetServer>,
     texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
 ) {
@@ -102,7 +102,7 @@ fn spawn_shooting_star(
         first: 0,
         last: SHOOTING_STAR_FRAMES - 1,
     };
-    commands.spawn((
+    cmd.spawn((
         BackgroundEntity,
         RenderLayers::layer(BG_RENDER_LAYER),
         BeginAnimationAtRandom {
@@ -131,9 +131,9 @@ fn spawn_shooting_star(
 }
 
 /// Some stars emit light.
-fn spawn_light_sources(commands: &mut Commands) {
+fn spawn_light_sources(cmd: &mut Commands) {
     // top right star
-    commands.spawn((
+    cmd.spawn((
         BackgroundLightScene,
         SpatialBundle {
             transform: Transform::from_translation(vec3(-187.0, 122.0, 0.0)),
@@ -149,7 +149,7 @@ fn spawn_light_sources(commands: &mut Commands) {
     ));
 
     // top left star
-    commands.spawn((
+    cmd.spawn((
         BackgroundLightScene,
         SpatialBundle {
             transform: Transform::from_translation(vec3(235.0, 67.0, 0.0)),
@@ -165,7 +165,7 @@ fn spawn_light_sources(commands: &mut Commands) {
     ));
 
     // bottom left galaxy
-    commands.spawn((
+    cmd.spawn((
         BackgroundLightScene,
         SpatialBundle {
             transform: Transform::from_translation(vec3(140.0, -45.0, 0.0)),
@@ -180,7 +180,7 @@ fn spawn_light_sources(commands: &mut Commands) {
     ));
 
     // bottom right galaxy
-    commands.spawn((
+    cmd.spawn((
         BackgroundLightScene,
         SpatialBundle {
             transform: Transform::from_translation(vec3(-280.0, -55.0, 0.0)),
@@ -195,7 +195,7 @@ fn spawn_light_sources(commands: &mut Commands) {
     ));
 
     // top center galaxy
-    commands.spawn((
+    cmd.spawn((
         BackgroundLightScene,
         SpatialBundle {
             transform: Transform::from_translation(vec3(-20.0, 150.0, 0.0)),

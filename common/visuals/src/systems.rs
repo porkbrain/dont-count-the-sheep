@@ -5,6 +5,9 @@ use crate::{
 };
 
 pub fn advance_animation(
+    mut cmd: Commands,
+    time: Res<Time>,
+
     mut query: Query<(
         Entity,
         &Animation,
@@ -12,8 +15,6 @@ pub fn advance_animation(
         &mut TextureAtlasSprite,
         &mut Visibility,
     )>,
-    mut commands: Commands,
-    time: Res<Time>,
 ) {
     for (entity, animation, mut timer, mut atlas, mut visibility) in &mut query
     {
@@ -22,7 +23,7 @@ pub fn advance_animation(
             if atlas.index == animation.last {
                 match &animation.on_last_frame {
                     AnimationEnd::RemoveTimer => {
-                        commands.entity(entity).remove::<AnimationTimer>();
+                        cmd.entity(entity).remove::<AnimationTimer>();
                         *visibility = Visibility::Hidden;
                         atlas.index = animation.first
                     }
@@ -33,7 +34,7 @@ pub fn advance_animation(
                             &mut timer,
                             &mut atlas,
                             &mut visibility,
-                            &mut commands,
+                            &mut cmd,
                             &time,
                         );
                     }
@@ -51,12 +52,13 @@ pub fn advance_animation(
 /// With given chance per second, start animation by inserting an
 /// [`AnimationTimer`] component to the entity.
 pub fn begin_animation_at_random(
+    mut cmd: Commands,
+    time: Res<Time>,
+
     mut query: Query<
         (Entity, &mut BeginAnimationAtRandom, &mut Visibility),
         Without<AnimationTimer>,
     >,
-    mut commands: Commands,
-    time: Res<Time>,
 ) {
     for (entity, mut settings, mut visibility) in &mut query {
         if let Some((min_life, ref mut stopwatch)) =
@@ -73,7 +75,7 @@ pub fn begin_animation_at_random(
             < settings.chance_per_second * time.delta_seconds()
         {
             *visibility = Visibility::Visible;
-            commands.entity(entity).insert(AnimationTimer::new(
+            cmd.entity(entity).insert(AnimationTimer::new(
                 settings.frame_time,
                 TimerMode::Repeating,
             ));

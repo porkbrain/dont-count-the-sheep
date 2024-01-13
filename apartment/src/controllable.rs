@@ -99,7 +99,7 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn spawn(
-    mut commands: Commands,
+    mut cmd: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     store: Res<GlobalStore>,
@@ -122,7 +122,7 @@ fn spawn(
     let step_time = store.step_time_onload().get().unwrap_or(DEFAULT_STEP_TIME);
     store.step_time_onload().remove();
 
-    commands.spawn((
+    cmd.spawn((
         Name::from("Controllable"),
         Controllable {
             step_time,
@@ -153,7 +153,7 @@ fn spawn(
         },
     ));
 
-    commands.spawn((
+    cmd.spawn((
         Name::from("Transparent overlay"),
         TransparentOverlay,
         CharacterEntity,
@@ -176,13 +176,13 @@ fn spawn(
 }
 
 fn despawn(
-    mut commands: Commands,
+    mut cmd: Commands,
     characters: Query<Entity, With<CharacterEntity>>,
 ) {
     debug!("Despawning character entities");
 
     for entity in characters.iter() {
-        commands.entity(entity).despawn_recursive();
+        cmd.entity(entity).despawn_recursive();
     }
 }
 
@@ -332,9 +332,9 @@ fn animate_movement(
     }
 }
 
-/// Test
+/// TODO
 fn start_conversation(
-    mut commands: Commands,
+    mut cmd: Commands,
     asset_server: Res<AssetServer>,
     map: Res<common_layout::Map<Apartment>>,
 
@@ -349,12 +349,12 @@ fn start_conversation(
         return;
     }
 
-    Example1::spawn(&mut commands, &asset_server);
+    Example1::spawn(&mut cmd, &asset_server);
 }
 
 /// Will change the game state to meditation minigame.
 fn start_meditation_minigame_if_near_chair(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     store: Res<GlobalStore>,
@@ -381,10 +381,10 @@ fn start_meditation_minigame_if_near_chair(
         .step_time_onload()
         .set(STEP_TIME_ONLOAD_FROM_MEDITATION);
 
-    commands.entity(entity).despawn_recursive();
+    cmd.entity(entity).despawn_recursive();
     overlay.single_mut().color.set_a(1.0);
 
-    commands.insert_resource(LoadingScreenSettings {
+    cmd.insert_resource(LoadingScreenSettings {
         bg_image_asset: Some(common_assets::paths::meditation::LOADING_SCREEN),
         stare_at_loading_screen_for_at_least: Some(
             WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,

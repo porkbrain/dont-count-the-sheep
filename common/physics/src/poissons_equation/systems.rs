@@ -34,9 +34,10 @@ pub(crate) fn spawn_visualization<
     T: Send + Sync + 'static,
     W: WorldDimensions,
 >(
+    mut cmd: Commands,
+
     field: Res<PoissonsEquation<T>>,
     mut images: ResMut<Assets<Image>>,
-    mut commands: Commands,
 ) {
     let arrow = images.add(
         Image::from_buffer(
@@ -54,7 +55,7 @@ pub(crate) fn spawn_visualization<
     for y in 0..field.height {
         for x in 0..field.width {
             // The whole field is a grid of these tiles.
-            commands.spawn((
+            cmd.spawn((
                 VectorArrow,
                 SpriteBundle {
                     texture: arrow.clone(),

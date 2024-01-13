@@ -26,14 +26,15 @@ pub(crate) mod bolt {
     }
 
     pub(crate) fn propel(
+        mut cmd: Commands,
+
         mut bolts: Query<(Entity, &Bolt, &mut Transform)>,
-        mut commands: Commands,
     ) {
         for (entity, bolt, mut transform) in bolts.iter_mut() {
             let lives_for = bolt.spawned_at.elapsed();
 
             if lives_for > BOLT_LIFETIME {
-                commands.entity(entity).despawn();
+                cmd.entity(entity).despawn();
             } else {
                 let lerp_factor =
                     lives_for.as_secs_f32() / BOLT_LIFETIME.as_secs_f32();
@@ -90,7 +91,7 @@ pub(crate) mod black_hole {
 
     /// Includes effects of gravity on the poissons equation.
     pub(crate) fn spawn(
-        commands: &mut Commands,
+        cmd: &mut Commands,
         asset_server: &Res<AssetServer>,
         texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
         gravity: &mut EventWriter<PoissonsEquationUpdateEvent<Gravity>>,
@@ -128,56 +129,52 @@ pub(crate) mod black_hole {
             },
         ));
 
-        commands
-            .spawn((
-                BlackHole(gravity_grid_coords, Stopwatch::new()),
-                PolpoEntity,
-                Animation {
-                    first: 0,
-                    last: BLACK_HOLE_ATLAS_FRAMES - 1,
-                    on_last_frame,
-                },
-                BeginAnimationAtRandom {
-                    chance_per_second: BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND,
-                    frame_time: BLACK_HOLE_FRAME_TIME,
-                    with_min_life: Some((
-                        BLACK_HOLE_MIN_LIFE,
-                        Stopwatch::new(),
-                    )),
-                },
-                RenderLayers::layer(BG_RENDER_LAYER),
-            ))
-            .insert(SpriteSheetBundle {
-                texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                    asset_server.load(assets::BLACKHOLE_ATLAS),
-                    vec2(BLACK_HOLE_SPRITE_SIZE, BLACK_HOLE_SPRITE_SIZE),
-                    BLACK_HOLE_ATLAS_FRAMES,
-                    1,
-                    None,
-                    None,
-                )),
-                transform: Transform::from_translation(
-                    at_translation.extend(zindex::BLACK_HOLE),
+        cmd.spawn((
+            BlackHole(gravity_grid_coords, Stopwatch::new()),
+            PolpoEntity,
+            Animation {
+                first: 0,
+                last: BLACK_HOLE_ATLAS_FRAMES - 1,
+                on_last_frame,
+            },
+            BeginAnimationAtRandom {
+                chance_per_second: BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND,
+                frame_time: BLACK_HOLE_FRAME_TIME,
+                with_min_life: Some((BLACK_HOLE_MIN_LIFE, Stopwatch::new())),
+            },
+            RenderLayers::layer(BG_RENDER_LAYER),
+        ))
+        .insert(SpriteSheetBundle {
+            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                asset_server.load(assets::BLACKHOLE_ATLAS),
+                vec2(BLACK_HOLE_SPRITE_SIZE, BLACK_HOLE_SPRITE_SIZE),
+                BLACK_HOLE_ATLAS_FRAMES,
+                1,
+                None,
+                None,
+            )),
+            transform: Transform::from_translation(
+                at_translation.extend(zindex::BLACK_HOLE),
+            ),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn((
+                Flicker::new(
+                    BLACK_HOLE_FLICKER_CHANCE_PER_SECOND,
+                    BLACK_HOLE_FLICKER_DURATION,
                 ),
-                ..default()
-            })
-            .with_children(|parent| {
-                parent.spawn((
-                    Flicker::new(
-                        BLACK_HOLE_FLICKER_CHANCE_PER_SECOND,
-                        BLACK_HOLE_FLICKER_DURATION,
-                    ),
-                    RenderLayers::layer(BG_RENDER_LAYER),
-                    SpriteBundle {
-                        texture: asset_server.load(assets::BLACKHOLE_FLICKER),
-                        transform: Transform::from_translation(Vec3::new(
-                            0.0,
-                            0.0,
-                            zindex::BLACK_HOLE_TWINKLE,
-                        )),
-                        ..default()
-                    },
-                ));
-            });
+                RenderLayers::layer(BG_RENDER_LAYER),
+                SpriteBundle {
+                    texture: asset_server.load(assets::BLACKHOLE_FLICKER),
+                    transform: Transform::from_translation(Vec3::new(
+                        0.0,
+                        0.0,
+                        zindex::BLACK_HOLE_TWINKLE,
+                    )),
+                    ..default()
+                },
+            ));
+        });
     }
 }

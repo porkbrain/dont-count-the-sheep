@@ -130,7 +130,7 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
     let climate = Climate::new();
     let climate_translation = {
         let (seg_index, seg_t) = climate.path_segment();
@@ -139,40 +139,35 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         seg.position(seg_t).extend(zindex::CLIMATE)
     };
 
-    commands
-        .spawn((
-            climate,
-            BackgroundLightScene,
-            AngularVelocity::default(),
-            SpatialBundle {
-                transform: Transform::from_translation(climate_translation),
+    cmd.spawn((
+        climate,
+        BackgroundLightScene,
+        AngularVelocity::default(),
+        SpatialBundle {
+            transform: Transform::from_translation(climate_translation),
+            ..default()
+        },
+        OmniLightSource2D {
+            intensity: LIGHT_INTENSITY,
+            color: ClimateLightMode::default().color(),
+            falloff: Vec3::new(FALLOFF_LIGHT_SIZE, FALLOFF_LIGHT_SIZE, 0.05),
+            ..default()
+        },
+    ))
+    .with_children(|commands| {
+        commands.spawn((
+            RenderLayers::layer(OBJ_RENDER_LAYER),
+            SpriteBundle {
+                texture: asset_server.load(assets::CLIMATE_DEFAULT),
                 ..default()
             },
-            OmniLightSource2D {
-                intensity: LIGHT_INTENSITY,
-                color: ClimateLightMode::default().color(),
-                falloff: Vec3::new(
-                    FALLOFF_LIGHT_SIZE,
-                    FALLOFF_LIGHT_SIZE,
-                    0.05,
-                ),
-                ..default()
-            },
-        ))
-        .with_children(|commands| {
-            commands.spawn((
-                RenderLayers::layer(OBJ_RENDER_LAYER),
-                SpriteBundle {
-                    texture: asset_server.load(assets::CLIMATE_DEFAULT),
-                    ..default()
-                },
-            ));
-        });
+        ));
+    });
 
     for i in 0..OCCLUDER_COUNT {
         let initial_rotation = INITIAL_ROTATION * i as f32;
 
-        commands.spawn((
+        cmd.spawn((
             ClimateOccluder { initial_rotation },
             BackgroundLightScene,
             SpatialBundle {
@@ -206,7 +201,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         let x = thread_rng().gen_range(-320.0..320.0);
         let y = thread_rng().gen_range(-180.0..180.0);
 
-        commands.spawn(RayPoint).insert(SpriteBundle {
+        cmd.spawn(RayPoint).insert(SpriteBundle {
             sprite: Sprite {
                 color: Color::rgba(0.0, 1.0, 0.0, 1.0),
                 custom_size: Some(vec2(1.0, 1.0)),
@@ -221,11 +216,11 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 #[cfg(feature = "dev")]
 fn despawn_raypoints(
-    mut commands: Commands,
+    mut cmd: Commands,
     raypoints: Query<Entity, With<RayPoint>>,
 ) {
     for entity in raypoints.iter() {
-        commands.entity(entity).despawn_recursive();
+        cmd.entity(entity).despawn_recursive();
     }
 }
 

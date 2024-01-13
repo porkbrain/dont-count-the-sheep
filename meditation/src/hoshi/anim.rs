@@ -38,6 +38,9 @@ pub(super) struct SparkEffect;
 /// 5. Hoshi is off to Mars or wherever while last few frames are playing in
 ///    place. That's why the effect sprite is not a child of hoshi.
 pub(super) fn sprite_loading_special(
+    mut cmd: Commands,
+    time: Res<Time>,
+
     mut hoshi: Query<(&mode::LoadingSpecial, &mut Velocity, &Transform)>,
     mut set: ParamSet<(
         Query<
@@ -57,8 +60,6 @@ pub(super) fn sprite_loading_special(
             (With<HoshiFace>, Without<mode::LoadingSpecial>),
         >,
     )>,
-    mut commands: Commands,
-    time: Res<Time>,
 ) {
     let Ok((mode, mut vel, transform)) = hoshi.get_single_mut() else {
         return;
@@ -74,7 +75,7 @@ pub(super) fn sprite_loading_special(
         if elapsed > START_SPARK_ANIMATION_AFTER_ELAPSED {
             spark_atlas.custom_size = Some(Vec2::splat(SPARK_SIDE));
             spark_atlas.index = 1;
-            commands.entity(spark_entity).insert(AnimationTimer::new(
+            cmd.entity(spark_entity).insert(AnimationTimer::new(
                 SPARK_FRAME_TIME,
                 TimerMode::Repeating,
             ));
@@ -358,7 +359,7 @@ pub(super) fn rotate(
 ///
 /// We need to do this for each camera in case there are more.
 pub(super) fn update_camera_on_special(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut action: EventReader<ActionEvent>,
     time: Res<Time>,
 
@@ -393,7 +394,7 @@ pub(super) fn update_camera_on_special(
         };
 
         for (entity, _, _, _) in cameras.iter_mut() {
-            commands.entity(entity).insert(BloomSettings {
+            cmd.entity(entity).insert(BloomSettings {
                 intensity: INITIAL_BLOOM_INTENSITY,
                 low_frequency_boost: INITIAL_BLOOM_LFB,
                 ..default()
@@ -418,7 +419,7 @@ pub(super) fn update_camera_on_special(
         debug!("Removing bloom and zoom");
 
         for (entity, mut transform, mut projection, _) in cameras.iter_mut() {
-            commands.entity(entity).remove::<BloomSettings>();
+            cmd.entity(entity).remove::<BloomSettings>();
             *state = CameraState::Normal;
 
             projection.scale = 1.0;

@@ -1,6 +1,4 @@
-use bevy::{
-    core_pipeline::clear_color::ClearColorConfig, render::view::RenderLayers,
-};
+use bevy::render::view::RenderLayers;
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use main_game_lib::PIXEL_ZOOM;
 
@@ -25,10 +23,10 @@ impl bevy::app::Plugin for Plugin {
 #[derive(Component)]
 struct CameraEntity;
 
-fn spawn(mut commands: Commands) {
+fn spawn(mut cmd: Commands) {
     debug!("Spawning camera");
 
-    commands.spawn((
+    cmd.spawn((
         Name::from("Apartment camera"),
         CameraEntity,
         PixelZoom::Fixed(PIXEL_ZOOM as i32),
@@ -47,30 +45,12 @@ fn spawn(mut commands: Commands) {
             ..default()
         },
     ));
-
-    // TODO
-    commands.spawn((
-        Name::from("TODO: dialog camera"),
-        CameraEntity,
-        RenderLayers::layer(25),
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true,
-                order: 12,
-                ..default()
-            },
-            camera_2d: Camera2d {
-                clear_color: ClearColorConfig::None,
-            },
-            ..default()
-        },
-    ));
 }
 
-fn despawn(mut commands: Commands, bg: Query<Entity, With<CameraEntity>>) {
+fn despawn(mut cmd: Commands, bg: Query<Entity, With<CameraEntity>>) {
     debug!("Despawning camera");
 
     for entity in bg.iter() {
-        commands.entity(entity).despawn_recursive();
+        cmd.entity(entity).despawn_recursive();
     }
 }

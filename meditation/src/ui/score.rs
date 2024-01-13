@@ -19,41 +19,41 @@ pub(crate) struct Score {
 #[derive(Component)]
 pub(super) struct ScoreEntity;
 
-pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands
-        .spawn((
-            ScoreEntity,
-            NodeBundle {
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    left: Val::Px(SCORE_EDGE_OFFSET),
-                    top: Val::Px(SCORE_EDGE_OFFSET),
-                    ..default()
-                },
+pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
+    cmd.spawn((
+        ScoreEntity,
+        NodeBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                left: Val::Px(SCORE_EDGE_OFFSET),
+                top: Val::Px(SCORE_EDGE_OFFSET),
                 ..default()
             },
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                Score::default(),
-                TextBundle::from_section(
-                    "0",
-                    TextStyle {
-                        font: asset_server.load(FONT),
-                        font_size: SMALL_FONT_SIZE,
-                        color: Color::hex(HIGHLIGHT_COLOR).unwrap(),
-                    },
-                ),
-            ));
-        });
+            ..default()
+        },
+    ))
+    .with_children(|parent| {
+        parent.spawn((
+            Score::default(),
+            TextBundle::from_section(
+                "0",
+                TextStyle {
+                    font: asset_server.load(FONT),
+                    font_size: SMALL_FONT_SIZE,
+                    color: Color::hex(HIGHLIGHT_COLOR).unwrap(),
+                },
+            ),
+        ));
+    });
 }
 
 pub(super) fn despawn(
+    mut cmd: Commands,
+
     entities: Query<Entity, With<ScoreEntity>>,
-    mut commands: Commands,
 ) {
     for entity in entities.iter() {
-        commands.entity(entity).despawn_recursive();
+        cmd.entity(entity).despawn_recursive();
     }
 }
 

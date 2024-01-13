@@ -14,7 +14,7 @@ use crate::{
 
 /// If Hoshi is very close and does special, the polpo is destroyed.
 pub(super) fn to_hoshi_special(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut score: EventWriter<PolpoDestroyedEvent>,
     mut hoshi_actions: EventReader<hoshi::ActionEvent>,
 
@@ -47,7 +47,7 @@ pub(super) fn to_hoshi_special(
                 by_special: true,
                 at_translation: translation,
             });
-            commands.entity(entity).despawn_recursive();
+            cmd.entity(entity).despawn_recursive();
 
             // ... go to next, can destroy multiple Polpos per special
         }
@@ -65,6 +65,12 @@ pub(super) fn to_hoshi_special(
 ///    that line. Distance from center being the Polpo's distance plus the push
 ///    back.
 pub(super) fn to_environment(
+    mut cmd: Commands,
+    mut score: EventWriter<PolpoDestroyedEvent>,
+    time: Res<Time>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+
     mut climate: Query<
         (&Climate, &Transform, &mut OmniLightSource2D),
         (Without<Hoshi>, Without<Polpo>, Without<PolpoOccluder>),
@@ -91,11 +97,6 @@ pub(super) fn to_environment(
         (Entity, &mut Polpo, &Transform, &mut TextureAtlasSprite),
         (Without<Climate>, Without<Hoshi>, Without<PolpoOccluder>),
     >,
-    time: Res<Time>,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut score: EventWriter<PolpoDestroyedEvent>,
-    mut commands: Commands,
 ) {
     let Ok(hoshi) = hoshi.get_single() else {
         return;
@@ -182,13 +183,13 @@ pub(super) fn to_environment(
                 let change_of_basis_from = hoshi.translation.truncate()
                     - polpo_pos.translation.truncate();
 
-                let bolt_entity = commands
+                let bolt_entity = cmd
                     .spawn(get_bundle_with_respect_to_origin_at_zero(
                         &asset_server,
                         change_of_basis_from,
                     ))
                     .id();
-                commands.entity(polpo_entity).add_child(bolt_entity);
+                cmd.entity(polpo_entity).add_child(bolt_entity);
 
                 polpo.jitter += change_of_basis_from.abs().normalize();
             }
@@ -200,7 +201,7 @@ pub(super) fn to_environment(
             if is_on_second_to_last_crack {
                 let first_frame = 0;
 
-                let static_entity = commands
+                let static_entity = cmd
                     .spawn((
                         Animation {
                             on_last_frame: AnimationEnd::Loop,
@@ -232,7 +233,7 @@ pub(super) fn to_environment(
                     })
                     .id();
 
-                commands.entity(polpo_entity).add_child(static_entity);
+                cmd.entity(polpo_entity).add_child(static_entity);
             }
         } else if should_crack_with_hoshi_contrib && is_on_last_crack {
             //
@@ -245,7 +246,7 @@ pub(super) fn to_environment(
                 by_special: false,
                 at_translation: polpo_pos.translation.truncate(),
             });
-            commands.entity(polpo_entity).despawn_recursive();
+            cmd.entity(polpo_entity).despawn_recursive();
         }
 
         //

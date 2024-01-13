@@ -119,18 +119,18 @@ pub fn add(app: &mut App) {
     info!("Added meditation to app");
 }
 
-fn spawn(mut commands: Commands) {
+fn spawn(mut cmd: Commands) {
     debug!("Spawning resources");
 
-    commands.insert_resource(gravity::field());
-    commands.init_resource::<WebpAnimator>();
+    cmd.insert_resource(gravity::field());
+    cmd.init_resource::<WebpAnimator>();
 }
 
-fn despawn(mut commands: Commands) {
+fn despawn(mut cmd: Commands) {
     debug!("Despawning resources");
 
-    commands.remove_resource::<PoissonsEquation<Gravity>>();
-    commands.remove_resource::<WebpAnimator>();
+    cmd.remove_resource::<PoissonsEquation<Gravity>>();
+    cmd.remove_resource::<WebpAnimator>();
 }
 
 fn finish_when_everything_loaded(

@@ -15,10 +15,10 @@ pub(crate) struct FpsRoot;
 #[derive(Component)]
 pub(crate) struct FpsText;
 
-pub(crate) fn spawn(mut commands: Commands) {
+pub(crate) fn spawn(mut cmd: Commands) {
     // create our UI root node
     // this is the wrapper/container for the text
-    let root = commands
+    let root = cmd
         .spawn((
             Name::from("FPS counter"),
             FpsRoot,
@@ -47,7 +47,7 @@ pub(crate) fn spawn(mut commands: Commands) {
         ))
         .id();
     // create our text
-    let text_fps = commands
+    let text_fps = cmd
         .spawn((
             FpsText,
             TextBundle {
@@ -80,7 +80,7 @@ pub(crate) fn spawn(mut commands: Commands) {
             },
         ))
         .id();
-    commands.entity(root).push_children(&[text_fps]);
+    cmd.entity(root).push_children(&[text_fps]);
 }
 
 pub(crate) fn update(

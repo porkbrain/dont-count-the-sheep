@@ -79,16 +79,16 @@ impl bevy::app::Plugin for Plugin {
 /// 4. spark effect is hidden by default and shown when special is fired
 /// 5. setup camera state which is affected by going into special
 fn spawn(
+    mut cmd: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut commands: Commands,
 ) {
     debug!("Spawning Hoshi entities");
 
     //
     // 1.
     //
-    let parent = commands
+    let parent = cmd
         .spawn((
             Hoshi,
             HoshiEntity,
@@ -108,7 +108,7 @@ fn spawn(
     //
     // 2.
     //
-    let body = commands
+    let body = cmd
         .spawn((
             HoshiBody,
             RenderLayers::layer(OBJ_RENDER_LAYER),
@@ -129,11 +129,11 @@ fn spawn(
             },
         ))
         .id();
-    commands.entity(parent).add_child(body);
+    cmd.entity(parent).add_child(body);
     //
     // 3.
     //
-    let face = commands
+    let face = cmd
         .spawn((
             HoshiFace,
             RenderLayers::layer(OBJ_RENDER_LAYER),
@@ -154,11 +154,11 @@ fn spawn(
             },
         ))
         .id();
-    commands.entity(parent).add_child(face);
+    cmd.entity(parent).add_child(face);
     //
     // 4.
     //
-    commands.spawn((
+    cmd.spawn((
         anim::SparkEffect,
         HoshiEntity,
         RenderLayers::layer(OBJ_RENDER_LAYER),
@@ -196,13 +196,13 @@ fn spawn(
     //
     // 5.
     //
-    commands.spawn((HoshiEntity, anim::CameraState::default()));
+    cmd.spawn((HoshiEntity, anim::CameraState::default()));
 }
 
-fn despawn(mut commands: Commands, entities: Query<Entity, With<HoshiEntity>>) {
+fn despawn(mut cmd: Commands, entities: Query<Entity, With<HoshiEntity>>) {
     debug!("Spawning Hoshi entities");
 
     for entity in entities.iter() {
-        commands.entity(entity).despawn_recursive();
+        cmd.entity(entity).despawn_recursive();
     }
 }

@@ -29,11 +29,11 @@ pub(super) struct Spawner {
 /// If we don't have another video to spawn of if too crowded, then we do
 /// nothing.
 pub(super) fn try_spawn_next(
+    mut cmd: Commands,
     mut spawner: ResMut<Spawner>,
     mut webp: ResMut<WebpAnimator>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut commands: Commands,
     time: Res<Time>,
 ) {
     spawner.last_spawned_at.tick(time.delta());
@@ -67,8 +67,7 @@ pub(super) fn try_spawn_next(
         seg.position(seg_t).extend(zindex::POLPO_CRACK)
     };
 
-    commands
-        .spawn((polpo, PolpoEntity))
+    cmd.spawn((polpo, PolpoEntity))
         .insert((
             RenderLayers::layer(OBJ_RENDER_LAYER),
             SpriteSheetBundle {

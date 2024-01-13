@@ -11,7 +11,7 @@ use crate::{
 
 /// Controls when in normal mode.
 pub(super) fn normal(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut broadcast: EventWriter<ActionEvent>,
     controls: Res<ActionState<GlobalAction>>,
     gravity: Res<PoissonsEquation<Gravity>>,
@@ -36,8 +36,8 @@ pub(super) fn normal(
                 at_translation: transform.translation.truncate(),
             });
 
-            commands.entity(entity).remove::<mode::Normal>();
-            commands.entity(entity).insert(mode::LoadingSpecial {
+            cmd.entity(entity).remove::<mode::Normal>();
+            cmd.entity(entity).insert(mode::LoadingSpecial {
                 angle,
                 activated: Stopwatch::default(),
                 jumps: mode.jumps,
@@ -175,7 +175,7 @@ pub(super) fn normal(
 
 /// Controls while loading special.
 pub(crate) fn loading_special(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut broadcast: EventWriter<ActionEvent>,
     time: Res<Time>,
     controls: Res<ActionState<GlobalAction>>,
@@ -195,8 +195,8 @@ pub(crate) fn loading_special(
     }
 
     if elapsed > SPECIAL_LOADING_TIME {
-        commands.entity(entity).remove::<mode::LoadingSpecial>();
-        commands.entity(entity).insert(mode::Normal {
+        cmd.entity(entity).remove::<mode::LoadingSpecial>();
+        cmd.entity(entity).insert(mode::Normal {
             jumps: mode.jumps,
             last_jump: Stopwatch::default(),
             last_dash: Stopwatch::default(),

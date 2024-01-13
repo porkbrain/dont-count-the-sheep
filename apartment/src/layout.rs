@@ -41,7 +41,7 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn spawn(
-    mut commands: Commands,
+    mut cmd: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
@@ -78,7 +78,7 @@ fn spawn(
             zindex::KITCHEN_FURNITURE_CLOSEST,
         ),
     ] {
-        commands.spawn((
+        cmd.spawn((
             Name::from(name),
             LayoutEntity,
             RenderLayers::layer(BG_RENDER_LAYER),
@@ -93,7 +93,7 @@ fn spawn(
     }
 
     // cloud atlas is rendered on top of the bg but below the furniture
-    commands.spawn((
+    cmd.spawn((
         Name::from("Cloud atlas"),
         LayoutEntity,
         RenderLayers::layer(BG_RENDER_LAYER),
@@ -139,11 +139,11 @@ pub(crate) fn add_z_based_on_y(v: Vec2) -> Vec3 {
     })
 }
 
-fn despawn(query: Query<Entity, With<LayoutEntity>>, mut commands: Commands) {
+fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
     debug!("Despawning layout entities");
 
     for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
+        cmd.entity(entity).despawn_recursive();
     }
 }
 

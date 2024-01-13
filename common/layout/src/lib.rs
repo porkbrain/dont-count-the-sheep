@@ -80,12 +80,9 @@ impl<T: IntoMap> Map<T> {
 /// Tells the game to start loading the map.
 /// We need to keep checking for this to be done by calling
 /// [`try_insert_map_as_resource`].
-fn start_loading_map<T: IntoMap>(
-    mut commands: Commands,
-    assets: Res<AssetServer>,
-) {
+fn start_loading_map<T: IntoMap>(mut cmd: Commands, assets: Res<AssetServer>) {
     let handle: Handle<Map<T>> = assets.load(T::asset_path());
-    commands.spawn(handle);
+    cmd.spawn(handle);
 }
 
 /// Run this to wait for the map to be loaded and insert it as a resource.
@@ -95,7 +92,7 @@ fn start_loading_map<T: IntoMap>(
 /// You should then check for the map as a resource in your systems and continue
 /// with your game.
 fn try_insert_map_as_resource<T: IntoMap>(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut map_assets: ResMut<Assets<Map<T>>>,
     map: Query<(Entity, &Handle<Map<T>>)>,
 ) {
@@ -109,8 +106,8 @@ fn try_insert_map_as_resource<T: IntoMap>(
     // we cannot call remove straight away because panics - the handle is
     // removed, the map is not loaded yet and asset loader expects it to exist
     if map_assets.get(map).is_some() {
-        commands.insert_resource(map_assets.remove(map).unwrap());
-        commands.entity(entity).despawn();
+        cmd.insert_resource(map_assets.remove(map).unwrap());
+        cmd.entity(entity).despawn();
     }
 }
 
@@ -134,13 +131,13 @@ mod map_maker {
     pub(super) struct SquareSprite;
 
     pub(super) fn visualize_map<T: IntoMap>(
+        mut cmd: Commands,
         map: Res<Map<T>>,
-        mut commands: Commands,
     ) {
-        spawn_grid(&mut commands, &map);
+        spawn_grid(&mut cmd, &map);
     }
 
-    fn spawn_grid<T: IntoMap>(commands: &mut Commands, map: &Map<T>) {
+    fn spawn_grid<T: IntoMap>(cmd: &mut Commands, map: &Map<T>) {
         for square in bevy_grid_squared::shapes::rectangle(T::bounds()) {
             let world_pos = T::layout().square_to_world_pos(square);
 
@@ -150,7 +147,7 @@ mod map_maker {
                 .copied()
                 .unwrap_or(SquareKind::None);
 
-            commands.spawn(SquareSprite).insert(SpriteBundle {
+            cmd.spawn(SquareSprite).insert(SpriteBundle {
                 sprite: Sprite {
                     color: kind.color(),
                     // slightly smaller to show borders
@@ -164,11 +161,12 @@ mod map_maker {
     }
 
     pub(super) fn change_square_kind<T: IntoMap>(
-        windows: Query<&Window, With<PrimaryWindow>>,
+        mut cmd: Commands,
         mouse: Res<Input<MouseButton>>,
-        squares: Query<Entity, With<SquareSprite>>,
         mut map: ResMut<Map<T>>,
-        mut commands: Commands,
+
+        squares: Query<Entity, With<SquareSprite>>,
+        windows: Query<&Window, With<PrimaryWindow>>,
     ) {
         let next = mouse.just_pressed(MouseButton::Left);
         let prev = mouse.just_pressed(MouseButton::Right);
@@ -190,9 +188,9 @@ mod map_maker {
             square_kind.prev()
         };
 
-        squares.iter().for_each(|e| commands.entity(e).despawn());
+        squares.iter().for_each(|e| cmd.entity(e).despawn());
 
-        spawn_grid(&mut commands, &map);
+        spawn_grid(&mut cmd, &map);
     }
 
     pub(super) fn export_map<T: IntoMap>(map: Res<Map<T>>) {

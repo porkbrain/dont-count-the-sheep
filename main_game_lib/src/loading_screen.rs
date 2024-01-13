@@ -153,14 +153,14 @@ struct LoadingImage;
 struct LoadingQuad;
 
 fn spawn_loading_screen(
-    mut commands: Commands,
+    mut cmd: Commands,
     asset_server: Res<AssetServer>,
     settings: Res<LoadingScreenSettings>,
     mut next_state: ResMut<NextState<LoadingScreenState>>,
 ) {
     trace!("Spawning loading screen");
 
-    commands.spawn((
+    cmd.spawn((
         Name::from("Loading screen camera"),
         LoadingCamera,
         PixelZoom::Fixed(PIXEL_ZOOM as i32),
@@ -181,7 +181,7 @@ fn spawn_loading_screen(
     ));
 
     // quad
-    commands.spawn((
+    cmd.spawn((
         Name::from("Loading screen quad"),
         LoadingQuad,
         RenderLayers::layer(LOADING_SCREEN_LAYER),
@@ -204,7 +204,7 @@ fn spawn_loading_screen(
 
     // bg image
     if let Some(bg_image_asset) = settings.bg_image_asset {
-        commands.spawn((
+        cmd.spawn((
             Name::from("Loading screen image"),
             LoadingImage,
             RenderLayers::layer(LOADING_SCREEN_LAYER),
@@ -321,7 +321,7 @@ fn fade_in_quad_to_hide_bg(
 }
 
 fn remove_bg(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut next_state: ResMut<NextState<LoadingScreenState>>,
 
     mut query: Query<Entity, With<LoadingImage>>,
@@ -330,7 +330,7 @@ fn remove_bg(
 
     let entity = query.single_mut();
 
-    commands.entity(entity).despawn_recursive();
+    cmd.entity(entity).despawn_recursive();
 
     next_state.set(LoadingScreenState::FadeOutQuadToShowGame);
 }
@@ -353,7 +353,7 @@ fn fade_out_quad_to_show_game(
 }
 
 fn despawn_loading_screen(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut next_state: ResMut<NextState<LoadingScreenState>>,
 
     camera: Query<Entity, (With<LoadingCamera>, Without<LoadingQuad>)>,
@@ -361,9 +361,9 @@ fn despawn_loading_screen(
 ) {
     trace!("Despawning loading screen");
 
-    commands.remove_resource::<LoadingScreenSettings>();
-    commands.entity(camera.single()).despawn_recursive();
-    commands.entity(quad.single()).despawn_recursive();
+    cmd.remove_resource::<LoadingScreenSettings>();
+    cmd.entity(camera.single()).despawn_recursive();
+    cmd.entity(quad.single()).despawn_recursive();
 
     next_state.set(LoadingScreenState::DoNothing);
 }

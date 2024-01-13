@@ -130,7 +130,7 @@ impl<T: LightScene> Material2d for PostProcessingMaterial<T> {
 }
 
 pub fn setup_post_processing_quad<T: LightScene>(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<PostProcessingMaterial<T>>>,
     mut images: ResMut<Assets<Image>>,
@@ -156,7 +156,7 @@ pub fn setup_post_processing_quad<T: LightScene>(
     // will be attached to the post processing camera and 2d quad.
     let layer = RenderLayers::layer(T::render_layer_index());
 
-    commands.spawn((
+    cmd.spawn((
         T::default(),
         PostProcessingQuad,
         MaterialMesh2dBundle {

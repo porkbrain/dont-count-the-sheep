@@ -59,10 +59,10 @@ impl LightScene for BackgroundLightScene {
 /// These cameras render into the game window.
 /// We spawn them last after everything else is ready to avoid things just
 /// popping into existence X frames later.
-fn spawn_cameras(mut commands: Commands) {
+fn spawn_cameras(mut cmd: Commands) {
     debug!("Spawning cameras");
 
-    commands.spawn((
+    cmd.spawn((
         BackgroundLightScene,
         Camera2dBundle {
             camera: Camera {
@@ -80,7 +80,7 @@ fn spawn_cameras(mut commands: Commands) {
         UiCameraConfig { show_ui: false },
     ));
 
-    commands.spawn((
+    cmd.spawn((
         BackgroundLightScene,
         PixelZoom::Fixed(PIXEL_ZOOM as i32),
         PixelViewport,
@@ -102,41 +102,38 @@ fn spawn_cameras(mut commands: Commands) {
 /// This camera does not render into a window, but into a quad that's then
 /// rendered by whichever camera renders the layer [`LightScene::render_layer`].
 fn spawn_bg_render_camera(
-    mut commands: Commands,
+    mut cmd: Commands,
     bg_camera_targets: Res<CameraTargets<BackgroundLightScene>>,
 ) {
     debug!("Spawning bg render camera");
 
-    commands
-        .spawn((
-            BackgroundLightScene,
-            SceneCamera::<BackgroundLightScene>::default(),
-            PixelZoom::Fixed(PIXEL_ZOOM as i32),
-            PixelViewport,
-            RenderLayers::from_layers(&[0, BG_RENDER_LAYER]),
-            UiCameraConfig { show_ui: false },
-        ))
-        .insert(Camera2dBundle {
-            camera: Camera {
-                hdr: true,
-                target: RenderTarget::Image(
-                    bg_camera_targets.floor_target.clone(),
-                ),
-                ..default()
-            },
-            projection: OrthographicProjection {
-                near: -2000.0,
-                ..default()
-            },
+    cmd.spawn((
+        BackgroundLightScene,
+        SceneCamera::<BackgroundLightScene>::default(),
+        PixelZoom::Fixed(PIXEL_ZOOM as i32),
+        PixelViewport,
+        RenderLayers::from_layers(&[0, BG_RENDER_LAYER]),
+        UiCameraConfig { show_ui: false },
+    ))
+    .insert(Camera2dBundle {
+        camera: Camera {
+            hdr: true,
+            target: RenderTarget::Image(bg_camera_targets.floor_target.clone()),
             ..default()
-        });
+        },
+        projection: OrthographicProjection {
+            near: -2000.0,
+            ..default()
+        },
+        ..default()
+    });
 }
 
 fn despawn(
-    mut commands: Commands,
+    mut cmd: Commands,
     entities: Query<Entity, With<BackgroundLightScene>>,
 ) {
     for entity in entities.iter() {
-        commands.entity(entity).despawn_recursive();
+        cmd.entity(entity).despawn_recursive();
     }
 }

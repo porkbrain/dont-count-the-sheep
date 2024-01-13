@@ -79,20 +79,20 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-fn spawn(mut commands: Commands) {
+fn spawn(mut cmd: Commands) {
     debug!("Spawning Spawner");
 
-    commands.insert_resource(spawner::Spawner::new());
+    cmd.insert_resource(spawner::Spawner::new());
 }
 
-fn despawn(mut commands: Commands, entities: Query<Entity, With<PolpoEntity>>) {
+fn despawn(mut cmd: Commands, entities: Query<Entity, With<PolpoEntity>>) {
     debug!("Despawning Spawner");
 
-    commands.remove_resource::<spawner::Spawner>();
+    cmd.remove_resource::<spawner::Spawner>();
 
     debug!("Despawning Polpos");
     for entity in entities.iter() {
-        commands.entity(entity).despawn_recursive();
+        cmd.entity(entity).despawn_recursive();
     }
 }
 
@@ -149,13 +149,14 @@ fn follow_curve(
 /// Either Polpo is destroyed by the Hoshi's special or by accumulating
 /// cracks.
 fn destroyed(
-    mut score: Query<&mut crate::ui::Score>,
-    mut spawner: ResMut<spawner::Spawner>,
+    mut cmd: Commands,
     mut events: EventReader<PolpoDestroyedEvent>,
     mut gravity: EventWriter<PoissonsEquationUpdateEvent<Gravity>>,
-    mut commands: Commands,
+    mut spawner: ResMut<spawner::Spawner>,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+
+    mut score: Query<&mut crate::ui::Score>,
 ) {
     for PolpoDestroyedEvent {
         video,
@@ -179,7 +180,7 @@ fn destroyed(
 
         trace!("Spawning black hole");
         effects::black_hole::spawn(
-            &mut commands,
+            &mut cmd,
             &asset_server,
             &mut texture_atlases,
             &mut gravity,

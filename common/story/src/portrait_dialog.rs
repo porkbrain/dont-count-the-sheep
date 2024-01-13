@@ -86,7 +86,7 @@ trait DialogFragment {
 }
 
 pub fn advance(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut dialog: ResMut<PortraitDialog>,
     asset_server: Res<AssetServer>,
 
@@ -141,18 +141,13 @@ pub fn advance(
     if let SequenceFinished::Yes = outcome {
         trace!("Despawning dialog");
 
-        commands.remove_resource::<PortraitDialog>();
-        commands.entity(root.single()).despawn_recursive();
+        cmd.remove_resource::<PortraitDialog>();
+        cmd.entity(root.single()).despawn_recursive();
     }
 }
 
 /// Spawns [`PortraitDialog`] resource and all the necessary UI components.
-fn spawn(
-    commands: &mut Commands,
-    asset_server: &AssetServer,
-
-    sequence: Vec<Step>,
-) {
+fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
     let mut dialog = PortraitDialog::new(sequence);
     let mut text = Text::from_section(
         "",
@@ -172,62 +167,61 @@ fn spawn(
         return;
     }
 
-    commands.insert_resource(dialog);
+    cmd.insert_resource(dialog);
 
-    commands
-        .spawn((
-            Name::new("Dialog root"),
-            SpatialBundle {
-                transform: Transform::from_translation(ROOT_POS.extend(0.0)),
+    cmd.spawn((
+        Name::new("Dialog root"),
+        SpatialBundle {
+            transform: Transform::from_translation(ROOT_POS.extend(0.0)),
+            ..default()
+        },
+    ))
+    .with_children(|parent| {
+        parent.spawn((
+            Name::new("Dialog bubble"),
+            RenderLayers::layer(RENDER_LAYER),
+            SpriteBundle {
+                transform: Transform::from_translation(Vec3::new(
+                    0.0,
+                    PUSH_BUBBLE_TOP,
+                    -1.0,
+                )),
+                texture: asset_server
+                    .load(common_assets::paths::ui::DIALOG_BUBBLE),
                 ..default()
             },
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                Name::new("Dialog bubble"),
-                RenderLayers::layer(RENDER_LAYER),
-                SpriteBundle {
-                    transform: Transform::from_translation(Vec3::new(
-                        0.0,
-                        PUSH_BUBBLE_TOP,
-                        -1.0,
-                    )),
-                    texture: asset_server
-                        .load(common_assets::paths::ui::DIALOG_BUBBLE),
-                    ..default()
-                },
-            ));
+        ));
 
-            parent.spawn((
-                DialogPortrait,
-                Name::new("Dialog portrait"),
-                RenderLayers::layer(RENDER_LAYER),
-                SpriteBundle {
-                    texture: if let Some(speaker) = initial_speaker {
-                        asset_server.load(speaker.portrait_asset_path())
-                    } else {
-                        default()
-                    },
-                    ..default()
+        parent.spawn((
+            DialogPortrait,
+            Name::new("Dialog portrait"),
+            RenderLayers::layer(RENDER_LAYER),
+            SpriteBundle {
+                texture: if let Some(speaker) = initial_speaker {
+                    asset_server.load(speaker.portrait_asset_path())
+                } else {
+                    default()
                 },
-            ));
+                ..default()
+            },
+        ));
 
-            parent.spawn((
-                DialogText,
-                Name::new("Dialog text"),
-                RenderLayers::layer(RENDER_LAYER),
-                Text2dBundle {
-                    text,
-                    transform: Transform::from_translation(Vec3::new(
-                        0.0,
-                        PUSH_BUBBLE_TOP - 10.0,
-                        1.0,
-                    )),
-                    text_2d_bounds: Text2dBounds { size: TEXT_BOUNDS },
-                    ..default()
-                },
-            ));
-        });
+        parent.spawn((
+            DialogText,
+            Name::new("Dialog text"),
+            RenderLayers::layer(RENDER_LAYER),
+            Text2dBundle {
+                text,
+                transform: Transform::from_translation(Vec3::new(
+                    0.0,
+                    PUSH_BUBBLE_TOP - 10.0,
+                    1.0,
+                )),
+                text_2d_bounds: Text2dBounds { size: TEXT_BOUNDS },
+                ..default()
+            },
+        ));
+    });
 }
 
 #[must_use]

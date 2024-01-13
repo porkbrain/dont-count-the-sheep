@@ -84,13 +84,13 @@ pub fn add(app: &mut App) {
 
 /// TODO: Have a global menu with an option to exit the game
 fn close_game(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     controls: Res<ActionState<GlobalAction>>,
 ) {
     if controls.just_pressed(GlobalAction::Cancel) {
-        commands.insert_resource(LoadingScreenSettings {
+        cmd.insert_resource(LoadingScreenSettings {
             fade_loading_screen_in: from_millis(150),
             ..default()
         });

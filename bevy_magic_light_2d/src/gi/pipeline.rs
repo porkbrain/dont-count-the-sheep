@@ -187,7 +187,7 @@ pub struct LightPassPipeline<T> {
 }
 
 pub fn system_queue_bind_groups<T: LightScene>(
-    mut commands: Commands,
+    mut cmd: Commands,
     pipeline: Res<LightPassPipeline<T>>,
     gpu_images: Res<RenderAssets<Image>>,
     targets_wrapper: Res<GiTargetsWrapper<T>>,
@@ -422,7 +422,7 @@ pub fn system_queue_bind_groups<T: LightScene>(
             ],
         );
 
-        commands.insert_resource(LightPassPipelineBindGroups::<T> {
+        cmd.insert_resource(LightPassPipelineBindGroups::<T> {
             sdf_bind_group,
             ss_probe_bind_group,
             ss_bounce_bind_group,

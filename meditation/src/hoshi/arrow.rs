@@ -25,8 +25,8 @@ enum OffScreen {
 }
 
 /// Arrow is hidden by default and shown when Hoshi is off screen.
-pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn((
+pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
+    cmd.spawn((
         Arrow,
         BackgroundLightScene,
         SpriteBundle {

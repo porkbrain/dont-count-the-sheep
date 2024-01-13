@@ -24,28 +24,27 @@ enum Selection {
 #[derive(Component)]
 pub(super) struct SelectionMarker;
 
-pub(super) fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands
-        .spawn(Menu {
-            selection: Selection::Resume,
-        })
-        .insert(NodeBundle {
-            style: Style {
-                // the node bundle units don't honor pixel camera 3x scale
-                width: Val::Px(MENU_BOX_WIDTH),
-                height: Val::Px(MENU_BOX_HEIGHT),
-                margin: UiRect::all(Val::Auto),
-                justify_content: JustifyContent::SpaceBetween,
-                ..default()
-            },
+pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
+    cmd.spawn(Menu {
+        selection: Selection::Resume,
+    })
+    .insert(NodeBundle {
+        style: Style {
+            // the node bundle units don't honor pixel camera 3x scale
+            width: Val::Px(MENU_BOX_WIDTH),
+            height: Val::Px(MENU_BOX_HEIGHT),
+            margin: UiRect::all(Val::Auto),
+            justify_content: JustifyContent::SpaceBetween,
             ..default()
-        })
-        .with_children(|parent| spawn_ui(parent, &asset_server));
+        },
+        ..default()
+    })
+    .with_children(|parent| spawn_ui(parent, &asset_server));
 }
 
-pub(super) fn despawn(mut commands: Commands, menu: Query<Entity, With<Menu>>) {
+pub(super) fn despawn(mut cmd: Commands, menu: Query<Entity, With<Menu>>) {
     if let Ok(entity) = menu.get_single() {
-        commands.entity(entity).despawn_recursive();
+        cmd.entity(entity).despawn_recursive();
     }
 }
 
@@ -119,7 +118,7 @@ pub(super) fn change_selection(
 /// We simulate ESC to close the menu.
 /// So we need to select before we close.
 pub(super) fn select(
-    mut commands: Commands,
+    mut cmd: Commands,
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
@@ -135,7 +134,7 @@ pub(super) fn select(
         Selection::Resume => controls.press(GlobalAction::Cancel),
         Selection::Restart => {
             // just a quick loading screen, no bg
-            commands.insert_resource(LoadingScreenSettings {
+            cmd.insert_resource(LoadingScreenSettings {
                 bg_image_asset: None,
                 fade_loading_screen_in:
                     ON_RESTART_OR_EXIT_FADE_LOADING_SCREEN_IN,
@@ -149,7 +148,7 @@ pub(super) fn select(
         }
         Selection::Quit => {
             // just a quick loading screen, no bg
-            commands.insert_resource(LoadingScreenSettings {
+            cmd.insert_resource(LoadingScreenSettings {
                 bg_image_asset: None,
                 fade_loading_screen_in:
                     ON_RESTART_OR_EXIT_FADE_LOADING_SCREEN_IN,

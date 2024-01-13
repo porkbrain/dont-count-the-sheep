@@ -14,10 +14,10 @@ pub fn derive_portrait(
     let expanded = quote! {
         impl #name {
             pub fn spawn(
-                commands: &mut Commands,
+                cmd: &mut Commands,
                 asset_server: &AssetServer
             ) {
-                spawn(commands, asset_server, Self::sequence());
+                spawn(cmd, asset_server, Self::sequence());
             }
         }
     };
