@@ -1,6 +1,7 @@
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
+/// Implements `spawn` for the type.
 #[proc_macro_derive(Portrait)]
 pub fn derive_portrait(
     input: proc_macro::TokenStream,
@@ -13,6 +14,7 @@ pub fn derive_portrait(
 
     let expanded = quote! {
         impl #name {
+            /// Spawns the dialog into the world.
             pub fn spawn(
                 cmd: &mut Commands,
                 asset_server: &AssetServer

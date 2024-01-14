@@ -1,17 +1,18 @@
-#![allow(missing_docs)]
+//! Example dialog.
 
 use bevy::prelude::{AssetServer, Commands};
 use common_story_derive::*;
 
-use super::{DialogFragment, Step};
+use super::{AsChoice, AsSequence, Step};
 use crate::{
-    portrait_dialog::{aaatargets::DialogTarget, spawn},
+    portrait_dialog::{aaatargets::DialogTargetChoice, spawn},
     Character,
 };
 
+/// This is how the dialog starts.
 #[derive(Portrait)]
 pub struct Example1;
-impl DialogFragment for Example1 {
+impl AsSequence for Example1 {
     fn sequence() -> Vec<Step> {
         vec![
             Step::Text {
@@ -38,23 +39,24 @@ impl DialogFragment for Example1 {
                 speaker: Character::Unnamed,
                 content: "I'm just here to test the dialog system.",
             },
-            Step::Text {
-                speaker: Character::Bolt,
-                content: "I'm just here to test the dialog system.",
-            },
-            Step::Text {
-                speaker: Character::Capy,
-                content: "I'm just here to test the dialog system.",
-            },
-            Step::GoTo {
-                story_point: DialogTarget::Example2,
+            Step::Choice {
+                between: vec![
+                    DialogTargetChoice::Example2,
+                    DialogTargetChoice::Example3,
+                    DialogTargetChoice::Example4,
+                ],
             },
         ]
     }
 }
 
 pub(super) struct Example2;
-impl DialogFragment for Example2 {
+impl AsChoice for Example2 {
+    fn choice() -> &'static str {
+        "tell me more about all the characters there are"
+    }
+}
+impl AsSequence for Example2 {
     fn sequence() -> Vec<Step> {
         vec![
             Step::Text {
@@ -78,18 +80,22 @@ impl DialogFragment for Example2 {
                 content: include_str!("example_lorem.txt"),
             },
             Step::Choice {
-                between: vec![DialogTarget::Example3, DialogTarget::Example4],
+                between: vec![
+                    DialogTargetChoice::Example3,
+                    DialogTargetChoice::Example4,
+                ],
             },
         ]
     }
 }
 
 pub(super) struct Example3;
-impl DialogFragment for Example3 {
+impl AsChoice for Example3 {
     fn choice() -> &'static str {
         "inquire about the weather"
     }
-
+}
+impl AsSequence for Example3 {
     fn sequence() -> Vec<Step> {
         vec![
             Step::Text {
@@ -104,19 +110,20 @@ impl DialogFragment for Example3 {
                 speaker: Character::Phoebe,
                 content: "On us...",
             },
-            Step::GoTo {
-                story_point: DialogTarget::Example4,
+            Step::Choice {
+                between: vec![DialogTargetChoice::Example4],
             },
         ]
     }
 }
 
 pub(super) struct Example4;
-impl DialogFragment for Example4 {
+impl AsChoice for Example4 {
     fn choice() -> &'static str {
         "subtly ask for candy"
     }
-
+}
+impl AsSequence for Example4 {
     fn sequence() -> Vec<Step> {
         vec![
             Step::Text {

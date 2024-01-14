@@ -73,7 +73,7 @@ pub fn despawn_camera(
 }
 
 impl Character {
-    fn portrait_asset_path(&self) -> &'static str {
+    fn portrait_asset_path(self) -> &'static str {
         use common_assets::paths::portraits::*;
 
         match self {

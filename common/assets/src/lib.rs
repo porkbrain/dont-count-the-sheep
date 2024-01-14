@@ -2,8 +2,6 @@
 //! Also exports a [`RonLoader`] for loading assets from .ron files.
 //! We store e.g. level layouts this way.
 
-#![deny(missing_docs)]
-
 pub mod paths;
 
 use std::marker::PhantomData;

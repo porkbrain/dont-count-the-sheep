@@ -2,9 +2,9 @@ pub mod example;
 
 mod aaatargets;
 
-use std::time::Duration;
+use std::{cmp::Ordering, time::Duration};
 
-use aaatargets::DialogTarget;
+use aaatargets::DialogTargetChoice;
 use bevy::{
     math::vec2,
     prelude::*,
@@ -14,13 +14,16 @@ use bevy::{
 };
 use common_visuals::camera::render_layer;
 
+use self::aaatargets::DialogTargetGoto;
 use crate::Character;
 
 const FONT_SIZE: f32 = 21.0;
+const CHOICE_FONT_SIZE: f32 = 18.0;
 const FONT: &str = common_assets::paths::fonts::PENCIL1;
 const PUSH_BUBBLE_TOP: f32 = 290.0;
 const ROOT_POS: Vec2 = vec2(-640.0, -360.0);
 const TEXT_BOUNDS: Vec2 = vec2(250.0, 120.0);
+const OPTION_TEXT_BOUNDS: Vec2 = vec2(250.0, 80.0);
 const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 
 /// Will be true if in a dialog that takes away player control.
@@ -63,6 +66,15 @@ pub struct DialogText;
 #[derive(Component)]
 pub struct DialogPortrait;
 
+/// Entities that render choices in dialogs.
+/// When advancing the dialog, the selected choice will be used to determine
+/// the next [`DialogTarget`].
+#[derive(Component, Clone, Debug)]
+pub struct DialogChoice {
+    of: DialogTargetChoice,
+    is_selected: bool,
+}
+
 /// Next step in the dialog can take various forms.
 enum Step {
     Text {
@@ -70,22 +82,19 @@ enum Step {
         content: &'static str,
     },
     Choice {
-        between: Vec<DialogTarget>,
+        between: Vec<DialogTargetChoice>,
     },
     GoTo {
-        story_point: DialogTarget,
+        story_point: DialogTargetGoto,
     },
 }
 
-trait DialogFragment {
+trait AsSequence {
     fn sequence() -> Vec<Step>;
+}
 
-    fn choice() -> &'static str {
-        unreachable!(
-            "Dialog {:?} cannot be made into a choice",
-            core::any::type_name::<Self>()
-        )
-    }
+trait AsChoice: AsSequence {
+    fn choice() -> &'static str;
 }
 
 /// Call this to load the next step in the dialog.
@@ -98,6 +107,7 @@ pub fn advance(
     root: Query<Entity, With<DialogRoot>>,
     mut text: Query<(&mut Text, &TextLayoutInfo), With<DialogText>>,
     mut portrait: Query<&mut Handle<Image>, With<DialogPortrait>>,
+    choices: Query<(Entity, &DialogChoice)>,
 ) {
     if dialog.last_frame_shown_at.elapsed() < MIN_TEXT_FRAME_TIME {
         return;
@@ -138,16 +148,29 @@ pub fn advance(
         }
     }
 
-    let outcome = advance_sequence(&mut dialog, &mut text, |speaker| {
-        *portrait.single_mut() =
-            asset_server.load(speaker.portrait_asset_path());
-    });
+    let root = root.single();
+
+    let choices = choices
+        .iter()
+        .map(|(entity, choice)| (entity, choice.clone()));
+    let outcome = advance_sequence(
+        &mut cmd,
+        &asset_server,
+        &mut dialog,
+        &mut text,
+        root,
+        choices,
+        |speaker| {
+            *portrait.single_mut() =
+                asset_server.load(speaker.portrait_asset_path());
+        },
+    );
 
     if let SequenceFinished::Yes = outcome {
         trace!("Despawning dialog");
 
         cmd.remove_resource::<PortraitDialog>();
-        cmd.entity(root.single()).despawn_recursive();
+        cmd.entity(root).despawn_recursive();
     }
 }
 
@@ -163,25 +186,37 @@ fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
         },
     );
 
+    let root = cmd
+        .spawn((
+            Name::new("Dialog root"),
+            DialogRoot,
+            SpatialBundle {
+                transform: Transform::from_translation(ROOT_POS.extend(0.0)),
+                ..default()
+            },
+        ))
+        .id();
+
     let mut initial_speaker = None;
-    let outcome = advance_sequence(&mut dialog, &mut text, |speaker| {
-        initial_speaker = Some(speaker);
-    });
+    let outcome = advance_sequence(
+        cmd,
+        asset_server,
+        &mut dialog,
+        &mut text,
+        root,
+        std::iter::empty(),
+        |speaker| {
+            initial_speaker = Some(speaker);
+        },
+    );
     if let SequenceFinished::Yes = outcome {
         debug!("Dialog sequence finished before spawning");
+        cmd.entity(root).despawn();
         return;
     }
 
     cmd.insert_resource(dialog);
-
-    cmd.spawn((
-        Name::new("Dialog root"),
-        SpatialBundle {
-            transform: Transform::from_translation(ROOT_POS.extend(0.0)),
-            ..default()
-        },
-    ))
-    .with_children(|parent| {
+    cmd.entity(root).with_children(|parent| {
         parent.spawn((
             Name::new("Dialog bubble"),
             RenderLayers::layer(render_layer::DIALOG),
@@ -231,16 +266,21 @@ fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
 
 #[must_use]
 enum SequenceFinished {
-    /// Can be despawned or skipped spawning altogether.
+    /// Can be despawned or spawning skipped altogether.
     Yes,
+    /// More things to do.
     No,
 }
 
 /// Executes each dialog step until it reaches a step that requires player
 /// input such as text or choice.
 fn advance_sequence(
+    cmd: &mut Commands,
+    asset_server: &AssetServer,
     dialog: &mut PortraitDialog,
     text: &mut Text,
+    root: Entity,
+    mut choices: impl Iterator<Item = (Entity, DialogChoice)>,
     mut set_portrait_image: impl FnMut(Character),
 ) -> SequenceFinished {
     loop {
@@ -248,8 +288,6 @@ fn advance_sequence(
         if current_index >= dialog.sequence.len() {
             break SequenceFinished::Yes;
         }
-
-        dialog.sequence_index += 1;
 
         debug_assert!(!dialog.sequence.is_empty());
 
@@ -262,18 +300,123 @@ fn advance_sequence(
                     dialog.speaker = Some(*speaker);
                 }
 
+                dialog.sequence_index += 1;
                 dialog.last_frame_shown_at = Instant::now();
                 break SequenceFinished::No;
             }
             Step::GoTo { story_point } => {
+                // next sequence
                 dialog.sequence = story_point.sequence();
                 dialog.sequence_index = 0;
             }
-            _ => {
-                todo!()
+            Step::Choice { between } => {
+                if let Some((_, choice)) = choices.find(|(_, c)| c.is_selected)
+                {
+                    // choice made, next sequence
+
+                    dialog.sequence = choice.of.sequence();
+                    dialog.sequence_index = 0;
+                } else {
+                    // spawn choices
+
+                    let total = between.len();
+                    debug_assert_ne!(0, total);
+
+                    let transform_manager = dialog
+                        .speaker
+                        .map(|c| c.choice_transform_manager(total))
+                        .unwrap_or_else(|| {
+                            ChoiceTransformManager::no_portrait(total)
+                        });
+
+                    let children = spawn_choices(
+                        cmd,
+                        asset_server,
+                        transform_manager,
+                        between,
+                    );
+
+                    cmd.entity(root).push_children(&children);
+
+                    break SequenceFinished::No;
+                }
             }
         }
     }
+}
+
+/// Each choice is spawned as a separate entity.
+fn spawn_choices(
+    cmd: &mut Commands,
+    asset_server: &AssetServer,
+    transform_manager: ChoiceTransformManager,
+    between: &[DialogTargetChoice],
+) -> Vec<Entity> {
+    let total = transform_manager.positions.len();
+
+    between
+        .iter()
+        .enumerate()
+        .map(move |(i, of)| {
+            // This will be [`Less`] for the first choice,
+            // [`Greater`] for the last choice, and [`Equal`]
+            // for all the choices
+            // in between.
+            //
+            // However, if there's only one choice, then it will
+            // be [`Equal`].
+            let ordering = match (total, i) {
+                (1, _) => Ordering::Equal,
+                (_, 0) => Ordering::Less,
+                (_, i) if i == total - 1 => Ordering::Greater,
+                _ => Ordering::Equal,
+            };
+            let asset = match ordering {
+                Ordering::Less => "characters/dialog_option.png",
+                Ordering::Greater => "characters/dialog_option.png",
+                Ordering::Equal => "characters/dialog_option.png",
+            }; // TODO
+
+            let choice = DialogChoice {
+                of: *of,
+                is_selected: i == 0,
+            };
+            let sprite = SpriteBundle {
+                transform: transform_manager.get(i),
+                texture: asset_server.load(asset),
+                ..default()
+            };
+
+            cmd.spawn((
+                Name::new(format!("Dialog choice {i}: {of:?}")),
+                RenderLayers::layer(render_layer::DIALOG),
+                choice,
+                sprite,
+            ))
+            .with_children(|parent| {
+                parent.spawn((
+                    Name::new("Dialog choice text"),
+                    RenderLayers::layer(render_layer::DIALOG),
+                    Text2dBundle {
+                        text_2d_bounds: Text2dBounds {
+                            size: OPTION_TEXT_BOUNDS,
+                        },
+                        text: Text::from_section(
+                            of.choice(),
+                            TextStyle {
+                                font: asset_server.load(FONT),
+                                font_size: CHOICE_FONT_SIZE,
+                                color: Color::BLACK,
+                            },
+                        )
+                        .with_alignment(TextAlignment::Left),
+                        ..default()
+                    },
+                ));
+            })
+            .id()
+        })
+        .collect()
 }
 
 impl PortraitDialog {
@@ -284,5 +427,57 @@ impl PortraitDialog {
             speaker: None,
             last_frame_shown_at: Instant::now(),
         }
+    }
+}
+
+pub(super) struct ChoiceTransformManager {
+    positions: Vec<Vec2>,
+}
+
+impl ChoiceTransformManager {
+    pub(super) fn no_portrait(total_choices: usize) -> Self {
+        Self {
+            positions: match total_choices {
+                1 => vec![vec2(0.0, -75.0)],
+                2 => vec![vec2(0.0, -75.0), vec2(0.0, -140.0)],
+                3 => vec![vec2(0.0, -5.0), vec2(0.0, -75.0), vec2(0.0, -145.0)],
+                total => todo!("Cannot handle {total} choices"),
+            },
+        }
+    }
+
+    fn get(&self, index: usize) -> Transform {
+        debug_assert!(
+            index < self.positions.len(),
+            "Cannot get position index for index {index}"
+        );
+        Transform::from_translation(self.positions[index].extend(index as f32))
+    }
+}
+
+impl Character {
+    fn choice_transform_manager(
+        self,
+        total_choices: usize,
+    ) -> ChoiceTransformManager {
+        let positions = match total_choices {
+            1 => match self {
+                _ => vec![vec2(240.0, -75.0)],
+            },
+            2 => match self {
+                _ => vec![vec2(240.0, -75.0), vec2(260.0, -140.0)],
+            },
+            3 => match self {
+                _ => vec![
+                    vec2(227.0, -5.0),
+                    vec2(240.0, -75.0),
+                    vec2(260.0, -145.0),
+                ],
+            },
+            total => todo!("Cannot handle {total} choices"),
+        };
+        debug_assert_eq!(total_choices, positions.len());
+
+        ChoiceTransformManager { positions }
     }
 }
