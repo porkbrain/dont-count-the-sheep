@@ -79,6 +79,9 @@ pub mod meditation {
 
 pub mod ui {
     pub const DIALOG_BUBBLE: &str = "characters/dialog_bubble.png";
+    pub const DIALOG_CHOICE: &str = "characters/dialog_choice.png";
+    pub const DIALOG_CHOICE_HIGHLIGHTED: &str =
+        "characters/dialog_choice_highlighted.png";
 }
 
 pub mod portraits {

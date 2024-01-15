@@ -1,5 +1,5 @@
 use bevy::{render::view::RenderLayers, time::Stopwatch, utils::Instant};
-use common_physics::{GridCoords, PoissonsEquationUpdateEvent};
+use common_physics::PoissonsEquationUpdateEvent;
 
 use super::{
     consts::{BOLT_LIFETIME, *},
@@ -90,7 +90,7 @@ pub(crate) mod black_hole {
     use super::*;
 
     #[derive(Component)]
-    struct BlackHole(GridCoords, Stopwatch);
+    struct BlackHole;
 
     /// Includes effects of gravity on the poissons equation.
     pub(crate) fn spawn(
@@ -100,7 +100,7 @@ pub(crate) mod black_hole {
         gravity: &mut EventWriter<PoissonsEquationUpdateEvent<Gravity>>,
         at_translation: Vec2,
     ) {
-        let gravity_grid_coords = PoissonsEquationUpdateEvent::send(
+        PoissonsEquationUpdateEvent::send(
             gravity,
             BLACK_HOLE_GRAVITY,
             ChangeOfBasis::new(at_translation),
@@ -133,7 +133,7 @@ pub(crate) mod black_hole {
         ));
 
         cmd.spawn((
-            BlackHole(gravity_grid_coords, Stopwatch::new()),
+            BlackHole,
             PolpoEntity,
             Animation {
                 first: 0,

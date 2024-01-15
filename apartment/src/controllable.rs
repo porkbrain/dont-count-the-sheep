@@ -9,7 +9,7 @@ use common_story::portrait_dialog::{
 use common_visuals::camera::render_layer;
 use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
-    interaction_pressed, move_action_pressed, GlobalAction,
+    common_action::{interaction_pressed, move_action_pressed},
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 

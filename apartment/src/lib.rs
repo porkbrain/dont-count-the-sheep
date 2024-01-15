@@ -15,8 +15,8 @@ use common_story::portrait_dialog::in_portrait_dialog;
 use consts::START_LOADING_SCREEN_AFTER;
 use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
-    interaction_just_pressed, GlobalAction, GlobalGameStateTransition,
-    GlobalGameStateTransitionStack,
+    common_action::{interaction_just_pressed, move_action_just_pressed},
+    GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 use prelude::*;
 
@@ -74,6 +74,13 @@ pub fn add(app: &mut App) {
     app.add_systems(
         OnEnter(GlobalGameState::ApartmentLoading),
         common_story::spawn_camera,
+    );
+    app.add_systems(
+        Update,
+        common_story::portrait_dialog::change_selection
+            .run_if(in_state(GlobalGameState::InApartment))
+            .run_if(in_portrait_dialog())
+            .run_if(move_action_just_pressed()),
     );
     app.add_systems(
         Last,

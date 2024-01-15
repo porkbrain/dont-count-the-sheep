@@ -1,16 +1,12 @@
-pub mod action;
 pub mod prelude;
 pub mod state;
 pub mod vec2_ext;
 
-pub use action::*;
 use bevy::{app::AppExit, prelude::*, window::WindowTheme};
 use bevy_inspector_egui::quick::{StateInspectorPlugin, WorldInspectorPlugin};
 use bevy_pixel_camera::PixelCameraPlugin;
+pub use common_action;
 use common_visuals::PRIMARY_COLOR;
-use leafwing_input_manager::{
-    action_state::ActionState, plugin::InputManagerPlugin,
-};
 pub use state::*;
 
 pub fn windowed_app() -> App {
@@ -20,10 +16,7 @@ pub fn windowed_app() -> App {
         .register_type::<GlobalGameState>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
         .insert_resource(GlobalGameStateTransitionStack::default())
-        .register_type::<GlobalGameStateTransitionStack>()
-        .init_resource::<ActionState<GlobalAction>>()
-        .register_type::<GlobalAction>()
-        .insert_resource(GlobalAction::input_map());
+        .register_type::<GlobalGameStateTransitionStack>();
 
     app.add_plugins(
         DefaultPlugins
@@ -62,12 +55,12 @@ pub fn windowed_app() -> App {
 
     app.add_plugins((
         PixelCameraPlugin,
-        InputManagerPlugin::<GlobalAction>::default(),
         bevy_magic_light_2d::Plugin,
         common_visuals::Plugin,
         bevy_webp_anim::Plugin,
         common_loading_screen::Plugin,
         common_store::Plugin,
+        common_action::Plugin,
     ));
 
     app.add_systems(OnEnter(GlobalGameState::Exit), exit);

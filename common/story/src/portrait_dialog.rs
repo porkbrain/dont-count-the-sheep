@@ -1,8 +1,18 @@
+//! When a dialog is spawned, it's already loaded as it should look and does not
+//! require any additional actions.
+//!
+//! # Systems
+//! - [`advance`] that advances the dialog one step further, presumably fire it
+//!   when the player presses the interact key
+//! - [`change_selection`] that changes the selected choice based on whether the
+//!   player **just** pressed up or down, run it if the player pressed some
+//!   movement key
+
 pub mod example;
 
 mod aaatargets;
 
-use std::{cmp::Ordering, time::Duration};
+use std::{collections::BTreeMap, time::Duration};
 
 use aaatargets::DialogTargetChoice;
 use bevy::{
@@ -12,13 +22,15 @@ use bevy::{
     text::{Text2dBounds, TextLayoutInfo},
     utils::Instant,
 };
+use common_action::{ActionState, GlobalAction};
 use common_visuals::camera::render_layer;
+use itertools::Itertools;
 
 use self::aaatargets::DialogTargetGoto;
 use crate::Character;
 
 const FONT_SIZE: f32 = 21.0;
-const CHOICE_FONT_SIZE: f32 = 18.0;
+const CHOICE_FONT_SIZE: f32 = 17.0;
 const FONT: &str = common_assets::paths::fonts::PENCIL1;
 const PUSH_BUBBLE_TOP: f32 = 290.0;
 const ROOT_POS: Vec2 = vec2(-640.0, -360.0);
@@ -72,6 +84,10 @@ pub struct DialogPortrait;
 #[derive(Component, Clone, Debug)]
 pub struct DialogChoice {
     of: DialogTargetChoice,
+    /// Starts at 0.
+    order: usize,
+    /// Is selected either if it's the first choice or if the player changed
+    /// selection to this.
     is_selected: bool,
 }
 
@@ -152,14 +168,15 @@ pub fn advance(
 
     let choices = choices
         .iter()
-        .map(|(entity, choice)| (entity, choice.clone()));
+        .map(|(entity, choice)| (entity, choice.clone()))
+        .collect_vec();
     let outcome = advance_sequence(
         &mut cmd,
         &asset_server,
         &mut dialog,
         &mut text,
         root,
-        choices,
+        &choices,
         |speaker| {
             *portrait.single_mut() =
                 asset_server.load(speaker.portrait_asset_path());
@@ -171,6 +188,102 @@ pub fn advance(
 
         cmd.remove_resource::<PortraitDialog>();
         cmd.entity(root).despawn_recursive();
+    }
+}
+
+/// Run if pressed some movement key.
+/// If there are choices, then the selection will be changed if the movement
+/// was either up or down.
+pub fn change_selection(
+    controls: Res<ActionState<GlobalAction>>,
+    asset_server: Res<AssetServer>,
+
+    mut choices: Query<(&Children, &mut DialogChoice, &mut Handle<Image>)>,
+    mut texts: Query<&mut Text>,
+) {
+    if choices.is_empty() {
+        return;
+    }
+
+    let up = controls.pressed(GlobalAction::MoveUp)
+        || controls.pressed(GlobalAction::MoveUpLeft)
+        || controls.pressed(GlobalAction::MoveUpRight);
+
+    let down = controls.pressed(GlobalAction::MoveDown)
+        || controls.pressed(GlobalAction::MoveDownLeft)
+        || controls.pressed(GlobalAction::MoveDownRight);
+
+    if !up && !down {
+        return;
+    }
+
+    let (active_order, mut choice_map) = {
+        let mut active = 0;
+        let choice_map: BTreeMap<_, _> = choices
+            .iter_mut()
+            .map(|(children, choice, image)| {
+                if choice.is_selected {
+                    active = choice.order;
+                }
+                (choice.order, (children, choice, image))
+            })
+            .collect();
+
+        (active, choice_map)
+    };
+
+    let new_active_order = if up {
+        // previous
+        if active_order == 0 {
+            choice_map.len() - 1
+        } else {
+            active_order - 1
+        }
+    } else {
+        // next
+        if active_order == choice_map.len() - 1 {
+            0
+        } else {
+            active_order + 1
+        }
+    };
+
+    // set the active order's font to WHITE and the image to highlighted option
+    if let Some((children, new_choice, image)) =
+        choice_map.get_mut(&new_active_order)
+    {
+        new_choice.is_selected = true;
+
+        **image = asset_server
+            .load(common_assets::paths::ui::DIALOG_CHOICE_HIGHLIGHTED);
+
+        debug_assert_eq!(1, children.len());
+        if let Ok(mut text) = texts.get_mut(children[0]) {
+            text.sections[0].style.color = Color::WHITE;
+        } else {
+            error!("Cannot find text for choice with order {new_active_order}");
+        }
+    } else {
+        error!("Cannot find choice with order {new_active_order}");
+    }
+
+    // now set the old active order's font to BLACK and the image to normal
+    // option
+    if let Some((children, old_choice, image)) =
+        choice_map.get_mut(&active_order)
+    {
+        old_choice.is_selected = false;
+
+        **image = asset_server.load(common_assets::paths::ui::DIALOG_CHOICE);
+
+        debug_assert_eq!(1, children.len());
+        if let Ok(mut text) = texts.get_mut(children[0]) {
+            text.sections[0].style.color = Color::BLACK;
+        } else {
+            error!("Cannot find text for choice with order {active_order}");
+        }
+    } else {
+        error!("Cannot find choice with order {active_order}");
     }
 }
 
@@ -204,7 +317,7 @@ fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
         &mut dialog,
         &mut text,
         root,
-        std::iter::empty(),
+        &[],
         |speaker| {
             initial_speaker = Some(speaker);
         },
@@ -280,7 +393,7 @@ fn advance_sequence(
     dialog: &mut PortraitDialog,
     text: &mut Text,
     root: Entity,
-    mut choices: impl Iterator<Item = (Entity, DialogChoice)>,
+    choices: &[(Entity, DialogChoice)],
     mut set_portrait_image: impl FnMut(Character),
 ) -> SequenceFinished {
     loop {
@@ -310,9 +423,14 @@ fn advance_sequence(
                 dialog.sequence_index = 0;
             }
             Step::Choice { between } => {
-                if let Some((_, choice)) = choices.find(|(_, c)| c.is_selected)
+                if let Some((_, choice)) =
+                    choices.iter().find(|(_, c)| c.is_selected)
                 {
                     // choice made, next sequence
+
+                    choices.iter().for_each(|(entity, _)| {
+                        cmd.entity(*entity).despawn_recursive()
+                    });
 
                     dialog.sequence = choice.of.sequence();
                     dialog.sequence_index = 0;
@@ -352,33 +470,22 @@ fn spawn_choices(
     transform_manager: ChoiceTransformManager,
     between: &[DialogTargetChoice],
 ) -> Vec<Entity> {
-    let total = transform_manager.positions.len();
-
     between
         .iter()
         .enumerate()
         .map(move |(i, of)| {
-            // This will be [`Less`] for the first choice,
-            // [`Greater`] for the last choice, and [`Equal`]
-            // for all the choices
-            // in between.
-            //
-            // However, if there's only one choice, then it will
-            // be [`Equal`].
-            let ordering = match (total, i) {
-                (1, _) => Ordering::Equal,
-                (_, 0) => Ordering::Less,
-                (_, i) if i == total - 1 => Ordering::Greater,
-                _ => Ordering::Equal,
+            let (asset, color) = if i == 0 {
+                (
+                    common_assets::paths::ui::DIALOG_CHOICE_HIGHLIGHTED,
+                    Color::WHITE,
+                )
+            } else {
+                (common_assets::paths::ui::DIALOG_CHOICE, Color::BLACK)
             };
-            let asset = match ordering {
-                Ordering::Less => "characters/dialog_option.png",
-                Ordering::Greater => "characters/dialog_option.png",
-                Ordering::Equal => "characters/dialog_option.png",
-            }; // TODO
 
             let choice = DialogChoice {
                 of: *of,
+                order: i,
                 is_selected: i == 0,
             };
             let sprite = SpriteBundle {
@@ -406,7 +513,7 @@ fn spawn_choices(
                             TextStyle {
                                 font: asset_server.load(FONT),
                                 font_size: CHOICE_FONT_SIZE,
-                                color: Color::BLACK,
+                                color,
                             },
                         )
                         .with_alignment(TextAlignment::Left),

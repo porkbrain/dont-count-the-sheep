@@ -7,6 +7,7 @@ members = [
     "apartment",
     "bevy_grid_squared",
     "bevy_magic_light_2d",
+    "common/action",
     "common/assets",
     "common/layout",
     "common/loading_screen",
@@ -28,6 +29,7 @@ bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
 bevy_pixel_camera = "0.12"
 bevy_webp_anim = "0.2"
 bevy-inspector-egui = "0.22"
+common_action = { path = "common/action" }
 common_assets = { path = "common/assets" }
 common_layout = { path = "common/layout" }
 common_loading_screen = { path = "common/loading_screen" }

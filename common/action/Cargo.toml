@@ -1,0 +1,8 @@
+[package]
+name = "common_action"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+leafwing-input-manager.workspace = true
