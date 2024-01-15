@@ -10,8 +10,9 @@ mod prelude;
 mod zindex;
 
 use bevy::utils::Instant;
+use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_story::portrait_dialog::in_portrait_dialog;
+use common_story::{portrait_dialog::in_portrait_dialog, DialogAssets};
 use consts::START_LOADING_SCREEN_AFTER;
 use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
@@ -20,7 +21,11 @@ use main_game_lib::{
 };
 use prelude::*;
 
-use crate::layout::Apartment;
+/// Important scene struct.
+/// We use it as identifiable generic in some common logic such as layout or
+/// asset.
+#[derive(TypePath)]
+pub(crate) struct Apartment;
 
 pub fn add(app: &mut App) {
     info!("Adding apartment to app");
@@ -28,6 +33,23 @@ pub fn add(app: &mut App) {
     debug!("Adding plugins");
 
     app.add_plugins((cameras::Plugin, layout::Plugin, controllable::Plugin));
+
+    debug!("Adding assets");
+
+    app.add_systems(
+        OnEnter(GlobalGameState::ApartmentLoading),
+        (
+            common_assets::store::insert_as_resource::<Apartment>,
+            common_assets::store::insert_as_resource::<DialogAssets>,
+        ),
+    );
+    app.add_systems(
+        OnExit(GlobalGameState::ApartmentQuitting),
+        (
+            common_assets::store::remove_as_resource::<Apartment>,
+            common_assets::store::remove_as_resource::<DialogAssets>,
+        ),
+    );
 
     debug!("Adding map layout");
 
@@ -40,10 +62,20 @@ pub fn add(app: &mut App) {
 
     debug!("Adding game loop");
 
+    // when everything is loaded, finish the loading process by transitioning
+    // to the next loading state
     app.add_systems(
         Last,
-        all_loaded.run_if(in_state(GlobalGameState::ApartmentLoading)),
+        finish_when_everything_loaded
+            .run_if(in_state(GlobalGameState::ApartmentLoading))
+            .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
+    // ready to enter the game when the loading screen is completely gone
+    app.add_systems(
+        OnEnter(LoadingScreenState::DespawnLoadingScreen),
+        enter_the_apartment.run_if(in_state(GlobalGameState::ApartmentLoading)),
+    );
+
     app.add_systems(
         Update,
         common_loading_screen::finish
@@ -115,16 +147,27 @@ fn close_game(
     }
 }
 
-fn all_loaded(
+fn finish_when_everything_loaded(
+    mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
     map: Option<Res<common_layout::Map<Apartment>>>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
+    asset_server: Res<AssetServer>,
+    asset_store: Res<AssetStore<Apartment>>,
 ) {
     if map.is_none() {
         return;
     }
 
-    info!("Entering apartment");
+    if !asset_store.are_all_loaded(&asset_server) {
+        return;
+    }
 
+    debug!("All assets loaded");
+
+    next_loading_state.set(common_loading_screen::finish_state());
+}
+
+fn enter_the_apartment(mut next_state: ResMut<NextState<GlobalGameState>>) {
+    info!("Entering apartment");
     next_state.set(GlobalGameState::InApartment);
 }
 
@@ -180,5 +223,11 @@ fn smooth_exit(
                 );
             }
         }
+    }
+}
+
+impl AssetList for Apartment {
+    fn folders() -> &'static [&'static str] {
+        &[assets::FOLDER]
     }
 }

@@ -146,3 +146,121 @@ fn animation_step_secs(step_secs: f32, dir: GridDirection) -> f32 {
     }
     .clamp(0.1, 0.5)
 }
+
+/// Helps setup a character bundle.
+pub struct CharacterBundleBuilder {
+    character: common_story::Character,
+    initial_position: Vec2,
+    initial_direction: GridDirection,
+    walking_to: Option<ActorTarget>,
+    initial_step_time: Option<Duration>,
+}
+
+impl From<common_story::Character> for CharacterBundleBuilder {
+    fn from(character: common_story::Character) -> Self {
+        Self::new(character)
+    }
+}
+
+/// Extension trait for [`common_story::Character`].
+pub trait CharacterExt {
+    /// Returns a bundle builder for the character.
+    fn bundle_builder(self) -> CharacterBundleBuilder;
+}
+
+impl CharacterExt for common_story::Character {
+    fn bundle_builder(self) -> CharacterBundleBuilder {
+        CharacterBundleBuilder::new(self)
+    }
+}
+
+impl CharacterBundleBuilder {
+    /// For which character to build the bundle.
+    pub fn new(character: common_story::Character) -> Self {
+        Self {
+            character,
+            initial_direction: GridDirection::Bottom,
+            initial_position: default(),
+            walking_to: default(),
+            initial_step_time: default(),
+        }
+    }
+
+    /// Where to spawn the character.
+    /// Converted into the square by [`IntoMap::world_pos_to_square`].
+    /// The specific layout is provided in the [`CharacterBundleBuilder::build`]
+    /// method's `T`.
+    pub fn with_initial_position(mut self, initial_position: Vec2) -> Self {
+        self.initial_position = initial_position;
+
+        self
+    }
+
+    /// When the map is loaded, the character is spawned facing this
+    /// direction.
+    pub fn with_initial_direction(
+        mut self,
+        initial_direction: GridDirection,
+    ) -> Self {
+        self.initial_direction = initial_direction;
+
+        self
+    }
+
+    /// Where to walk to initially.
+    pub fn with_walking_to(mut self, walking_to: Option<ActorTarget>) -> Self {
+        self.walking_to = walking_to;
+
+        self
+    }
+
+    /// How long does it take to move one square.
+    pub fn with_initial_step_time(
+        mut self,
+        step_time: Option<Duration>,
+    ) -> Self {
+        self.initial_step_time = step_time;
+
+        self
+    }
+
+    /// Returns a bundle that can be spawned.
+    /// The bundle includes:
+    /// - [`Name`] component with the character's name
+    /// - [`Actor`] component with the character's movement data
+    /// - [`SpriteSheetBundle`] with the character's sprite atlas
+    pub fn build<T: IntoMap>(self) -> impl Bundle {
+        let CharacterBundleBuilder {
+            character,
+            initial_position,
+            initial_direction,
+            walking_to,
+            initial_step_time: step_time,
+        } = self;
+
+        let step_time = step_time.unwrap_or(character.default_step_time());
+
+        (
+            Name::from(common_story::Character::Winnie.name()),
+            Actor {
+                character,
+                step_time,
+                direction: initial_direction,
+                walking_from: T::layout().world_pos_to_square(initial_position),
+                walking_to,
+            },
+            SpriteSheetBundle {
+                texture_atlas: character.sprite_atlas_handle(),
+                sprite: TextureAtlasSprite {
+                    anchor: bevy::sprite::Anchor::BottomCenter,
+                    index: 0,
+                    ..default()
+                },
+                transform: Transform::from_translation(T::extend_z(
+                    initial_position,
+                )),
+                ..default()
+            },
+        )
+    }
+}

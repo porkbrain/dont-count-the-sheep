@@ -17,11 +17,17 @@ mod zindex;
 
 use bevy::utils::Instant;
 use bevy_webp_anim::WebpAnimator;
+use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_physics::PoissonsEquation;
 use gravity::Gravity;
 use main_game_lib::GlobalGameStateTransitionStack;
 use prelude::*;
+
+/// Important scene struct.
+/// Identifies anything that's related to meditation.
+#[derive(TypePath, Debug, Default)]
+struct Meditation;
 
 pub fn add(app: &mut App) {
     info!("Adding meditation to app");
@@ -36,6 +42,17 @@ pub fn add(app: &mut App) {
         cameras::Plugin,
         background::Plugin,
     ));
+
+    debug!("Adding assets");
+
+    app.add_systems(
+        OnEnter(GlobalGameState::MeditationLoading),
+        common_assets::store::insert_as_resource::<Meditation>,
+    );
+    app.add_systems(
+        OnExit(GlobalGameState::MeditationQuitting),
+        common_assets::store::remove_as_resource::<Meditation>,
+    );
 
     debug!("Adding visuals");
 
@@ -134,18 +151,13 @@ fn despawn(mut cmd: Commands) {
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
     asset_server: Res<AssetServer>,
-
-    images: Query<&Handle<Image>>,
+    asset_store: Res<AssetStore<Meditation>>,
 ) {
-    let all_images_loaded = images.iter().all(|image| {
-        image.is_weak() || asset_server.is_loaded_with_dependencies(image)
-    });
-
-    if !all_images_loaded {
+    if !asset_store.are_all_loaded(&asset_server) {
         return;
     }
 
-    debug!("All images loaded");
+    debug!("All assets loaded");
 
     next_loading_state.set(common_loading_screen::finish_state());
 }
@@ -185,5 +197,11 @@ fn all_cleaned_up(
                 "There's nowhere to transition from MeditationQuitting"
             );
         }
+    }
+}
+
+impl AssetList for Meditation {
+    fn folders() -> &'static [&'static str] {
+        &[common_assets::meditation::FOLDER]
     }
 }

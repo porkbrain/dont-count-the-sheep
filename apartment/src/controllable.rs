@@ -1,6 +1,5 @@
-use bevy::{render::view::RenderLayers, sprite::Anchor};
-use bevy_grid_squared::direction::Direction as GridDirection;
-use common_actor::{player::Player, Actor, ActorTarget};
+use bevy::render::view::RenderLayers;
+use common_actor::{player::Player, Actor, ActorTarget, CharacterExt};
 use common_layout::{IntoMap, SquareKind};
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{ApartmentStore, GlobalStore};
@@ -18,16 +17,6 @@ use crate::{
     layout::zones, prelude::*, Apartment,
 };
 
-const WINNIE_ATLAS_COLS: usize = 15;
-const WINNIE_ATLAS_ROWS: usize = 1;
-const WINNIE_WIDTH: f32 = 19.0;
-const WINNIE_HEIGHT: f32 = 35.0;
-const WINNIE_ATLAS_PADDING: f32 = 1.0;
-/// How long does it take to move one square.
-const DEFAULT_STEP_TIME: Duration = from_millis(50);
-/// When the apartment is loaded, the character is spawned facing this
-/// direction.
-const INITIAL_DIRECTION: GridDirection = GridDirection::Bottom;
 /// When the apartment is loaded, the character is spawned at this square.
 const DEFAULT_INITIAL_POSITION: Vec2 = vec2(-15.0, 15.0);
 /// Upon going to the meditation minigame we set this value so that once the
@@ -79,15 +68,12 @@ impl bevy::app::Plugin for Plugin {
 fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     store: Res<GlobalStore>,
 ) {
     let initial_position = store
         .position_on_load()
         .get()
         .unwrap_or(DEFAULT_INITIAL_POSITION);
-    let walking_from =
-        Apartment::layout().world_pos_to_square(initial_position);
     store.position_on_load().remove();
 
     let walking_to = store
@@ -97,41 +83,22 @@ fn spawn(
         .map(ActorTarget::new);
     store.walk_to_onload().remove();
 
-    let step_time = store.step_time_onload().get().unwrap_or(DEFAULT_STEP_TIME);
+    let step_time = store.step_time_onload().get();
     store.step_time_onload().remove();
 
     cmd.spawn((
-        Name::from("Player"),
         Player,
-        Actor {
-            character: common_story::Character::Winnie,
-            step_time,
-            direction: INITIAL_DIRECTION,
-            walking_from,
-            walking_to,
-        },
         CharacterEntity,
         RenderLayers::layer(render_layer::OBJ),
-        SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load(assets::WINNIE_ATLAS),
-                vec2(WINNIE_WIDTH, WINNIE_HEIGHT),
-                WINNIE_ATLAS_COLS,
-                WINNIE_ATLAS_ROWS,
-                Some(vec2(WINNIE_ATLAS_PADDING, 0.0)),
-                None,
-            )),
-            sprite: TextureAtlasSprite {
-                anchor: Anchor::BottomCenter,
-                index: 0,
-                ..default()
-            },
-            transform: Transform::from_translation(Apartment::extend_z(
-                initial_position,
-            )),
-            ..default()
-        },
-    ));
+    ))
+    .insert(
+        common_story::Character::Winnie
+            .bundle_builder()
+            .with_initial_position(initial_position)
+            .with_walking_to(walking_to)
+            .with_initial_step_time(step_time)
+            .build::<Apartment>(),
+    );
 
     cmd.spawn((
         Name::from("Transparent overlay"),
@@ -219,7 +186,7 @@ fn start_meditation_minigame_if_near_chair(
     overlay.single_mut().color.set_a(1.0);
 
     cmd.insert_resource(LoadingScreenSettings {
-        bg_image_asset: Some(common_assets::paths::meditation::LOADING_SCREEN),
+        bg_image_asset: Some(common_assets::meditation::LOADING_SCREEN),
         stare_at_loading_screen_for_at_least: Some(
             WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
         ),

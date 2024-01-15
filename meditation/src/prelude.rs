@@ -1,4 +1,4 @@
-pub(crate) use common_assets::paths::meditation as assets;
+pub(crate) use common_assets::meditation as assets;
 pub(crate) use common_physics::{
     AngularVelocity, MotionDirection, Radians, Velocity,
 };

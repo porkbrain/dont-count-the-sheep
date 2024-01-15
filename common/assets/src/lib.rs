@@ -2,12 +2,15 @@
 //! Also exports a [`RonLoader`] for loading assets from .ron files.
 //! We store e.g. level layouts this way.
 
-pub mod paths;
+mod paths;
+pub mod store;
 
 use std::marker::PhantomData;
 
 use bevy::asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext};
+pub use paths::*;
 use serde::de::DeserializeOwned;
+pub use store::AssetStore;
 use thiserror::Error;
 
 /// Loads assets from .ron files.

@@ -31,7 +31,7 @@ use crate::Character;
 
 const FONT_SIZE: f32 = 21.0;
 const CHOICE_FONT_SIZE: f32 = 17.0;
-const FONT: &str = common_assets::paths::fonts::PENCIL1;
+const FONT: &str = common_assets::fonts::PENCIL1;
 const PUSH_BUBBLE_TOP: f32 = 290.0;
 const ROOT_POS: Vec2 = vec2(-640.0, -360.0);
 const TEXT_BOUNDS: Vec2 = vec2(250.0, 120.0);
@@ -254,8 +254,8 @@ pub fn change_selection(
     {
         new_choice.is_selected = true;
 
-        **image = asset_server
-            .load(common_assets::paths::ui::DIALOG_CHOICE_HIGHLIGHTED);
+        **image =
+            asset_server.load(common_assets::dialog::DIALOG_CHOICE_HIGHLIGHTED);
 
         debug_assert_eq!(1, children.len());
         if let Ok(mut text) = texts.get_mut(children[0]) {
@@ -274,7 +274,7 @@ pub fn change_selection(
     {
         old_choice.is_selected = false;
 
-        **image = asset_server.load(common_assets::paths::ui::DIALOG_CHOICE);
+        **image = asset_server.load(common_assets::dialog::DIALOG_CHOICE);
 
         debug_assert_eq!(1, children.len());
         if let Ok(mut text) = texts.get_mut(children[0]) {
@@ -340,7 +340,7 @@ fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
                     -1.0,
                 )),
                 texture: asset_server
-                    .load(common_assets::paths::ui::DIALOG_BUBBLE),
+                    .load(common_assets::dialog::DIALOG_BUBBLE),
                 ..default()
             },
         ));
@@ -476,11 +476,11 @@ fn spawn_choices(
         .map(move |(i, of)| {
             let (asset, color) = if i == 0 {
                 (
-                    common_assets::paths::ui::DIALOG_CHOICE_HIGHLIGHTED,
+                    common_assets::dialog::DIALOG_CHOICE_HIGHLIGHTED,
                     Color::WHITE,
                 )
             } else {
-                (common_assets::paths::ui::DIALOG_CHOICE, Color::BLACK)
+                (common_assets::dialog::DIALOG_CHOICE, Color::BLACK)
             };
 
             let choice = DialogChoice {

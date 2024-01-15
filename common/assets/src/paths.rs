@@ -1,11 +1,15 @@
 //! All the assets that the game loads are stored as string paths here.
 
 pub mod fonts {
+    pub const FOLDER: &str = "fonts";
+
     pub const PIXEL1: &str = "fonts/shaperka.ttf";
     pub const PENCIL1: &str = "fonts/pencil.ttf";
 }
 
 pub mod apartment {
+    pub const FOLDER: &str = "apartment";
+
     pub const BG: &str = "apartment/bg.png";
 
     pub const CLOUD_ATLAS: &str = "apartment/cloud_atlas.png";
@@ -27,6 +31,8 @@ pub mod apartment {
 }
 
 pub mod meditation {
+    pub const FOLDER: &str = "meditation";
+
     pub const LOADING_SCREEN: &str = "meditation/textures/loading_screen.png";
 
     pub const BACKGROUND_DEFAULT: &str = "meditation/textures/bg/default.png";
@@ -77,14 +83,17 @@ pub mod meditation {
         "meditation/textures/polpo/videos/vampire.webp";
 }
 
-pub mod ui {
-    pub const DIALOG_BUBBLE: &str = "characters/dialog_bubble.png";
-    pub const DIALOG_CHOICE: &str = "characters/dialog_choice.png";
-    pub const DIALOG_CHOICE_HIGHLIGHTED: &str =
-        "characters/dialog_choice_highlighted.png";
+pub mod dialog {
+    pub const FOLDER: &str = "dialog";
+
+    pub const DIALOG_BUBBLE: &str = "dialog/bubble.png";
+    pub const DIALOG_CHOICE: &str = "dialog/choice.png";
+    pub const DIALOG_CHOICE_HIGHLIGHTED: &str = "dialog/choice_highlighted.png";
 }
 
 pub mod portraits {
+    pub const FOLDER: &str = "characters/portraits";
+
     pub const WINNIE: &str = "characters/portraits/winnie1.png";
     pub const PHOEBE: &str = "characters/portraits/princess1.png";
     pub const MARIE: &str = "characters/portraits/widow1.png";
@@ -97,4 +106,10 @@ pub mod portraits {
     pub const REDHEAD: &str = "characters/portraits/redhead1.png";
     pub const UNNAMED: &str = "characters/portraits/unnamed1.png";
     pub const OTTER: &str = "characters/portraits/otter1.png";
+}
+
+pub mod character_atlases {
+    pub const FOLDER: &str = "characters/atlases";
+
+    pub const WINNIE: &str = "characters/atlases/winnie1.png";
 }

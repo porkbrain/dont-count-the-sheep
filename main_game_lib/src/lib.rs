@@ -6,7 +6,11 @@ use bevy::{app::AppExit, prelude::*, window::WindowTheme};
 use bevy_inspector_egui::quick::{StateInspectorPlugin, WorldInspectorPlugin};
 use bevy_pixel_camera::PixelCameraPlugin;
 pub use common_action;
-use common_visuals::PRIMARY_COLOR;
+pub use common_assets;
+pub use common_loading_screen;
+pub use common_store;
+pub use common_story;
+pub use common_visuals::{self, PRIMARY_COLOR};
 pub use state::*;
 
 pub fn windowed_app() -> App {
@@ -23,6 +27,7 @@ pub fn windowed_app() -> App {
             .set(bevy::log::LogPlugin {
                 level: bevy::log::Level::WARN,
                 filter: "\
+                warn,\
                 main_game_lib=trace,\
                 apartment=trace,\
                 common_story=trace,\
@@ -63,9 +68,29 @@ pub fn windowed_app() -> App {
         common_action::Plugin,
     ));
 
+    app.add_systems(
+        Startup,
+        (
+            begin_loading_static_assets_on_startup,
+            common_assets::store::insert_as_resource::<
+                common_assets::store::StaticScene,
+            >,
+        ),
+    );
     app.add_systems(OnEnter(GlobalGameState::Exit), exit);
 
     app
+}
+
+/// All assets that should be kept in memory throughout the game.
+fn begin_loading_static_assets_on_startup(
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    common_story::Character::load_all_sprite_atlases(
+        &asset_server,
+        &mut texture_atlases,
+    );
 }
 
 fn exit(mut exit: EventWriter<AppExit>) {

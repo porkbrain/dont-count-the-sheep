@@ -8,7 +8,7 @@ use common_visuals::{
 use lazy_static::lazy_static;
 use main_game_lib::vec2_ext::Vec2Ext;
 
-use crate::{consts::*, prelude::*};
+use crate::{consts::*, prelude::*, Apartment};
 
 lazy_static! {
     static ref LAYOUT: SquareLayout = SquareLayout {
@@ -23,9 +23,6 @@ pub(crate) mod zones {
     pub(crate) const TEA: u8 = 2;
     pub(crate) const DOOR: u8 = 3;
 }
-
-#[derive(Component, TypePath)]
-pub(crate) struct Apartment;
 
 #[derive(Component)]
 struct LayoutEntity;

@@ -8,7 +8,7 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GlobalGameState::InApartment), spawn)
+        app.add_systems(OnEnter(GlobalGameState::ApartmentLoading), spawn)
             .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn);
     }
 }
