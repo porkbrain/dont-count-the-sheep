@@ -38,7 +38,7 @@ pub enum GlobalGameStateTransition {
     /// Exit back to the apartment
     MeditationQuittingToApartment,
 
-    /// Play the meditation mini game
+    /// Play the meditation minigame
     ApartmentQuittingToMeditationLoading,
     /// Quit the game
     ApartmentQuittingToExit,

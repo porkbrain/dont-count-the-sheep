@@ -18,9 +18,9 @@ use common_assets::store::AssetList;
 use common_visuals::camera::{order, render_layer};
 use strum::{EnumIter, IntoEnumIterator};
 
-/// Used in conjunction with [`AssetStore`] to keep loaded assets in memory.
-/// Thanks to implementation of [`AssetList`] you can now use the common systems
-/// to load and unload assets.
+/// Used in conjunction with [`common_assets::AssetStore`] to keep loaded assets
+/// in memory. Thanks to implementation of [`AssetList`] you can now use the
+/// common systems to load and unload assets.
 pub struct DialogAssets;
 
 /// List of all the NPCs and player characters.

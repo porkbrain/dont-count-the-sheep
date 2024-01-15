@@ -1,3 +1,5 @@
+//! Things that player can encounter in this scene.
+
 use bevy::render::view::RenderLayers;
 use common_actor::{player::Player, Actor, ActorTarget, CharacterExt};
 use common_layout::{IntoMap, SquareKind};

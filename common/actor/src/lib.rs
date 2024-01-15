@@ -187,7 +187,8 @@ impl CharacterBundleBuilder {
     }
 
     /// Where to spawn the character.
-    /// Converted into the square by [`IntoMap::world_pos_to_square`].
+    /// Converted into the square by `IntoMap::world_pos_to_square` (see the
+    /// `common_layout` crate).
     /// The specific layout is provided in the [`CharacterBundleBuilder::build`]
     /// method's `T`.
     pub fn with_initial_position(mut self, initial_position: Vec2) -> Self {

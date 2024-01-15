@@ -2,11 +2,11 @@
 //! require any additional actions.
 //!
 //! # Systems
-//! - [`advance`] that advances the dialog one step further, presumably fire it
-//!   when the player presses the interact key
-//! - [`change_selection`] that changes the selected choice based on whether the
-//!   player **just** pressed up or down, run it if the player pressed some
-//!   movement key
+//! - [`crate::portrait_dialog::advance`] that advances the dialog one step
+//!   further, presumably fire it when the player presses the interact key
+//! - [`crate::portrait_dialog::change_selection`] that changes the selected
+//!   choice based on whether the player **just** pressed up or down, run it if
+//!   the player pressed some movement key
 
 pub mod example;
 
@@ -80,7 +80,7 @@ pub struct DialogPortrait;
 
 /// Entities that render choices in dialogs.
 /// When advancing the dialog, the selected choice will be used to determine
-/// the next [`DialogTarget`].
+/// the next sequence.
 #[derive(Component, Clone, Debug)]
 pub struct DialogChoice {
     of: DialogTargetChoice,

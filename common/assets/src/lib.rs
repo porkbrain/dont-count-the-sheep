@@ -1,4 +1,4 @@
-//! Exports paths to the assets used by the game in [`paths`].
+//! Exports paths to the assets used by the game.
 //! Also exports a [`RonLoader`] for loading assets from .ron files.
 //! We store e.g. level layouts this way.
 

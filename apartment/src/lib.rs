@@ -2,9 +2,9 @@
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::type_complexity)]
 
+mod actor;
 mod cameras;
 mod consts;
-mod controllable;
 mod layout;
 mod prelude;
 mod zindex;
@@ -32,7 +32,7 @@ pub fn add(app: &mut App) {
 
     debug!("Adding plugins");
 
-    app.add_plugins((cameras::Plugin, layout::Plugin, controllable::Plugin));
+    app.add_plugins((cameras::Plugin, layout::Plugin, actor::Plugin));
 
     debug!("Adding assets");
 
