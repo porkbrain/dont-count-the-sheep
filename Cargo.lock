@@ -182,6 +182,7 @@ dependencies = [
  "bevy",
  "bevy_grid_squared",
  "bevy_pixel_camera",
+ "common_actor",
  "common_assets",
  "common_layout",
  "common_loading_screen",
@@ -1447,6 +1448,18 @@ name = "common_action"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "leafwing-input-manager",
+]
+
+[[package]]
+name = "common_actor"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_grid_squared",
+ "common_action",
+ "common_layout",
+ "common_story",
  "leafwing-input-manager",
 ]
 

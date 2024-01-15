@@ -10,6 +10,7 @@ path = "src/lib.rs"
 bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true
 bevy.workspace = true
+common_actor.workspace = true
 common_assets.workspace = true
 common_layout.workspace = true
 common_loading_screen.workspace = true

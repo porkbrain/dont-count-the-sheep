@@ -5,6 +5,8 @@
 #![feature(trivial_bounds)]
 #![deny(missing_docs)]
 
+use std::time::Duration;
+
 use bevy::{
     core_pipeline::clear_color::ClearColorConfig, prelude::*,
     render::view::RenderLayers,
@@ -14,8 +16,9 @@ use common_visuals::camera::{order, render_layer};
 /// The main dialog type that should take away player control.
 pub mod portrait_dialog;
 
+/// List of all the NPCs and player characters.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Reflect)]
-enum Character {
+pub enum Character {
     /// Main playable character
     Winnie,
     /// The Princess
@@ -25,13 +28,21 @@ enum Character {
     /// The cult head
     Master,
 
+    /// A character.
     Redhead,
+    /// A character.
     Bolt,
+    /// A character.
     Capy,
+    /// A character.
     Cat,
+    /// A character.
     Emil,
+    /// A character.
     Pooper,
+    /// A character.
     Unnamed,
+    /// A character.
     Otter,
 }
 
@@ -69,6 +80,13 @@ pub fn despawn_camera(
 ) {
     for entity in entities.iter() {
         cmd.entity(entity).despawn_recursive();
+    }
+}
+
+impl Character {
+    /// How long does it take to move one square.
+    pub fn default_step_time(self) -> Duration {
+        Duration::from_millis(50)
     }
 }
 

@@ -70,6 +70,22 @@ pub trait IntoMap: 'static + Send + Sync + TypePath {
     /// This cannot be done with the layout because cursor is relative to the
     /// window size and starts at top left corner.
     fn cursor_position_to_square(cursor_position: Vec2) -> Square;
+
+    /// Given a position on the map, add a z coordinate.
+    /// Custom implementations can be used to add z index based on y coordinate.
+    fn extend_z(v: Vec2) -> Vec3 {
+        v.extend(0.0)
+    }
+
+    /// Whether the given square is inside the map.
+    fn contains(square: Square) -> bool {
+        let [min_x, max_x, min_y, max_y] = Self::bounds();
+
+        square.x >= min_x
+            && square.x <= max_x
+            && square.y >= min_y
+            && square.y <= max_y
+    }
 }
 
 /// Holds the tiles in a hash map.

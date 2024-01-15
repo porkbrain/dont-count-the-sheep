@@ -567,6 +567,7 @@ impl Character {
         self,
         total_choices: usize,
     ) -> ChoiceTransformManager {
+        #[allow(clippy::match_single_binding)]
         let positions = match total_choices {
             1 => match self {
                 _ => vec![vec2(240.0, -75.0)],
