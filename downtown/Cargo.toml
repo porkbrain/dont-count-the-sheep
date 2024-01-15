@@ -1,5 +1,5 @@
 [package]
-name = "apartment"
+name = "downtown"
 version.workspace = true
 edition.workspace = true
 

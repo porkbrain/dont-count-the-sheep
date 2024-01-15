@@ -26,6 +26,13 @@ pub enum GlobalGameState {
     /// meditation game in the background.
     MeditationQuitting,
 
+    /// Sets up the downtown scene in the background.
+    DowntownLoading,
+    /// Player is at downtown.
+    AtDowntown,
+    /// Despawn downtown game resources.
+    DowntownQuitting,
+
     /// Performs all necessary cleanup and exits the game.
     Exit,
 }
@@ -42,6 +49,8 @@ pub enum GlobalGameStateTransition {
     ApartmentQuittingToMeditationLoading,
     /// Quit the game
     ApartmentQuittingToExit,
+    /// Go to downtown
+    ApartmentQuittingToDowntownLoading,
 }
 
 /// Certain states have multiple allowed transitions.
@@ -77,6 +86,9 @@ impl GlobalGameStateTransitionStack {
             (Some(ApartmentQuittingToExit), ApartmentQuitting) => Some(Exit),
             (Some(ApartmentQuittingToMeditationLoading), ApartmentQuitting) => {
                 Some(MeditationLoading)
+            }
+            (Some(ApartmentQuittingToDowntownLoading), ApartmentQuitting) => {
+                Some(DowntownLoading)
             }
             (Some(transition), state) => {
                 error!(

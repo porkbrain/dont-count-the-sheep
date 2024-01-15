@@ -133,7 +133,7 @@ impl IntoMap for Apartment {
     }
 
     fn asset_path() -> &'static str {
-        assets::APARTMENT_MAP
+        assets::MAP
     }
 
     fn layout() -> &'static SquareLayout {

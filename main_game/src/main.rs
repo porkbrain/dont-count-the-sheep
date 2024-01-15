@@ -21,12 +21,13 @@ fn main() {
         next_loading_state
             .set(main_game_lib::common_loading_screen::start_state());
 
-        next_state.set(GlobalGameState::ApartmentLoading);
+        next_state.set(GlobalGameState::DowntownLoading);
     }
     app.add_systems(Update, start.run_if(in_state(GlobalGameState::Blank)));
 
     apartment::add(&mut app);
     meditation::add(&mut app);
+    downtown::add(&mut app);
 
     app.run();
 }

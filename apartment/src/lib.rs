@@ -14,7 +14,6 @@ use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_story::{portrait_dialog::in_portrait_dialog, DialogAssets};
 use consts::START_LOADING_SCREEN_AFTER;
-use leafwing_input_manager::action_state::ActionState;
 use main_game_lib::{
     common_action::{interaction_just_pressed, move_action_just_pressed},
     GlobalGameStateTransition, GlobalGameStateTransitionStack,

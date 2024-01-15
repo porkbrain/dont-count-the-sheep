@@ -190,10 +190,7 @@ dependencies = [
  "common_story",
  "common_visuals",
  "lazy_static",
- "leafwing-input-manager",
  "main_game_lib",
- "ron",
- "serde",
 ]
 
 [[package]]
@@ -1777,6 +1774,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
+name = "downtown"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_grid_squared",
+ "bevy_pixel_camera",
+ "common_actor",
+ "common_assets",
+ "common_layout",
+ "common_loading_screen",
+ "common_store",
+ "common_story",
+ "common_visuals",
+ "lazy_static",
+ "main_game_lib",
+]
+
+[[package]]
 name = "ecolor"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2751,6 +2766,7 @@ version = "0.1.0"
 dependencies = [
  "apartment",
  "bevy",
+ "downtown",
  "main_game_lib",
  "meditation",
 ]

@@ -8,7 +8,11 @@ name = "game"
 path = "src/main.rs"
 
 [dependencies]
+apartment.workspace = true
 bevy.workspace = true
+downtown.workspace = true
 main_game_lib.workspace = true
 meditation.workspace = true
-apartment = { workspace = true, features = [] }
+
+[features]
+dev = ["meditation/dev", "downtown/dev", "apartment/dev"]

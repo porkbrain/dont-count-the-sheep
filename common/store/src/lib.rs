@@ -120,6 +120,35 @@ mod apartment {
     }
 }
 
+pub use downtown::DowntownStore;
+mod downtown {
+    use std::time::Duration;
+
+    use super::*;
+
+    pub trait DowntownStore {
+        fn position_on_load(&self) -> Entry<'_, Vec2>;
+
+        fn walk_to_onload(&self) -> Entry<'_, Vec2>;
+
+        fn step_time_onload(&self) -> Entry<'_, Duration>;
+    }
+
+    impl DowntownStore for GlobalStore {
+        fn position_on_load(&self) -> Entry<'_, Vec2> {
+            self.entry("downtown.position_on_load")
+        }
+
+        fn walk_to_onload(&self) -> Entry<'_, Vec2> {
+            self.entry("downtown.walk_towards_onload")
+        }
+
+        fn step_time_onload(&self) -> Entry<'_, Duration> {
+            self.entry("apartment.step_time_onload")
+        }
+    }
+}
+
 impl GlobalStore {
     pub fn new() -> Self {
         let mut conn = rusqlite::Connection::open_in_memory().unwrap();

@@ -9,7 +9,7 @@ pub mod fonts {
 
 pub mod apartment {
     pub const FOLDER: &str = "apartment";
-
+    pub const MAP: &str = "apartment/map.ron";
     pub const BG: &str = "apartment/bg.png";
 
     pub const CLOUD_ATLAS: &str = "apartment/cloud_atlas.png";
@@ -26,8 +26,12 @@ pub mod apartment {
 
     pub const WINNIE_SLEEPING: &str = "apartment/sleeping.png";
     pub const WINNIE_MEDITATING: &str = "apartment/meditating.png";
+}
 
-    pub const APARTMENT_MAP: &str = "apartment/map.ron";
+pub mod downtown {
+    pub const FOLDER: &str = "downtown";
+    pub const BG: &str = "downtown/bg.png";
+    pub const MAP: &str = "downtown/map.ron";
 }
 
 pub mod meditation {
