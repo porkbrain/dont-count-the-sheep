@@ -12,6 +12,15 @@ use bevy_grid_squared::{direction::Direction as GridDirection, Square};
 use common_layout::IntoMap;
 use common_story::Character;
 
+/// Does not add any systems, only registers types.
+pub struct Plugin;
+
+impl bevy::app::Plugin for Plugin {
+    fn build(&self, app: &mut App) {
+        app.register_type::<Actor>().register_type::<ActorTarget>();
+    }
+}
+
 /// Entity with this component can be moved around.
 #[derive(Component, Reflect)]
 pub struct Actor {

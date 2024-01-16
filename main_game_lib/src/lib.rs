@@ -28,11 +28,12 @@ pub fn windowed_app() -> App {
                 level: bevy::log::Level::WARN,
                 filter: "\
                 warn,\
-                main_game_lib=trace,\
                 apartment=trace,\
                 common_story=trace,\
+                downtown=trace,\
+                main_game_lib=trace,\
                 meditation=trace,\
-                meditation::hoshi::sprite=debug\
+                meditation::hoshi::sprite=debug,\
                 "
                 .to_string(),
             })

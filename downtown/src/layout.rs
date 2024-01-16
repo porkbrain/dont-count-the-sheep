@@ -9,7 +9,7 @@ use crate::{prelude::*, Downtown};
 
 lazy_static! {
     static ref LAYOUT: SquareLayout = SquareLayout {
-        square_size: 4.0,
+        square_size: 6.0,
         origin: vec2(356.0, 175.0).as_top_left_into_centered(),
     };
 }
@@ -31,6 +31,7 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
+    #[allow(clippy::single_element_loop)]
     for (name, asset, zindex) in [("Background", assets::BG, zindex::BG)] {
         cmd.spawn((
             Name::from(name),
@@ -57,7 +58,7 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
 
 impl IntoMap for Downtown {
     fn bounds() -> [i32; 4] {
-        [-40, 40, -20, 20]
+        [-80, 60, -20, 160]
     }
 
     fn asset_path() -> &'static str {
@@ -72,5 +73,9 @@ impl IntoMap for Downtown {
         Self::layout().world_pos_to_square(
             (p / PIXEL_ZOOM as f32).as_top_left_into_centered(),
         )
+    }
+
+    fn extend_z(v: Vec2) -> Vec3 {
+        v.extend(10.0)
     }
 }

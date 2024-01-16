@@ -20,7 +20,8 @@ impl bevy::app::Plugin for Plugin {
         app.init_resource::<ActionState<GlobalAction>>()
             .register_type::<GlobalAction>()
             .insert_resource(GlobalAction::input_map())
-            .add_plugins(InputManagerPlugin::<GlobalAction>::default());
+            .add_plugins(InputManagerPlugin::<GlobalAction>::default())
+            .register_type::<ActionState<GlobalAction>>();
     }
 }
 
@@ -36,12 +37,16 @@ pub enum GlobalAction {
     /// Going only right.
     MoveRight,
     /// Going both up and left.
+    /// Overwrites `MoveUp` and `MoveLeft`.
     MoveUpLeft,
     /// Going both up and right.
+    /// Overwrites `MoveUp` and `MoveRight`.
     MoveUpRight,
     /// Going both down and left.
+    /// Overwrites `MoveDown` and `MoveLeft`.
     MoveDownLeft,
     /// Going both down and right.
+    /// Overwrites `MoveDown` and `MoveRight`.
     MoveDownRight,
 
     /// Ubiquitous action, used for interacting with the world.

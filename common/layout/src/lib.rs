@@ -57,6 +57,7 @@ pub fn register<T: IntoMap, S: States>(
 /// Some map.
 pub trait IntoMap: 'static + Send + Sync + TypePath {
     /// Size in number of tiles.
+    /// `[left, right, top, bottom]`
     fn bounds() -> [i32; 4];
 
     /// How large is a tile and how do we translate between world coordinates
@@ -191,16 +192,20 @@ mod map_maker {
                 .copied()
                 .unwrap_or(SquareKind::None);
 
-            cmd.spawn(SquareSprite).insert(SpriteBundle {
-                sprite: Sprite {
-                    color: kind.color(),
-                    // slightly smaller to show borders
-                    custom_size: Some(T::layout().square() - 0.25),
+            cmd.spawn((SquareSprite, Name::new("Debug square"))).insert(
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: kind.color(),
+                        // slightly smaller to show borders
+                        custom_size: Some(T::layout().square() - 0.25),
+                        ..default()
+                    },
+                    transform: Transform::from_translation(
+                        world_pos.extend(10.0),
+                    ),
                     ..default()
                 },
-                transform: Transform::from_translation(world_pos.extend(10.0)),
-                ..default()
-            });
+            );
         }
     }
 

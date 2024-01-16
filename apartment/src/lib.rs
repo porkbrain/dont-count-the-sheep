@@ -16,7 +16,7 @@ use common_story::{portrait_dialog::in_portrait_dialog, DialogAssets};
 use consts::START_LOADING_SCREEN_AFTER;
 use main_game_lib::{
     common_action::{interaction_just_pressed, move_action_just_pressed},
-    GlobalGameStateTransition, GlobalGameStateTransitionStack,
+    GlobalGameStateTransitionStack,
 };
 use prelude::*;
 
@@ -84,11 +84,6 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         Update,
-        close_game.run_if(in_state(GlobalGameState::InApartment)),
-    );
-
-    app.add_systems(
-        Update,
         smooth_exit.run_if(in_state(GlobalGameState::ApartmentQuitting)),
     );
 
@@ -126,24 +121,6 @@ pub fn add(app: &mut App) {
     );
 
     info!("Added apartment to app");
-}
-
-/// TODO: Have a global menu with an option to exit the game
-fn close_game(
-    mut cmd: Commands,
-    mut stack: ResMut<GlobalGameStateTransitionStack>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    controls: Res<ActionState<GlobalAction>>,
-) {
-    if controls.just_pressed(GlobalAction::Cancel) {
-        cmd.insert_resource(LoadingScreenSettings {
-            fade_loading_screen_in: from_millis(150),
-            ..default()
-        });
-
-        stack.push(GlobalGameStateTransition::ApartmentQuittingToExit);
-        next_state.set(GlobalGameState::ApartmentQuitting);
-    }
 }
 
 fn finish_when_everything_loaded(

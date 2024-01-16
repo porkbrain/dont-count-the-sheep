@@ -39,4 +39,6 @@ pub mod order {
     /// The camera that renders the loading screen is above the main camera
     /// because we smoothly change opacity from 0 to 1 and back.
     pub const LOADING: isize = 12;
+    /// Overlay for devtools.
+    pub const DEV: isize = 420;
 }

@@ -7,16 +7,16 @@ pub struct ExactSizeSquareIterator<I> {
 
 /// All bounds can be negative, but left <= right and bottom <= top
 pub fn rectangle(
-    [left, right, top, bottom]: [i32; 4],
+    [left, right, bottom, top]: [i32; 4],
 ) -> impl ExactSizeIterator<Item = Square> {
     assert!(left <= right, "Left ({left}) not <= right ({right})");
-    assert!(bottom >= top, "Bottom ({bottom}) not >= top ({top})");
+    assert!(top >= bottom, "Top ({top}) not >= bottom ({bottom})");
 
     // count must take into account negative indexes
-    let count = (right - left + 1) * (bottom - top + 1);
+    let count = (right - left + 1) * (top - bottom + 1);
 
     ExactSizeSquareIterator {
-        iter: (top..=bottom)
+        iter: (bottom..=top)
             .flat_map(move |y| (left..=right).map(move |x| Square::new(x, y))),
         count: count as usize,
     }
