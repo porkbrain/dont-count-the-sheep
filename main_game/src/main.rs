@@ -21,7 +21,7 @@ fn main() {
         next_loading_state
             .set(main_game_lib::common_loading_screen::start_state());
 
-        next_state.set(GlobalGameState::DowntownLoading);
+        next_state.set(GlobalGameState::ApartmentLoading);
     }
     app.add_systems(Update, start.run_if(in_state(GlobalGameState::Blank)));
 
