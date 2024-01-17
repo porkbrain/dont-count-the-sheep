@@ -1,12 +1,13 @@
 //! Things that player can encounter in this scene.
 
 use bevy::render::view::RenderLayers;
-use common_actor::{player::Player, ActorTarget, CharacterExt};
-use common_layout::IntoMap;
 use common_store::GlobalStore;
 use common_story::portrait_dialog::not_in_portrait_dialog;
 use common_visuals::camera::render_layer;
-use main_game_lib::common_action::move_action_pressed;
+use main_game_lib::{
+    common_action::move_action_pressed,
+    common_top_down::{actor::CharacterExt, ActorTarget, IntoMap},
+};
 
 use crate::{prelude::*, Downtown};
 
@@ -26,7 +27,7 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             Update,
-            (common_actor::player::move_around::<Downtown>
+            (common_top_down::actor::player::move_around::<Downtown>
                 .run_if(move_action_pressed()),)
                 .run_if(in_state(GlobalGameState::AtDowntown))
                 .run_if(not_in_portrait_dialog()),
@@ -34,7 +35,7 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             FixedUpdate,
-            common_actor::animate_movement::<Downtown>
+            common_top_down::actor::animate_movement::<Downtown>
                 .run_if(in_state(GlobalGameState::AtDowntown)),
         );
     }

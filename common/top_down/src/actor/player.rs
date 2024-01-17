@@ -3,10 +3,10 @@
 use bevy::prelude::*;
 use bevy_grid_squared::{direction::Direction as GridDirection, Square};
 use common_action::GlobalAction;
-use common_layout::{IntoMap, SquareKind};
 use leafwing_input_manager::action_state::ActionState;
 
 use super::{Actor, ActorTarget};
+use crate::layout::{IntoMap, Map, SquareKind};
 
 /// The entity that the player controls.
 /// Bound it with [`Actor`] to allow movement.
@@ -15,7 +15,7 @@ pub struct Player;
 
 /// Use keyboard to move around the player.
 pub fn move_around<T: IntoMap>(
-    map: Res<common_layout::Map<T>>,
+    map: Res<Map<T>>,
     controls: Res<ActionState<GlobalAction>>,
 
     mut player: Query<&mut Actor, With<Player>>,

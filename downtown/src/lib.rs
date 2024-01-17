@@ -50,12 +50,13 @@ pub fn add(app: &mut App) {
 
     debug!("Adding map layout");
 
-    common_layout::register::<Downtown, _>(
-        app,
-        GlobalGameState::DowntownLoading,
-        #[cfg(feature = "dev")]
-        GlobalGameState::AtDowntown,
-    );
+    // TODO: https://github.com/bevyengine/bevy/pull/10153
+    // common_layout::register::<Downtown, _>(
+    //     app,
+    //     GlobalGameState::DowntownLoading,
+    //     #[cfg(feature = "dev")]
+    //     GlobalGameState::AtDowntown,
+    // );
 
     debug!("Adding game loop");
 
@@ -123,7 +124,7 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<common_layout::Map<Downtown>>>,
+    map: Option<Res<common_top_down::Map<Downtown>>>,
     asset_server: Res<AssetServer>,
     asset_store: Res<AssetStore<Downtown>>,
 ) {

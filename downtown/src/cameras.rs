@@ -1,6 +1,5 @@
 use bevy::render::view::RenderLayers;
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
-use common_actor::player::Player;
 use common_visuals::camera::{
     order, render_layer, PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH, PIXEL_ZOOM,
 };

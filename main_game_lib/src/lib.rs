@@ -10,6 +10,7 @@ pub use common_assets;
 pub use common_loading_screen;
 pub use common_store;
 pub use common_story;
+pub use common_top_down;
 pub use common_visuals::{self, PRIMARY_COLOR};
 pub use state::*;
 

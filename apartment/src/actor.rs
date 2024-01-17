@@ -1,8 +1,6 @@
 //! Things that player can encounter in this scene.
 
 use bevy::render::view::RenderLayers;
-use common_actor::{player::Player, Actor, ActorTarget, CharacterExt};
-use common_layout::{IntoMap, SquareKind};
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{ApartmentStore, GlobalStore};
 use common_story::portrait_dialog::{
@@ -11,6 +9,9 @@ use common_story::portrait_dialog::{
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     common_action::{interaction_pressed, move_action_pressed},
+    common_top_down::{
+        actor::CharacterExt, Actor, ActorTarget, IntoMap, SquareKind,
+    },
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 
@@ -48,9 +49,9 @@ impl bevy::app::Plugin for Plugin {
         app.add_systems(
             Update,
             (
-                common_actor::player::move_around::<Apartment>
+                common_top_down::actor::player::move_around::<Apartment>
                     .run_if(move_action_pressed()),
-                load_zone_overlay,
+                load_zone_overlay.run_if(move_action_pressed()),
                 start_meditation_minigame_if_near_chair
                     .run_if(interaction_pressed()),
                 start_conversation.run_if(interaction_pressed()),
@@ -61,7 +62,7 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             FixedUpdate,
-            common_actor::animate_movement::<Apartment>
+            common_top_down::actor::animate_movement::<Apartment>
                 .run_if(in_state(GlobalGameState::InApartment)),
         );
     }
@@ -139,7 +140,7 @@ fn despawn(
 fn start_conversation(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
-    map: Res<common_layout::Map<Apartment>>,
+    map: Res<common_top_down::Map<Apartment>>,
 
     character: Query<&Actor>,
 ) {
@@ -161,7 +162,7 @@ fn start_meditation_minigame_if_near_chair(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     store: Res<GlobalStore>,
-    map: Res<common_layout::Map<Apartment>>,
+    map: Res<common_top_down::Map<Apartment>>,
 
     player: Query<(Entity, &Actor), With<Player>>,
     mut overlay: Query<&mut Sprite, With<TransparentOverlay>>,
@@ -204,30 +205,25 @@ fn start_meditation_minigame_if_near_chair(
 /// We hide it if the character is not close to any zone.
 /// We change the image to the appropriate one based on the zone.
 fn load_zone_overlay(
-    map: Res<common_layout::Map<Apartment>>,
-    character: Query<&Actor, (Changed<Transform>, With<Player>)>,
+    map: Res<common_top_down::Map<Apartment>>,
+    player: Query<&Actor, With<Player>>,
     mut overlay: Query<
         (&mut Visibility, &mut Handle<Image>),
         With<TransparentOverlay>,
     >,
     asset_server: Res<AssetServer>,
 ) {
-    let Ok(character) = character.get_single() else {
-        return;
-    };
+    let player = player.single();
 
     let (mut visibility, mut image) = overlay.single_mut();
 
-    let square = character.current_square();
+    let square = player.current_square();
     let (new_visibility, new_image) = match map.get(&square) {
         Some(SquareKind::Zone(zones::MEDITATION)) => {
             (Visibility::Visible, Some(assets::WINNIE_MEDITATING))
         }
         Some(SquareKind::Zone(zones::BED)) => {
             (Visibility::Visible, Some(assets::WINNIE_SLEEPING))
-        }
-        Some(SquareKind::Zone(zones::DOOR)) => {
-            unimplemented!()
         }
         Some(SquareKind::Zone(zones::TEA)) => {
             unimplemented!()

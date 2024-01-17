@@ -1,14 +1,18 @@
 [package]
-name = "common_layout"
+name = "common_top_down"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-bevy.workspace = true
-common_assets.workspace = true
 bevy_grid_squared.workspace = true
-serde.workspace = true
+bevy.workspace = true
+common_action.workspace = true
+common_assets.workspace = true
+common_story.workspace = true
+leafwing-input-manager.workspace = true
 ron = { workspace = true, optional = true }
+serde.workspace = true
+
 
 [features]
 dev = ["ron"]

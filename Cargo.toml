@@ -8,14 +8,13 @@ members = [
     "bevy_grid_squared",
     "bevy_magic_light_2d",
     "common/action",
-    "common/actor",
     "common/assets",
-    "common/layout",
     "common/loading_screen",
     "common/physics",
     "common/store",
     "common/story_derive",
     "common/story",
+    "common/top_down",
     "common/visuals",
     "downtown",
     "main_game_lib",
@@ -25,16 +24,14 @@ members = [
 
 [workspace.dependencies]
 apartment = { path = "apartment" }
-bevy = "0.12.1"
 bevy_grid_squared = { path = "bevy_grid_squared", features = ["serde"] }
 bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
 bevy_pixel_camera = "0.12"
 bevy_webp_anim = "0.2"
-bevy-inspector-egui = "0.22"
+bevy-inspector-egui = { version = "0.22", default-features = false }
 common_action = { path = "common/action" }
-common_actor = { path = "common/actor" }
 common_assets = { path = "common/assets" }
-common_layout = { path = "common/layout" }
+common_top_down = { path = "common/top_down" }
 common_loading_screen = { path = "common/loading_screen" }
 common_physics = { path = "common/physics" }
 common_store = { path = "common/store" }
@@ -53,6 +50,26 @@ rusqlite_migration = "1.1"
 serde = { version = "1.0", features = ["derive"] }
 strum = { version = "0.25", features = ["derive"] }
 thiserror = "1.0"
+
+[workspace.dependencies.bevy]
+version = "0.12.1"
+default-features = false
+features = [
+    "bevy_asset",
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_text",
+    "bevy_ui",
+    "multi-threaded",
+    "png",
+    "hdr",
+    "x11",
+    "bevy_gizmos",
+    "tonemapping_luts",
+    "webgl2",
+]
 
 [profile.release]
 codegen-units = 1

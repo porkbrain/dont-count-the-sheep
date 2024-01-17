@@ -1,7 +1,5 @@
 //! Player and NPC actor types.
 
-#![deny(missing_docs)]
-
 pub mod npc;
 pub mod player;
 
@@ -9,8 +7,9 @@ use std::time::Duration;
 
 use bevy::{prelude::*, time::Stopwatch};
 use bevy_grid_squared::{direction::Direction as GridDirection, Square};
-use common_layout::IntoMap;
 use common_story::Character;
+
+use crate::layout::IntoMap;
 
 /// Does not add any systems, only registers types.
 pub struct Plugin;

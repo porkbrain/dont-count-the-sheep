@@ -2,8 +2,6 @@
 //! Where can the character go? Where are the walls? Where are the immovable
 //! objects?
 
-#![deny(missing_docs)]
-
 use std::marker::PhantomData;
 
 use bevy::{prelude::*, utils::hashbrown::HashMap};
@@ -101,7 +99,7 @@ pub struct Map<T: IntoMap> {
 #[derive(Clone, Copy, Serialize, Deserialize, Default, Eq, PartialEq)]
 pub enum SquareKind {
     /// No tile.
-    /// Preferably, don't put these into the hash map.
+    /// Preferably don't put these into the hash map.
     #[default]
     None,
     /// A wall that cannot be passed.
@@ -113,6 +111,14 @@ pub enum SquareKind {
     /// a tile of that zone.
     Zone(u8),
 }
+
+// #[derive(Event)]
+// pub struct ZoneEntered {
+//     /// The zone that was entered.
+//     pub zone: u8,
+//     /// The square that was entered.
+//     pub at: Vec2,
+// }
 
 impl<T: IntoMap> Map<T> {
     /// Get the kind of a tile.
@@ -154,6 +160,15 @@ fn try_insert_map_as_resource<T: IntoMap>(
         cmd.entity(entity).despawn();
     }
 }
+
+// pub fn xd<T: IntoMap>(
+//     map: Res<Map<T>>,
+//     mut event: EventWriter<ZoneEntered>,
+
+//     player: Query<&Actor, With<Player>>,
+// ) {
+//     // event.send()
+// }
 
 impl<T: IntoMap> Map<T> {
     /// Create a new map with the given squares.

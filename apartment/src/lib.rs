@@ -52,7 +52,7 @@ pub fn add(app: &mut App) {
 
     debug!("Adding map layout");
 
-    common_layout::register::<Apartment, _>(
+    common_top_down::layout::register::<Apartment, _>(
         app,
         GlobalGameState::ApartmentLoading,
         #[cfg(feature = "dev")]
@@ -125,7 +125,7 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<common_layout::Map<Apartment>>>,
+    map: Option<Res<common_top_down::Map<Apartment>>>,
     asset_server: Res<AssetServer>,
     asset_store: Res<AssetStore<Apartment>>,
 ) {

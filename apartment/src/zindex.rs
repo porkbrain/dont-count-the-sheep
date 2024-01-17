@@ -13,3 +13,6 @@ pub(crate) const KITCHEN_FURNITURE_MIDDLE: f32 = 2.0;
 pub(crate) const KITCHEN_FURNITURE_CLOSEST: f32 = 3.0;
 pub(crate) const BEDROOM_FURNITURE_MIDDLE: f32 = 4.0;
 pub(crate) const BEDROOM_FURNITURE_CLOSEST: f32 = 5.0;
+
+pub(crate) const HALLWAY: f32 = 6.0;
+pub(crate) const HALLWAY_DOORS: f32 = 7.0;

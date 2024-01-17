@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
 use bevy::{
-    pbr::{MAX_CASCADES_PER_LIGHT, MAX_DIRECTIONAL_LIGHTS},
     prelude::*,
     reflect::TypePath,
     render::{
@@ -19,6 +18,11 @@ use bevy::{
 
 use super::LightScene;
 use crate::gi::{pipeline::GiTargetsWrapper, resource::ComputedTargetSizes};
+
+/// Taken from `bevy_pbr`.
+const MAX_CASCADES_PER_LIGHT: usize = 4;
+/// Taken from `bevy_pbr`.
+const MAX_DIRECTIONAL_LIGHTS: usize = 10;
 
 #[derive(Component)]
 pub struct PostProcessingQuad;
