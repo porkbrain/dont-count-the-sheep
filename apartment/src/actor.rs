@@ -1,6 +1,6 @@
 //! Things that player can encounter in this scene.
 
-use bevy::render::view::RenderLayers;
+use bevy::{ecs::event::event_update_condition, render::view::RenderLayers};
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{ApartmentStore, GlobalStore};
 use common_story::portrait_dialog::{
@@ -10,7 +10,8 @@ use common_visuals::camera::render_layer;
 use main_game_lib::{
     common_action::{interaction_pressed, move_action_pressed},
     common_top_down::{
-        actor::CharacterExt, Actor, ActorTarget, IntoMap, SquareKind,
+        actor::{self, CharacterExt},
+        Actor, ActorMovementEvent, ActorTarget, IntoMap, SquareKind,
     },
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
@@ -51,13 +52,20 @@ impl bevy::app::Plugin for Plugin {
             (
                 common_top_down::actor::player::move_around::<Apartment>
                     .run_if(move_action_pressed()),
-                load_zone_overlay.run_if(move_action_pressed()),
                 start_meditation_minigame_if_near_chair
                     .run_if(interaction_pressed()),
                 start_conversation.run_if(interaction_pressed()),
             )
                 .run_if(in_state(GlobalGameState::InApartment))
                 .run_if(not_in_portrait_dialog()),
+        );
+
+        app.add_systems(
+            Update,
+            load_zone_overlay
+                .run_if(event_update_condition::<ActorMovementEvent>)
+                .run_if(in_state(GlobalGameState::InApartment))
+                .after(actor::emit_movement_events::<Apartment>),
         );
 
         app.add_systems(
@@ -205,31 +213,34 @@ fn start_meditation_minigame_if_near_chair(
 /// We hide it if the character is not close to any zone.
 /// We change the image to the appropriate one based on the zone.
 fn load_zone_overlay(
-    map: Res<common_top_down::Map<Apartment>>,
-    player: Query<&Actor, With<Player>>,
+    mut events: EventReader<ActorMovementEvent>,
+
     mut overlay: Query<
         (&mut Visibility, &mut Handle<Image>),
         With<TransparentOverlay>,
     >,
     asset_server: Res<AssetServer>,
 ) {
-    let player = player.single();
+    let Some(event) = events.read().filter(|event| event.is_player()).last()
+    else {
+        return;
+    };
+
+    let (new_visibility, new_image) = match event {
+        ActorMovementEvent::ZoneEntered { zone, .. } => match *zone {
+            zones::MEDITATION => {
+                (Visibility::Visible, Some(assets::WINNIE_MEDITATING))
+            }
+            zones::BED => (Visibility::Visible, Some(assets::WINNIE_SLEEPING)),
+            zones::TEA => {
+                unimplemented!()
+            }
+            _ => (Visibility::Hidden, None),
+        },
+        ActorMovementEvent::ZoneLeft { .. } => (Visibility::Hidden, None),
+    };
 
     let (mut visibility, mut image) = overlay.single_mut();
-
-    let square = player.current_square();
-    let (new_visibility, new_image) = match map.get(&square) {
-        Some(SquareKind::Zone(zones::MEDITATION)) => {
-            (Visibility::Visible, Some(assets::WINNIE_MEDITATING))
-        }
-        Some(SquareKind::Zone(zones::BED)) => {
-            (Visibility::Visible, Some(assets::WINNIE_SLEEPING))
-        }
-        Some(SquareKind::Zone(zones::TEA)) => {
-            unimplemented!()
-        }
-        _ => (Visibility::Hidden, None),
-    };
 
     *visibility = new_visibility;
 

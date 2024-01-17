@@ -30,7 +30,14 @@ pub fn windowed_app() -> App {
                 filter: "\
                 warn,\
                 apartment=trace,\
+                common_action=trace,\
+                common_assets=trace,\
+                common_top_down=trace,\
+                common_loading_screen=trace,\
+                common_physics=trace,\
+                common_store=trace,\
                 common_story=trace,\
+                common_visuals=trace,\
                 downtown=trace,\
                 main_game_lib=trace,\
                 meditation=trace,\
@@ -68,6 +75,7 @@ pub fn windowed_app() -> App {
         common_loading_screen::Plugin,
         common_store::Plugin,
         common_action::Plugin,
+        common_top_down::Plugin,
     ));
 
     app.add_systems(

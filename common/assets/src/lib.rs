@@ -7,7 +7,10 @@ pub mod store;
 
 use std::marker::PhantomData;
 
-use bevy::asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext};
+use bevy::{
+    asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext},
+    reflect::Reflect,
+};
 pub use paths::*;
 use serde::de::DeserializeOwned;
 pub use store::AssetStore;
@@ -15,9 +18,9 @@ use thiserror::Error;
 
 /// Loads assets from .ron files.
 /// The specific type of asset is determined by the type parameter `T`.
-#[derive(Debug)]
+#[derive(Debug, Reflect)]
 
-pub struct RonLoader<T>(PhantomData<T>);
+pub struct RonLoader<T>(#[reflect(ignore)] PhantomData<T>);
 
 /// Errors that can occur when loading assets from .ron files.
 #[non_exhaustive]

@@ -5,20 +5,18 @@ pub mod player;
 
 use std::time::Duration;
 
-use bevy::{prelude::*, time::Stopwatch};
+use bevy::{
+    prelude::*,
+    time::Stopwatch,
+    utils::{hashbrown::hash_map::Entry, HashMap},
+};
 use bevy_grid_squared::{direction::Direction as GridDirection, Square};
 use common_story::Character;
 
-use crate::layout::IntoMap;
-
-/// Does not add any systems, only registers types.
-pub struct Plugin;
-
-impl bevy::app::Plugin for Plugin {
-    fn build(&self, app: &mut App) {
-        app.register_type::<Actor>().register_type::<ActorTarget>();
-    }
-}
+use crate::{
+    layout::{IntoMap, Zone},
+    Map, Player, SquareKind,
+};
 
 /// Entity with this component can be moved around.
 #[derive(Component, Reflect)]
@@ -46,6 +44,126 @@ pub struct ActorTarget {
     pub since: Stopwatch,
     /// Once the current target is reached, we can plan the next one.
     pub planned: Option<(Square, GridDirection)>,
+}
+
+/// Some useful events for actors.
+#[derive(Event, Reflect)]
+pub enum ActorMovementEvent {
+    /// Is emitted when an [`Actor`] enters a zone.
+    ZoneEntered {
+        /// The zone that was entered.
+        zone: Zone,
+        /// The actor that entered the zone.
+        who: Who,
+    },
+    /// Is emitted when an [`Actor`] leaves a zone.
+    ZoneLeft {
+        /// The zone that was left.
+        zone: Zone,
+        /// The actor that left the zone.
+        who: Who,
+    },
+}
+
+/// Identifies an actor in the [`ActorMovementEvent`].
+#[derive(Reflect)]
+pub struct Who {
+    /// Is the actor a player?
+    /// Otherwise an NPC.
+    pub is_player: bool,
+    /// The entity that entered the zone.
+    pub entity: Entity,
+    /// The character that entered the zone.
+    pub character: Character,
+    /// Where was the actor at the moment when the event was sent.
+    pub at: Square,
+}
+
+/// Sends events when an actor does something interesting.
+/// This system is registered on call to [`register`].
+pub fn emit_movement_events<T: IntoMap>(
+    map: Res<Map<T>>,
+    mut event: EventWriter<ActorMovementEvent>,
+
+    actors: Query<(Entity, &Actor, Option<&Player>), Changed<Transform>>,
+
+    // TODO: memory leak when entity is despawned
+    mut local: Local<HashMap<Entity, Zone>>,
+) {
+    for (entity, actor, player) in actors.iter() {
+        let at = actor.current_square();
+
+        if let Some(SquareKind::Zone(zone)) = map.get(&at) {
+            match local.entry(entity) {
+                // nothing new, skip
+                Entry::Occupied(entry) if *entry.get() == zone => {
+                    continue;
+                }
+                // changed zone, inform about previous zone and insert the new
+                // zone
+                Entry::Occupied(entry) => {
+                    let just_left_zone = entry.get();
+                    trace!(
+                        "Actor {:?} left zone {just_left_zone}",
+                        actor.character,
+                    );
+                    event.send(ActorMovementEvent::ZoneLeft {
+                        zone: *just_left_zone,
+                        who: Who {
+                            at,
+                            is_player: player.is_some(),
+                            entity,
+                            character: actor.character,
+                        },
+                    });
+
+                    entry.replace_entry(zone);
+                }
+                // just entered the zone from nowhere
+                Entry::Vacant(entry) => {
+                    entry.insert(zone);
+                }
+            };
+
+            trace!("Actor {:?} is in zone {zone}", actor.character);
+            event.send(ActorMovementEvent::ZoneEntered {
+                zone,
+                who: Who {
+                    at,
+                    is_player: player.is_some(),
+                    entity,
+                    character: actor.character,
+                },
+            });
+        } else {
+            if let Some(just_left_zone) = local.remove(&entity) {
+                trace!(
+                    "Actor {:?} left zone {just_left_zone}",
+                    actor.character,
+                );
+                event.send(ActorMovementEvent::ZoneLeft {
+                    zone: just_left_zone,
+                    who: Who {
+                        at,
+                        is_player: player.is_some(),
+                        entity,
+                        character: actor.character,
+                    },
+                });
+            }
+        }
+    }
+}
+
+impl ActorMovementEvent {
+    /// Whether the actor is a player.
+    pub fn is_player(&self) -> bool {
+        match self {
+            Self::ZoneEntered { who, .. } | Self::ZoneLeft { who, .. } => {
+                who.is_player
+            }
+        }
+    }
 }
 
 impl Actor {

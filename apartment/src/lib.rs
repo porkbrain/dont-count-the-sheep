@@ -55,7 +55,6 @@ pub fn add(app: &mut App) {
     common_top_down::layout::register::<Apartment, _>(
         app,
         GlobalGameState::ApartmentLoading,
-        #[cfg(feature = "dev")]
         GlobalGameState::InApartment,
     );
 

@@ -9,25 +9,37 @@ use bevy_grid_squared::{Square, SquareLayout};
 use common_assets::RonLoader;
 use serde::{Deserialize, Serialize};
 
+use crate::actor::{self, player};
+
+/// Zone identifier.
+pub type Zone = u8;
+
 /// Registers layout map for `T` where `T` is a type implementing [`IntoMap`].
 /// This would be your level layout.
+/// When [`Actor`]s enter a zone within the map, [`ZoneEntered`] event is
+/// emitted.
 ///
 /// If the `dev` feature is enabled, you can press `Enter` to export the map
 /// to `map.ron` in the current directory.
 /// We draw an overlay with tiles that you can edit with left and right mouse
 /// buttons.
-pub fn register<T: IntoMap, S: States>(
-    app: &mut App,
-    loading: S,
-    #[cfg(feature = "dev")] running: S,
-) {
+pub fn register<T: IntoMap, S: States>(app: &mut App, loading: S, running: S) {
     app.init_asset_loader::<RonLoader<Map<T>>>()
-        .init_asset::<Map<T>>();
+        .init_asset::<Map<T>>()
+        .register_type::<Map<T>>()
+        .register_type::<RonLoader<Map<T>>>();
 
     app.add_systems(OnEnter(loading.clone()), start_loading_map::<T>);
     app.add_systems(
         First,
         try_insert_map_as_resource::<T>.run_if(in_state(loading)),
+    );
+    app.add_systems(
+        Update,
+        actor::emit_movement_events::<T>
+            .run_if(in_state(running.clone()))
+            // so that we can emit this event on current frame
+            .after(player::move_around::<T>),
     );
 
     #[cfg(feature = "dev")]
@@ -88,15 +100,18 @@ pub trait IntoMap: 'static + Send + Sync + TypePath {
 }
 
 /// Holds the tiles in a hash map.
-#[derive(Asset, Resource, Serialize, Deserialize, TypePath)]
+#[derive(Asset, Resource, Serialize, Deserialize, Reflect)]
 pub struct Map<T: IntoMap> {
     squares: HashMap<Square, SquareKind>,
     #[serde(skip)]
+    #[reflect(ignore)]
     phantom: PhantomData<T>,
 }
 
 /// What kind of tiles do we support?
-#[derive(Clone, Copy, Serialize, Deserialize, Default, Eq, PartialEq)]
+#[derive(
+    Clone, Copy, Serialize, Deserialize, Default, Eq, PartialEq, Reflect,
+)]
 pub enum SquareKind {
     /// No tile.
     /// Preferably don't put these into the hash map.
@@ -109,16 +124,8 @@ pub enum SquareKind {
     /// A space that can be depended on by the game logic.
     /// You can match the zone number to a check whether the character is in
     /// a tile of that zone.
-    Zone(u8),
+    Zone(Zone),
 }
-
-// #[derive(Event)]
-// pub struct ZoneEntered {
-//     /// The zone that was entered.
-//     pub zone: u8,
-//     /// The square that was entered.
-//     pub at: Vec2,
-// }
 
 impl<T: IntoMap> Map<T> {
     /// Get the kind of a tile.
@@ -160,15 +167,6 @@ fn try_insert_map_as_resource<T: IntoMap>(
         cmd.entity(entity).despawn();
     }
 }
-
-// pub fn xd<T: IntoMap>(
-//     map: Res<Map<T>>,
-//     mut event: EventWriter<ZoneEntered>,
-
-//     player: Query<&Actor, With<Player>>,
-// ) {
-//     // event.send()
-// }
 
 impl<T: IntoMap> Map<T> {
     /// Create a new map with the given squares.
@@ -257,13 +255,16 @@ mod map_maker {
         spawn_grid(&mut cmd, &map);
     }
 
-    pub(super) fn export_map<T: IntoMap>(map: Res<Map<T>>) {
+    pub(super) fn export_map<T: IntoMap>(mut map: ResMut<Map<T>>) {
+        // filter out needless squares
+        map.squares.retain(|_, v| !matches!(v, SquareKind::None));
+
         // for internal use only so who cares
         std::fs::write("map.ron", ron::to_string(&*map).unwrap()).unwrap();
     }
 
     impl SquareKind {
-        const MAX_ZONE: u8 = 4;
+        const MAX_ZONE: Zone = 4;
 
         fn color(self) -> Color {
             let colors: [Color; Self::MAX_ZONE as usize + 1] = [
