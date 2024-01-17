@@ -1,4 +1,7 @@
-use bevy::{render::view::RenderLayers, utils::Instant};
+use bevy::{
+    ecs::event::event_update_condition, render::view::RenderLayers,
+    utils::Instant,
+};
 use bevy_grid_squared::{Square, SquareLayout};
 use common_visuals::{
     camera::{render_layer, PIXEL_ZOOM},
@@ -6,7 +9,7 @@ use common_visuals::{
 };
 use lazy_static::lazy_static;
 use main_game_lib::{
-    common_top_down::{Actor, IntoMap, SquareKind},
+    common_top_down::{actor, Actor, ActorMovementEvent, IntoMap, SquareKind},
     vec2_ext::Vec2Ext,
 };
 
@@ -43,6 +46,13 @@ impl bevy::app::Plugin for Plugin {
                 Update,
                 smoothly_transition_hallway_color
                     .run_if(in_state(GlobalGameState::InApartment)),
+            )
+            .add_systems(
+                Update,
+                toggle_door
+                    .run_if(in_state(GlobalGameState::InApartment))
+                    .run_if(event_update_condition::<ActorMovementEvent>)
+                    .after(actor::emit_movement_events::<Apartment>),
             );
     }
 }
@@ -54,6 +64,11 @@ struct LayoutEntity;
 /// approaches the door or is in the hallway, it's lit up.
 #[derive(Component)]
 struct HallwayEntity;
+
+/// The main door is a special entity that has a sprite sheet with two frames.
+/// When the player is near the door, the door opens.
+#[derive(Component)]
+struct MainDoor;
 
 fn spawn(
     mut cmd: Commands,
@@ -95,7 +110,7 @@ fn spawn(
             ..default()
         },
         ToSpawn {
-            name: "Bedroom door", // TODO
+            name: "Bedroom shoe rack",
             asset: assets::BEDROOM_FURNITURE3,
             zindex: zindex::BEDROOM_FURNITURE_CLOSEST,
             ..default()
@@ -190,11 +205,12 @@ fn spawn(
     // bedroom door opens (sprite index 2) when the player is near the door
     cmd.spawn((
         Name::from("Bedroom door"),
+        MainDoor,
         LayoutEntity,
         RenderLayers::layer(render_layer::BG),
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load(assets::CLOUD_ATLAS),
+                asset_server.load(assets::BEDROOM_MAIN_DOOR),
                 vec2(26.0, 48.0),
                 2,
                 1,
@@ -203,11 +219,42 @@ fn spawn(
             )),
             sprite: TextureAtlasSprite::new(0),
             transform: Transform::from_translation(
-                vec2(-20.0, 66.0).as_top_left_into_centered().extend(100.0),
+                vec2(-105.0, -63.0).extend(zindex::BEDROOM_FURNITURE_CLOSEST),
             ),
             ..default()
         },
     ));
+}
+
+/// When player gets near the door, the door opens.
+fn toggle_door(
+    mut events: EventReader<ActorMovementEvent>,
+
+    mut door: Query<&mut TextureAtlasSprite, With<MainDoor>>,
+
+    mut door_opened: Local<bool>,
+) {
+    let mut new_door_opened = *door_opened;
+    for event in events.read().filter(|event| event.is_player()) {
+        match event {
+            ActorMovementEvent::ZoneEntered { zone, .. }
+                if *zone == zones::DOOR =>
+            {
+                new_door_opened = true;
+            }
+            ActorMovementEvent::ZoneLeft { zone, .. }
+                if *zone == zones::DOOR =>
+            {
+                new_door_opened = false;
+            }
+            _ => {}
+        }
+    }
+
+    if new_door_opened != *door_opened {
+        *door_opened = new_door_opened;
+        door.single_mut().index = if *door_opened { 1 } else { 0 };
+    }
 }
 
 fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
@@ -302,7 +349,7 @@ impl IntoMap for Apartment {
         } else if y > -80.0 {
             zindex::BEDROOM_FURNITURE_MIDDLE + 0.1
         } else {
-            zindex::HALLWAY + 0.1
+            zindex::BEDROOM_FURNITURE_CLOSEST + 0.1
         })
     }
 }

@@ -17,6 +17,7 @@ pub mod apartment {
     pub const BEDROOM_FURNITURE1: &str = "apartment/bedroom_furniture1.png";
     pub const BEDROOM_FURNITURE2: &str = "apartment/bedroom_furniture2.png";
     pub const BEDROOM_FURNITURE3: &str = "apartment/bedroom_furniture3.png";
+    pub const BEDROOM_MAIN_DOOR: &str = "apartment/brown_door_atlas.png";
 
     pub const KITCHEN_FURNITURE1: &str = "apartment/kitchen_furniture1.png";
     pub const KITCHEN_FURNITURE2: &str = "apartment/kitchen_furniture2.png";

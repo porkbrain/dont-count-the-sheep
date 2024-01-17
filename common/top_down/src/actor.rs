@@ -79,8 +79,21 @@ pub struct Who {
     pub at: Square,
 }
 
+/// Helps setup a character bundle.
+pub struct CharacterBundleBuilder {
+    character: common_story::Character,
+    initial_position: Vec2,
+    initial_direction: GridDirection,
+    walking_to: Option<ActorTarget>,
+    initial_step_time: Option<Duration>,
+}
+
 /// Sends events when an actor does something interesting.
 /// This system is registered on call to [`register`].
+///
+/// If you listen to this event then condition your system to run on
+/// `run_if(event_update_condition::<ActorMovementEvent>)` and
+/// `after(actor::emit_movement_events::<T>)`.
 pub fn emit_movement_events<T: IntoMap>(
     map: Res<Map<T>>,
     mut event: EventWriter<ActorMovementEvent>,
@@ -151,38 +164,6 @@ pub fn emit_movement_events<T: IntoMap>(
                     },
                 });
             }
-        }
-    }
-}
-
-impl ActorMovementEvent {
-    /// Whether the actor is a player.
-    pub fn is_player(&self) -> bool {
-        match self {
-            Self::ZoneEntered { who, .. } | Self::ZoneLeft { who, .. } => {
-                who.is_player
-            }
-        }
-    }
-}
-
-impl Actor {
-    /// Get the current square.
-    pub fn current_square(&self) -> Square {
-        self.walking_to
-            .as_ref()
-            .map(|to| to.square)
-            .unwrap_or(self.walking_from)
-    }
-}
-
-impl ActorTarget {
-    /// Create a new target.
-    pub fn new(square: Square) -> Self {
-        Self {
-            square,
-            since: Stopwatch::new(),
-            planned: None,
         }
     }
 }
@@ -273,13 +254,36 @@ fn animation_step_secs(step_secs: f32, dir: GridDirection) -> f32 {
     .clamp(0.1, 0.5)
 }
 
-/// Helps setup a character bundle.
-pub struct CharacterBundleBuilder {
-    character: common_story::Character,
-    initial_position: Vec2,
-    initial_direction: GridDirection,
-    walking_to: Option<ActorTarget>,
-    initial_step_time: Option<Duration>,
+impl ActorMovementEvent {
+    /// Whether the actor is a player.
+    pub fn is_player(&self) -> bool {
+        match self {
+            Self::ZoneEntered { who, .. } | Self::ZoneLeft { who, .. } => {
+                who.is_player
+            }
+        }
+    }
+}
+
+impl Actor {
+    /// Get the current square.
+    pub fn current_square(&self) -> Square {
+        self.walking_to
+            .as_ref()
+            .map(|to| to.square)
+            .unwrap_or(self.walking_from)
+    }
+}
+
+impl ActorTarget {
+    /// Create a new target.
+    pub fn new(square: Square) -> Self {
+        Self {
+            square,
+            since: Stopwatch::new(),
+            planned: None,
+        }
+    }
 }
 
 impl From<common_story::Character> for CharacterBundleBuilder {
