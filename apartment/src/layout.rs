@@ -190,6 +190,7 @@ fn spawn(
             on_last_frame: AnimationEnd::Loop,
             first: 0,
             last: CLOUD_FRAMES - 1,
+            ..default()
         },
         AnimationTimer::new(CLOUD_ATLAS_FRAME_TIME, TimerMode::Repeating),
         SpriteSheetBundle {
@@ -245,6 +246,7 @@ fn spawn(
             on_last_frame: AnimationEnd::RemoveTimer,
             first: 0,
             last: 7,
+            ..default()
         },
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(

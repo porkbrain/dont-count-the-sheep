@@ -14,7 +14,7 @@ use main_game_lib::{
         actor::{self, CharacterExt},
         Actor, ActorMovementEvent, ActorTarget, IntoMap, SquareKind,
     },
-    cutscene::IntoCutscene,
+    cutscene::{not_in_cutscene, IntoCutscene},
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 
@@ -48,7 +48,9 @@ impl bevy::app::Plugin for Plugin {
                     .run_if(move_action_pressed()),
                 start_meditation_minigame_if_near_chair
                     .run_if(interaction_pressed()),
-                enter_the_elevator.run_if(interaction_pressed()),
+                enter_the_elevator
+                    .run_if(interaction_pressed())
+                    .run_if(not_in_cutscene()),
             )
                 .run_if(in_state(GlobalGameState::InApartment))
                 .run_if(not_in_portrait_dialog()),
@@ -308,16 +310,25 @@ mod cutscenes {
                             step_time: Some(STEP_TIME_ON_EXIT_ELEVATOR),
                             planned: None,
                         },
+                        Sleep(from_millis(250)),
+                        ReverseAnimation(elevator),
+                        InsertAnimationTimerTo {
+                            entity: elevator,
+                            duration: from_millis(150),
+                            mode: TimerMode::Repeating,
+                        },
+                        WaitUntilAnimationEnds(elevator),
+                        // get it ready for the next time this scene runs
+                        ReverseAnimation(elevator),
                         WaitUntilActorAtRest(player),
-                        // TODO: close the elevator?
                         AddPlayerComponent(player),
                     ]),
                 ),
             ]
         }
     }
-}
 
-fn chose_to_leave(store: &GlobalStore) -> bool {
-    store.was_this_the_last_dialog(TakeTheElevatorToGroundFloor)
+    fn chose_to_leave(store: &GlobalStore) -> bool {
+        store.was_this_the_last_dialog(TakeTheElevatorToGroundFloor)
+    }
 }

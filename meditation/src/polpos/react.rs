@@ -207,6 +207,7 @@ pub(super) fn to_environment(
                             on_last_frame: AnimationEnd::Loop,
                             first: first_frame,
                             last: STATIC_ATLAS_FRAMES - 1,
+                            ..default()
                         },
                         AnimationTimer::new(
                             STATIC_ATLAS_FRAME_TIME,

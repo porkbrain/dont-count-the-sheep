@@ -4,7 +4,7 @@ use bevy::{prelude::*, time::Stopwatch, utils::Instant};
 
 /// Describes how to drive an animation.
 /// The animation specifically integrates with texture atlas sprites.
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Animation {
     /// What should happen when the last frame is reached?
     pub on_last_frame: AnimationEnd,
@@ -13,11 +13,17 @@ pub struct Animation {
     pub first: usize,
     /// The index of the last frame of the atlas.
     pub last: usize,
+    /// If the animation should be played in reverse, going from last to first.
+    /// When the first frame is reached, the animation still acts in accordance
+    /// with the [`AnimationEnd`] strategy.
+    pub reversed: bool,
 }
 
 /// Different strategies for when the last frame of an animation is reached.
+#[derive(Default)]
 pub enum AnimationEnd {
     /// Loops the animation.
+    #[default]
     Loop,
     /// Removes the animation timer, hides the entity and sets the index back
     /// to the first frame.
@@ -94,5 +100,16 @@ impl AnimationTimer {
     #[inline]
     pub fn new(duration: Duration, mode: TimerMode) -> Self {
         Self(Timer::new(duration, mode))
+    }
+}
+
+impl Animation {
+    /// Takes into account whether the animation is reversed or not.
+    pub fn is_on_last_frame(&self, sprite: &TextureAtlasSprite) -> bool {
+        if self.reversed {
+            self.first == sprite.index
+        } else {
+            self.last == sprite.index
+        }
     }
 }

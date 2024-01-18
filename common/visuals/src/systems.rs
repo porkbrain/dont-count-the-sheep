@@ -25,12 +25,16 @@ pub fn advance_animation(
     {
         timer.tick(time.delta());
         if timer.just_finished() {
-            if atlas.index == animation.last {
+            if animation.is_on_last_frame(&atlas) {
                 match &animation.on_last_frame {
                     AnimationEnd::RemoveTimerAndHide => {
                         cmd.entity(entity).remove::<AnimationTimer>();
                         *visibility = Visibility::Hidden;
-                        atlas.index = animation.first
+                        atlas.index = if animation.reversed {
+                            animation.last
+                        } else {
+                            animation.first
+                        };
                     }
                     AnimationEnd::RemoveTimer => {
                         cmd.entity(entity).remove::<AnimationTimer>();
@@ -47,11 +51,19 @@ pub fn advance_animation(
                         );
                     }
                     AnimationEnd::Loop => {
-                        atlas.index = animation.first;
+                        atlas.index = if animation.reversed {
+                            animation.last
+                        } else {
+                            animation.first
+                        };
                     }
                 }
             } else {
-                atlas.index += 1
+                if animation.reversed {
+                    atlas.index -= 1;
+                } else {
+                    atlas.index += 1;
+                }
             };
         }
     }

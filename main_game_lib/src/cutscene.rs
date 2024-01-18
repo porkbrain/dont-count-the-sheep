@@ -18,11 +18,21 @@ use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_store::GlobalStore;
 use common_story::portrait_dialog::{DialogRoot, PortraitDialog};
 use common_top_down::{Actor, ActorTarget, Player};
-use common_visuals::AnimationTimer;
+use common_visuals::{Animation, AnimationTimer};
 
 use crate::{
     GlobalGameState, GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
+
+/// Will be true if there's a cutscene playing.
+pub fn in_cutscene() -> impl FnMut(Option<Res<Cutscene>>) -> bool {
+    move |cutscene| cutscene.is_some()
+}
+
+/// Will be true if there's no cutscene playing.
+pub fn not_in_cutscene() -> impl FnMut(Option<Res<Cutscene>>) -> bool {
+    move |cutscene| cutscene.is_none()
+}
 
 pub trait IntoCutscene {
     fn sequence(self) -> Vec<CutsceneStep>;
@@ -91,6 +101,13 @@ pub enum CutsceneStep {
         duration: Duration,
         mode: TimerMode,
     },
+    /// An entity that has [`Animation`] component will have its [`reversed`]
+    /// flag toggled.
+    ReverseAnimation(Entity),
+    /// Waits until an entity that has [`Animation`] component reaches the end.
+    /// Whether the animation is played in reverse or not is taken into
+    /// account.
+    WaitUntilAnimationEnds(Entity),
     /// Transitions to the given state.
     /// Typically, this despawns the whole scene so it can be the last step
     /// in the cutscene.
@@ -145,11 +162,6 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(First, schedule_current_step.run_if(in_cutscene()));
     }
-}
-
-/// Will be true if there's a cutscene playing.
-pub fn in_cutscene() -> impl FnMut(Option<Res<Cutscene>>) -> bool {
-    move |cutscene| cutscene.is_some()
 }
 
 pub fn spawn_cutscene<Scene: IntoCutscene>(
@@ -218,6 +230,8 @@ struct CutsceneSystems {
     wait_until_actor_at_rest: SystemId,
     begin_portrait_dialog: SystemId,
     wait_for_portrait_dialog_to_end: SystemId,
+    reverse_animation: SystemId,
+    wait_until_animation_ends: SystemId,
 }
 
 impl CutsceneSystems {
@@ -236,6 +250,9 @@ impl CutsceneSystems {
             begin_portrait_dialog: w.register_system(begin_portrait_dialog),
             wait_for_portrait_dialog_to_end: w
                 .register_system(wait_for_portrait_dialog_to_end),
+            reverse_animation: w.register_system(reverse_animation),
+            wait_until_animation_ends: w
+                .register_system(wait_until_animation_ends),
         }
     }
 }
@@ -260,6 +277,8 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         WaitUntilActorAtRest(_) => s.wait_until_actor_at_rest,
         BeginPortraitDialog(_) => s.begin_portrait_dialog,
         WaitForPortraitDialogToEnd => s.wait_for_portrait_dialog_to_end,
+        ReverseAnimation(_) => s.reverse_animation,
+        WaitUntilAnimationEnds(_) => s.wait_until_animation_ends,
     }
 }
 
@@ -451,4 +470,40 @@ fn if_true_this_else_that(
     cutscene.sequence = sequence;
 
     cutscene.schedule_current_step(&mut cmd);
+}
+
+fn reverse_animation(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+
+    mut animations: Query<&mut Animation>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::ReverseAnimation(entity) = &step else {
+        panic!("Expected ReverseAnimation step, got {step}");
+    };
+
+    if let Ok(mut animation) = animations.get_mut(*entity) {
+        animation.reversed = !animation.reversed;
+    }
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn wait_until_animation_ends(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+
+    animations: Query<Option<&AnimationTimer>, With<Animation>>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::WaitUntilAnimationEnds(entity) = &step else {
+        panic!("Expected WaitUntilAnimationEnds step, got {step}");
+    };
+
+    if let Ok(timer) = animations.get(*entity) {
+        if timer.is_none() {
+            cutscene.schedule_next_step_or_despawn(&mut cmd);
+        }
+    }
 }

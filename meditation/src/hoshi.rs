@@ -173,8 +173,8 @@ fn spawn(
                     atlas.index = 0;
                 },
             )),
-            first: 0,
             last: SPARK_FRAMES - 1,
+            ..default()
         },
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(

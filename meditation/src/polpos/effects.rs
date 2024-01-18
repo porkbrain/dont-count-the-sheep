@@ -139,6 +139,7 @@ pub(crate) mod black_hole {
                 first: 0,
                 last: BLACK_HOLE_ATLAS_FRAMES - 1,
                 on_last_frame,
+                ..default()
             },
             BeginAnimationAtRandom {
                 chance_per_second: BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND,

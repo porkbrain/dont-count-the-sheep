@@ -93,8 +93,8 @@ fn spawn_shooting_star(
     let animation = Animation {
         // we schedule it at random
         on_last_frame: AnimationEnd::RemoveTimerAndHide,
-        first: 0,
         last: SHOOTING_STAR_FRAMES - 1,
+        ..default()
     };
     cmd.spawn((
         BackgroundEntity,
