@@ -264,7 +264,7 @@ mod map_maker {
     }
 
     impl SquareKind {
-        const MAX_ZONE: Zone = 4;
+        const MAX_ZONE: Zone = 5;
 
         fn color(self) -> Color {
             let colors: [Color; Self::MAX_ZONE as usize + 1] = [
@@ -273,6 +273,7 @@ mod map_maker {
                 Color::GREEN.with_a(0.5),
                 Color::YELLOW.with_a(0.5),
                 Color::PURPLE.with_a(0.5),
+                Color::ORANGE.with_a(0.5),
             ];
 
             match self {

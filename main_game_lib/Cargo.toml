@@ -4,6 +4,7 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
+bevy_grid_squared.workspace = true
 bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true
 bevy_webp_anim.workspace = true
@@ -16,3 +17,4 @@ common_store.workspace = true
 common_story.workspace = true
 common_top_down.workspace = true
 common_visuals.workspace = true
+strum.workspace = true

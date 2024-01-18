@@ -83,7 +83,7 @@ pub enum LoadingScreenState {
 /// Settings for the loading screen state machine.
 /// We implement default for this which should be used because the settings will
 /// expand.
-#[derive(Resource, Reflect)]
+#[derive(Resource, Debug, Reflect, Clone)]
 pub struct LoadingScreenSettings {
     /// If set to none:
     /// - [`LoadingScreenState::WaitForBgToLoad`] goes straight to

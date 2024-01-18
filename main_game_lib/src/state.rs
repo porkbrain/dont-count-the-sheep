@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-#[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash, Reflect)]
+#[derive(States, Default, Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
 pub enum GlobalGameState {
     /// Dummy state so that we can do loading transitions.
     #[default]
@@ -38,7 +38,7 @@ pub enum GlobalGameState {
 }
 
 /// What are the allowed transitions between game states?
-#[derive(Debug, Reflect, Clone, Eq, PartialEq)]
+#[derive(Debug, Reflect, Clone, Copy, Eq, PartialEq)]
 pub enum GlobalGameStateTransition {
     /// Restart the game
     MeditationQuittingToMeditationLoading,

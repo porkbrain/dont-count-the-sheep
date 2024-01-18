@@ -5,7 +5,6 @@
 #![feature(trivial_bounds)]
 #![deny(missing_docs)]
 
-/// The main dialog type that should take away player control.
 pub mod portrait_dialog;
 
 use std::time::Duration;

@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::type_complexity)]
+#![feature(trivial_bounds)]
 
 mod actor;
 mod cameras;
@@ -151,7 +152,7 @@ struct ExitAnimation {
     loading_screen_started: bool,
 }
 
-// TODO: this can be done easier in new version of bevy where delay timers
+// TODO: this can be done easier in a new version of bevy where delay timers
 // exist
 fn smooth_exit(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
@@ -162,7 +163,7 @@ fn smooth_exit(
 
     mut exit_animation: Local<Option<ExitAnimation>>,
 ) {
-    // this is reset to None when we're done with the exit animation
+    // this resets to None when we're done with the exit animation
     let ExitAnimation {
         since,
         loading_screen_started,

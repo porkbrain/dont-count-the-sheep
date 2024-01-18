@@ -30,10 +30,13 @@ const HALLWAY_FADE_TRANSITION_DURATION: Duration = from_millis(1500);
 const HALLWAY_TOP_BOUNDARY: i32 = -20;
 
 pub(crate) mod zones {
-    pub(crate) const MEDITATION: u8 = 0;
-    pub(crate) const BED: u8 = 1;
-    pub(crate) const TEA: u8 = 2;
-    pub(crate) const DOOR: u8 = 3;
+    use main_game_lib::common_top_down::layout::Zone;
+
+    pub(crate) const MEDITATION: Zone = 0;
+    pub(crate) const BED: Zone = 1;
+    pub(crate) const TEA: Zone = 2;
+    pub(crate) const DOOR: Zone = 3;
+    pub(crate) const ELEVATOR: Zone = 4;
 }
 
 pub(crate) struct Plugin;
@@ -70,6 +73,12 @@ struct HallwayEntity;
 #[derive(Component)]
 struct MainDoor;
 
+/// Elevator is a special entity that has a sprite sheet with several frames.
+/// It opens when an actor is near it and closes when the actor leaves or
+/// enters.
+#[derive(Component)]
+pub(crate) struct Elevator;
+
 fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
@@ -94,7 +103,7 @@ fn spawn(
         ToSpawn {
             name: "Background",
             asset: assets::BG,
-            zindex: zindex::BG,
+            zindex: zindex::BG_ROOM_AND_KITCHEN,
             ..default()
         },
         ToSpawn {
@@ -136,7 +145,7 @@ fn spawn(
         ToSpawn {
             name: "Hallway",
             asset: assets::HALLWAY,
-            zindex: zindex::HALLWAY,
+            zindex: zindex::BG_HALLWAY,
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
             ..default()
@@ -224,6 +233,39 @@ fn spawn(
             ..default()
         },
     ));
+
+    // the elevator takes the player to the next location
+    cmd.spawn((
+        Name::from("Elevator"),
+        Elevator,
+        LayoutEntity,
+        HallwayEntity,
+        RenderLayers::layer(render_layer::BG),
+        Animation {
+            on_last_frame: AnimationEnd::RemoveTimer,
+            first: 0,
+            last: 7,
+        },
+        SpriteSheetBundle {
+            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                asset_server.load(assets::ELEVATOR_ATLAS),
+                vec2(51.0, 50.0),
+                8,
+                1,
+                Some(vec2(4.0, 0.0)),
+                None,
+            )),
+            sprite: TextureAtlasSprite {
+                index: 0,
+                color: PRIMARY_COLOR,
+                ..default()
+            },
+            transform: Transform::from_translation(
+                vec2(-201.5, -53.0).extend(zindex::ELEVATOR),
+            ),
+            ..default()
+        },
+    ));
 }
 
 /// When player gets near the door, the door opens.
@@ -269,11 +311,16 @@ fn smoothly_transition_hallway_color(
     map: Res<common_top_down::Map<Apartment>>,
 
     player: Query<&Actor, With<Player>>,
-    mut hallway_entities: Query<&mut Sprite, With<HallwayEntity>>,
+    mut sprites: Query<&mut Sprite, With<HallwayEntity>>,
+    mut atlases: Query<&mut TextureAtlasSprite, With<HallwayEntity>>,
 
-    mut local: Local<Option<(Color, Instant)>>,
+    mut local: Local<Option<Instant>>,
 ) {
-    let square = player.single().current_square();
+    let Ok(player) = player.get_single() else {
+        return;
+    };
+
+    let square = player.current_square();
 
     let in_hallway = square.y < HALLWAY_TOP_BOUNDARY;
     let by_the_door =
@@ -285,34 +332,34 @@ fn smoothly_transition_hallway_color(
         PRIMARY_COLOR
     };
 
-    let (local_color, transition_started_at) = local.get_or_insert_with(|| {
-        (
-            hallway_entities
-                .iter()
-                .next()
-                .map(|sprite| sprite.color)
-                // there should always be at least one hallway entity
-                .unwrap_or_default(),
-            Instant::now(),
-        )
-    });
+    // there should always be at least one hallway entity
+    let sprite_color = sprites
+        .iter()
+        .next()
+        .map(|sprite| sprite.color)
+        .unwrap_or_default();
 
-    if *local_color != target_color {
-        *local_color = target_color;
-        *transition_started_at = Instant::now();
+    if target_color == sprite_color {
+        *local = None;
+        return;
     }
+
+    let transition_started_at = local.get_or_insert_with(|| Instant::now());
 
     let elapsed = transition_started_at.elapsed();
     if elapsed > HALLWAY_FADE_TRANSITION_DURATION {
         return;
     }
 
-    for mut sprite in hallway_entities.iter_mut() {
-        sprite.color = sprite.color.lerp(
-            *local_color,
-            elapsed.as_secs_f32()
-                / HALLWAY_FADE_TRANSITION_DURATION.as_secs_f32(),
-        );
+    let lerp_factor =
+        elapsed.as_secs_f32() / HALLWAY_FADE_TRANSITION_DURATION.as_secs_f32();
+    let new_color = sprite_color.lerp(target_color, lerp_factor);
+
+    for mut sprite in sprites.iter_mut() {
+        sprite.color = new_color;
+    }
+    for mut atlas in atlases.iter_mut() {
+        atlas.color = new_color;
     }
 }
 
@@ -346,7 +393,7 @@ impl IntoMap for Apartment {
             zindex::KITCHEN_FURNITURE_MIDDLE + 0.1
         } else if y > -22.0 {
             zindex::BEDROOM_FURNITURE_MIDDLE - 0.1
-        } else if y > -80.0 {
+        } else if y > -78.0 {
             zindex::BEDROOM_FURNITURE_MIDDLE + 0.1
         } else {
             zindex::BEDROOM_FURNITURE_CLOSEST + 0.1

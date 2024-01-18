@@ -8,13 +8,14 @@
 //!   choice based on whether the player **just** pressed up or down, run it if
 //!   the player pressed some movement key
 
-pub mod example;
+pub mod apartment_elevator;
 
 mod aaatargets;
 
 use std::{collections::BTreeMap, time::Duration};
 
-use aaatargets::DialogTargetChoice;
+pub use aaatargets::DialogRoot;
+use aaatargets::{DialogTargetChoice, DialogTargetGoto};
 use bevy::{
     math::vec2,
     prelude::*,
@@ -23,10 +24,10 @@ use bevy::{
     utils::Instant,
 };
 use common_action::{ActionState, GlobalAction};
+use common_store::{DialogStore, GlobalStore};
 use common_visuals::camera::render_layer;
 use itertools::Itertools;
 
-use self::aaatargets::DialogTargetGoto;
 use crate::Character;
 
 const FONT_SIZE: f32 = 21.0;
@@ -68,7 +69,7 @@ pub struct PortraitDialog {
 
 /// The root entity of the dialog UI.
 #[derive(Component)]
-pub struct DialogRoot;
+pub struct DialogUiRoot;
 
 /// A child of the root entity that contains the text.
 #[derive(Component)]
@@ -98,6 +99,8 @@ enum Step {
         content: &'static str,
     },
     Choice {
+        speaker: Character,
+        content: &'static str,
         between: Vec<DialogTargetChoice>,
     },
     GoTo {
@@ -119,8 +122,10 @@ pub fn advance(
     mut cmd: Commands,
     mut dialog: ResMut<PortraitDialog>,
     asset_server: Res<AssetServer>,
+    global_store: Res<GlobalStore>,
+    mut controls: ResMut<ActionState<GlobalAction>>,
 
-    root: Query<Entity, With<DialogRoot>>,
+    root: Query<Entity, With<DialogUiRoot>>,
     mut text: Query<(&mut Text, &TextLayoutInfo), With<DialogText>>,
     mut portrait: Query<&mut Handle<Image>, With<DialogPortrait>>,
     choices: Query<(Entity, &DialogChoice)>,
@@ -173,6 +178,7 @@ pub fn advance(
     let outcome = advance_sequence(
         &mut cmd,
         &asset_server,
+        &global_store,
         &mut dialog,
         &mut text,
         root,
@@ -188,6 +194,8 @@ pub fn advance(
 
         cmd.remove_resource::<PortraitDialog>();
         cmd.entity(root).despawn_recursive();
+
+        controls.consume_all();
     }
 }
 
@@ -288,7 +296,12 @@ pub fn change_selection(
 }
 
 /// Spawns [`PortraitDialog`] resource and all the necessary UI components.
-fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
+fn spawn(
+    cmd: &mut Commands,
+    asset_server: &AssetServer,
+    global_store: &GlobalStore,
+    sequence: Vec<Step>,
+) {
     let mut dialog = PortraitDialog::new(sequence);
     let mut text = Text::from_section(
         "",
@@ -302,7 +315,7 @@ fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
     let root = cmd
         .spawn((
             Name::new("Dialog root"),
-            DialogRoot,
+            DialogUiRoot,
             SpatialBundle {
                 transform: Transform::from_translation(ROOT_POS.extend(0.0)),
                 ..default()
@@ -314,6 +327,7 @@ fn spawn(cmd: &mut Commands, asset_server: &AssetServer, sequence: Vec<Step>) {
     let outcome = advance_sequence(
         cmd,
         asset_server,
+        global_store,
         &mut dialog,
         &mut text,
         root,
@@ -390,6 +404,7 @@ enum SequenceFinished {
 fn advance_sequence(
     cmd: &mut Commands,
     asset_server: &AssetServer,
+    global_store: &GlobalStore,
     dialog: &mut PortraitDialog,
     text: &mut Text,
     root: Entity,
@@ -419,14 +434,22 @@ fn advance_sequence(
             }
             Step::GoTo { story_point } => {
                 // next sequence
+
+                global_store.insert_dialog(story_point.type_path());
                 dialog.sequence = story_point.sequence();
                 dialog.sequence_index = 0;
             }
-            Step::Choice { between } => {
+            Step::Choice {
+                speaker,
+                content,
+                between,
+            } => {
                 if let Some((_, choice)) =
                     choices.iter().find(|(_, c)| c.is_selected)
                 {
                     // choice made, next sequence
+
+                    global_store.insert_dialog(choice.of.type_path());
 
                     choices.iter().for_each(|(entity, _)| {
                         cmd.entity(*entity).despawn_recursive()
@@ -435,6 +458,12 @@ fn advance_sequence(
                     dialog.sequence = choice.of.sequence();
                     dialog.sequence_index = 0;
                 } else {
+                    text.sections[0].value = content.to_string();
+                    if dialog.speaker != Some(*speaker) {
+                        set_portrait_image(*speaker);
+                        dialog.speaker = Some(*speaker);
+                    }
+
                     // spawn choices
 
                     let total = between.len();
@@ -587,5 +616,14 @@ impl Character {
         debug_assert_eq!(total_choices, positions.len());
 
         ChoiceTransformManager { positions }
+    }
+}
+
+impl Step {
+    fn text(character: Character, content: &'static str) -> Self {
+        Self::Text {
+            speaker: character,
+            content,
+        }
     }
 }

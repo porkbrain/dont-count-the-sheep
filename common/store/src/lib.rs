@@ -1,13 +1,17 @@
+//! A way to communicate between scenes and across time (save/load).
+#![deny(missing_docs)]
+
 use std::{
     marker::PhantomData,
     sync::{Arc, Mutex},
 };
 
 use bevy::{prelude::*, utils::Instant};
-use rusqlite::OptionalExtension;
+use rusqlite::{named_params, OptionalExtension};
 use rusqlite_migration::{Migrations, M};
 use serde::{de::DeserializeOwned, Serialize};
 
+/// Inits the store.
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -16,11 +20,13 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
+/// SQLite database under the hood.
 #[derive(Resource)]
 pub struct GlobalStore {
     conn: Arc<Mutex<rusqlite::Connection>>,
 }
 
+/// A key-value entry that you can read, write and remove.
 pub struct Entry<'a, T> {
     store: &'a Mutex<rusqlite::Connection>,
     key: &'static str,
@@ -29,6 +35,7 @@ pub struct Entry<'a, T> {
 }
 
 impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
+    /// Get the deserialized value.
     pub fn get(&self) -> Option<T> {
         let now = Instant::now();
 
@@ -54,6 +61,7 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
         value
     }
 
+    /// Write a value over the key that is serializable.
     pub fn set(&self, value: T) {
         let now = Instant::now();
 
@@ -74,7 +82,10 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
             warn!("Entry::set({}) took {ms}ms", self.key);
         }
     }
+}
 
+impl<'a, T> Entry<'a, T> {
+    /// Remove the entry from db.
     pub fn remove(&self) {
         let now = Instant::now();
 
@@ -97,11 +108,16 @@ mod apartment {
 
     use super::*;
 
+    /// Apartment store data.
     pub trait ApartmentStore {
+        /// When the player loads the apartment, where should they be?
         fn position_on_load(&self) -> Entry<'_, Vec2>;
 
+        /// When the player loads the apartment, where should they walk to?
+        /// This creates a nice effect of the player walking to the apartment.
         fn walk_to_onload(&self) -> Entry<'_, Vec2>;
 
+        /// When the player loads the apartment, how fast should they walk?
         fn step_time_onload(&self) -> Entry<'_, Duration>;
     }
 
@@ -126,11 +142,16 @@ mod downtown {
 
     use super::*;
 
+    /// Downtown store data.
     pub trait DowntownStore {
+        /// When the player loads the downtown, where should they be?
         fn position_on_load(&self) -> Entry<'_, Vec2>;
 
+        /// When the player loads the downtown, where should they walk to?
+        /// This creates a nice effect of the player walking to the downtown.
         fn walk_to_onload(&self) -> Entry<'_, Vec2>;
 
+        /// When the player loads the downtown, how fast should they walk?
         fn step_time_onload(&self) -> Entry<'_, Duration>;
     }
 
@@ -149,7 +170,57 @@ mod downtown {
     }
 }
 
+pub use dialog::DialogStore;
+mod dialog {
+    use bevy::reflect::DynamicTypePath;
+
+    use super::*;
+
+    /// Store anything that's related to dialogs.
+    /// History and choices, etc.
+    pub trait DialogStore {
+        /// Get the last dialog entry's type path.
+        fn was_this_the_last_dialog(&self, name: impl TypePath) -> bool;
+
+        /// New dialog entry.
+        /// The name of the dialog is the type path.
+        fn insert_dialog(&self, name: impl TypePath);
+    }
+
+    impl DialogStore for GlobalStore {
+        fn was_this_the_last_dialog(&self, name: impl TypePath) -> bool {
+            let conn = self.conn.lock().unwrap();
+
+            let value = conn
+                .query_row(
+                    "SELECT type_path FROM dialogs ORDER BY id DESC LIMIT 1",
+                    [],
+                    |row| row.get(0),
+                )
+                .optional()
+                .expect("Cannot query SQLite");
+
+            value
+                .map(|tp: String| tp == name.reflect_type_path())
+                .unwrap_or(false)
+        }
+
+        fn insert_dialog(&self, name: impl TypePath) {
+            let path = name.reflect_type_path();
+            let conn = self.conn.lock().unwrap();
+            conn.execute(
+                "INSERT INTO dialogs (type_path) VALUES (:type_path)",
+                named_params! {
+                    ":type_path": path,
+                },
+            )
+            .expect("Cannot insert into SQLite");
+        }
+    }
+}
+
 impl GlobalStore {
+    /// Create a new store.
     pub fn new() -> Self {
         let mut conn = rusqlite::Connection::open_in_memory().unwrap();
 
@@ -180,13 +251,24 @@ impl<'a, T> Entry<'a, T> {
         }
     }
 }
+
 fn migrate(conn: &mut rusqlite::Connection) {
-    let migrations = Migrations::new(vec![M::up(
-        "CREATE TABLE kv (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL
-    );",
-    )]);
+    let migrations = Migrations::new(vec![
+        M::up(
+            "CREATE TABLE kv (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            );",
+        ),
+        M::up(
+            "CREATE TABLE dialogs (
+                id INTEGER PRIMARY KEY,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                type_path TEXT NOT NULL
+            );",
+        ),
+        M::up("CREATE INDEX idx_type_path ON dialogs (type_path);"),
+    ]);
 
     migrations.to_latest(conn).unwrap();
 }
@@ -221,6 +303,15 @@ mod tests {
         entry.set(vec2(0.0, 1.0));
 
         assert_eq!(entry.get(), Some(vec2(0.0, 1.0)));
+    }
+
+    #[test]
+    fn it_inserts_dialogs() {
+        let conn = new_conn();
+        let store = GlobalStore { conn };
+
+        store.insert_dialog("test1");
+        store.insert_dialog("test2");
     }
 
     fn new_conn() -> Arc<Mutex<rusqlite::Connection>> {

@@ -2,6 +2,7 @@ pub mod direction;
 pub mod shapes;
 
 use bevy::prelude::*;
+pub use direction::Direction as GridDirection;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Reflect)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

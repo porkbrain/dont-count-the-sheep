@@ -27,10 +27,13 @@ pub fn advance_animation(
         if timer.just_finished() {
             if atlas.index == animation.last {
                 match &animation.on_last_frame {
-                    AnimationEnd::RemoveTimer => {
+                    AnimationEnd::RemoveTimerAndHide => {
                         cmd.entity(entity).remove::<AnimationTimer>();
                         *visibility = Visibility::Hidden;
                         atlas.index = animation.first
+                    }
+                    AnimationEnd::RemoveTimer => {
+                        cmd.entity(entity).remove::<AnimationTimer>();
                     }
                     AnimationEnd::Custom(fun) => {
                         fun(

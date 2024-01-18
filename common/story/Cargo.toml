@@ -7,7 +7,8 @@ edition.workspace = true
 bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
-common_story_derive = { path = "../story_derive" }
+common_store.workspace = true
+common_story_derive = { path = "derive" }
 common_visuals.workspace = true
 itertools.workspace = true
 strum.workspace = true

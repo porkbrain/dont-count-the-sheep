@@ -1,3 +1,7 @@
+#![feature(trivial_bounds)]
+// #![deny(missing_docs)]
+
+pub mod cutscene;
 pub mod prelude;
 pub mod state;
 pub mod vec2_ext;
@@ -68,14 +72,15 @@ pub fn windowed_app() -> App {
     ));
 
     app.add_plugins((
-        PixelCameraPlugin,
         bevy_magic_light_2d::Plugin,
-        common_visuals::Plugin,
         bevy_webp_anim::Plugin,
+        common_action::Plugin,
         common_loading_screen::Plugin,
         common_store::Plugin,
-        common_action::Plugin,
         common_top_down::Plugin,
+        common_visuals::Plugin,
+        cutscene::Plugin,
+        PixelCameraPlugin,
     ));
 
     app.add_systems(

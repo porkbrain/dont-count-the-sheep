@@ -19,7 +19,11 @@ pub struct Animation {
 pub enum AnimationEnd {
     /// Loops the animation.
     Loop,
-    /// Removes the animation timer.
+    /// Removes the animation timer, hides the entity and sets the index back
+    /// to the first frame.
+    RemoveTimerAndHide,
+    /// Just removes the animation timer.
+    /// Keeps the entity visible and on the last frame.
     RemoveTimer,
     /// Can mutate state.
     #[allow(clippy::type_complexity)]

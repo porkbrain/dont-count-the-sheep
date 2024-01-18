@@ -16,10 +16,16 @@ pub fn derive_portrait(
         impl #name {
             /// Spawns the dialog into the world.
             pub fn spawn(
-                cmd: &mut Commands,
-                asset_server: &AssetServer
+                cmd: &mut bevy::prelude::Commands,
+                asset_server: &bevy::prelude::AssetServer,
+                global_store: &common_store::GlobalStore,
             ) {
-                spawn(cmd, asset_server, Self::sequence());
+                crate::portrait_dialog::spawn(
+                    cmd,
+                    asset_server,
+                    global_store,
+                    Self::sequence(),
+                );
             }
         }
     };

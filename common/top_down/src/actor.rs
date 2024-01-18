@@ -10,7 +10,7 @@ use bevy::{
     time::Stopwatch,
     utils::{hashbrown::hash_map::Entry, HashMap},
 };
-use bevy_grid_squared::{direction::Direction as GridDirection, Square};
+use bevy_grid_squared::{GridDirection, Square};
 use common_story::Character;
 
 use crate::{

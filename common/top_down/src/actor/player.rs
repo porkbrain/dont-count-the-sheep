@@ -1,7 +1,7 @@
 //! Systems related to the player.
 
 use bevy::prelude::*;
-use bevy_grid_squared::{direction::Direction as GridDirection, Square};
+use bevy_grid_squared::{GridDirection, Square};
 use common_action::GlobalAction;
 use leafwing_input_manager::action_state::ActionState;
 

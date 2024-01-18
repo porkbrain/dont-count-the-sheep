@@ -1,35 +1,29 @@
 //! Things that player can encounter in this scene.
 
 use bevy::{ecs::event::event_update_condition, render::view::RenderLayers};
+use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{ApartmentStore, GlobalStore};
-use common_story::portrait_dialog::{
-    example::Example1, not_in_portrait_dialog,
-};
+use common_story::portrait_dialog::not_in_portrait_dialog;
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     common_action::{interaction_pressed, move_action_pressed},
+    common_store::DialogStore,
+    common_story::portrait_dialog::apartment_elevator::TakeTheElevatorToGroundFloor,
     common_top_down::{
         actor::{self, CharacterExt},
         Actor, ActorMovementEvent, ActorTarget, IntoMap, SquareKind,
     },
+    cutscene::IntoCutscene,
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 
 use crate::{
-    consts::WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
-    layout::zones, prelude::*, Apartment,
+    consts::*,
+    layout::{zones, Elevator},
+    prelude::*,
+    Apartment,
 };
-
-/// When the apartment is loaded, the character is spawned at this square.
-const DEFAULT_INITIAL_POSITION: Vec2 = vec2(-15.0, 15.0);
-/// Upon going to the meditation minigame we set this value so that once the
-/// game is closed, the character is spawned next to the meditation chair.
-const POSITION_ON_LOAD_FROM_MEDITATION: Vec2 = vec2(25.0, 60.0);
-/// And it does a little animation of walking down.
-const WALK_TO_ONLOAD_FROM_MEDITATION: Vec2 = vec2(25.0, 40.0);
-/// Walk down slowly otherwise it'll happen before the player even sees it.
-const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(750);
 
 /// Useful for despawning entities when leaving the apartment.
 #[derive(Component, Reflect)]
@@ -54,7 +48,7 @@ impl bevy::app::Plugin for Plugin {
                     .run_if(move_action_pressed()),
                 start_meditation_minigame_if_near_chair
                     .run_if(interaction_pressed()),
-                start_conversation.run_if(interaction_pressed()),
+                enter_the_elevator.run_if(interaction_pressed()),
             )
                 .run_if(in_state(GlobalGameState::InApartment))
                 .run_if(not_in_portrait_dialog()),
@@ -144,26 +138,6 @@ fn despawn(
     }
 }
 
-/// TODO: This is here for debug purposes only
-fn start_conversation(
-    mut cmd: Commands,
-    asset_server: Res<AssetServer>,
-    map: Res<common_top_down::Map<Apartment>>,
-
-    character: Query<&Actor>,
-) {
-    let Ok(character) = character.get_single() else {
-        return;
-    };
-
-    let square = character.current_square();
-    if !matches!(map.get(&square), Some(SquareKind::Zone(zones::BED))) {
-        return;
-    }
-
-    Example1::spawn(&mut cmd, &asset_server);
-}
-
 /// Will change the game state to meditation minigame.
 fn start_meditation_minigame_if_near_chair(
     mut cmd: Commands,
@@ -208,6 +182,30 @@ fn start_meditation_minigame_if_near_chair(
     next_state.set(GlobalGameState::ApartmentQuitting);
 }
 
+/// By entering the elevator, the player can this scene.
+fn enter_the_elevator(
+    mut cmd: Commands,
+    map: Res<common_top_down::Map<Apartment>>,
+
+    player: Query<(Entity, &Actor), With<Player>>,
+    elevator: Query<Entity, With<Elevator>>,
+) {
+    let Ok((entity, player)) = player.get_single() else {
+        return;
+    };
+
+    let square = player.current_square();
+    if !matches!(map.get(&square), Some(SquareKind::Zone(zones::ELEVATOR))) {
+        return;
+    }
+
+    cutscenes::EnterTheElevator {
+        player: entity,
+        elevator: elevator.single(),
+    }
+    .spawn(&mut cmd);
+}
+
 /// Zone overlay is a half transparent image that shows up when the character
 /// gets close to certain zones.
 /// We hide it if the character is not close to any zone.
@@ -249,4 +247,77 @@ fn load_zone_overlay(
             .get_handle(new_image)
             .unwrap_or_else(|| asset_server.load(new_image));
     }
+}
+
+mod cutscenes {
+    use main_game_lib::{
+        common_story::portrait_dialog::DialogRoot,
+        cutscene::{CutsceneStep, IntoCutscene},
+        GlobalGameStateTransition as Ggst,
+    };
+
+    use super::*;
+
+    pub(super) struct EnterTheElevator {
+        pub(super) player: Entity,
+        pub(super) elevator: Entity,
+    }
+
+    impl IntoCutscene for EnterTheElevator {
+        fn sequence(self) -> Vec<CutsceneStep> {
+            use CutsceneStep::*;
+            let Self { player, elevator } = self;
+
+            vec![
+                RemovePlayerComponent(player),
+                InsertAnimationTimerTo {
+                    entity: elevator,
+                    duration: from_millis(150),
+                    mode: TimerMode::Repeating,
+                },
+                Sleep(from_millis(1250)),
+                BeginSimpleWalkTo {
+                    with: player,
+                    square: Square::new(-57, -19),
+                    planned: Some((
+                        Square::new(-57, -20),
+                        GridDirection::Bottom,
+                    )),
+                    step_time: None,
+                },
+                WaitUntilActorAtRest(player),
+                Sleep(from_millis(300)),
+                BeginPortraitDialog(DialogRoot::EnteredTheElevator),
+                WaitForPortraitDialogToEnd,
+                Sleep(from_millis(300)),
+                IfTrueThisElseThat(
+                    chose_to_leave,
+                    Box::new(vec![ChangeGlobalState {
+                        to: GlobalGameState::ApartmentQuitting,
+                        with: Ggst::ApartmentQuittingToDowntownLoading,
+                        loading_screen: Some(LoadingScreenSettings {
+                            ..default()
+                        }),
+                        // this is already done in this scene's smooth exit sys
+                        change_loading_screen_state_to_start: false,
+                    }]),
+                    Box::new(vec![
+                        BeginSimpleWalkTo {
+                            with: player,
+                            square: Square::new(-57, -22),
+                            step_time: Some(STEP_TIME_ON_EXIT_ELEVATOR),
+                            planned: None,
+                        },
+                        WaitUntilActorAtRest(player),
+                        // TODO: close the elevator?
+                        AddPlayerComponent(player),
+                    ]),
+                ),
+            ]
+        }
+    }
+}
+
+fn chose_to_leave(store: &GlobalStore) -> bool {
+    store.was_this_the_last_dialog(TakeTheElevatorToGroundFloor)
 }
