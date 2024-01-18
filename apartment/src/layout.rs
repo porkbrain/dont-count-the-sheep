@@ -23,7 +23,7 @@ lazy_static! {
 }
 
 /// How long does it take to give hallway its full color.
-const HALLWAY_FADE_TRANSITION_DURATION: Duration = from_millis(1500);
+const HALLWAY_FADE_TRANSITION_DURATION: Duration = from_millis(500);
 /// In terms of map squares.
 /// We don't use bounding box because so far the apartment does not
 /// extend beyond this boundary.
@@ -316,7 +316,8 @@ fn smoothly_transition_hallway_color(
     mut sprites: Query<&mut Sprite, With<HallwayEntity>>,
     mut atlases: Query<&mut TextureAtlasSprite, With<HallwayEntity>>,
 
-    mut local: Local<Option<Instant>>,
+    // (from color, how long ago started)
+    mut local: Local<Option<(Color, Instant)>>,
 ) {
     let Ok(player) = player.get_single() else {
         return;
@@ -335,6 +336,7 @@ fn smoothly_transition_hallway_color(
     };
 
     // there should always be at least one hallway entity
+    // all entities have the same color
     let sprite_color = sprites
         .iter()
         .next()
@@ -342,26 +344,34 @@ fn smoothly_transition_hallway_color(
         .unwrap_or_default();
 
     if target_color == sprite_color {
-        *local = None;
         return;
     }
 
-    let transition_started_at = local.get_or_insert_with(|| Instant::now());
+    let (from_color, transition_started_at) =
+        local.get_or_insert_with(|| (sprite_color, Instant::now()));
+
+    if *from_color == target_color {
+        *from_color = sprite_color;
+        *transition_started_at = Instant::now();
+    }
 
     let elapsed = transition_started_at.elapsed();
-    if elapsed > HALLWAY_FADE_TRANSITION_DURATION {
-        return;
-    }
-
-    let lerp_factor =
-        elapsed.as_secs_f32() / HALLWAY_FADE_TRANSITION_DURATION.as_secs_f32();
-    let new_color = sprite_color.lerp(target_color, lerp_factor);
+    let new_color = if elapsed > HALLWAY_FADE_TRANSITION_DURATION {
+        *local = None;
+        target_color
+    } else {
+        from_color.lerp(
+            target_color,
+            elapsed.as_secs_f32()
+                / HALLWAY_FADE_TRANSITION_DURATION.as_secs_f32(),
+        )
+    };
 
     for mut sprite in sprites.iter_mut() {
         sprite.color = new_color;
     }
-    for mut atlas in atlases.iter_mut() {
-        atlas.color = new_color;
+    for mut sprite in atlases.iter_mut() {
+        sprite.color = new_color;
     }
 }
 
