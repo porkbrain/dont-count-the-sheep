@@ -38,14 +38,18 @@ use crate::{
 const LETTERBOXING_FADE_IN_DURATION: Duration = from_millis(500);
 const LETTERBOXING_FADE_OUT_DURATION: Duration = from_millis(250);
 const LETTERBOXING_QUAD_HEIGHT: f32 = 50.0;
-const LETTERBOXING_TOP_QUAD_INITIAL_POS: Vec2 =
-    vec2(0., PIXEL_VISIBLE_HEIGHT / 2.0);
+const LETTERBOXING_TOP_QUAD_INITIAL_POS: Vec2 = vec2(
+    0.,
+    PIXEL_VISIBLE_HEIGHT / 2.0 + LETTERBOXING_QUAD_HEIGHT / 2.0,
+);
 const LETTERBOXING_TOP_QUAD_TARGET_POS: Vec2 = vec2(
     0.0,
     PIXEL_VISIBLE_HEIGHT / 2.0 - LETTERBOXING_QUAD_HEIGHT / 2.0,
 );
-const LETTERBOXING_BOTTOM_QUAD_INITIAL_POS: Vec2 =
-    vec2(0., -PIXEL_VISIBLE_HEIGHT / 2.0);
+const LETTERBOXING_BOTTOM_QUAD_INITIAL_POS: Vec2 = vec2(
+    0.,
+    -PIXEL_VISIBLE_HEIGHT / 2.0 - LETTERBOXING_QUAD_HEIGHT / 2.0,
+);
 const LETTERBOXING_BOTTOM_QUAD_TARGET_POS: Vec2 = vec2(
     0.0,
     -PIXEL_VISIBLE_HEIGHT / 2.0 + LETTERBOXING_QUAD_HEIGHT / 2.0,
@@ -91,6 +95,9 @@ pub trait IntoCutscene {
 /// Cutscene can be connected with a dialog though.
 #[derive(Resource, Reflect)]
 pub struct Cutscene {
+    /// Whether the cutscene is loaded.
+    /// This is set to true on the first frame that the cutscene is a resource.
+    is_loaded: bool,
     /// The sequence of steps that the cutscene will execute.
     /// Current step is tracked by `sequence_index`.
     sequence: Vec<CutsceneStep>,
@@ -210,11 +217,13 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
     let has_letterboxing = Scene::has_letterboxing();
 
     let letterboxing_entities = if has_letterboxing {
+        // Render layers will be inserted once the cutscene is loaded.
+        // This is to prevent a flicker when the quads are rendered but the
+        // pixel zoom is not yet set.
         let camera = cmd
             .spawn((
                 Name::new("Letterboxing: camera"),
                 LetterboxingCamera,
-                RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
                 PixelZoom::Fixed(PIXEL_ZOOM),
                 PixelViewport,
                 Camera2dBundle {
@@ -303,6 +312,7 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
         sequence_index: 0,
         stopwatch: Stopwatch::new(),
         letterboxing_entities,
+        is_loaded: false, // will be on next frame
     };
 
     // this will be picked up by `schedule_current_step` system
@@ -316,7 +326,19 @@ fn schedule_current_step(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
     time: Res<Time>,
+
+    camera: Query<Entity, With<LetterboxingCamera>>,
 ) {
+    if !cutscene.is_loaded {
+        cutscene.is_loaded = true;
+
+        if cutscene.letterboxing_entities.is_some() {
+            cmd.entity(camera.single()).insert(RenderLayers::layer(
+                render_layer::CUTSCENE_LETTERBOXING,
+            ));
+        }
+    }
+
     cutscene.stopwatch.tick(time.delta());
     cutscene.schedule_current_step(&mut cmd);
 }
