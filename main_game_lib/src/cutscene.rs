@@ -12,17 +12,44 @@
 
 use std::{sync::OnceLock, time::Duration};
 
-use bevy::{ecs::system::SystemId, prelude::*, time::Stopwatch};
+use bevy::{
+    core_pipeline::clear_color::ClearColorConfig, ecs::system::SystemId,
+    math::vec2, prelude::*, render::view::RenderLayers, time::Stopwatch,
+};
 use bevy_grid_squared::{GridDirection, Square};
+use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_store::GlobalStore;
 use common_story::portrait_dialog::{DialogRoot, PortraitDialog};
 use common_top_down::{Actor, ActorTarget, Player};
-use common_visuals::{Animation, AnimationTimer};
+use common_visuals::{
+    camera::{
+        order, render_layer, PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH,
+        PIXEL_ZOOM,
+    },
+    AtlasAnimation, AtlasAnimationTimer, SmoothTranslation,
+};
 
 use crate::{
-    GlobalGameState, GlobalGameStateTransition, GlobalGameStateTransitionStack,
+    prelude::from_millis, GlobalGameState, GlobalGameStateTransition,
+    GlobalGameStateTransitionStack,
 };
+
+const LETTERBOXING_FADE_IN_DURATION: Duration = from_millis(500);
+const LETTERBOXING_FADE_OUT_DURATION: Duration = from_millis(250);
+const LETTERBOXING_QUAD_HEIGHT: f32 = 50.0;
+const LETTERBOXING_TOP_QUAD_INITIAL_POS: Vec2 =
+    vec2(0., PIXEL_VISIBLE_HEIGHT / 2.0);
+const LETTERBOXING_TOP_QUAD_TARGET_POS: Vec2 = vec2(
+    0.0,
+    PIXEL_VISIBLE_HEIGHT / 2.0 - LETTERBOXING_QUAD_HEIGHT / 2.0,
+);
+const LETTERBOXING_BOTTOM_QUAD_INITIAL_POS: Vec2 =
+    vec2(0., -PIXEL_VISIBLE_HEIGHT / 2.0);
+const LETTERBOXING_BOTTOM_QUAD_TARGET_POS: Vec2 = vec2(
+    0.0,
+    -PIXEL_VISIBLE_HEIGHT / 2.0 + LETTERBOXING_QUAD_HEIGHT / 2.0,
+);
 
 /// Will be true if there's a cutscene playing.
 pub fn in_cutscene() -> impl FnMut(Option<Res<Cutscene>>) -> bool {
@@ -42,8 +69,11 @@ pub trait IntoCutscene {
     /// A camera and two quads are spawned for this purpose.
     /// They are despawned when the cutscene ends.
     ///
+    /// Make sure you run the [`common_visuals::systems::smoothly_translate`]
+    /// system.
+    ///
     /// <https://en.wikipedia.org/wiki/Letterboxing_(filming)>
-    fn letterboxing() -> bool {
+    fn has_letterboxing() -> bool {
         false
     }
 
@@ -72,9 +102,9 @@ pub struct Cutscene {
     /// This is the stopwatch that is used to measure time.
     /// It resets after every step.
     stopwatch: Stopwatch,
-    /// Whether there's letterboxing quads and camera spawned.
-    /// If yes then they must be despawned when the cutscene ends.
-    has_letterboxing: bool,
+    /// If letterboxing was spawned, then this contains the three entities that
+    /// must be despawned when the cutscene ends.
+    letterboxing_entities: Option<[Entity; 3]>,
 }
 
 #[derive(Reflect, Clone, strum::Display)]
@@ -150,6 +180,13 @@ pub enum CutsceneStep {
     WaitForPortraitDialogToEnd,
 }
 
+#[derive(Component)]
+struct LetterboxingCamera;
+#[derive(Component)]
+struct LetterboxingTopQuad;
+#[derive(Component)]
+struct LetterboxingBottomQuad;
+
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -170,13 +207,104 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
 ) {
     let sequence = cutscene.sequence();
     debug_assert!(!sequence.is_empty());
+    let has_letterboxing = Scene::has_letterboxing();
+
+    let letterboxing_entities = if has_letterboxing {
+        let camera = cmd
+            .spawn((
+                Name::new("Letterboxing: camera"),
+                LetterboxingCamera,
+                RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
+                PixelZoom::Fixed(PIXEL_ZOOM),
+                PixelViewport,
+                Camera2dBundle {
+                    camera: Camera {
+                        hdr: true,
+                        order: order::CUTSCENE_LETTERBOXING,
+                        ..default()
+                    },
+                    camera_2d: Camera2d {
+                        clear_color: ClearColorConfig::None,
+                    },
+                    ..default()
+                },
+            ))
+            .id();
+
+        const TOP_QUAD_INITIAL_POS: Vec2 = vec2(0., PIXEL_VISIBLE_HEIGHT / 2.0);
+        const TOP_QUAD_TARGET_POS: Vec2 = vec2(
+            0.0,
+            PIXEL_VISIBLE_HEIGHT / 2.0 - LETTERBOXING_QUAD_HEIGHT / 2.0,
+        );
+
+        let top = cmd
+            .spawn((
+                Name::new("Letterboxing: top quad"),
+                RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
+                LetterboxingTopQuad,
+                SmoothTranslation {
+                    from: TOP_QUAD_INITIAL_POS,
+                    target: TOP_QUAD_TARGET_POS,
+                    duration: LETTERBOXING_FADE_IN_DURATION,
+                    ..default()
+                },
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::BLACK,
+                        custom_size: Some(Vec2::new(
+                            PIXEL_VISIBLE_WIDTH,
+                            LETTERBOXING_QUAD_HEIGHT,
+                        )),
+                        ..default()
+                    },
+                    transform: Transform::from_translation(
+                        TOP_QUAD_INITIAL_POS.extend(0.0),
+                    ),
+                    ..default()
+                },
+            ))
+            .id();
+
+        let bottom = cmd
+            .spawn((
+                Name::new("Letterboxing: bottom quad"),
+                LetterboxingBottomQuad,
+                RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
+                SmoothTranslation {
+                    from: LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
+                    target: LETTERBOXING_BOTTOM_QUAD_TARGET_POS,
+                    duration: LETTERBOXING_FADE_IN_DURATION,
+                    ..default()
+                },
+                SpriteBundle {
+                    sprite: Sprite {
+                        color: Color::BLACK,
+                        custom_size: Some(Vec2::new(
+                            PIXEL_VISIBLE_WIDTH,
+                            LETTERBOXING_QUAD_HEIGHT,
+                        )),
+                        ..default()
+                    },
+                    transform: Transform::from_translation(
+                        LETTERBOXING_BOTTOM_QUAD_INITIAL_POS.extend(0.0),
+                    ),
+                    ..default()
+                },
+            ))
+            .id();
+
+        Some([camera, top, bottom])
+    } else {
+        None
+    };
 
     let cutscene = Cutscene {
         sequence,
         sequence_index: 0,
         stopwatch: Stopwatch::new(),
-        has_letterboxing: Scene::letterboxing(),
+        letterboxing_entities,
     };
+
     // this will be picked up by `schedule_current_step` system
     cmd.insert_resource(cutscene);
 }
@@ -198,8 +326,29 @@ impl Cutscene {
         if self.sequence_index >= self.sequence.len() - 1 {
             cmd.remove_resource::<Cutscene>();
 
-            if self.has_letterboxing {
-                // TODO: despawn letterboxing quads and camera
+            if let Some(entities) = self.letterboxing_entities.take() {
+                // smoothly animate quads out and when down, despawn everything
+
+                cmd.entity(entities[2]).insert(SmoothTranslation {
+                    from: LETTERBOXING_BOTTOM_QUAD_TARGET_POS,
+                    target: LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
+                    duration: LETTERBOXING_FADE_OUT_DURATION,
+                    ..default()
+                });
+
+                cmd.entity(entities[1]).insert(SmoothTranslation {
+                    from: LETTERBOXING_TOP_QUAD_TARGET_POS,
+                    target: LETTERBOXING_TOP_QUAD_INITIAL_POS,
+                    duration: LETTERBOXING_FADE_OUT_DURATION,
+                    on_finished: common_visuals::SmoothTranslationEnd::Custom(
+                        Box::new(move |cmd: &mut Commands| {
+                            cmd.entity(entities[0]).despawn();
+                            cmd.entity(entities[1]).despawn();
+                            cmd.entity(entities[2]).despawn();
+                        }),
+                    ),
+                    ..default()
+                });
             }
         } else {
             self.stopwatch.reset();
@@ -330,7 +479,7 @@ fn insert_animation_timer_to(
     };
 
     cmd.entity(*entity)
-        .insert(AnimationTimer::new(*duration, *mode));
+        .insert(AtlasAnimationTimer::new(*duration, *mode));
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }
 
@@ -476,7 +625,7 @@ fn reverse_animation(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
 
-    mut animations: Query<&mut Animation>,
+    mut animations: Query<&mut AtlasAnimation>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
     let CutsceneStep::ReverseAnimation(entity) = &step else {
@@ -494,7 +643,7 @@ fn wait_until_animation_ends(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
 
-    animations: Query<Option<&AnimationTimer>, With<Animation>>,
+    animations: Query<Option<&AtlasAnimationTimer>, With<AtlasAnimation>>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
     let CutsceneStep::WaitUntilAnimationEnds(entity) = &step else {

@@ -47,7 +47,7 @@ pub(super) fn sprite_loading_special(
             (Entity, &mut TextureAtlasSprite, &mut Transform),
             (
                 With<SparkEffect>,
-                Without<AnimationTimer>,
+                Without<AtlasAnimationTimer>,
                 Without<mode::LoadingSpecial>,
             ),
         >,
@@ -75,7 +75,7 @@ pub(super) fn sprite_loading_special(
         if elapsed > START_SPARK_ANIMATION_AFTER_ELAPSED {
             spark_atlas.custom_size = Some(Vec2::splat(SPARK_SIDE));
             spark_atlas.index = 1;
-            cmd.entity(spark_entity).insert(AnimationTimer::new(
+            cmd.entity(spark_entity).insert(AtlasAnimationTimer::new(
                 SPARK_FRAME_TIME,
                 TimerMode::Repeating,
             ));

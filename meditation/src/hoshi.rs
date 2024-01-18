@@ -159,8 +159,8 @@ fn spawn(
         anim::SparkEffect,
         HoshiEntity,
         RenderLayers::layer(render_layer::OBJ),
-        Animation {
-            on_last_frame: AnimationEnd::Custom(Box::new(
+        AtlasAnimation {
+            on_last_frame: AtlasAnimationEnd::Custom(Box::new(
                 |entity,
                  _animation,
                  _timer,
@@ -169,7 +169,7 @@ fn spawn(
                  commands,
                  _time| {
                     *visibility = Visibility::Hidden;
-                    commands.entity(entity).remove::<AnimationTimer>();
+                    commands.entity(entity).remove::<AtlasAnimationTimer>();
                     atlas.index = 0;
                 },
             )),

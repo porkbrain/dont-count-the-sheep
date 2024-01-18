@@ -266,6 +266,10 @@ mod cutscenes {
     }
 
     impl IntoCutscene for EnterTheElevator {
+        fn has_letterboxing() -> bool {
+            true
+        }
+
         fn sequence(self) -> Vec<CutsceneStep> {
             use CutsceneStep::*;
             let Self { player, elevator } = self;

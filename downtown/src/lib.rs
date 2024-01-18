@@ -90,7 +90,7 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         FixedUpdate,
-        common_visuals::systems::advance_animation
+        common_visuals::systems::advance_atlas_animation
             .run_if(in_state(GlobalGameState::AtDowntown)),
     );
 

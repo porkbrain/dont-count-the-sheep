@@ -5,9 +5,9 @@ use bevy::{prelude::*, time::Stopwatch, utils::Instant};
 /// Describes how to drive an animation.
 /// The animation specifically integrates with texture atlas sprites.
 #[derive(Component, Default)]
-pub struct Animation {
+pub struct AtlasAnimation {
     /// What should happen when the last frame is reached?
-    pub on_last_frame: AnimationEnd,
+    pub on_last_frame: AtlasAnimationEnd,
     /// The index of the first frame.
     /// Typically 0.
     pub first: usize,
@@ -21,7 +21,7 @@ pub struct Animation {
 
 /// Different strategies for when the last frame of an animation is reached.
 #[derive(Default)]
-pub enum AnimationEnd {
+pub enum AtlasAnimationEnd {
     /// Loops the animation.
     #[default]
     Loop,
@@ -37,8 +37,8 @@ pub enum AnimationEnd {
         Box<
             dyn Fn(
                     Entity,
-                    &Animation,
-                    &mut AnimationTimer,
+                    &AtlasAnimation,
+                    &mut AtlasAnimationTimer,
                     &mut TextureAtlasSprite,
                     &mut Visibility,
                     &mut Commands,
@@ -51,11 +51,11 @@ pub enum AnimationEnd {
 
 /// Must be present for the systems to actually drive the animation.
 #[derive(Component, Deref, DerefMut)]
-pub struct AnimationTimer(pub(crate) Timer);
+pub struct AtlasAnimationTimer(pub(crate) Timer);
 
 /// Allows to start an animation at random.
 #[derive(Component, Default)]
-pub struct BeginAnimationAtRandom {
+pub struct BeginAtlasAnimationAtRandom {
     /// We roll a dice every delta seconds.
     /// This scales that delta.
     pub chance_per_second: f32,
@@ -78,6 +78,43 @@ pub struct Flicker {
     pub shown_for: Duration,
 }
 
+/// Smoothly translates an entity from one position to another.
+#[derive(Component, Default)]
+pub struct SmoothTranslation {
+    /// What happens when we're done?
+    pub on_finished: SmoothTranslationEnd,
+    /// Where did the object start?
+    pub from: Vec2,
+    /// Where should the object end up?
+    pub target: Vec2,
+    /// How long should the translation take?
+    pub duration: Duration,
+    /// How long has the translation been running?
+    pub stopwatch: Stopwatch,
+    /// Not not provided then the translation will be linear.
+    pub animation_curve: Option<CubicSegment<Vec2>>,
+}
+
+/// What should happen when the translation is done?
+#[derive(Default)]
+pub enum SmoothTranslationEnd {
+    #[default]
+    /// Just remove the component.
+    RemoveSmoothTranslationComponent,
+    /// Can schedule commands.
+    Custom(Box<dyn Fn(&mut Commands) + Send + Sync>),
+}
+
+impl SmoothTranslation {
+    /// Sets the animation curve to be the ubiquitous "ease-in-out".
+    pub fn with_ease_in_out(mut self) -> Self {
+        self.animation_curve =
+            Some(CubicSegment::new_bezier((0.25, 0.1), (0.25, 1.0)));
+
+        self
+    }
+}
+
 impl Flicker {
     /// Creates a new flicker.
     #[inline]
@@ -95,7 +132,7 @@ impl Flicker {
     }
 }
 
-impl AnimationTimer {
+impl AtlasAnimationTimer {
     /// Creates a new animation timer.
     #[inline]
     pub fn new(duration: Duration, mode: TimerMode) -> Self {
@@ -103,7 +140,7 @@ impl AnimationTimer {
     }
 }
 
-impl Animation {
+impl AtlasAnimation {
     /// Takes into account whether the animation is reversed or not.
     pub fn is_on_last_frame(&self, sprite: &TextureAtlasSprite) -> bool {
         if self.reversed {

@@ -203,13 +203,13 @@ pub(super) fn to_environment(
 
                 let static_entity = cmd
                     .spawn((
-                        Animation {
-                            on_last_frame: AnimationEnd::Loop,
+                        AtlasAnimation {
+                            on_last_frame: AtlasAnimationEnd::Loop,
                             first: first_frame,
                             last: STATIC_ATLAS_FRAMES - 1,
                             ..default()
                         },
-                        AnimationTimer::new(
+                        AtlasAnimationTimer::new(
                             STATIC_ATLAS_FRAME_TIME,
                             TimerMode::Repeating,
                         ),

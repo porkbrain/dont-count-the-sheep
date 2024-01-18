@@ -91,7 +91,10 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         FixedUpdate,
-        common_visuals::systems::advance_animation
+        (
+            common_visuals::systems::advance_atlas_animation,
+            common_visuals::systems::smoothly_translate,
+        )
             .run_if(in_state(GlobalGameState::InApartment)),
     );
 

@@ -58,13 +58,13 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         FixedUpdate,
-        common_visuals::systems::advance_animation
+        common_visuals::systems::advance_atlas_animation
             .run_if(in_state(GlobalGameState::MeditationInGame)),
     );
     app.add_systems(
         Update,
         (
-            common_visuals::systems::begin_animation_at_random,
+            common_visuals::systems::begin_atlas_animation_at_random,
             common_visuals::systems::flicker,
             bevy_webp_anim::systems::start_loaded_videos::<()>,
             bevy_webp_anim::systems::load_next_frame,

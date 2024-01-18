@@ -90,16 +90,16 @@ fn spawn_shooting_star(
     asset_server: &Res<AssetServer>,
     texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
 ) {
-    let animation = Animation {
+    let animation = AtlasAnimation {
         // we schedule it at random
-        on_last_frame: AnimationEnd::RemoveTimerAndHide,
+        on_last_frame: AtlasAnimationEnd::RemoveTimerAndHide,
         last: SHOOTING_STAR_FRAMES - 1,
         ..default()
     };
     cmd.spawn((
         BackgroundEntity,
         RenderLayers::layer(render_layer::OBJ),
-        BeginAnimationAtRandom {
+        BeginAtlasAnimationAtRandom {
             chance_per_second: SHOOTING_STAR_CHANCE_PER_SECOND,
             frame_time: SHOOTING_STAR_FRAME_TIME,
             ..default()

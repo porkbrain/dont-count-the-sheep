@@ -108,7 +108,7 @@ pub(crate) mod black_hole {
 
         // the reason why black hole does not despawn while game is paused is
         // that we don't run the system while game is paused
-        let on_last_frame = AnimationEnd::Custom(Box::new(
+        let on_last_frame = AtlasAnimationEnd::Custom(Box::new(
             move |entity,
                   _animation,
                   _timer,
@@ -135,13 +135,13 @@ pub(crate) mod black_hole {
         cmd.spawn((
             BlackHole,
             PolpoEntity,
-            Animation {
+            AtlasAnimation {
                 first: 0,
                 last: BLACK_HOLE_ATLAS_FRAMES - 1,
                 on_last_frame,
                 ..default()
             },
-            BeginAnimationAtRandom {
+            BeginAtlasAnimationAtRandom {
                 chance_per_second: BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND,
                 frame_time: BLACK_HOLE_FRAME_TIME,
                 with_min_delay: Some((BLACK_HOLE_MIN_LIFE, Stopwatch::new())),

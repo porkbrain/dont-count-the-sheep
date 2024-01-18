@@ -5,7 +5,8 @@ use bevy::{
 use bevy_grid_squared::{Square, SquareLayout};
 use common_visuals::{
     camera::{render_layer, PIXEL_ZOOM},
-    Animation, AnimationEnd, AnimationTimer, ColorExt, PRIMARY_COLOR,
+    AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer, ColorExt,
+    PRIMARY_COLOR,
 };
 use lazy_static::lazy_static;
 use main_game_lib::{
@@ -186,13 +187,13 @@ fn spawn(
         Name::from("Cloud atlas"),
         LayoutEntity,
         RenderLayers::layer(render_layer::BG),
-        Animation {
-            on_last_frame: AnimationEnd::Loop,
+        AtlasAnimation {
+            on_last_frame: AtlasAnimationEnd::Loop,
             first: 0,
             last: CLOUD_FRAMES - 1,
             ..default()
         },
-        AnimationTimer::new(CLOUD_ATLAS_FRAME_TIME, TimerMode::Repeating),
+        AtlasAnimationTimer::new(CLOUD_ATLAS_FRAME_TIME, TimerMode::Repeating),
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                 asset_server.load(assets::CLOUD_ATLAS),
@@ -242,8 +243,8 @@ fn spawn(
         LayoutEntity,
         HallwayEntity,
         RenderLayers::layer(render_layer::BG),
-        Animation {
-            on_last_frame: AnimationEnd::RemoveTimer,
+        AtlasAnimation {
+            on_last_frame: AtlasAnimationEnd::RemoveTimer,
             first: 0,
             last: 7,
             ..default()
