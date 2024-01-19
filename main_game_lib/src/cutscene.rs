@@ -133,6 +133,8 @@ pub enum CutsceneStep {
     /// cutscene.
     AddPlayerComponent(Entity),
     /// Inserts [`AtlasAnimationTimer`] component to the given entity.
+    /// This typically is used to start an animation when the entity has
+    /// [`AtlasAnimation`] component.
     InsertAtlasAnimationTimerTo {
         entity: Entity,
         duration: Duration,
@@ -190,7 +192,7 @@ pub enum CutsceneStep {
     /// [`common_visuals::systems::smoothly_translate`] system must be run.
     /// Also, this system does not wait for the translation to end.
     /// It just starts it.
-    BeginMovingEntityTranslationTo {
+    BeginMovingEntity {
         /// Which entity to move.
         /// Must have [`Transform`] component.
         who: Entity,
@@ -428,7 +430,7 @@ struct CutsceneSystems {
     wait_for_portrait_dialog_to_end: SystemId,
     reverse_atlas_animation: SystemId,
     wait_until_atlas_animation_ends: SystemId,
-    begin_moving_entity_translation_to: SystemId,
+    begin_moving_entity: SystemId,
 }
 
 impl CutsceneSystems {
@@ -450,8 +452,7 @@ impl CutsceneSystems {
             reverse_atlas_animation: w.register_system(reverse_atlas_animation),
             wait_until_atlas_animation_ends: w
                 .register_system(wait_until_atlas_animation_ends),
-            begin_moving_entity_translation_to: w
-                .register_system(begin_moving_entity_translation_to),
+            begin_moving_entity: w.register_system(begin_moving_entity),
         }
     }
 }
@@ -478,9 +479,7 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         WaitForPortraitDialogToEnd => s.wait_for_portrait_dialog_to_end,
         ReverseAtlasAnimation(_) => s.reverse_atlas_animation,
         WaitUntilAtlasAnimationEnds(_) => s.wait_until_atlas_animation_ends,
-        BeginMovingEntityTranslationTo { .. } => {
-            s.begin_moving_entity_translation_to
-        }
+        BeginMovingEntity { .. } => s.begin_moving_entity,
     }
 }
 
@@ -709,14 +708,14 @@ fn wait_until_atlas_animation_ends(
     }
 }
 
-fn begin_moving_entity_translation_to(
+fn begin_moving_entity(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
 
     transforms: Query<&Transform>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
-    let CutsceneStep::BeginMovingEntityTranslationTo {
+    let CutsceneStep::BeginMovingEntity {
         who,
         to,
         over,

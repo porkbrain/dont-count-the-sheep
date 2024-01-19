@@ -279,24 +279,29 @@ mod cutscenes {
             use CutsceneStep::*;
             let Self {
                 player,
+                // has atlas animation component, see layout where it's spawned
                 elevator,
                 camera,
             } = self;
 
             vec![
+                // take away player control
                 RemovePlayerComponent(player),
-                BeginMovingEntityTranslationTo {
+                // move camera to the player
+                BeginMovingEntity {
                     who: camera,
                     to: cutscene::Destination::Entity(player),
                     over: from_millis(1000),
                     animation_curve: Some(EASE_IN_OUT.clone()),
                 },
+                // open the elevator door
                 InsertAtlasAnimationTimerTo {
                     entity: elevator,
                     duration: from_millis(150),
                     mode: TimerMode::Repeating,
                 },
                 Sleep(from_millis(1250)),
+                // jump into the elevator
                 BeginSimpleWalkTo {
                     with: player,
                     square: Square::new(-57, -19),
@@ -308,11 +313,13 @@ mod cutscenes {
                 },
                 WaitUntilActorAtRest(player),
                 Sleep(from_millis(300)),
+                // ask player where to go
                 BeginPortraitDialog(DialogRoot::EnteredTheElevator),
                 WaitForPortraitDialogToEnd,
                 Sleep(from_millis(300)),
                 IfTrueThisElseThat(
-                    chose_to_leave,
+                    did_choose_to_leave,
+                    // then transition to downtown
                     Box::new(vec![ChangeGlobalState {
                         to: GlobalGameState::ApartmentQuitting,
                         with: Ggst::ApartmentQuittingToDowntownLoading,
@@ -322,6 +329,7 @@ mod cutscenes {
                         // this is already done in this scene's smooth exit sys
                         change_loading_screen_state_to_start: false,
                     }]),
+                    // else step out of the elevator
                     Box::new(vec![
                         BeginSimpleWalkTo {
                             with: player,
@@ -342,12 +350,13 @@ mod cutscenes {
                         ReverseAtlasAnimation(elevator),
                         WaitUntilActorAtRest(player),
                         // reset the camera
-                        BeginMovingEntityTranslationTo {
+                        BeginMovingEntity {
                             who: camera,
                             to: cutscene::Destination::Position(default()),
                             over: from_millis(1000),
                             animation_curve: Some(EASE_IN_OUT.clone()),
                         },
+                        // give player back control
                         AddPlayerComponent(player),
                     ]),
                 ),
@@ -355,7 +364,7 @@ mod cutscenes {
         }
     }
 
-    fn chose_to_leave(store: &GlobalStore) -> bool {
+    fn did_choose_to_leave(store: &GlobalStore) -> bool {
         store.was_this_the_last_dialog(TakeTheElevatorToGroundFloor)
     }
 }

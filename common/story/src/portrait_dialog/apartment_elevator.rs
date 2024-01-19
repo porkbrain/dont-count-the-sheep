@@ -16,7 +16,7 @@ impl AsSequence for EnteredTheElevator {
     fn sequence() -> Vec<Step> {
         vec![Step::Choice {
             speaker: Character::Winnie,
-            content: "I'm going to ...",
+            content: "Let's see, I'm going to ...",
             between: vec![
                 DialogTargetChoice::TakeTheElevatorToGroundFloor,
                 DialogTargetChoice::TakeTheElevatorToFirstFloor,
@@ -41,7 +41,7 @@ impl AsSequence for TakeTheElevatorToFirstFloor {
         vec![
             Step::text(
                 Character::Winnie,
-                "Can't ... just ... can you work you bloody ...",
+                "... can't ... just ...\ncan you work you ...",
             ),
             Step::text(Character::Winnie, "Arrgh!"),
             Step::text(

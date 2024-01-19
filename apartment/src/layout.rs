@@ -241,6 +241,7 @@ fn spawn(
         LayoutEntity,
         HallwayEntity,
         RenderLayers::layer(render_layer::BG),
+        // this animation is important for elevator cutscene
         AtlasAnimation {
             on_last_frame: AtlasAnimationEnd::RemoveTimer,
             first: 0,

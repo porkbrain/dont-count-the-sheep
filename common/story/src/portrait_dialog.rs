@@ -437,7 +437,7 @@ fn advance_sequence(
             Step::GoTo { story_point } => {
                 // next sequence
 
-                global_store.insert_dialog(story_point.type_path());
+                global_store.insert_dialog_type_path(story_point.type_path());
                 dialog.sequence = story_point.sequence();
                 dialog.sequence_index = 0;
             }
@@ -451,7 +451,7 @@ fn advance_sequence(
                 {
                     // choice made, next sequence
 
-                    global_store.insert_dialog(choice.of.type_path());
+                    global_store.insert_dialog_type_path(choice.of.type_path());
 
                     choices.iter().for_each(|(entity, _)| {
                         cmd.entity(*entity).despawn_recursive()

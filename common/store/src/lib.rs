@@ -183,8 +183,14 @@ mod dialog {
         fn was_this_the_last_dialog(&self, name: impl TypePath) -> bool;
 
         /// New dialog entry.
+        /// You can provide the type path directly.
+        fn insert_dialog_type_path(&self, path: &str);
+
+        /// New dialog entry.
         /// The name of the dialog is the type path.
-        fn insert_dialog(&self, name: impl TypePath);
+        fn insert_dialog(&self, name: impl TypePath) {
+            self.insert_dialog_type_path(name.reflect_type_path());
+        }
     }
 
     impl DialogStore for GlobalStore {
@@ -205,8 +211,7 @@ mod dialog {
                 .unwrap_or(false)
         }
 
-        fn insert_dialog(&self, name: impl TypePath) {
-            let path = name.reflect_type_path();
+        fn insert_dialog_type_path(&self, path: &str) {
             let conn = self.conn.lock().unwrap();
             conn.execute(
                 "INSERT INTO dialogs (type_path) VALUES (:type_path)",
@@ -310,8 +315,19 @@ mod tests {
         let conn = new_conn();
         let store = GlobalStore { conn };
 
-        store.insert_dialog("test1");
-        store.insert_dialog("test2");
+        #[derive(TypePath)]
+        struct Test;
+
+        #[derive(TypePath)]
+        struct Test2;
+
+        store.insert_dialog(Test);
+        assert!(store.was_this_the_last_dialog(Test));
+        assert!(!store.was_this_the_last_dialog(Test2));
+
+        store.insert_dialog(Test2);
+        assert!(store.was_this_the_last_dialog(Test2));
+        assert!(!store.was_this_the_last_dialog(Test));
     }
 
     fn new_conn() -> Arc<Mutex<rusqlite::Connection>> {
