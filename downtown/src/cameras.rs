@@ -4,14 +4,11 @@ use common_visuals::camera::{
     order, render_layer, PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH, PIXEL_ZOOM,
 };
 use lazy_static::lazy_static;
+use main_game_lib::common_visuals::EASE_IN_OUT;
 
 use crate::prelude::*;
 
 lazy_static! {
-    /// The ubiquitous "ease-in-out" animation curve.
-    static ref EASE_IN_OUT: CubicSegment<Vec2> =
-        CubicSegment::new_bezier((0.25, 0.1), (0.25, 1.0));
-
     /// If the player leaves this bounding box, the camera follows her.
     /// The box is centered at camera position.
     static ref BOUNDING_BOX_SIZE: Vec2 = {

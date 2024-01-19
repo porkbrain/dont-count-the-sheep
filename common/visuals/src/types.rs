@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use bevy::{prelude::*, time::Stopwatch, utils::Instant};
 
+use crate::EASE_IN_OUT;
+
 /// Describes how to drive an animation.
 /// The animation specifically integrates with texture atlas sprites.
 #[derive(Component, Default)]
@@ -15,7 +17,7 @@ pub struct AtlasAnimation {
     pub last: usize,
     /// If the animation should be played in reverse, going from last to first.
     /// When the first frame is reached, the animation still acts in accordance
-    /// with the [`AnimationEnd`] strategy.
+    /// with the [`AtlasAnimationEnd`] strategy.
     pub reversed: bool,
 }
 
@@ -108,8 +110,7 @@ pub enum SmoothTranslationEnd {
 impl SmoothTranslation {
     /// Sets the animation curve to be the ubiquitous "ease-in-out".
     pub fn with_ease_in_out(mut self) -> Self {
-        self.animation_curve =
-            Some(CubicSegment::new_bezier((0.25, 0.1), (0.25, 1.0)));
+        self.animation_curve = Some(EASE_IN_OUT.clone());
 
         self
     }

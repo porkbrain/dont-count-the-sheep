@@ -16,8 +16,8 @@ pub type Zone = u8;
 
 /// Registers layout map for `T` where `T` is a type implementing [`IntoMap`].
 /// This would be your level layout.
-/// When [`Actor`]s enter a zone within the map, [`ZoneEntered`] event is
-/// emitted.
+/// When [`crate::Actor`]s enter a zone within the map,
+/// [`crate::ActorMovementEvent`] event is emitted.
 ///
 /// If the `dev` feature is enabled, you can press `Enter` to export the map
 /// to `map.ron` in the current directory.

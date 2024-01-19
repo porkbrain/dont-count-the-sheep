@@ -606,6 +606,7 @@ dependencies = [
  "bevy_core_pipeline",
  "bevy_ecs",
  "bevy_math",
+ "bevy_pbr",
  "bevy_reflect",
  "bevy_render",
  "bevy_sprite",
@@ -1398,6 +1399,7 @@ name = "common_visuals"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "lazy_static",
  "rand",
 ]
 

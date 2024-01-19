@@ -56,19 +56,20 @@ version = "0.12.1"
 default-features = false
 features = [
     "bevy_asset",
-    "bevy_winit",
     "bevy_core_pipeline",
+    "bevy_gizmos",
+    "bevy_pbr",           # required by light crate
     "bevy_render",
     "bevy_sprite",
     "bevy_text",
     "bevy_ui",
+    "bevy_winit",
+    "hdr",
     "multi-threaded",
     "png",
-    "hdr",
-    "x11",
-    "bevy_gizmos",
     "tonemapping_luts",
     "webgl2",
+    "x11",
 ]
 
 [profile.release]

@@ -132,19 +132,19 @@ pub enum CutsceneStep {
     /// This gives the player back control, ideal for the last step of the
     /// cutscene.
     AddPlayerComponent(Entity),
-    /// Inserts [`AnimationTimer`] component to the given entity.
-    InsertAnimationTimerTo {
+    /// Inserts [`AtlasAnimationTimer`] component to the given entity.
+    InsertAtlasAnimationTimerTo {
         entity: Entity,
         duration: Duration,
         mode: TimerMode,
     },
-    /// An entity that has [`Animation`] component will have its [`reversed`]
-    /// flag toggled.
-    ReverseAnimation(Entity),
-    /// Waits until an entity that has [`Animation`] component reaches the end.
-    /// Whether the animation is played in reverse or not is taken into
-    /// account.
-    WaitUntilAnimationEnds(Entity),
+    /// An entity that has [`AtlasAnimation`] component will have its
+    /// `reversed` flag toggled.
+    ReverseAtlasAnimation(Entity),
+    /// Waits until an entity that has [`AtlasAnimation`] component reaches the
+    /// end. Whether the animation is played in reverse or not is taken
+    /// into account.
+    WaitUntilAtlasAnimationEnds(Entity),
     /// Transitions to the given state.
     /// Typically, this despawns the whole scene so it can be the last step
     /// in the cutscene.
@@ -185,6 +185,31 @@ pub enum CutsceneStep {
     BeginPortraitDialog(DialogRoot),
     /// Waits until there is no portrait dialog resource.
     WaitForPortraitDialogToEnd,
+    /// Inserts [`SmoothTranslation`] to the given entity.
+    /// The entity must have [`Transform`] component and the
+    /// [`common_visuals::systems::smoothly_translate`] system must be run.
+    /// Also, this system does not wait for the translation to end.
+    /// It just starts it.
+    BeginMovingEntityTranslationTo {
+        /// Which entity to move.
+        /// Must have [`Transform`] component.
+        who: Entity,
+        /// Where to go.
+        to: Destination,
+        /// How long should this translation take.
+        over: Duration,
+        /// By default linear interpolation is used.
+        animation_curve: Option<CubicSegment<Vec2>>,
+    },
+}
+
+/// Marks a destination.
+#[derive(Reflect, Clone, Copy, strum::Display)]
+pub enum Destination {
+    /// Given by the [`Transform`] component.
+    Entity(Entity),
+    /// Specific position in the world.
+    Position(Vec2),
 }
 
 #[derive(Component)]
@@ -395,14 +420,15 @@ struct CutsceneSystems {
     remove_player_component: SystemId,
     add_player_component: SystemId,
     sleep: SystemId,
-    insert_animation_timer_to: SystemId,
+    insert_atlas_animation_timer_to: SystemId,
     change_global_state: SystemId,
     begin_simple_walk_to: SystemId,
     wait_until_actor_at_rest: SystemId,
     begin_portrait_dialog: SystemId,
     wait_for_portrait_dialog_to_end: SystemId,
-    reverse_animation: SystemId,
-    wait_until_animation_ends: SystemId,
+    reverse_atlas_animation: SystemId,
+    wait_until_atlas_animation_ends: SystemId,
+    begin_moving_entity_translation_to: SystemId,
 }
 
 impl CutsceneSystems {
@@ -412,8 +438,8 @@ impl CutsceneSystems {
             remove_player_component: w.register_system(remove_player_component),
             add_player_component: w.register_system(add_player_component),
             sleep: w.register_system(sleep),
-            insert_animation_timer_to: w
-                .register_system(insert_animation_timer_to),
+            insert_atlas_animation_timer_to: w
+                .register_system(insert_atlas_animation_timer_to),
             change_global_state: w.register_system(change_global_state),
             begin_simple_walk_to: w.register_system(begin_simple_walk_to),
             wait_until_actor_at_rest: w
@@ -421,9 +447,11 @@ impl CutsceneSystems {
             begin_portrait_dialog: w.register_system(begin_portrait_dialog),
             wait_for_portrait_dialog_to_end: w
                 .register_system(wait_for_portrait_dialog_to_end),
-            reverse_animation: w.register_system(reverse_animation),
-            wait_until_animation_ends: w
-                .register_system(wait_until_animation_ends),
+            reverse_atlas_animation: w.register_system(reverse_atlas_animation),
+            wait_until_atlas_animation_ends: w
+                .register_system(wait_until_atlas_animation_ends),
+            begin_moving_entity_translation_to: w
+                .register_system(begin_moving_entity_translation_to),
         }
     }
 }
@@ -442,14 +470,17 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         RemovePlayerComponent(_) => s.remove_player_component,
         AddPlayerComponent(_) => s.add_player_component,
         Sleep(_) => s.sleep,
-        InsertAnimationTimerTo { .. } => s.insert_animation_timer_to,
+        InsertAtlasAnimationTimerTo { .. } => s.insert_atlas_animation_timer_to,
         ChangeGlobalState { .. } => s.change_global_state,
         BeginSimpleWalkTo { .. } => s.begin_simple_walk_to,
         WaitUntilActorAtRest(_) => s.wait_until_actor_at_rest,
         BeginPortraitDialog(_) => s.begin_portrait_dialog,
         WaitForPortraitDialogToEnd => s.wait_for_portrait_dialog_to_end,
-        ReverseAnimation(_) => s.reverse_animation,
-        WaitUntilAnimationEnds(_) => s.wait_until_animation_ends,
+        ReverseAtlasAnimation(_) => s.reverse_atlas_animation,
+        WaitUntilAtlasAnimationEnds(_) => s.wait_until_atlas_animation_ends,
+        BeginMovingEntityTranslationTo { .. } => {
+            s.begin_moving_entity_translation_to
+        }
     }
 }
 
@@ -486,12 +517,12 @@ fn sleep(mut cmd: Commands, mut cutscene: ResMut<Cutscene>) {
     }
 }
 
-fn insert_animation_timer_to(
+fn insert_atlas_animation_timer_to(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
-    let CutsceneStep::InsertAnimationTimerTo {
+    let CutsceneStep::InsertAtlasAnimationTimerTo {
         entity,
         duration,
         mode,
@@ -584,7 +615,6 @@ fn wait_until_actor_at_rest(
     if let Ok(actor) = actors.get(*entity) {
         if actor.walking_to.is_none() {
             cutscene.schedule_next_step_or_despawn(&mut cmd);
-            return;
         }
     }
 }
@@ -631,7 +661,7 @@ fn if_true_this_else_that(
         panic!("Expected IfTrueThisElseThat step, got {step}");
     };
 
-    let sequence = if cond(&*store) {
+    let sequence = if cond(&store) {
         *on_true.clone()
     } else {
         *on_false.clone()
@@ -643,14 +673,14 @@ fn if_true_this_else_that(
     cutscene.schedule_current_step(&mut cmd);
 }
 
-fn reverse_animation(
+fn reverse_atlas_animation(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
 
     mut animations: Query<&mut AtlasAnimation>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
-    let CutsceneStep::ReverseAnimation(entity) = &step else {
+    let CutsceneStep::ReverseAtlasAnimation(entity) = &step else {
         panic!("Expected ReverseAnimation step, got {step}");
     };
 
@@ -661,14 +691,14 @@ fn reverse_animation(
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }
 
-fn wait_until_animation_ends(
+fn wait_until_atlas_animation_ends(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
 
     animations: Query<Option<&AtlasAnimationTimer>, With<AtlasAnimation>>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
-    let CutsceneStep::WaitUntilAnimationEnds(entity) = &step else {
+    let CutsceneStep::WaitUntilAtlasAnimationEnds(entity) = &step else {
         panic!("Expected WaitUntilAnimationEnds step, got {step}");
     };
 
@@ -677,4 +707,45 @@ fn wait_until_animation_ends(
             cutscene.schedule_next_step_or_despawn(&mut cmd);
         }
     }
+}
+
+fn begin_moving_entity_translation_to(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+
+    transforms: Query<&Transform>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::BeginMovingEntityTranslationTo {
+        who,
+        to,
+        over,
+        animation_curve,
+    } = &step
+    else {
+        panic!("Expected MoveEntityTranslationTo step, got {step}");
+    };
+
+    if let Ok(transform) = transforms.get(*who) {
+        let from = transform.translation.truncate();
+
+        let target = match to {
+            Destination::Entity(entity) => transforms
+                .get(*entity)
+                .expect("Entity in cutscene must exist") // SOFTEN
+                .translation
+                .truncate(),
+            Destination::Position(pos) => *pos,
+        };
+
+        cmd.entity(*who).insert(SmoothTranslation {
+            from,
+            target,
+            duration: *over,
+            animation_curve: animation_curve.clone(),
+            ..default()
+        });
+    }
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
 }

@@ -89,7 +89,7 @@ pub struct CharacterBundleBuilder {
 }
 
 /// Sends events when an actor does something interesting.
-/// This system is registered on call to [`register`].
+/// This system is registered on call to [`crate::layout::register`].
 ///
 /// If you listen to this event then condition your system to run on
 /// `run_if(event_update_condition::<ActorMovementEvent>)` and
@@ -148,22 +148,17 @@ pub fn emit_movement_events<T: IntoMap>(
                     character: actor.character,
                 },
             });
-        } else {
-            if let Some(just_left_zone) = local.remove(&entity) {
-                trace!(
-                    "Actor {:?} left zone {just_left_zone}",
-                    actor.character,
-                );
-                event.send(ActorMovementEvent::ZoneLeft {
-                    zone: just_left_zone,
-                    who: Who {
-                        at,
-                        is_player: player.is_some(),
-                        entity,
-                        character: actor.character,
-                    },
-                });
-            }
+        } else if let Some(just_left_zone) = local.remove(&entity) {
+            trace!("Actor {:?} left zone {just_left_zone}", actor.character,);
+            event.send(ActorMovementEvent::ZoneLeft {
+                zone: just_left_zone,
+                who: Who {
+                    at,
+                    is_player: player.is_some(),
+                    entity,
+                    character: actor.character,
+                },
+            });
         }
     }
 }

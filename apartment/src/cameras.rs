@@ -14,7 +14,7 @@ impl bevy::app::Plugin for Plugin {
 }
 
 #[derive(Component)]
-struct CameraEntity;
+pub(crate) struct CameraEntity;
 
 fn spawn(mut cmd: Commands) {
     debug!("Spawning camera");

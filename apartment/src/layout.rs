@@ -149,7 +149,6 @@ fn spawn(
             zindex: zindex::BG_HALLWAY,
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
-            ..default()
         },
         ToSpawn {
             name: "Hallway doors",
@@ -157,7 +156,6 @@ fn spawn(
             zindex: zindex::HALLWAY_DOORS,
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
-            ..default()
         },
     ] {
         let mut entity = cmd.spawn((

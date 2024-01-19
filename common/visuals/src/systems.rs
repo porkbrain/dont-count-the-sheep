@@ -9,8 +9,8 @@ use crate::{
 };
 
 /// Advances the animation by one frame.
-/// This requires that the [`AnimationTimer`] component is present along with
-/// [`TextureAtlasSprite`] and [`Animation`].
+/// This requires that the [`AtlasAnimationTimer`] component is present along
+/// with [`TextureAtlasSprite`] and [`AtlasAnimation`].
 pub fn advance_atlas_animation(
     mut cmd: Commands,
     time: Res<Time>,
@@ -60,19 +60,17 @@ pub fn advance_atlas_animation(
                         };
                     }
                 }
+            } else if animation.reversed {
+                atlas.index -= 1;
             } else {
-                if animation.reversed {
-                    atlas.index -= 1;
-                } else {
-                    atlas.index += 1;
-                }
+                atlas.index += 1;
             };
         }
     }
 }
 
 /// With given chance per second, start animation by inserting an
-/// [`AnimationTimer`] component to the entity.
+/// [`AtlasAnimationTimer`] component to the entity.
 pub fn begin_atlas_animation_at_random(
     mut cmd: Commands,
     time: Res<Time>,

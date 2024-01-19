@@ -19,6 +19,7 @@ use main_game_lib::{
 };
 
 use crate::{
+    cameras::CameraEntity,
     consts::*,
     layout::{zones, Elevator},
     prelude::*,
@@ -191,6 +192,7 @@ fn enter_the_elevator(
 
     player: Query<(Entity, &Actor), With<Player>>,
     elevator: Query<Entity, With<Elevator>>,
+    camera: Query<Entity, With<CameraEntity>>,
 ) {
     let Ok((entity, player)) = player.get_single() else {
         return;
@@ -204,6 +206,7 @@ fn enter_the_elevator(
     cutscenes::EnterTheElevator {
         player: entity,
         elevator: elevator.single(),
+        camera: camera.single(),
     }
     .spawn(&mut cmd);
 }
@@ -254,7 +257,8 @@ fn load_zone_overlay(
 mod cutscenes {
     use main_game_lib::{
         common_story::portrait_dialog::DialogRoot,
-        cutscene::{CutsceneStep, IntoCutscene},
+        common_visuals::EASE_IN_OUT,
+        cutscene::{self, CutsceneStep, IntoCutscene},
         GlobalGameStateTransition as Ggst,
     };
 
@@ -263,6 +267,7 @@ mod cutscenes {
     pub(super) struct EnterTheElevator {
         pub(super) player: Entity,
         pub(super) elevator: Entity,
+        pub(super) camera: Entity,
     }
 
     impl IntoCutscene for EnterTheElevator {
@@ -272,11 +277,21 @@ mod cutscenes {
 
         fn sequence(self) -> Vec<CutsceneStep> {
             use CutsceneStep::*;
-            let Self { player, elevator } = self;
+            let Self {
+                player,
+                elevator,
+                camera,
+            } = self;
 
             vec![
                 RemovePlayerComponent(player),
-                InsertAnimationTimerTo {
+                BeginMovingEntityTranslationTo {
+                    who: camera,
+                    to: cutscene::Destination::Entity(player),
+                    over: from_millis(1000),
+                    animation_curve: Some(EASE_IN_OUT.clone()),
+                },
+                InsertAtlasAnimationTimerTo {
                     entity: elevator,
                     duration: from_millis(150),
                     mode: TimerMode::Repeating,
@@ -315,16 +330,24 @@ mod cutscenes {
                             planned: None,
                         },
                         Sleep(from_millis(250)),
-                        ReverseAnimation(elevator),
-                        InsertAnimationTimerTo {
+                        // closes the elevator door
+                        ReverseAtlasAnimation(elevator),
+                        InsertAtlasAnimationTimerTo {
                             entity: elevator,
                             duration: from_millis(150),
                             mode: TimerMode::Repeating,
                         },
-                        WaitUntilAnimationEnds(elevator),
+                        WaitUntilAtlasAnimationEnds(elevator),
                         // get it ready for the next time this scene runs
-                        ReverseAnimation(elevator),
+                        ReverseAtlasAnimation(elevator),
                         WaitUntilActorAtRest(player),
+                        // reset the camera
+                        BeginMovingEntityTranslationTo {
+                            who: camera,
+                            to: cutscene::Destination::Position(default()),
+                            over: from_millis(1000),
+                            animation_curve: Some(EASE_IN_OUT.clone()),
+                        },
                         AddPlayerComponent(player),
                     ]),
                 ),

@@ -118,6 +118,7 @@ trait AsChoice: AsSequence {
 
 /// Call this to load the next step in the dialog.
 /// A step could be some text, or a player choice, etc.
+#[allow(clippy::too_many_arguments)]
 pub fn advance(
     mut cmd: Commands,
     mut dialog: ResMut<PortraitDialog>,
@@ -401,6 +402,7 @@ enum SequenceFinished {
 
 /// Executes each dialog step until it reaches a step that requires player
 /// input such as text or choice.
+#[allow(clippy::too_many_arguments)]
 fn advance_sequence(
     cmd: &mut Commands,
     asset_server: &AssetServer,
