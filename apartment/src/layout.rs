@@ -10,7 +10,9 @@ use common_visuals::{
 };
 use lazy_static::lazy_static;
 use main_game_lib::{
+    common_ext::QueryExt,
     common_top_down::{actor, Actor, ActorMovementEvent, IntoMap, SquareKind},
+    cutscene::not_in_cutscene,
     vec2_ext::Vec2Ext,
 };
 
@@ -49,7 +51,8 @@ impl bevy::app::Plugin for Plugin {
             .add_systems(
                 Update,
                 smoothly_transition_hallway_color
-                    .run_if(in_state(GlobalGameState::InApartment)),
+                    .run_if(in_state(GlobalGameState::InApartment))
+                    .run_if(not_in_cutscene()),
             )
             .add_systems(
                 Update,
@@ -67,7 +70,7 @@ struct LayoutEntity;
 /// Hallway is darkened when the player is in the apartment but once the player
 /// approaches the door or is in the hallway, it's lit up.
 #[derive(Component)]
-struct HallwayEntity;
+pub(crate) struct HallwayEntity;
 
 /// The main door is a special entity that has a sprite sheet with two frames.
 /// When the player is near the door, the door opens.
@@ -319,7 +322,7 @@ fn smoothly_transition_hallway_color(
     // (from color, how long ago started)
     mut local: Local<Option<(Color, Instant)>>,
 ) {
-    let Ok(player) = player.get_single() else {
+    let Some(player) = player.get_single_or_none() else {
         return;
     };
 

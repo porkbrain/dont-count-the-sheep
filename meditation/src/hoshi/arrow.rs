@@ -5,6 +5,7 @@ use std::f32::consts::PI;
 
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use common_visuals::camera::{PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH};
+use main_game_lib::common_ext::QueryExt;
 
 use super::{consts::MAX_ARROW_PUSH_BACK, Hoshi};
 use crate::{
@@ -58,7 +59,7 @@ pub(super) fn point_arrow(
         (With<Arrow>, Without<Hoshi>),
     >,
 ) {
-    let Ok(hoshi_transform) = hoshi.get_single() else {
+    let Some(hoshi_transform) = hoshi.get_single_or_none() else {
         return;
     };
 

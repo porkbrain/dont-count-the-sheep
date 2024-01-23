@@ -12,6 +12,7 @@ bevy-inspector-egui.workspace = true
 bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
+common_ext.workspace = true
 common_loading_screen.workspace = true
 common_store.workspace = true
 common_story.workspace = true

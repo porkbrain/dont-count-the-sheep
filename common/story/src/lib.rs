@@ -148,11 +148,15 @@ impl Character {
         use common_assets::character_atlases::*;
 
         const STANDARD_SIZE: Vec2 = Vec2::new(19.0, 35.0);
+        const STANDARD_SIZE2: Vec2 = Vec2::new(21.0, 38.0);
         const STANDARD_PADDING: Vec2 = Vec2::new(1.0, 0.0);
 
         match self {
             Character::Winnie => {
                 Some((WINNIE, STANDARD_SIZE, 15, 1, STANDARD_PADDING))
+            }
+            Character::Marie => {
+                Some((MARIE, STANDARD_SIZE2, 15, 1, STANDARD_PADDING))
             }
             _ => None,
         }

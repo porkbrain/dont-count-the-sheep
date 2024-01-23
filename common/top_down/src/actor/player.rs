@@ -3,6 +3,7 @@
 use bevy::prelude::*;
 use bevy_grid_squared::{GridDirection, Square};
 use common_action::GlobalAction;
+use common_ext::QueryExt;
 use leafwing_input_manager::action_state::ActionState;
 
 use super::{Actor, ActorTarget};
@@ -19,6 +20,7 @@ pub fn move_around<T: IntoMap>(
     controls: Res<ActionState<GlobalAction>>,
 
     mut player: Query<&mut Actor, With<Player>>,
+    other_actors: Query<&Actor, Without<Player>>,
 ) {
     use GridDirection::*;
 
@@ -36,7 +38,7 @@ pub fn move_around<T: IntoMap>(
         }
     };
 
-    let Ok(mut player) = player.get_single_mut() else {
+    let Some(mut player) = player.get_single_mut_or_none() else {
         return;
     };
 
@@ -51,9 +53,15 @@ pub fn move_around<T: IntoMap>(
 
     // exhaustive match in case of future changes
     let is_available = |square: Square| match map.get(&square) {
-        None => T::contains(square),
-        Some(SquareKind::None | SquareKind::Zone(_)) => true,
+        None if !T::contains(square) => false,
         Some(SquareKind::Object | SquareKind::Wall) => false,
+        Some(SquareKind::None | SquareKind::Zone(_)) | None => {
+            // check other actors
+            // TODO: make it feel right
+            !other_actors.iter().any(|actor| {
+                actor.current_square().manhattan_distance(square) < 3
+            })
+        }
     };
 
     let plan_from = player.current_square();

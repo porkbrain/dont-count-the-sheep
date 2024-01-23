@@ -4,7 +4,7 @@ use common_visuals::camera::{
     order, render_layer, PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH, PIXEL_ZOOM,
 };
 use lazy_static::lazy_static;
-use main_game_lib::common_visuals::EASE_IN_OUT;
+use main_game_lib::{common_ext::QueryExt, common_visuals::EASE_IN_OUT};
 
 use crate::prelude::*;
 
@@ -154,7 +154,7 @@ fn sync_with_player(
     player: Query<&Transform, (Without<CameraEntity>, With<Player>)>,
     mut cameras: Query<&mut Transform, (With<CameraEntity>, Without<Player>)>,
 ) {
-    let Ok(mut state) = state.get_single_mut() else {
+    let Some(mut state) = state.get_single_mut_or_none() else {
         return;
     };
 
@@ -197,7 +197,8 @@ fn stick_to_player_until_she_stops(
     player: Query<&Transform, (Without<CameraEntity>, With<Player>)>,
     mut cameras: Query<&mut Transform, (With<CameraEntity>, Without<Player>)>,
 ) {
-    let Ok((state_entity, CameraState::StickToPlayer)) = state.get_single()
+    let Some((state_entity, CameraState::StickToPlayer)) =
+        state.get_single_or_none()
     else {
         return;
     };

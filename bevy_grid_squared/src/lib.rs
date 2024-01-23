@@ -26,6 +26,10 @@ impl Square {
     pub const fn new(x: i32, y: i32) -> Self {
         Self { x, y }
     }
+
+    pub fn manhattan_distance(self, other: Self) -> i32 {
+        (self.x - other.x).abs() + (self.y - other.y).abs()
+    }
 }
 
 impl SquareLayout {

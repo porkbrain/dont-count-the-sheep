@@ -1,7 +1,8 @@
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::PIXEL_ZOOM;
 use main_game_lib::{
-    GlobalGameStateTransition, GlobalGameStateTransitionStack,
+    common_ext::QueryExt, GlobalGameStateTransition,
+    GlobalGameStateTransitionStack,
 };
 
 use super::consts::*;
@@ -44,7 +45,7 @@ pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
 }
 
 pub(super) fn despawn(mut cmd: Commands, menu: Query<Entity, With<Menu>>) {
-    if let Ok(entity) = menu.get_single() {
+    if let Some(entity) = menu.get_single_or_none() {
         cmd.entity(entity).despawn_recursive();
     }
 }

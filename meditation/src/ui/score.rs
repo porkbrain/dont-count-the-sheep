@@ -4,6 +4,7 @@ use std::{
 };
 
 use bevy::time::Stopwatch;
+use main_game_lib::common_ext::QueryExt;
 
 use super::consts::*;
 use crate::{climate::ClimateLightMode, prelude::*};
@@ -61,7 +62,7 @@ pub(super) fn update(
     mut score: Query<(&mut Score, &mut Text)>,
     time: Res<Time>,
 ) {
-    let Ok((mut score, mut text)) = score.get_single_mut() else {
+    let Some((mut score, mut text)) = score.get_single_mut_or_none() else {
         return;
     };
 

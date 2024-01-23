@@ -31,11 +31,12 @@ bevy_webp_anim = "0.2"
 bevy-inspector-egui = { version = "0.22", default-features = false }
 common_action = { path = "common/action" }
 common_assets = { path = "common/assets" }
-common_top_down = { path = "common/top_down" }
+common_ext = { path = "common/ext" }
 common_loading_screen = { path = "common/loading_screen" }
 common_physics = { path = "common/physics" }
 common_store = { path = "common/store" }
 common_story = { path = "common/story" }
+common_top_down = { path = "common/top_down" }
 common_visuals = { path = "common/visuals" }
 downtown = { path = "downtown" }
 itertools = "0.12"

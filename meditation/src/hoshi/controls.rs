@@ -2,6 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::time::Stopwatch;
 use common_physics::PoissonsEquation;
+use main_game_lib::common_ext::QueryExt;
 
 use super::{anim::SparkEffect, consts::*, mode, ActionEvent};
 use crate::{
@@ -23,7 +24,8 @@ pub(super) fn normal(
     >,
     mut spark: Query<(&mut Transform, &mut Visibility), With<SparkEffect>>,
 ) {
-    let Ok((entity, mut mode, mut vel, transform)) = hoshi.get_single_mut()
+    let Some((entity, mut mode, mut vel, transform)) =
+        hoshi.get_single_mut_or_none()
     else {
         return;
     };
@@ -182,7 +184,8 @@ pub(crate) fn loading_special(
 
     mut hoshi: Query<(Entity, &mut mode::LoadingSpecial, &mut Velocity)>,
 ) {
-    let Ok((entity, mut mode, mut vel)) = hoshi.get_single_mut() else {
+    let Some((entity, mut mode, mut vel)) = hoshi.get_single_mut_or_none()
+    else {
         return;
     };
     mode.tick(&time);

@@ -165,77 +165,80 @@ pub fn emit_movement_events<T: IntoMap>(
 
 /// Transform is used to change z index based on y.
 pub fn animate_movement<T: IntoMap>(
-    mut character: Query<(&mut Actor, &mut TextureAtlasSprite)>,
-    mut transform: Query<&mut Transform, With<Actor>>,
     time: Res<Time>,
+
+    mut actors: Query<(Entity, &mut Actor, &mut TextureAtlasSprite)>,
+    mut transform: Query<&mut Transform, With<Actor>>,
 ) {
     use GridDirection::*;
 
-    let Ok((mut character, mut sprite)) = character.get_single_mut() else {
-        return;
-    };
-
-    let current_direction = character.direction;
-    let step_time = character.step_time;
-    let standing_still_sprite_index = match current_direction {
-        Bottom => 0,
-        Top => 1,
-        Right | TopRight | BottomRight => 6,
-        Left | TopLeft | BottomLeft => 9,
-    };
-
-    let Some(walking_to) = character.walking_to.as_mut() else {
-        sprite.index = standing_still_sprite_index;
-
-        return;
-    };
-
-    walking_to.since.tick(time.delta());
-
-    let lerp_factor = walking_to.since.elapsed_secs()
-        / if let Top | Bottom | Left | Right = current_direction {
-            step_time.as_secs_f32()
-        } else {
-            // we need to walk a bit slower when walking diagonally because
-            // we cover more distance
-            step_time.as_secs_f32() * 2.0f32.sqrt()
+    for (entity, mut actor, mut sprite) in actors.iter_mut() {
+        let current_direction = actor.direction;
+        let step_time = actor.step_time;
+        let standing_still_sprite_index = match current_direction {
+            Bottom => 0,
+            Top => 1,
+            Right | TopRight | BottomRight => 6,
+            Left | TopLeft | BottomLeft => 9,
         };
 
-    let mut transform = transform.single_mut();
-    let to = T::layout().square_to_world_pos(walking_to.square);
-
-    if lerp_factor >= 1.0 {
-        let new_from = walking_to.square;
-
-        transform.translation = T::extend_z(to);
-
-        if let Some((new_square, new_direction)) = walking_to.planned.take() {
-            walking_to.since.reset();
-            walking_to.square = new_square;
-            character.direction = new_direction;
-        } else {
+        let Some(walking_to) = actor.walking_to.as_mut() else {
             sprite.index = standing_still_sprite_index;
 
-            character.walking_to = None;
-        }
-
-        character.walking_from = new_from;
-    } else {
-        let animation_step_time =
-            animation_step_secs(step_time.as_secs_f32(), current_direction);
-        let extra =
-            (time.elapsed_seconds() / animation_step_time).floor() as usize % 2;
-
-        sprite.index = match current_direction {
-            Top => 2 + extra,
-            Bottom => 4 + extra,
-            Right | TopRight | BottomRight => 7 + extra,
-            Left | TopLeft | BottomLeft => 10 + extra,
+            continue;
         };
 
-        let from = T::layout().square_to_world_pos(character.walking_from);
+        walking_to.since.tick(time.delta());
 
-        transform.translation = T::extend_z(from.lerp(to, lerp_factor));
+        let lerp_factor = walking_to.since.elapsed_secs()
+            / if let Top | Bottom | Left | Right = current_direction {
+                step_time.as_secs_f32()
+            } else {
+                // we need to walk a bit slower when walking diagonally because
+                // we cover more distance
+                step_time.as_secs_f32() * 2.0f32.sqrt()
+            };
+
+        let mut transform = transform
+            .get_mut(entity)
+            .expect("Actor must have Transform");
+        let to = T::layout().square_to_world_pos(walking_to.square);
+
+        if lerp_factor >= 1.0 {
+            let new_from = walking_to.square;
+
+            transform.translation = T::extend_z(to);
+
+            if let Some((new_square, new_direction)) = walking_to.planned.take()
+            {
+                walking_to.since.reset();
+                walking_to.square = new_square;
+                actor.direction = new_direction;
+            } else {
+                sprite.index = standing_still_sprite_index;
+
+                actor.walking_to = None;
+            }
+
+            actor.walking_from = new_from;
+        } else {
+            let animation_step_time =
+                animation_step_secs(step_time.as_secs_f32(), current_direction);
+            let extra = (time.elapsed_seconds() / animation_step_time).floor()
+                as usize
+                % 2;
+
+            sprite.index = match current_direction {
+                Top => 2 + extra,
+                Bottom => 4 + extra,
+                Right | TopRight | BottomRight => 7 + extra,
+                Left | TopLeft | BottomLeft => 10 + extra,
+            };
+
+            let from = T::layout().square_to_world_pos(actor.walking_from);
+
+            transform.translation = T::extend_z(from.lerp(to, lerp_factor));
+        }
     }
 }
 
@@ -367,7 +370,7 @@ impl CharacterBundleBuilder {
         let step_time = step_time.unwrap_or(character.default_step_time());
 
         (
-            Name::from(common_story::Character::Winnie.name()),
+            Name::from(character.name()),
             Actor {
                 character,
                 step_time,

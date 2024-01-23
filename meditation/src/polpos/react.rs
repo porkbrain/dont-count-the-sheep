@@ -1,6 +1,7 @@
 use bevy::render::view::RenderLayers;
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use common_visuals::camera::render_layer;
+use main_game_lib::common_ext::QueryExt;
 
 use super::{
     consts::*, effects::bolt::get_bundle_with_respect_to_origin_at_zero, Polpo,
@@ -30,7 +31,7 @@ pub(super) fn to_hoshi_special(
         return;
     }
 
-    let Ok(hoshi_transform) = hoshi.get_single() else {
+    let Some(hoshi_transform) = hoshi.get_single_or_none() else {
         return;
     };
 
@@ -98,11 +99,11 @@ pub(super) fn to_environment(
         (Without<Climate>, Without<Hoshi>, Without<PolpoOccluder>),
     >,
 ) {
-    let Ok(hoshi) = hoshi.get_single() else {
+    let Some(hoshi) = hoshi.get_single_or_none() else {
         return;
     };
-    let Ok((climate, climate_transform, mut climate_light)) =
-        climate.get_single_mut()
+    let Some((climate, climate_transform, mut climate_light)) =
+        climate.get_single_mut_or_none()
     else {
         return;
     };

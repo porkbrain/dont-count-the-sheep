@@ -5,6 +5,7 @@ use std::{
 
 use bevy::{core_pipeline::bloom::BloomSettings, time::Stopwatch};
 use common_visuals::camera::{PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH};
+use main_game_lib::common_ext::QueryExt;
 
 use super::{consts::*, mode, sprite, ActionEvent, HoshiBody, HoshiFace};
 use crate::prelude::*;
@@ -61,14 +62,15 @@ pub(super) fn sprite_loading_special(
         >,
     )>,
 ) {
-    let Ok((mode, mut vel, transform)) = hoshi.get_single_mut() else {
+    let Some((mode, mut vel, transform)) = hoshi.get_single_mut_or_none()
+    else {
         return;
     };
 
     let dt = time.delta_seconds();
 
-    if let Ok((spark_entity, mut spark_atlas, mut spark_transform)) =
-        set.p0().get_single_mut()
+    if let Some((spark_entity, mut spark_atlas, mut spark_transform)) =
+        set.p0().get_single_mut_or_none()
     {
         let elapsed = mode.activated.elapsed();
 
@@ -106,11 +108,11 @@ pub(super) fn sprite_loading_special(
         }
     }
 
-    if let Ok(mut body) = set.p1().get_single_mut() {
+    if let Some(mut body) = set.p1().get_single_mut_or_none() {
         body.index = sprite::BodyKind::Folded.index();
     }
 
-    if let Ok(mut face) = set.p2().get_single_mut() {
+    if let Some(mut face) = set.p2().get_single_mut_or_none() {
         face.index = sprite::FaceKind::TryHarding.index();
     }
 }
@@ -291,7 +293,8 @@ pub(super) fn rotate(
     >,
     time: Res<Time>,
 ) {
-    let Ok((vel, mut angvel, mut transform)) = hoshi.get_single_mut() else {
+    let Some((vel, mut angvel, mut transform)) = hoshi.get_single_mut_or_none()
+    else {
         return;
     };
 

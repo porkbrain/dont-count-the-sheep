@@ -121,4 +121,5 @@ pub mod character_atlases {
     pub const FOLDER: &str = "characters/atlases";
 
     pub const WINNIE: &str = "characters/atlases/winnie1.png";
+    pub const MARIE: &str = "characters/atlases/widow1.png";
 }

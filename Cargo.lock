@@ -1331,6 +1331,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "common_ext"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "common_loading_screen"
 version = "0.1.0"
 dependencies = [
@@ -1388,6 +1395,7 @@ dependencies = [
  "bevy_grid_squared",
  "common_action",
  "common_assets",
+ "common_ext",
  "common_story",
  "leafwing-input-manager",
  "ron",
@@ -2515,6 +2523,7 @@ dependencies = [
  "bevy_webp_anim",
  "common_action",
  "common_assets",
+ "common_ext",
  "common_loading_screen",
  "common_store",
  "common_story",

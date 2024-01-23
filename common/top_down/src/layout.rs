@@ -7,6 +7,7 @@ use std::marker::PhantomData;
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 use bevy_grid_squared::{Square, SquareLayout};
 use common_assets::RonLoader;
+use common_ext::QueryExt;
 use serde::{Deserialize, Serialize};
 
 use crate::actor::{self, player};
@@ -153,7 +154,7 @@ fn try_insert_map_as_resource<T: IntoMap>(
     mut map_assets: ResMut<Assets<Map<T>>>,
     map: Query<(Entity, &Handle<Map<T>>)>,
 ) {
-    let Ok((entity, map)) = map.get_single() else {
+    let Some((entity, map)) = map.get_single_or_none() else {
         // if the map does no longer exist as a component handle, we either did
         // not spawn it or it's already a resource
         // the caller should check for the latter
