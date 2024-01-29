@@ -71,7 +71,7 @@ pub(super) fn spawn(
             transform: Transform::from_translation(Vec3::new(
                 0.0,
                 0.0,
-                zindex::BEDROOM_FURNITURE_DISTANT + 0.1,
+                zindex::BACKWALL_FURNITURE + 0.1,
             )),
             visibility: Visibility::Hidden,
             sprite: Sprite {
@@ -89,7 +89,7 @@ pub(super) fn start_meditation_minigame_if_near_chair(
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     store: Res<GlobalStore>,
-    map: Res<common_top_down::Map<Apartment>>,
+    map: Res<common_top_down::TileMap<Apartment>>,
 
     player: Query<(Entity, &Actor), With<Player>>,
     mut overlay: Query<&mut Sprite, With<TransparentOverlay>>,
@@ -130,7 +130,7 @@ pub(super) fn start_meditation_minigame_if_near_chair(
 /// By entering the elevator, the player can this scene.
 pub(super) fn enter_the_elevator(
     mut cmd: Commands,
-    map: Res<common_top_down::Map<Apartment>>,
+    map: Res<common_top_down::TileMap<Apartment>>,
 
     player: Query<(Entity, &Actor), With<Player>>,
     elevator: Query<Entity, With<Elevator>>,

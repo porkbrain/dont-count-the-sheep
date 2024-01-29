@@ -1,13 +1,13 @@
 //! Systems related to the player.
 
 use bevy::prelude::*;
-use bevy_grid_squared::{GridDirection, Square};
+use bevy_grid_squared::GridDirection;
 use common_action::GlobalAction;
 use common_ext::QueryExt;
 use leafwing_input_manager::action_state::ActionState;
 
 use super::{Actor, ActorTarget};
-use crate::layout::{IntoMap, Map, SquareKind};
+use crate::layout::{IntoMap, TileMap};
 
 /// The entity that the player controls.
 /// Bound it with [`Actor`] to allow movement.
@@ -16,11 +16,10 @@ pub struct Player;
 
 /// Use keyboard to move around the player.
 pub fn move_around<T: IntoMap>(
-    map: Res<Map<T>>,
+    map: Res<TileMap<T>>,
     controls: Res<ActionState<GlobalAction>>,
 
     mut player: Query<&mut Actor, With<Player>>,
-    other_actors: Query<&Actor, Without<Player>>,
 ) {
     use GridDirection::*;
 
@@ -51,24 +50,11 @@ pub fn move_around<T: IntoMap>(
         return;
     }
 
-    // exhaustive match in case of future changes
-    let is_available = |square: Square| match map.get(&square) {
-        None if !T::contains(square) => false,
-        Some(SquareKind::Object | SquareKind::Wall) => false,
-        Some(SquareKind::None | SquareKind::Zone(_)) | None => {
-            // check other actors
-            // TODO: make it feel right
-            !other_actors.iter().any(|actor| {
-                actor.current_square().manhattan_distance(square) < 3
-            })
-        }
-    };
-
     let plan_from = player.current_square();
 
     let target = next_steps.iter().copied().find_map(|direction| {
         let target = plan_from.neighbor(direction);
-        is_available(target).then_some((target, direction))
+        map.can_be_stepped_on(target).then_some((target, direction))
     });
 
     player.step_time = player.character.default_step_time();

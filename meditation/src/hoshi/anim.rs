@@ -546,7 +546,7 @@ pub(super) fn update_camera_on_special(
     };
 
     for (_, mut transform, mut projection, settings) in cameras.iter_mut() {
-        let mut settings = settings.expect("Bloom settings missing");
+        let mut settings = settings.expect("bloom settings");
         settings.intensity = intensity;
         settings.low_frequency_boost = low_frequency_boost;
         projection.scale = scale;

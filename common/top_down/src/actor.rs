@@ -15,7 +15,7 @@ use common_story::Character;
 
 use crate::{
     layout::{IntoMap, Zone},
-    Map, Player, SquareKind,
+    Player, SquareKind, TileMap,
 };
 
 /// Entity with this component can be moved around.
@@ -86,6 +86,7 @@ pub struct CharacterBundleBuilder {
     initial_direction: GridDirection,
     walking_to: Option<ActorTarget>,
     initial_step_time: Option<Duration>,
+    color: Option<Color>,
 }
 
 /// Sends events when an actor does something interesting.
@@ -95,12 +96,13 @@ pub struct CharacterBundleBuilder {
 /// `run_if(event_update_condition::<ActorMovementEvent>)` and
 /// `after(actor::emit_movement_events::<T>)`.
 pub fn emit_movement_events<T: IntoMap>(
-    map: Res<Map<T>>,
+    map: Res<TileMap<T>>,
     mut event: EventWriter<ActorMovementEvent>,
 
     actors: Query<(Entity, &Actor, Option<&Player>), Changed<Transform>>,
 
-    // TODO: memory leak when entity is despawned
+    // TODO: memory leak when entity is despawned (perhaps keep tilemap rand
+    // version)
     mut local: Local<HashMap<Entity, Zone>>,
 ) {
     for (entity, actor, player) in actors.iter() {
@@ -167,7 +169,11 @@ pub fn emit_movement_events<T: IntoMap>(
 pub fn animate_movement<T: IntoMap>(
     time: Res<Time>,
 
-    mut actors: Query<(Entity, &mut Actor, &mut TextureAtlasSprite)>,
+    mut actors: Query<
+        (Entity, &mut Actor, &mut TextureAtlasSprite),
+        With<Transform>,
+    >,
+    // separate query so that we don't change transform unless needed
     mut transform: Query<&mut Transform, With<Actor>>,
 ) {
     use GridDirection::*;
@@ -199,9 +205,8 @@ pub fn animate_movement<T: IntoMap>(
                 step_time.as_secs_f32() * 2.0f32.sqrt()
             };
 
-        let mut transform = transform
-            .get_mut(entity)
-            .expect("Actor must have Transform");
+        // safe cuz <With<Transform>>
+        let mut transform = transform.get_mut(entity).unwrap();
         let to = T::layout().square_to_world_pos(walking_to.square);
 
         if lerp_factor >= 1.0 {
@@ -311,6 +316,7 @@ impl CharacterBundleBuilder {
             initial_position: default(),
             walking_to: default(),
             initial_step_time: default(),
+            color: default(),
         }
     }
 
@@ -353,6 +359,13 @@ impl CharacterBundleBuilder {
         self
     }
 
+    /// Sets the color of the sprite.
+    pub fn with_sprite_color(mut self, color: Option<Color>) -> Self {
+        self.color = color;
+
+        self
+    }
+
     /// Returns a bundle that can be spawned.
     /// The bundle includes:
     /// - [`Name`] component with the character's name
@@ -365,6 +378,7 @@ impl CharacterBundleBuilder {
             initial_direction,
             walking_to,
             initial_step_time: step_time,
+            color,
         } = self;
 
         let step_time = step_time.unwrap_or(character.default_step_time());
@@ -383,6 +397,7 @@ impl CharacterBundleBuilder {
                 sprite: TextureAtlasSprite {
                     anchor: bevy::sprite::Anchor::BottomCenter,
                     index: 0,
+                    color: color.unwrap_or_default(),
                     ..default()
                 },
                 transform: Transform::from_translation(T::extend_z(

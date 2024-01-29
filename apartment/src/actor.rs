@@ -8,7 +8,7 @@ use bevy::ecs::event::event_update_condition;
 use common_story::portrait_dialog::not_in_portrait_dialog;
 use main_game_lib::{
     common_action::{interaction_pressed, move_action_pressed},
-    common_top_down::{actor, ActorMovementEvent},
+    common_top_down::{actor, npc::PlanPathEvent, ActorMovementEvent},
     cutscene::not_in_cutscene,
 };
 
@@ -53,6 +53,18 @@ impl bevy::app::Plugin for Plugin {
         app.add_systems(
             FixedUpdate,
             common_top_down::actor::animate_movement::<Apartment>
+                .run_if(in_state(GlobalGameState::InApartment)),
+        );
+
+        app.add_systems(
+            Update,
+            (
+                common_top_down::actor::npc::drive_behavior,
+                common_top_down::actor::npc::plan_path::<Apartment>
+                    .run_if(event_update_condition::<PlanPathEvent>),
+                common_top_down::actor::npc::run_path::<Apartment>,
+            )
+                .chain()
                 .run_if(in_state(GlobalGameState::InApartment)),
         );
     }

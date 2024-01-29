@@ -5,15 +5,16 @@ edition.workspace = true
 
 [dependencies]
 bevy_grid_squared.workspace = true
+bevy_pixel_camera.workspace = true
 bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
 common_ext.workspace = true
 common_story.workspace = true
 leafwing-input-manager.workspace = true
+pathfinding.workspace = true
 ron = { workspace = true, optional = true }
 serde.workspace = true
-
 
 [features]
 dev = ["ron"]

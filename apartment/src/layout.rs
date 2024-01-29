@@ -15,6 +15,7 @@ use main_game_lib::{
     cutscene::not_in_cutscene,
     vec2_ext::Vec2Ext,
 };
+use rand::{thread_rng, Rng};
 
 use crate::{consts::*, prelude::*, Apartment};
 
@@ -92,7 +93,9 @@ fn spawn(
     struct ToSpawn {
         name: &'static str,
         asset: &'static str,
-        zindex: f32,
+        // if not specified, it's calculated from position
+        zindex: Option<f32>,
+        position: Vec2,
         color: Option<Color>,
         is_hallway_entity: bool,
     }
@@ -103,62 +106,78 @@ fn spawn(
         zindex,
         color,
         is_hallway_entity,
+        position,
     } in [
         ToSpawn {
-            name: "Background",
+            name: "Bedroom and kitchen background",
             asset: assets::BG,
-            zindex: zindex::BG_ROOM_AND_KITCHEN,
+            zindex: Some(zindex::BG_ROOM_AND_KITCHEN),
             ..default()
         },
         ToSpawn {
-            name: "Bedroom back furniture",
-            asset: assets::BEDROOM_FURNITURE1,
-            zindex: zindex::BEDROOM_FURNITURE_DISTANT,
+            name: "Back wall furniture",
+            asset: assets::BACKWALL_FURNITURE,
+            zindex: Some(zindex::BACKWALL_FURNITURE),
             ..default()
         },
         ToSpawn {
             name: "Bedroom cupboard",
-            asset: assets::BEDROOM_FURNITURE2,
-            zindex: zindex::BEDROOM_FURNITURE_MIDDLE,
+            asset: assets::CUPBOARD,
+            zindex: Some(zindex::BEDROOM_FURNITURE_MIDDLE), // TODO
+            position: vec2(-95.0, 1.0),
+            ..default()
+        },
+        ToSpawn {
+            name: "Bedroom laundry basket",
+            asset: assets::LAUNDRY_BASKET,
+            zindex: Some(zindex::BEDROOM_FURNITURE_MIDDLE), // TODO
+            position: vec2(-51.0, -11.0),
             ..default()
         },
         ToSpawn {
             name: "Bedroom shoe rack",
-            asset: assets::BEDROOM_FURNITURE3,
-            zindex: zindex::BEDROOM_FURNITURE_CLOSEST,
-            ..default()
-        },
-        ToSpawn {
-            name: "Kitchen countertop",
-            asset: assets::KITCHEN_FURNITURE1,
-            zindex: zindex::KITCHEN_FURNITURE_DISTANT,
+            asset: assets::SHOERACK,
+            zindex: Some(zindex::BEDROOM_FURNITURE_MIDDLE), // TODO
+            position: vec2(-63.0, -61.0),
             ..default()
         },
         ToSpawn {
             name: "Kitchen fridge",
-            asset: assets::KITCHEN_FURNITURE2,
-            zindex: zindex::KITCHEN_FURNITURE_MIDDLE,
+            asset: assets::FRIDGE,
+            zindex: Some(zindex::BEDROOM_FURNITURE_MIDDLE), // TODO
+            position: vec2(79.0, 62.0),
             ..default()
         },
         ToSpawn {
             name: "Kitchen table",
-            asset: assets::KITCHEN_FURNITURE3,
-            zindex: zindex::KITCHEN_FURNITURE_CLOSEST,
+            asset: assets::KITCHEN_TABLE,
+            zindex: Some(zindex::KITCHEN_FURNITURE_CLOSEST), // TODO
+            position: vec2(151.0, 27.0),
             ..default()
         },
         ToSpawn {
-            name: "Hallway",
+            name: "Hallway background",
             asset: assets::HALLWAY,
-            zindex: zindex::BG_HALLWAY,
+            zindex: Some(zindex::BG_HALLWAY),
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
+            ..default()
         },
         ToSpawn {
-            name: "Hallway doors",
-            asset: assets::HALLWAY_DOORS,
-            zindex: zindex::HALLWAY_DOORS,
+            name: "Hallway door #1",
+            asset: assets::HALLWAY_DOOR,
+            zindex: Some(zindex::HALLWAY_DOORS), // TODO
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
+            position: vec2(-204.0, -103.0),
+        },
+        ToSpawn {
+            name: "Hallway door #2",
+            asset: assets::HALLWAY_DOOR,
+            zindex: Some(zindex::HALLWAY_DOORS), // TODO
+            color: Some(PRIMARY_COLOR),
+            is_hallway_entity: true,
+            position: vec2(19.0, -103.0),
         },
     ] {
         let mut entity = cmd.spawn((
@@ -167,9 +186,9 @@ fn spawn(
             RenderLayers::layer(render_layer::BG),
             SpriteBundle {
                 texture: asset_server.load(asset),
-                transform: Transform::from_translation(Vec3::new(
-                    0.0, 0.0, zindex,
-                )),
+                transform: Transform::from_translation(
+                    position.extend(zindex.unwrap_or_default()),
+                ),
                 sprite: Sprite {
                     color: color.unwrap_or_default(),
                     ..default()
@@ -184,35 +203,45 @@ fn spawn(
     }
 
     // cloud atlas is rendered on top of the bg but below the furniture
-    cmd.spawn((
-        Name::from("Cloud atlas"),
-        LayoutEntity,
-        RenderLayers::layer(render_layer::BG),
-        AtlasAnimation {
-            on_last_frame: AtlasAnimationEnd::Loop,
-            first: 0,
-            last: CLOUD_FRAMES - 1,
-            ..default()
-        },
-        AtlasAnimationTimer::new(CLOUD_ATLAS_FRAME_TIME, TimerMode::Repeating),
-        SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load(assets::CLOUD_ATLAS),
-                vec2(CLOUD_WIDTH, CLOUD_HEIGHT),
-                CLOUD_FRAMES,
-                1,
-                Some(vec2(CLOUD_PADDING, 0.0)),
-                None,
-            )),
-            sprite: TextureAtlasSprite::new(0),
-            transform: Transform::from_translation(
-                vec2(249.5, 66.5)
-                    .as_top_left_into_centered()
-                    .extend(zindex::CLOUD_ATLAS),
+
+    let mut cloud_atlas_bundle = |x: f32| {
+        (
+            LayoutEntity,
+            RenderLayers::layer(render_layer::BG),
+            AtlasAnimation {
+                on_last_frame: AtlasAnimationEnd::Loop,
+                first: 0,
+                last: CLOUD_FRAMES - 1,
+                ..default()
+            },
+            AtlasAnimationTimer::new(
+                CLOUD_ATLAS_FRAME_TIME,
+                TimerMode::Repeating,
             ),
-            ..default()
-        },
-    ));
+            SpriteSheetBundle {
+                texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                    asset_server.load(assets::CLOUD_ATLAS),
+                    vec2(CLOUD_WIDTH, CLOUD_HEIGHT),
+                    CLOUD_FRAMES,
+                    1,
+                    Some(vec2(CLOUD_PADDING, 0.0)),
+                    None,
+                )),
+                sprite: TextureAtlasSprite::new(
+                    thread_rng().gen_range(0..CLOUD_FRAMES),
+                ),
+                transform: Transform::from_translation(
+                    vec2(x, 113.5).extend(zindex::CLOUD_ATLAS),
+                ),
+                ..default()
+            },
+        )
+    };
+
+    cmd.spawn(Name::from("Bedroom cloud atlas"))
+        .insert(cloud_atlas_bundle(-70.5));
+    cmd.spawn(Name::from("Kitchen cloud atlas"))
+        .insert(cloud_atlas_bundle(96.0));
 
     // bedroom door opens (sprite index 2) when the player is near the door
     cmd.spawn((
@@ -313,7 +342,7 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
 }
 
 fn smoothly_transition_hallway_color(
-    map: Res<common_top_down::Map<Apartment>>,
+    map: Res<common_top_down::TileMap<Apartment>>,
 
     player: Query<&Actor, With<Player>>,
     mut sprites: Query<&mut Sprite, With<HallwayEntity>>,

@@ -14,7 +14,14 @@ pub mod apartment {
 
     pub const CLOUD_ATLAS: &str = "apartment/cloud_atlas.png";
 
-    pub const BEDROOM_FURNITURE1: &str = "apartment/bedroom_furniture1.png";
+    pub const BACKWALL_FURNITURE: &str = "apartment/backwall_furniture.png";
+
+    pub const FRIDGE: &str = "apartment/fridge.png";
+    pub const KITCHEN_TABLE: &str = "apartment/kitchen_table.png";
+    pub const LAUNDRY_BASKET: &str = "apartment/laundry_basket.png";
+    pub const SHOERACK: &str = "apartment/shoerack.png";
+    pub const CUPBOARD: &str = "apartment/cupboard.png";
+
     pub const BEDROOM_FURNITURE2: &str = "apartment/bedroom_furniture2.png";
     pub const BEDROOM_FURNITURE3: &str = "apartment/bedroom_furniture3.png";
     pub const BEDROOM_MAIN_DOOR: &str = "apartment/brown_door_atlas.png";
@@ -30,6 +37,7 @@ pub mod apartment {
 
     pub const HALLWAY: &str = "apartment/hallway.png";
     pub const HALLWAY_DOORS: &str = "apartment/hallway_doors.png";
+    pub const HALLWAY_DOOR: &str = "apartment/black_door.png";
     pub const ELEVATOR_ATLAS: &str = "apartment/elevator_atlas.png";
 }
 

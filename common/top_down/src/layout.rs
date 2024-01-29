@@ -2,10 +2,10 @@
 //! Where can the character go? Where are the walls? Where are the immovable
 //! objects?
 
-use std::marker::PhantomData;
+use std::{marker::PhantomData, ops::RangeInclusive};
 
 use bevy::{prelude::*, utils::hashbrown::HashMap};
-use bevy_grid_squared::{Square, SquareLayout};
+use bevy_grid_squared::{square, Square, SquareLayout};
 use common_assets::RonLoader;
 use common_ext::QueryExt;
 use serde::{Deserialize, Serialize};
@@ -25,10 +25,10 @@ pub type Zone = u8;
 /// We draw an overlay with tiles that you can edit with left and right mouse
 /// buttons.
 pub fn register<T: IntoMap, S: States>(app: &mut App, loading: S, running: S) {
-    app.init_asset_loader::<RonLoader<Map<T>>>()
-        .init_asset::<Map<T>>()
-        .register_type::<Map<T>>()
-        .register_type::<RonLoader<Map<T>>>();
+    app.init_asset_loader::<RonLoader<TileMap<T>>>()
+        .init_asset::<TileMap<T>>()
+        .register_type::<TileMap<T>>()
+        .register_type::<RonLoader<TileMap<T>>>();
 
     app.add_systems(OnEnter(loading.clone()), start_loading_map::<T>);
     app.add_systems(
@@ -85,11 +85,14 @@ pub trait IntoMap: 'static + Send + Sync + TypePath {
 
     /// Given a position on the map, add a z coordinate.
     /// Custom implementations can be used to add z index based on y coordinate.
+    #[inline]
     fn extend_z(v: Vec2) -> Vec3 {
+        Self::y_range();
         v.extend(0.0)
     }
 
     /// Whether the given square is inside the map.
+    #[inline]
     fn contains(square: Square) -> bool {
         let [min_x, max_x, min_y, max_y] = Self::bounds();
 
@@ -98,11 +101,20 @@ pub trait IntoMap: 'static + Send + Sync + TypePath {
             && square.y >= min_y
             && square.y <= max_y
     }
+
+    /// Range of y world pos coordinates.
+    fn y_range() -> RangeInclusive<f32> {
+        let [_, _, top, bottom] = Self::bounds();
+        let min_y = Self::layout().square_to_world_pos(square(0, bottom)).y;
+        let max_y = Self::layout().square_to_world_pos(square(0, top)).y;
+
+        min_y..=max_y
+    }
 }
 
 /// Holds the tiles in a hash map.
 #[derive(Asset, Resource, Serialize, Deserialize, Reflect)]
-pub struct Map<T: IntoMap> {
+pub struct TileMap<T: IntoMap> {
     squares: HashMap<Square, SquareKind>,
     #[serde(skip)]
     #[reflect(ignore)]
@@ -126,9 +138,17 @@ pub enum SquareKind {
     /// You can match the zone number to a check whether the character is in
     /// a tile of that zone.
     Zone(Zone),
+    /// Personal space of a character.
+    /// A single character will be assigned to multiple tiles based on their
+    /// size.
+    ///
+    /// We use [`Entity`] to make it apparent that this will be dynamically
+    /// updated on runtime.
+    /// This variant mustn't be loaded from map ron file.
+    Character(Entity),
 }
 
-impl<T: IntoMap> Map<T> {
+impl<T: IntoMap> TileMap<T> {
     /// Get the kind of a tile.
     pub fn get(&self, square: &Square) -> Option<SquareKind> {
         self.squares.get(square).copied()
@@ -139,7 +159,7 @@ impl<T: IntoMap> Map<T> {
 /// We need to keep checking for this to be done by calling
 /// [`try_insert_map_as_resource`].
 fn start_loading_map<T: IntoMap>(mut cmd: Commands, assets: Res<AssetServer>) {
-    let handle: Handle<Map<T>> = assets.load(T::asset_path());
+    let handle: Handle<TileMap<T>> = assets.load(T::asset_path());
     cmd.spawn(handle);
 }
 
@@ -151,8 +171,8 @@ fn start_loading_map<T: IntoMap>(mut cmd: Commands, assets: Res<AssetServer>) {
 /// with your game.
 fn try_insert_map_as_resource<T: IntoMap>(
     mut cmd: Commands,
-    mut map_assets: ResMut<Assets<Map<T>>>,
-    map: Query<(Entity, &Handle<Map<T>>)>,
+    mut map_assets: ResMut<Assets<TileMap<T>>>,
+    map: Query<(Entity, &Handle<TileMap<T>>)>,
 ) {
     let Some((entity, map)) = map.get_single_or_none() else {
         // if the map does no longer exist as a component handle, we either did
@@ -164,19 +184,56 @@ fn try_insert_map_as_resource<T: IntoMap>(
     // we cannot call remove straight away because panics - the handle is
     // removed, the map is not loaded yet and asset loader expects it to exist
     if map_assets.get(map).is_some() {
-        cmd.insert_resource(map_assets.remove(map).unwrap());
+        cmd.insert_resource(map_assets.remove(map).unwrap()); // safe ^
         cmd.entity(entity).despawn();
     }
 }
 
-impl<T: IntoMap> Map<T> {
+impl<T: IntoMap> TileMap<T> {
     /// Create a new map with the given squares.
-    #[allow(dead_code)]
     pub fn new(squares: HashMap<Square, SquareKind>) -> Self {
         Self {
             squares,
             phantom: PhantomData,
         }
+    }
+
+    /// Whether there's something on the given square that cannot be walked over
+    /// such as a wall, an object or a character.
+    /// Also checks bounds.
+    pub fn can_be_stepped_on(&self, square: Square) -> bool {
+        use SquareKind as S;
+        match self.squares.get(&square) {
+            None if !T::contains(square) => false,
+            Some(S::Object | S::Wall | S::Character(_)) => false,
+            Some(S::None | S::Zone(_)) | None => true,
+        }
+    }
+
+    /// Uses A* to find a path from `from` to `to`.
+    pub fn find_path(&self, from: Square, to: Square) -> Option<Vec<Square>> {
+        if !T::contains(from) || !T::contains(to) {
+            return None;
+        }
+
+        if !self.can_be_stepped_on(to) {
+            return None;
+        }
+
+        // TODO: constraint this to run only for X steps in a single frame to
+        // avoid clogging the CPU
+        let (path, _cost) = pathfinding::prelude::astar(
+            &from,
+            |square| {
+                square.neighbors().filter_map(|neighbor| {
+                    self.can_be_stepped_on(neighbor).then_some((neighbor, 1))
+                })
+            },
+            |square| square.manhattan_distance(to),
+            |square| square == &to,
+        )?;
+
+        Some(path)
     }
 }
 
@@ -191,12 +248,12 @@ mod map_maker {
 
     pub(super) fn visualize_map<T: IntoMap>(
         mut cmd: Commands,
-        map: Res<Map<T>>,
+        map: Res<TileMap<T>>,
     ) {
         spawn_grid(&mut cmd, &map);
     }
 
-    fn spawn_grid<T: IntoMap>(cmd: &mut Commands, map: &Map<T>) {
+    fn spawn_grid<T: IntoMap>(cmd: &mut Commands, map: &TileMap<T>) {
         for square in bevy_grid_squared::shapes::rectangle(T::bounds()) {
             let world_pos = T::layout().square_to_world_pos(square);
 
@@ -226,7 +283,7 @@ mod map_maker {
     pub(super) fn change_square_kind<T: IntoMap>(
         mut cmd: Commands,
         mouse: Res<Input<MouseButton>>,
-        mut map: ResMut<Map<T>>,
+        mut map: ResMut<TileMap<T>>,
 
         squares: Query<Entity, With<SquareSprite>>,
         windows: Query<&Window, With<PrimaryWindow>>,
@@ -256,9 +313,15 @@ mod map_maker {
         spawn_grid(&mut cmd, &map);
     }
 
-    pub(super) fn export_map<T: IntoMap>(mut map: ResMut<Map<T>>) {
+    pub(super) fn export_map<T: IntoMap>(mut map: ResMut<TileMap<T>>) {
         // filter out needless squares
-        map.squares.retain(|_, v| !matches!(v, SquareKind::None));
+        map.squares.retain(|_, v| match v {
+            SquareKind::Wall => true,
+            SquareKind::Object => true,
+            SquareKind::Zone(_) => true,
+            SquareKind::None => false,
+            SquareKind::Character(_) => false,
+        });
 
         // for internal use only so who cares
         std::fs::write("map.ron", ron::to_string(&*map).unwrap()).unwrap();
@@ -283,6 +346,7 @@ mod map_maker {
                 Self::Object => Color::WHITE.with_a(0.5),
                 // if you want more zones, add more colors :-)
                 Self::Zone(a) => colors[a as usize],
+                Self::Character(_) => Color::GOLD.with_a(0.5),
             }
         }
 
@@ -293,6 +357,7 @@ mod map_maker {
                 Self::Wall => Self::Zone(0),
                 Self::Zone(Self::MAX_ZONE) => Self::Object,
                 Self::Zone(a) => Self::Zone(a + 1),
+                Self::Character(_) => unreachable!(),
             }
         }
 
@@ -303,6 +368,7 @@ mod map_maker {
                 Self::Wall => Self::None,
                 Self::Zone(0) => Self::Wall,
                 Self::Zone(a) => Self::Zone(a - 1),
+                Self::Character(_) => unreachable!(),
             }
         }
     }

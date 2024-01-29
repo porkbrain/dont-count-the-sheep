@@ -124,7 +124,7 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<common_top_down::Map<Downtown>>>,
+    map: Option<Res<common_top_down::TileMap<Downtown>>>,
     asset_server: Res<AssetServer>,
     asset_store: Res<AssetStore<Downtown>>,
 ) {

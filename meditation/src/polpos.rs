@@ -117,7 +117,7 @@ fn follow_curve(
 
         if at_lap_beginning && at_least_one_lap && ready_to_transition {
             polpo.current_path_since.reset();
-            polpo.path = polpo.transition_into.take().unwrap();
+            polpo.path = polpo.transition_into.take().unwrap(); // safe ^
         } else if !ready_to_transition {
             // roll a dice to see if Polpo levels up
             // let should_level_up = rand::random::<f32>() < 0.8; // TODO

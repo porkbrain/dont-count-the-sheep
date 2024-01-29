@@ -6,6 +6,7 @@ pub trait Vec2Ext {
 }
 
 impl Vec2Ext for Vec2 {
+    #[inline]
     fn as_top_left_into_centered(&self) -> Self {
         Self::new(
             self.x - PIXEL_VISIBLE_WIDTH / 2.0,

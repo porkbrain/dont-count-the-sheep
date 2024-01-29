@@ -118,7 +118,7 @@ pub(super) fn to_environment(
     for (polpo_id, mut occluder_pos) in polpo_occluders.iter_mut() {
         let (polpo_entity, mut polpo, polpo_pos, mut sprite) = polpos
             .get_mut(polpo_id.get())
-            .expect("Each occluder should have a Polpo parent");
+            .expect("each occluder to have a Polpo parent");
 
         //
         // 1.
