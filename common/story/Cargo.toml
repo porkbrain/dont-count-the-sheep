@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+bevy-inspector-egui.workspace = true
 bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true

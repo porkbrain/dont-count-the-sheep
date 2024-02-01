@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![deny(missing_docs)]
 #![feature(trivial_bounds)]
+#![feature(let_chains)]
 
 pub mod actor;
 pub mod layout;

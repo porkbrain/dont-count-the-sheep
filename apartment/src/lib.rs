@@ -24,7 +24,7 @@ use prelude::*;
 /// Important scene struct.
 /// We use it as identifiable generic in some common logic such as layout or
 /// asset.
-#[derive(TypePath)]
+#[derive(TypePath, Default)]
 pub(crate) struct Apartment;
 
 pub fn add(app: &mut App) {

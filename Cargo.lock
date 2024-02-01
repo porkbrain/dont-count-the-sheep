@@ -1370,6 +1370,7 @@ name = "common_story"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-inspector-egui",
  "common_action",
  "common_assets",
  "common_store",
@@ -1393,6 +1394,7 @@ name = "common_top_down"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-inspector-egui",
  "bevy_grid_squared",
  "bevy_pixel_camera",
  "common_action",

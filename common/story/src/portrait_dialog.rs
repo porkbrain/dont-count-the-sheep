@@ -23,6 +23,7 @@ use bevy::{
     text::{Text2dBounds, TextLayoutInfo},
     utils::Instant,
 };
+use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_action::{ActionState, GlobalAction};
 use common_store::{DialogStore, GlobalStore};
 use common_visuals::camera::render_layer;
@@ -51,7 +52,8 @@ pub fn not_in_portrait_dialog(
 }
 
 /// If inserted, then the game is in the dialog UI.
-#[derive(Resource, Reflect)]
+#[derive(Resource, Reflect, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
 pub struct PortraitDialog {
     /// We force a small delay between frames to prevent the player from
     /// skipping through the dialog way too fast.
@@ -626,6 +628,17 @@ impl Step {
         Self::Text {
             speaker: character,
             content,
+        }
+    }
+}
+
+impl Default for PortraitDialog {
+    fn default() -> Self {
+        Self {
+            last_frame_shown_at: Instant::now(),
+            sequence: vec![],
+            sequence_index: 0,
+            speaker: None,
         }
     }
 }

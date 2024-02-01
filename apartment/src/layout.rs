@@ -1,6 +1,6 @@
 use bevy::{
     ecs::event::event_update_condition, render::view::RenderLayers,
-    utils::Instant,
+    sprite::Anchor, utils::Instant,
 };
 use bevy_grid_squared::{Square, SquareLayout};
 use common_visuals::{
@@ -98,6 +98,8 @@ fn spawn(
         position: Vec2,
         color: Option<Color>,
         is_hallway_entity: bool,
+        anchor: Option<Anchor>,
+        anchor_y_offset: f32,
     }
 
     for ToSpawn {
@@ -107,11 +109,13 @@ fn spawn(
         color,
         is_hallway_entity,
         position,
+        anchor,
+        anchor_y_offset,
     } in [
         ToSpawn {
-            name: "Bedroom and kitchen background",
+            name: "Bedroom, bathroom and kitchen background",
             asset: assets::BG,
-            zindex: Some(zindex::BG_ROOM_AND_KITCHEN),
+            zindex: Some(zindex::BG_BATHROOM_BEDROOM_AND_KITCHEN),
             ..default()
         },
         ToSpawn {
@@ -121,38 +125,47 @@ fn spawn(
             ..default()
         },
         ToSpawn {
+            name: "Bathroom toilet",
+            asset: assets::TOILET,
+            position: vec2(-143.0, -10.0),
+            anchor: Some(Anchor::BottomCenter),
+            ..default()
+        },
+        ToSpawn {
             name: "Bedroom cupboard",
             asset: assets::CUPBOARD,
-            zindex: Some(zindex::BEDROOM_FURNITURE_MIDDLE), // TODO
-            position: vec2(-95.0, 1.0),
+            position: vec2(-95.0, -25.0),
+            anchor: Some(Anchor::BottomCenter),
+            anchor_y_offset: 2.5,
             ..default()
         },
         ToSpawn {
             name: "Bedroom laundry basket",
             asset: assets::LAUNDRY_BASKET,
-            zindex: Some(zindex::BEDROOM_FURNITURE_MIDDLE), // TODO
-            position: vec2(-51.0, -11.0),
+            position: vec2(-51.0, -25.0),
+            anchor: Some(Anchor::BottomCenter),
+            anchor_y_offset: 5.0,
             ..default()
         },
         ToSpawn {
             name: "Bedroom shoe rack",
             asset: assets::SHOERACK,
-            zindex: Some(zindex::BEDROOM_FURNITURE_MIDDLE), // TODO
-            position: vec2(-63.0, -61.0),
+            position: vec2(-63.0, -77.0),
+            anchor: Some(Anchor::BottomCenter),
             ..default()
         },
         ToSpawn {
             name: "Kitchen fridge",
             asset: assets::FRIDGE,
-            zindex: Some(zindex::BEDROOM_FURNITURE_MIDDLE), // TODO
-            position: vec2(79.0, 62.0),
+            position: vec2(79.0, 37.0),
+            anchor: Some(Anchor::BottomCenter),
             ..default()
         },
         ToSpawn {
             name: "Kitchen table",
             asset: assets::KITCHEN_TABLE,
-            zindex: Some(zindex::KITCHEN_FURNITURE_CLOSEST), // TODO
-            position: vec2(151.0, 27.0),
+            position: vec2(151.0, 11.0),
+            anchor: Some(Anchor::BottomCenter),
             ..default()
         },
         ToSpawn {
@@ -166,31 +179,37 @@ fn spawn(
         ToSpawn {
             name: "Hallway door #1",
             asset: assets::HALLWAY_DOOR,
-            zindex: Some(zindex::HALLWAY_DOORS), // TODO
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
-            position: vec2(-204.0, -103.0),
+            position: vec2(-204.0, -121.0),
+            anchor: Some(Anchor::BottomCenter),
+            ..default()
         },
         ToSpawn {
             name: "Hallway door #2",
             asset: assets::HALLWAY_DOOR,
-            zindex: Some(zindex::HALLWAY_DOORS), // TODO
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
-            position: vec2(19.0, -103.0),
+            position: vec2(19.0, -121.0),
+            anchor: Some(Anchor::BottomCenter),
+            ..default()
         },
     ] {
+        let translate = zindex
+            .map(|zindex| position.extend(zindex))
+            .unwrap_or_else(|| {
+                Apartment::extend_z_with_y_offset(position, anchor_y_offset)
+            });
         let mut entity = cmd.spawn((
             Name::from(name),
             LayoutEntity,
             RenderLayers::layer(render_layer::BG),
             SpriteBundle {
                 texture: asset_server.load(asset),
-                transform: Transform::from_translation(
-                    position.extend(zindex.unwrap_or_default()),
-                ),
+                transform: Transform::from_translation(translate),
                 sprite: Sprite {
                     color: color.unwrap_or_default(),
+                    anchor: anchor.unwrap_or_default(),
                     ..default()
                 },
                 ..default()
@@ -258,9 +277,14 @@ fn spawn(
                 None,
                 None,
             )),
-            sprite: TextureAtlasSprite::new(0),
+            sprite: TextureAtlasSprite {
+                anchor: Anchor::BottomCenter,
+                ..default()
+            },
             transform: Transform::from_translation(
-                vec2(-105.0, -63.0).extend(zindex::BEDROOM_FURNITURE_CLOSEST),
+                // sometimes to make the game feel better, the z coordinate
+                // needs to be adjusted
+                Apartment::extend_z_with_y_offset(vec2(-105.0, -88.0), 8.5),
             ),
             ..default()
         },
@@ -424,23 +448,5 @@ impl IntoMap for Apartment {
         Self::layout().world_pos_to_square(
             (p / PIXEL_ZOOM as f32).as_top_left_into_centered(),
         )
-    }
-
-    fn extend_z(v: Vec2) -> Vec3 {
-        let y = v.y;
-
-        // this is stupid 'n' simple but since the room does not
-        // require anything more complex for now, let's roll with it
-        v.extend(if y > 40.0 {
-            zindex::KITCHEN_FURNITURE_MIDDLE - 0.1
-        } else if y > 10.0 {
-            zindex::KITCHEN_FURNITURE_MIDDLE + 0.1
-        } else if y > -22.0 {
-            zindex::BEDROOM_FURNITURE_MIDDLE - 0.1
-        } else if y > -78.0 {
-            zindex::BEDROOM_FURNITURE_MIDDLE + 0.1
-        } else {
-            zindex::BEDROOM_FURNITURE_CLOSEST + 0.1
-        })
     }
 }

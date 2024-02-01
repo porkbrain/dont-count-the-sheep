@@ -9,6 +9,7 @@ use bevy::prelude::*;
 pub use direction::Direction as GridDirection;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Reflect)]
+#[reflect(Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SquareLayout {
     pub square_size: f32,
@@ -16,6 +17,7 @@ pub struct SquareLayout {
 }
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Reflect)]
+#[reflect(Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Square {
     pub x: i32,
@@ -78,5 +80,11 @@ impl From<Square> for Vec2 {
     #[inline]
     fn from(square: Square) -> Self {
         Vec2::new(square.x as f32, square.y as f32)
+    }
+}
+
+impl std::fmt::Display for Square {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}, {}]", self.x, self.y)
     }
 }

@@ -1,12 +1,19 @@
-use bevy::{math::Vec2, reflect::Reflect};
+use bevy::{
+    math::Vec2,
+    reflect::{std_traits::ReflectDefault, Reflect},
+};
 
 use crate::Square;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Reflect)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Reflect, Default)]
+#[reflect(Default)]
 pub enum Direction {
     /// ↑
     Top,
     /// ↓
+    ///
+    /// Set as default arbitrarily to allow reflection and default value.
+    #[default]
     Bottom,
     /// ←
     Left,

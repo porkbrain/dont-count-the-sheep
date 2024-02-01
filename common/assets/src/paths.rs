@@ -11,34 +11,25 @@ pub mod apartment {
     pub const FOLDER: &str = "apartment";
     pub const MAP: &str = "apartment/map.ron";
     pub const BG: &str = "apartment/bg.png";
+    pub const HALLWAY: &str = "apartment/hallway.png";
 
     pub const CLOUD_ATLAS: &str = "apartment/cloud_atlas.png";
 
     pub const BACKWALL_FURNITURE: &str = "apartment/backwall_furniture.png";
-
     pub const FRIDGE: &str = "apartment/fridge.png";
     pub const KITCHEN_TABLE: &str = "apartment/kitchen_table.png";
     pub const LAUNDRY_BASKET: &str = "apartment/laundry_basket.png";
     pub const SHOERACK: &str = "apartment/shoerack.png";
     pub const CUPBOARD: &str = "apartment/cupboard.png";
-
-    pub const BEDROOM_FURNITURE2: &str = "apartment/bedroom_furniture2.png";
-    pub const BEDROOM_FURNITURE3: &str = "apartment/bedroom_furniture3.png";
+    pub const TOILET: &str = "apartment/toilet.png";
     pub const BEDROOM_MAIN_DOOR: &str = "apartment/brown_door_atlas.png";
-
-    pub const KITCHEN_FURNITURE1: &str = "apartment/kitchen_furniture1.png";
-    pub const KITCHEN_FURNITURE2: &str = "apartment/kitchen_furniture2.png";
-    pub const KITCHEN_FURNITURE3: &str = "apartment/kitchen_furniture3.png";
+    pub const HALLWAY_DOOR: &str = "apartment/black_door.png";
+    pub const ELEVATOR_ATLAS: &str = "apartment/elevator_atlas.png";
 
     pub const WINNIE_ATLAS: &str = "apartment/winnie_atlas.png";
 
     pub const WINNIE_SLEEPING: &str = "apartment/sleeping.png";
     pub const WINNIE_MEDITATING: &str = "apartment/meditating.png";
-
-    pub const HALLWAY: &str = "apartment/hallway.png";
-    pub const HALLWAY_DOORS: &str = "apartment/hallway_doors.png";
-    pub const HALLWAY_DOOR: &str = "apartment/black_door.png";
-    pub const ELEVATOR_ATLAS: &str = "apartment/elevator_atlas.png";
 }
 
 pub mod downtown {

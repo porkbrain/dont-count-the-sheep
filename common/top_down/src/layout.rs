@@ -6,6 +6,7 @@ use std::{marker::PhantomData, ops::RangeInclusive};
 
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 use bevy_grid_squared::{square, Square, SquareLayout};
+use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_assets::RonLoader;
 use common_ext::QueryExt;
 use serde::{Deserialize, Serialize};
@@ -27,6 +28,7 @@ pub type Zone = u8;
 pub fn register<T: IntoMap, S: States>(app: &mut App, loading: S, running: S) {
     app.init_asset_loader::<RonLoader<TileMap<T>>>()
         .init_asset::<TileMap<T>>()
+        .register_type::<SquareKind>()
         .register_type::<TileMap<T>>()
         .register_type::<RonLoader<TileMap<T>>>();
 
@@ -47,6 +49,8 @@ pub fn register<T: IntoMap, S: States>(app: &mut App, loading: S, running: S) {
     {
         use bevy::input::common_conditions::input_just_pressed;
 
+        app.register_type::<map_maker::TileMapMakerToolbar>();
+
         app.add_systems(
             OnEnter(running.clone()),
             map_maker::visualize_map::<T>,
@@ -66,9 +70,9 @@ pub fn register<T: IntoMap, S: States>(app: &mut App, loading: S, running: S) {
 }
 
 /// Some map.
-pub trait IntoMap: 'static + Send + Sync + TypePath {
+pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
     /// Size in number of tiles.
-    /// `[left, right, top, bottom]`
+    /// `[left, right, bottom, top]`
     fn bounds() -> [i32; 4];
 
     /// How large is a tile and how do we translate between world coordinates
@@ -84,11 +88,23 @@ pub trait IntoMap: 'static + Send + Sync + TypePath {
     fn cursor_position_to_square(cursor_position: Vec2) -> Square;
 
     /// Given a position on the map, add a z coordinate.
-    /// Custom implementations can be used to add z index based on y coordinate.
     #[inline]
-    fn extend_z(v: Vec2) -> Vec3 {
-        Self::y_range();
-        v.extend(0.0)
+    fn extend_z(Vec2 { x, y }: Vec2) -> Vec3 {
+        let (min, max) = Self::y_range().into_inner();
+        let size = max - min;
+        debug_assert!(size > 0.0, "{max} - {min} <= 0.0");
+
+        // we allow for a tiny leeway for positions outside of the bounding box
+        let z = ((max - y) / size).clamp(-0.1, 1.1);
+
+        Vec3::new(x, y, z)
+    }
+
+    /// Given a position on the map, add a z coordinate as if the y coordinate
+    /// was offset by `offset`.
+    fn extend_z_with_y_offset(Vec2 { x, y }: Vec2, offset: f32) -> Vec3 {
+        let z = Self::extend_z(Vec2 { x, y: y + offset }).z;
+        Vec3::new(x, y, z)
     }
 
     /// Whether the given square is inside the map.
@@ -104,7 +120,7 @@ pub trait IntoMap: 'static + Send + Sync + TypePath {
 
     /// Range of y world pos coordinates.
     fn y_range() -> RangeInclusive<f32> {
-        let [_, _, top, bottom] = Self::bounds();
+        let [_, _, bottom, top] = Self::bounds();
         let min_y = Self::layout().square_to_world_pos(square(0, bottom)).y;
         let max_y = Self::layout().square_to_world_pos(square(0, top)).y;
 
@@ -113,7 +129,10 @@ pub trait IntoMap: 'static + Send + Sync + TypePath {
 }
 
 /// Holds the tiles in a hash map.
-#[derive(Asset, Resource, Serialize, Deserialize, Reflect)]
+#[derive(
+    Asset, Resource, Serialize, Deserialize, Reflect, InspectorOptions, Default,
+)]
+#[reflect(Resource, InspectorOptions)]
 pub struct TileMap<T: IntoMap> {
     squares: HashMap<Square, SquareKind>,
     #[serde(skip)]
@@ -125,15 +144,17 @@ pub struct TileMap<T: IntoMap> {
 #[derive(
     Clone, Copy, Serialize, Deserialize, Default, Eq, PartialEq, Reflect,
 )]
+#[reflect(Default)]
 pub enum SquareKind {
     /// No tile.
     /// Preferably don't put these into the hash map.
     #[default]
     None,
     /// A wall that cannot be passed.
+    /// Can be actual wall, an object etc.
     Wall,
-    /// An object that blocks.
-    Object,
+    /// NPCs will preferably follow the trail when moving.
+    Trail,
     /// A space that can be depended on by the game logic.
     /// You can match the zone number to a check whether the character is in
     /// a tile of that zone.
@@ -201,32 +222,41 @@ impl<T: IntoMap> TileMap<T> {
     /// Whether there's something on the given square that cannot be walked over
     /// such as a wall, an object or a character.
     /// Also checks bounds.
+    ///
+    /// TODO: character should be able to step on itself
     pub fn can_be_stepped_on(&self, square: Square) -> bool {
         use SquareKind as S;
         match self.squares.get(&square) {
             None if !T::contains(square) => false,
-            Some(S::Object | S::Wall | S::Character(_)) => false,
-            Some(S::None | S::Zone(_)) | None => true,
+            Some(S::Wall | S::Character(_)) => false,
+            Some(S::None | S::Trail | S::Zone(_)) | None => true,
         }
     }
 
     /// Uses A* to find a path from `from` to `to`.
+    ///
+    /// TODO: constraint this to run only for X steps in a single frame to
+    /// avoid clogging the CPU
     pub fn find_path(&self, from: Square, to: Square) -> Option<Vec<Square>> {
-        if !T::contains(from) || !T::contains(to) {
+        if !T::contains(from) || !T::contains(to) || !self.can_be_stepped_on(to)
+        {
             return None;
         }
 
-        if !self.can_be_stepped_on(to) {
-            return None;
-        }
-
-        // TODO: constraint this to run only for X steps in a single frame to
-        // avoid clogging the CPU
         let (path, _cost) = pathfinding::prelude::astar(
             &from,
             |square| {
                 square.neighbors().filter_map(|neighbor| {
-                    self.can_be_stepped_on(neighbor).then_some((neighbor, 1))
+                    use SquareKind as S;
+
+                    match self.squares.get(&neighbor) {
+                        None if !T::contains(neighbor) => None,
+                        Some(S::Wall | S::Character(_)) => None,
+                        Some(S::None | S::Zone(_)) | None => {
+                            Some((neighbor, 2))
+                        }
+                        Some(S::Trail) => Some((neighbor, 1)),
+                    }
                 })
             },
             |square| square.manhattan_distance(to),
@@ -244,16 +274,35 @@ mod map_maker {
     use super::*;
 
     #[derive(Component)]
-    pub(super) struct SquareSprite;
+    pub(super) struct SquareSprite(Square);
+
+    #[derive(Resource, Reflect, InspectorOptions, Default)]
+    #[reflect(Resource, InspectorOptions)]
+    pub(super) struct TileMapMakerToolbar {
+        /// If set to [`None`], does nothing.
+        /// If set to any other, holding down left mouse button will paint
+        /// that kind of square on any square the cursor is over.
+        paint: Option<SquareKind>,
+        /// If set to true, will replace existing solid tiles such as walls or
+        /// trails.
+        /// If set to false, will only replace empty tiles.
+        paint_over_tiles: bool,
+    }
 
     pub(super) fn visualize_map<T: IntoMap>(
         mut cmd: Commands,
         map: Res<TileMap<T>>,
     ) {
+        cmd.init_resource::<TileMapMakerToolbar>();
+
         spawn_grid(&mut cmd, &map);
     }
 
     fn spawn_grid<T: IntoMap>(cmd: &mut Commands, map: &TileMap<T>) {
+        let root = cmd
+            .spawn((Name::new("Debug Layout Grid"), SpatialBundle::default()))
+            .id();
+
         for square in bevy_grid_squared::shapes::rectangle(T::bounds()) {
             let world_pos = T::layout().square_to_world_pos(square);
 
@@ -263,8 +312,9 @@ mod map_maker {
                 .copied()
                 .unwrap_or(SquareKind::None);
 
-            cmd.spawn((SquareSprite, Name::new("Debug square"))).insert(
-                SpriteBundle {
+            let child = cmd
+                .spawn((SquareSprite(square), Name::new(format!("{square}"))))
+                .insert(SpriteBundle {
                     sprite: Sprite {
                         color: kind.color(),
                         // slightly smaller to show borders
@@ -275,23 +325,21 @@ mod map_maker {
                         world_pos.extend(10.0),
                     ),
                     ..default()
-                },
-            );
+                })
+                .id();
+            cmd.entity(root).add_child(child);
         }
     }
 
     pub(super) fn change_square_kind<T: IntoMap>(
-        mut cmd: Commands,
         mouse: Res<Input<MouseButton>>,
         mut map: ResMut<TileMap<T>>,
+        toolbar: ResMut<TileMapMakerToolbar>,
 
-        squares: Query<Entity, With<SquareSprite>>,
+        mut squares: Query<(&SquareSprite, &mut Sprite)>,
         windows: Query<&Window, With<PrimaryWindow>>,
     ) {
-        let next = mouse.just_pressed(MouseButton::Left);
-        let prev = mouse.just_pressed(MouseButton::Right);
-
-        if !next && !prev {
+        if mouse.get_pressed().next().is_none() {
             return;
         }
 
@@ -300,24 +348,49 @@ mod map_maker {
         };
 
         let needle = T::cursor_position_to_square(position);
-
         let square_kind = map.squares.entry(needle).or_insert(default());
-        *square_kind = if next {
-            square_kind.next()
+
+        if let Some(kind) = toolbar.paint
+            && mouse.pressed(MouseButton::Left)
+        {
+            if !toolbar.paint_over_tiles
+                && matches!(
+                    *square_kind,
+                    SquareKind::Trail | SquareKind::Wall | SquareKind::Zone(_)
+                )
+            {
+                return;
+            }
+
+            *square_kind = kind;
         } else {
-            square_kind.prev()
-        };
+            let next = mouse.just_pressed(MouseButton::Left);
+            let prev = mouse.just_pressed(MouseButton::Right);
 
-        squares.iter().for_each(|e| cmd.entity(e).despawn());
+            if !next && !prev {
+                return;
+            }
 
-        spawn_grid(&mut cmd, &map);
+            *square_kind = if next {
+                square_kind.next()
+            } else {
+                square_kind.prev()
+            };
+        }
+
+        for (SquareSprite(at), mut sprite) in squares.iter_mut() {
+            if at == &needle {
+                sprite.color = square_kind.color();
+                break;
+            }
+        }
     }
 
     pub(super) fn export_map<T: IntoMap>(mut map: ResMut<TileMap<T>>) {
         // filter out needless squares
         map.squares.retain(|_, v| match v {
             SquareKind::Wall => true,
-            SquareKind::Object => true,
+            SquareKind::Trail => true,
             SquareKind::Zone(_) => true,
             SquareKind::None => false,
             SquareKind::Character(_) => false,
@@ -343,7 +416,7 @@ mod map_maker {
             match self {
                 Self::None => Color::BLACK.with_a(0.25),
                 Self::Wall => Color::BLACK.with_a(0.95),
-                Self::Object => Color::WHITE.with_a(0.5),
+                Self::Trail => Color::WHITE.with_a(0.5),
                 // if you want more zones, add more colors :-)
                 Self::Zone(a) => colors[a as usize],
                 Self::Character(_) => Color::GOLD.with_a(0.5),
@@ -352,10 +425,10 @@ mod map_maker {
 
         fn next(self) -> Self {
             match self {
-                Self::Object => Self::None,
+                Self::Trail => Self::None,
                 Self::None => Self::Wall,
                 Self::Wall => Self::Zone(0),
-                Self::Zone(Self::MAX_ZONE) => Self::Object,
+                Self::Zone(Self::MAX_ZONE) => Self::Trail,
                 Self::Zone(a) => Self::Zone(a + 1),
                 Self::Character(_) => unreachable!(),
             }
@@ -363,8 +436,8 @@ mod map_maker {
 
         fn prev(self) -> Self {
             match self {
-                Self::Object => Self::Zone(Self::MAX_ZONE),
-                Self::None => Self::Object,
+                Self::Trail => Self::Zone(Self::MAX_ZONE),
+                Self::None => Self::Trail,
                 Self::Wall => Self::None,
                 Self::Zone(0) => Self::Wall,
                 Self::Zone(a) => Self::Zone(a - 1),
