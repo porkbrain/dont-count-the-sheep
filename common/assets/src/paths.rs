@@ -25,8 +25,8 @@ pub mod apartment {
     pub const BEDROOM_MAIN_DOOR: &str = "apartment/brown_door_atlas.png";
     pub const HALLWAY_DOOR: &str = "apartment/black_door.png";
     pub const ELEVATOR_ATLAS: &str = "apartment/elevator_atlas.png";
-
-    pub const WINNIE_ATLAS: &str = "apartment/winnie_atlas.png";
+    pub const VENDING_MACHINE_ATLAS: &str =
+        "apartment/vending_machine_atlas.png";
 
     pub const WINNIE_SLEEPING: &str = "apartment/sleeping.png";
     pub const WINNIE_MEDITATING: &str = "apartment/meditating.png";

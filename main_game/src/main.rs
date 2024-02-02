@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use main_game_lib::{
     common_loading_screen::{LoadingScreenSettings, LoadingScreenState},
+    prelude::from_millis,
     GlobalGameState,
 };
 
@@ -15,6 +16,8 @@ fn main() {
     ) {
         // just a quick loading screen, no bg
         cmd.insert_resource(LoadingScreenSettings {
+            fade_loading_screen_in: from_millis(50),
+            fade_loading_screen_out: from_millis(500),
             bg_image_asset: None,
             ..default()
         });

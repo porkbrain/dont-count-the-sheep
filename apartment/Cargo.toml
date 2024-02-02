@@ -13,6 +13,7 @@ bevy.workspace = true
 lazy_static.workspace = true
 main_game_lib.workspace = true
 rand.workspace = true
+smallvec.workspace = true
 
 [features]
 dev = ["bevy/glam_assert"]

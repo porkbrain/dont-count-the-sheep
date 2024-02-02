@@ -6,7 +6,7 @@ pub mod prelude;
 pub mod state;
 pub mod vec2_ext;
 
-use bevy::{app::AppExit, prelude::*, window::WindowTheme};
+use bevy::{app::AppExit, prelude::*};
 use bevy_inspector_egui::quick::{StateInspectorPlugin, WorldInspectorPlugin};
 use bevy_pixel_camera::PixelCameraPlugin;
 pub use common_action;
@@ -54,11 +54,6 @@ pub fn windowed_app() -> App {
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Ciesin".into(),
-                    window_theme: Some(WindowTheme::Dark),
-                    enabled_buttons: bevy::window::EnabledButtons {
-                        maximize: false,
-                        ..Default::default()
-                    },
                     mode: bevy::window::WindowMode::BorderlessFullscreen,
                     ..default()
                 }),

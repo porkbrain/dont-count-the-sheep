@@ -16,6 +16,7 @@ use main_game_lib::{
     vec2_ext::Vec2Ext,
 };
 use rand::{thread_rng, Rng};
+use smallvec::SmallVec;
 
 use crate::{consts::*, prelude::*, Apartment};
 
@@ -223,7 +224,7 @@ fn spawn(
 
     // cloud atlas is rendered on top of the bg but below the furniture
 
-    let mut cloud_atlas_bundle = |x: f32| {
+    let mut cloud_atlas_bundle = |position: Pos2| {
         (
             LayoutEntity,
             RenderLayers::layer(render_layer::BG),
@@ -250,7 +251,7 @@ fn spawn(
                     thread_rng().gen_range(0..CLOUD_FRAMES),
                 ),
                 transform: Transform::from_translation(
-                    vec2(x, 113.5).extend(zindex::CLOUD_ATLAS),
+                    position.extend(zindex::CLOUD_ATLAS),
                 ),
                 ..default()
             },
@@ -258,9 +259,11 @@ fn spawn(
     };
 
     cmd.spawn(Name::from("Bedroom cloud atlas"))
-        .insert(cloud_atlas_bundle(-70.5));
+        .insert(cloud_atlas_bundle(vec2(-70.5, 113.5)));
     cmd.spawn(Name::from("Kitchen cloud atlas"))
-        .insert(cloud_atlas_bundle(96.0));
+        .insert(cloud_atlas_bundle(vec2(96.0, 113.5)));
+    cmd.spawn(Name::from("Bathroom cloud atlas"))
+        .insert(cloud_atlas_bundle(vec2(-176.0, 145.0)));
 
     // bedroom door opens (sprite index 2) when the player is near the door
     cmd.spawn((
@@ -324,6 +327,41 @@ fn spawn(
             ..default()
         },
     ));
+
+    cmd.spawn((
+        Name::from("Vending machine"),
+        LayoutEntity,
+        HallwayEntity,
+        RenderLayers::layer(render_layer::BG),
+        SpriteSheetBundle {
+            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
+                asset_server.load(assets::VENDING_MACHINE_ATLAS),
+                vec2(30.0, 55.0),
+                4,
+                1,
+                Some(vec2(1.0, 0.0)),
+                None,
+            )),
+            sprite: TextureAtlasSprite {
+                index: 0,
+                color: PRIMARY_COLOR,
+                ..default()
+            },
+            transform: Transform::from_translation(
+                vec2(-268.0, -60.0).extend(zindex::ELEVATOR),
+            ),
+            ..default()
+        },
+    ));
+}
+
+#[derive(Reflect)]
+struct Door {
+    open_criteria: SmallVec<[DoorOpenCriteria; 4]>,
+}
+
+enum DoorOpenCriteria {
+    Character(common_story::Character),
 }
 
 /// When player gets near the door, the door opens.
@@ -365,6 +403,7 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
     }
 }
 
+// TODO: redo
 fn smoothly_transition_hallway_color(
     map: Res<common_top_down::TileMap<Apartment>>,
 
@@ -433,7 +472,7 @@ fn smoothly_transition_hallway_color(
 
 impl IntoMap for Apartment {
     fn bounds() -> [i32; 4] {
-        [-70, 40, -30, 20]
+        [-80, 40, -30, 20]
     }
 
     fn asset_path() -> &'static str {
