@@ -9,68 +9,23 @@ use bevy_grid_squared::{square, Square, SquareLayout};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_assets::RonLoader;
 use common_ext::QueryExt;
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use smallvec::SmallVec;
 
-use crate::actor::{self, player};
-
-/// Zone identifier.
-pub type Zone = u8;
-
-/// Registers layout map for `T` where `T` is a type implementing [`IntoMap`].
-/// This would be your level layout.
-/// When [`crate::Actor`]s enter a zone within the map,
-/// [`crate::ActorMovementEvent`] event is emitted.
-///
-/// If the `dev` feature is enabled, you can press `Enter` to export the map
-/// to `map.ron` in the current directory.
-/// We draw an overlay with tiles that you can edit with left and right mouse
-/// buttons.
-pub fn register<T: IntoMap, S: States>(app: &mut App, loading: S, running: S) {
-    app.init_asset_loader::<RonLoader<TileMap<T>>>()
-        .init_asset::<TileMap<T>>()
-        .register_type::<SquareKind>()
-        .register_type::<TileMap<T>>()
-        .register_type::<RonLoader<TileMap<T>>>();
-
-    app.add_systems(OnEnter(loading.clone()), start_loading_map::<T>);
-    app.add_systems(
-        First,
-        try_insert_map_as_resource::<T>.run_if(in_state(loading)),
-    );
-    app.add_systems(
-        Update,
-        actor::emit_movement_events::<T>
-            .run_if(in_state(running.clone()))
-            // so that we can emit this event on current frame
-            .after(player::move_around::<T>),
-    );
-
-    #[cfg(feature = "dev")]
-    {
-        use bevy::input::common_conditions::input_just_pressed;
-
-        app.register_type::<map_maker::TileMapMakerToolbar>();
-
-        app.add_systems(
-            OnEnter(running.clone()),
-            map_maker::visualize_map::<T>,
-        );
-        app.add_systems(
-            Update,
-            map_maker::change_square_kind::<T>
-                .run_if(in_state(running.clone())),
-        );
-        app.add_systems(
-            Update,
-            map_maker::export_map::<T>
-                .run_if(input_just_pressed(KeyCode::Return))
-                .run_if(in_state(running)),
-        );
-    }
-}
+use crate::{
+    actor::{self, player},
+    ActorMovementEvent,
+};
 
 /// Some map.
 pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
+    /// Tile kind that is unique to this map.
+    /// Will parametrize the [`SquareKind::Local`] enum's variant.
+    ///
+    /// If the map has some sort of special tiles, use an enum here.
+    /// Otherwise, set to unit type.
+    type LocalTileKind: Tile;
+
     /// Size in number of tiles.
     /// `[left, right, bottom, top]`
     fn bounds() -> [i32; 4];
@@ -81,11 +36,6 @@ pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
 
     /// Path to the map .ron asset.
     fn asset_path() -> &'static str;
-
-    /// Convert a cursor position to a tile.
-    /// This cannot be done with the layout because cursor is relative to the
-    /// window size and starts at top left corner.
-    fn cursor_position_to_square(cursor_position: Vec2) -> Square;
 
     /// Given a position on the map, add a z coordinate.
     #[inline]
@@ -134,20 +84,22 @@ pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
 )]
 #[reflect(Resource, InspectorOptions)]
 pub struct TileMap<T: IntoMap> {
-    squares: HashMap<Square, SquareKind>,
+    /// There can be multiple layers of tiles on a single square.
+    squares: HashMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
     #[serde(skip)]
     #[reflect(ignore)]
     phantom: PhantomData<T>,
 }
 
 /// What kind of tiles do we support?
+///
+/// Each map can have its own unique `L`ocal tiles.
 #[derive(
-    Clone, Copy, Serialize, Deserialize, Default, Eq, PartialEq, Reflect,
+    Clone, Copy, Serialize, Deserialize, Default, Eq, PartialEq, Reflect, Debug,
 )]
 #[reflect(Default)]
-pub enum SquareKind {
+pub enum TileKind<L> {
     /// No tile.
-    /// Preferably don't put these into the hash map.
     #[default]
     None,
     /// A wall that cannot be passed.
@@ -155,10 +107,6 @@ pub enum SquareKind {
     Wall,
     /// NPCs will preferably follow the trail when moving.
     Trail,
-    /// A space that can be depended on by the game logic.
-    /// You can match the zone number to a check whether the character is in
-    /// a tile of that zone.
-    Zone(Zone),
     /// Personal space of a character.
     /// A single character will be assigned to multiple tiles based on their
     /// size.
@@ -167,12 +115,243 @@ pub enum SquareKind {
     /// updated on runtime.
     /// This variant mustn't be loaded from map ron file.
     Character(Entity),
+    /// Specific for a given map.
+    Local(L),
+}
+
+/// Defines tile behavior.
+pub trait Tile:
+    TypePath
+    + FromReflect
+    + Serialize
+    + DeserializeOwned
+    + Clone
+    + Copy
+    + Default
+    + PartialEq
+    + std::fmt::Debug
+{
+    /// Whether the tile can be stepped on by an actor with given entity.
+    fn is_walkable(&self, by: Entity) -> bool;
+
+    /// Whether a tile represents a zone.
+    /// A zone is a group of tiles that are connected to each other and entities
+    /// enter and leave them.
+    /// This is used to emit events about entering/leaving zones.
+    fn is_zone(&self) -> bool;
+
+    /// Returns [`None`] if not walkable, otherwise the cost of walking to the
+    /// tile.
+    /// This is useful for pathfinding.
+    /// The higher the cost, the less likely the character will want to walk
+    /// over it.
+    fn walk_cost(&self, by: Entity) -> Option<TileWalkCost> {
+        self.is_walkable(by).then_some(TileWalkCost::Normal)
+    }
+}
+
+/// Useful for pathfinding to prefer some tiles over others.
+#[derive(Default, PartialEq, Eq, PartialOrd, Ord, Debug)]
+pub enum TileWalkCost {
+    /// The tile is preferred to be walked over.
+    Preferred = 1,
+    /// The tile is normal to walk over.
+    #[default]
+    Normal = 3,
+}
+
+/// Registers layout map for `T` where `T` is a type implementing [`IntoMap`].
+/// This would be your level layout.
+/// When [`crate::Actor`]s enter a zone within the map,
+/// [`crate::ActorMovementEvent`] event is emitted.
+///
+/// If the `dev` feature is enabled, you can press `Enter` to export the map
+/// to `map.ron` in the current directory.
+/// We draw an overlay with tiles that you can edit with left and right mouse
+/// buttons.
+pub fn register<T: IntoMap, S: States>(app: &mut App, loading: S, running: S) {
+    app.init_asset_loader::<RonLoader<TileMap<T>>>()
+        .init_asset::<TileMap<T>>()
+        .register_type::<TileKind<T::LocalTileKind>>()
+        .register_type::<TileMap<T>>()
+        .register_type::<RonLoader<TileMap<T>>>()
+        .add_event::<ActorMovementEvent<T::LocalTileKind>>()
+        .register_type::<ActorMovementEvent<T::LocalTileKind>>();
+
+    app.add_systems(OnEnter(loading.clone()), start_loading_map::<T>)
+        .add_systems(
+            First,
+            try_insert_map_as_resource::<T>.run_if(in_state(loading)),
+        )
+        .add_systems(
+            Update,
+            actor::emit_movement_events::<T>
+                .run_if(in_state(running.clone()))
+                // so that we can emit this event on current frame
+                .after(player::move_around::<T>),
+        )
+        .add_systems(OnExit(running.clone()), remove_resources::<T>);
+
+    #[cfg(feature = "dev")]
+    {
+        use bevy::input::common_conditions::input_just_pressed;
+        use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+
+        app.init_resource::<map_maker::TileMapMakerToolbar<T::LocalTileKind>>()
+            .register_type::<map_maker::TileMapMakerToolbar<T::LocalTileKind>>()
+            .add_plugins(ResourceInspectorPlugin::<
+                map_maker::TileMapMakerToolbar<T::LocalTileKind>,
+            >::default());
+
+        app.add_systems(
+            OnEnter(running.clone()),
+            map_maker::visualize_map::<T>,
+        );
+        app.add_systems(
+            Update,
+            (
+                map_maker::change_square_kind::<T>,
+                map_maker::recolor_squares::<T>,
+            )
+                .run_if(in_state(running.clone()))
+                .chain(),
+        );
+        app.add_systems(
+            Update,
+            map_maker::export_map::<T>
+                .run_if(input_just_pressed(KeyCode::Return))
+                .run_if(in_state(running)),
+        );
+    }
+}
+
+/// Allow implementation for unit type for convenience.
+/// Maps can use this if they have no special tiles.
+impl Tile for () {
+    fn is_walkable(&self, _: Entity) -> bool {
+        true
+    }
+
+    fn is_zone(&self) -> bool {
+        false
+    }
+}
+
+impl<L: Tile> Tile for TileKind<L> {
+    fn is_walkable(&self, by: Entity) -> bool {
+        match self {
+            Self::None => true,
+            Self::Wall => false,
+            Self::Trail => true,
+            Self::Character(entity) if *entity == by => true,
+            Self::Character(_) => false, // don't walk over others
+            Self::Local(l) => l.is_walkable(by),
+        }
+    }
+
+    fn is_zone(&self) -> bool {
+        match self {
+            Self::Local(l) => l.is_zone(),
+            _ => false,
+        }
+    }
+
+    fn walk_cost(&self, by: Entity) -> Option<TileWalkCost> {
+        match self {
+            Self::Wall => None,
+            Self::None => Some(TileWalkCost::Normal),
+            Self::Trail => Some(TileWalkCost::Preferred),
+            Self::Character(entity) if *entity == by => {
+                Some(TileWalkCost::Normal)
+            }
+            Self::Character(_) => None, // don't walk over others
+            Self::Local(l) => l.walk_cost(by),
+        }
+    }
 }
 
 impl<T: IntoMap> TileMap<T> {
     /// Get the kind of a tile.
-    pub fn get(&self, square: &Square) -> Option<SquareKind> {
-        self.squares.get(square).copied()
+    pub fn get(
+        &self,
+        square: &Square,
+    ) -> Option<&[TileKind<T::LocalTileKind>]> {
+        self.squares.get(square).map(|tiles| tiles.as_slice())
+    }
+
+    /// Whether the given square has the given kind of tile in any layer.
+    pub fn is_on(
+        &self,
+        square: Square,
+        kind: impl Into<TileKind<T::LocalTileKind>>,
+    ) -> bool {
+        let kind = kind.into();
+        self.squares
+            .get(&square)
+            .map(|tiles| tiles.contains(&kind))
+            .unwrap_or(false)
+    }
+
+    /// Whether there's something on the given square that cannot be walked over
+    /// such as a wall, an object or a character.
+    /// Also checks bounds.
+    pub fn is_walkable(&self, square: Square, by: Entity) -> bool {
+        if let Some(tiles) = self.squares.get(&square) {
+            tiles.iter().all(|tile| tile.is_walkable(by))
+        } else if T::contains(square) {
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Returns [`None`] if not walkable, otherwise the cost of walking to the
+    /// tile.
+    /// This is useful for pathfinding.
+    /// The higher the cost, the less likely the character will want to walk
+    /// over it.
+    pub fn walk_cost(
+        &self,
+        square: Square,
+        by: Entity,
+    ) -> Option<TileWalkCost> {
+        if let Some(tiles) = self.squares.get(&square) {
+            // return the lowest cost unless any of the tiles is not walkable
+            tiles.iter().fold(Some(TileWalkCost::Normal), |acc, tile| {
+                acc.and_then(|highest_cost_so_far| {
+                    Some(tile.walk_cost(by)?.min(highest_cost_so_far))
+                })
+            })
+        } else if T::contains(square) {
+            Some(TileWalkCost::Normal)
+        } else {
+            None
+        }
+    }
+
+    /// Uses A* to find a path from `from` to `to`.
+    ///
+    /// TODO: constraint this to run only for X steps in a single frame to
+    /// avoid clogging the CPU, or even run it outside of schedule
+    pub fn find_path(
+        &self,
+        who: Entity,
+        from: Square,
+        to: Square,
+    ) -> Option<Vec<Square>> {
+        let (path, _cost) = pathfinding::prelude::astar(
+            &from,
+            |square| {
+                square.neighbors().filter_map(|neighbor| {
+                    self.walk_cost(neighbor, who)
+                        .map(|cost| (neighbor, cost as i32))
+                })
+            },
+            |square| square.manhattan_distance(to),
+            |square| square == &to,
+        )?;
+
+        Some(path)
     }
 }
 
@@ -206,70 +385,32 @@ fn try_insert_map_as_resource<T: IntoMap>(
     // removed, the map is not loaded yet and asset loader expects it to exist
     if map_assets.get(map).is_some() {
         cmd.insert_resource(map_assets.remove(map).unwrap()); // safe ^
+        cmd.init_resource::<actor::ActorZoneMap<T::LocalTileKind>>();
         cmd.entity(entity).despawn();
     }
 }
 
-impl<T: IntoMap> TileMap<T> {
-    /// Create a new map with the given squares.
-    pub fn new(squares: HashMap<Square, SquareKind>) -> Self {
-        Self {
-            squares,
-            phantom: PhantomData,
-        }
+fn remove_resources<T: IntoMap>(mut cmd: Commands) {
+    cmd.remove_resource::<TileMap<T>>();
+    cmd.remove_resource::<actor::ActorZoneMap<T::LocalTileKind>>();
+
+    #[cfg(feature = "dev")]
+    {
+        cmd.remove_resource::<map_maker::TileMapMakerToolbar<T::LocalTileKind>>();
     }
+}
 
-    /// Whether there's something on the given square that cannot be walked over
-    /// such as a wall, an object or a character.
-    /// Also checks bounds.
-    ///
-    /// TODO: character should be able to step on itself
-    pub fn can_be_stepped_on(&self, square: Square) -> bool {
-        use SquareKind as S;
-        match self.squares.get(&square) {
-            None if !T::contains(square) => false,
-            Some(S::Wall | S::Character(_)) => false,
-            Some(S::None | S::Trail | S::Zone(_)) | None => true,
-        }
-    }
-
-    /// Uses A* to find a path from `from` to `to`.
-    ///
-    /// TODO: constraint this to run only for X steps in a single frame to
-    /// avoid clogging the CPU
-    pub fn find_path(&self, from: Square, to: Square) -> Option<Vec<Square>> {
-        if !T::contains(from) || !T::contains(to) || !self.can_be_stepped_on(to)
-        {
-            return None;
-        }
-
-        let (path, _cost) = pathfinding::prelude::astar(
-            &from,
-            |square| {
-                square.neighbors().filter_map(|neighbor| {
-                    use SquareKind as S;
-
-                    match self.squares.get(&neighbor) {
-                        None if !T::contains(neighbor) => None,
-                        Some(S::Wall | S::Character(_)) => None,
-                        Some(S::None | S::Zone(_)) | None => {
-                            Some((neighbor, 2))
-                        }
-                        Some(S::Trail) => Some((neighbor, 1)),
-                    }
-                })
-            },
-            |square| square.manhattan_distance(to),
-            |square| square == &to,
-        )?;
-
-        Some(path)
+impl<L> From<L> for TileKind<L> {
+    fn from(l: L) -> Self {
+        Self::Local(l)
     }
 }
 
 #[cfg(feature = "dev")]
 mod map_maker {
-    use bevy::window::PrimaryWindow;
+    use bevy::{
+        render::view::RenderLayers, utils::HashSet, window::PrimaryWindow,
+    };
 
     use super::*;
 
@@ -278,29 +419,46 @@ mod map_maker {
 
     #[derive(Resource, Reflect, InspectorOptions, Default)]
     #[reflect(Resource, InspectorOptions)]
-    pub(super) struct TileMapMakerToolbar {
-        /// If set to [`None`], does nothing.
-        /// If set to any other, holding down left mouse button will paint
-        /// that kind of square on any square the cursor is over.
-        paint: Option<SquareKind>,
-        /// If set to true, will replace existing solid tiles such as walls or
-        /// trails.
-        /// If set to false, will only replace empty tiles.
+    pub(super) struct TileMapMakerToolbar<L: Tile> {
+        // these are configurable
+        // ~
+        // ~
+        /// What kind of tile to paint.
+        paint: TileKind<L>,
+        /// Each square has an associated list of tiles.
+        /// Layer refers to the index in this list.
+        /// We only manipulate the indexes of the tiles that equal to the
+        /// `layer`.
+        layer: usize,
+        /// If set to true, will replace any tile kind.
+        /// If set to false, will only paint over tiles that are `None`.
         paint_over_tiles: bool,
+
+        // these are metadata used by the system
+        // ~
+        // ~
+        /// We paint rectangles with this tool.
+        /// When you click on a tile, it will start painting from there.
+        /// When you release the mouse, it will stop painting and draw a
+        /// rectangle of the `paint` kind from here to where you
+        /// released the mouse.
+        begin_rect_at: Option<Square>,
     }
 
     pub(super) fn visualize_map<T: IntoMap>(
         mut cmd: Commands,
         map: Res<TileMap<T>>,
     ) {
-        cmd.init_resource::<TileMapMakerToolbar>();
-
-        spawn_grid(&mut cmd, &map);
-    }
-
-    fn spawn_grid<T: IntoMap>(cmd: &mut Commands, map: &TileMap<T>) {
         let root = cmd
-            .spawn((Name::new("Debug Layout Grid"), SpatialBundle::default()))
+            .spawn((
+                Name::new("Debug Layout Grid"),
+                SpatialBundle {
+                    transform: Transform::from_translation(
+                        Vec2::ZERO.extend(10.0),
+                    ),
+                    ..default()
+                },
+            ))
             .id();
 
         for square in bevy_grid_squared::shapes::rectangle(T::bounds()) {
@@ -309,8 +467,9 @@ mod map_maker {
             let kind = map
                 .squares
                 .get(&square)
+                .and_then(|tiles| tiles.first()) // default to first layer
                 .copied()
-                .unwrap_or(SquareKind::None);
+                .unwrap_or(TileKind::None);
 
             let child = cmd
                 .spawn((SquareSprite(square), Name::new(format!("{square}"))))
@@ -322,7 +481,7 @@ mod map_maker {
                         ..default()
                     },
                     transform: Transform::from_translation(
-                        world_pos.extend(10.0),
+                        world_pos.extend(0.0),
                     ),
                     ..default()
                 })
@@ -334,115 +493,252 @@ mod map_maker {
     pub(super) fn change_square_kind<T: IntoMap>(
         mouse: Res<Input<MouseButton>>,
         mut map: ResMut<TileMap<T>>,
-        toolbar: ResMut<TileMapMakerToolbar>,
+        mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
+        keyboard: Res<Input<KeyCode>>,
 
-        mut squares: Query<(&SquareSprite, &mut Sprite)>,
         windows: Query<&Window, With<PrimaryWindow>>,
+        cameras: Query<(&Camera, &GlobalTransform, Option<&RenderLayers>)>,
     ) {
-        if mouse.get_pressed().next().is_none() {
+        let ctrl_pressed = keyboard.pressed(KeyCode::ControlLeft);
+        let just_pressed_left = mouse.just_pressed(MouseButton::Left);
+        let just_released_left = mouse.just_released(MouseButton::Left);
+        let just_pressed_right = mouse.just_pressed(MouseButton::Right);
+
+        // a) hold ctrl + press left to paint rect
+        let start_painting_rect = ctrl_pressed
+            && just_pressed_left
+            && toolbar.begin_rect_at.is_none();
+        // b) if painting rect, release left to stop painting
+        let stop_painting_rect =
+            toolbar.begin_rect_at.is_some() && just_released_left;
+        // c) press right to paint single square
+        let paint_single_square = just_pressed_right;
+
+        // if neither of these, then early return
+        if !start_painting_rect && !stop_painting_rect && !paint_single_square {
             return;
         }
 
-        let Some(position) = windows.single().cursor_position() else {
+        let Some(clicked_at) = cursor_to_square(T::layout(), windows, cameras)
+        else {
             return;
         };
 
-        let needle = T::cursor_position_to_square(position);
-        let square_kind = map.squares.entry(needle).or_insert(default());
-
-        if let Some(kind) = toolbar.paint
-            && mouse.pressed(MouseButton::Left)
+        if start_painting_rect {
+            toolbar.begin_rect_at = Some(clicked_at);
+        } else if stop_painting_rect
+            && let Some(begin_rect_at) = toolbar.begin_rect_at.take()
         {
-            if !toolbar.paint_over_tiles
-                && matches!(
-                    *square_kind,
-                    SquareKind::Trail | SquareKind::Wall | SquareKind::Zone(_)
-                )
+            trace!("Painting rect from {begin_rect_at} to {clicked_at}");
+            for square in selection_rect(begin_rect_at, clicked_at) {
+                let tiles = map.squares.entry(square).or_default();
+                if tiles.len() <= toolbar.layer {
+                    tiles.resize(toolbar.layer + 1, TileKind::None);
+                }
+
+                if toolbar.paint_over_tiles
+                    || tiles[toolbar.layer] == TileKind::None
+                {
+                    tiles[toolbar.layer] = toolbar.paint;
+                }
+            }
+        } else if paint_single_square {
+            let tiles = map.squares.entry(clicked_at).or_default();
+            if tiles.len() <= toolbar.layer {
+                tiles.resize(toolbar.layer + 1, TileKind::None);
+            }
+
+            if toolbar.paint_over_tiles
+                || tiles[toolbar.layer] == TileKind::None
             {
-                return;
+                tiles[toolbar.layer] = toolbar.paint;
             }
-
-            *square_kind = kind;
-        } else {
-            let next = mouse.just_pressed(MouseButton::Left);
-            let prev = mouse.just_pressed(MouseButton::Right);
-
-            if !next && !prev {
-                return;
-            }
-
-            *square_kind = if next {
-                square_kind.next()
-            } else {
-                square_kind.prev()
-            };
         }
+    }
+
+    pub(super) fn recolor_squares<T: IntoMap>(
+        map: ResMut<TileMap<T>>,
+        toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
+
+        mut squares: Query<(&SquareSprite, &mut Sprite)>,
+        windows: Query<&Window, With<PrimaryWindow>>,
+        cameras: Query<(&Camera, &GlobalTransform, Option<&RenderLayers>)>,
+    ) {
+        let squares_painted: Option<HashSet<_>> =
+            toolbar.begin_rect_at.and_then(|begin_rect_at| {
+                let clicked_at =
+                    cursor_to_square(T::layout(), windows, cameras)?;
+
+                Some(selection_rect(begin_rect_at, clicked_at).collect())
+            });
 
         for (SquareSprite(at), mut sprite) in squares.iter_mut() {
-            if at == &needle {
-                sprite.color = square_kind.color();
-                break;
-            }
+            let tile_kind = map
+                .squares
+                .get(at)
+                .and_then(|tiles| tiles.get(toolbar.layer))
+                .copied()
+                .unwrap_or_default();
+
+            // show where we're painting unless we're not allowed to
+            // paint over tiles
+            let color =
+                if squares_painted.as_ref().map_or(false, |s| s.contains(at))
+                    && (toolbar.paint_over_tiles || tile_kind == TileKind::None)
+                {
+                    toolbar.paint.color()
+                } else {
+                    tile_kind.color()
+                };
+
+            sprite.color = color;
         }
     }
 
     pub(super) fn export_map<T: IntoMap>(mut map: ResMut<TileMap<T>>) {
         // filter out needless squares
-        map.squares.retain(|_, v| match v {
-            SquareKind::Wall => true,
-            SquareKind::Trail => true,
-            SquareKind::Zone(_) => true,
-            SquareKind::None => false,
-            SquareKind::Character(_) => false,
+        map.squares.retain(|_, v| {
+            v.iter_mut().for_each(|tile| {
+                if matches!(tile, TileKind::Character(_)) {
+                    *tile = TileKind::None;
+                }
+            });
+
+            while v.ends_with(&[TileKind::None]) {
+                v.pop();
+            }
+
+            !v.is_empty()
         });
 
         // for internal use only so who cares
         std::fs::write("map.ron", ron::to_string(&*map).unwrap()).unwrap();
     }
 
-    impl SquareKind {
-        const MAX_ZONE: Zone = 5;
-
+    impl<L> TileKind<L> {
         fn color(self) -> Color {
-            let colors: [Color; Self::MAX_ZONE as usize + 1] = [
-                Color::RED.with_a(0.5),
-                Color::BLUE.with_a(0.5),
-                Color::GREEN.with_a(0.5),
-                Color::YELLOW.with_a(0.5),
-                Color::PURPLE.with_a(0.5),
-                Color::ORANGE.with_a(0.5),
-            ];
-
             match self {
                 Self::None => Color::BLACK.with_a(0.25),
-                Self::Wall => Color::BLACK.with_a(0.95),
-                Self::Trail => Color::WHITE.with_a(0.5),
-                // if you want more zones, add more colors :-)
-                Self::Zone(a) => colors[a as usize],
-                Self::Character(_) => Color::GOLD.with_a(0.5),
+                Self::Wall => Color::BLACK.with_a(0.8),
+                Self::Trail => Color::WHITE.with_a(0.25),
+                Self::Character(_) => Color::GOLD.with_a(0.25),
+                Self::Local(_) => Color::RED.with_a(0.25),
+            }
+        }
+    }
+
+    fn selection_rect(
+        begin_rect_at: Square,
+        clicked_at: Square,
+    ) -> impl ExactSizeIterator<Item = Square> {
+        let left = begin_rect_at.x.min(clicked_at.x);
+        let right = begin_rect_at.x.max(clicked_at.x);
+        let bottom = begin_rect_at.y.min(clicked_at.y);
+        let top = begin_rect_at.y.max(clicked_at.y);
+
+        bevy_grid_squared::shapes::rectangle([left, right, bottom, top])
+    }
+
+    fn cursor_to_square(
+        layout: &SquareLayout,
+        windows: Query<&Window, With<PrimaryWindow>>,
+        cameras: Query<(&Camera, &GlobalTransform, Option<&RenderLayers>)>,
+    ) -> Option<Square> {
+        let cursor_pos = windows.single().cursor_position()?;
+
+        let (camera, camera_transform, _) = cameras
+            .iter()
+            .filter(|(_, _, l)| {
+                l.map(|l| l.intersects(&RenderLayers::layer(0)))
+                    .unwrap_or(true)
+            })
+            .next()?;
+        let world_pos =
+            camera.viewport_to_world_2d(camera_transform, cursor_pos)?;
+
+        Some(layout.world_pos_to_square(world_pos))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use smallvec::smallvec;
+
+    use super::*;
+
+    #[derive(Default, Reflect)]
+    struct TestScene;
+
+    impl IntoMap for TestScene {
+        type LocalTileKind = ();
+
+        fn bounds() -> [i32; 4] {
+            [0, 10, 0, 10]
+        }
+
+        fn layout() -> &'static SquareLayout {
+            &SquareLayout {
+                square_size: 1.0,
+                origin: Vec2::ZERO,
             }
         }
 
-        fn next(self) -> Self {
-            match self {
-                Self::Trail => Self::None,
-                Self::None => Self::Wall,
-                Self::Wall => Self::Zone(0),
-                Self::Zone(Self::MAX_ZONE) => Self::Trail,
-                Self::Zone(a) => Self::Zone(a + 1),
-                Self::Character(_) => unreachable!(),
-            }
+        fn asset_path() -> &'static str {
+            "test_scene.ron"
         }
+    }
 
-        fn prev(self) -> Self {
-            match self {
-                Self::Trail => Self::Zone(Self::MAX_ZONE),
-                Self::None => Self::Trail,
-                Self::Wall => Self::None,
-                Self::Zone(0) => Self::Wall,
-                Self::Zone(a) => Self::Zone(a - 1),
-                Self::Character(_) => unreachable!(),
-            }
-        }
+    #[test]
+    fn it_converts_tile_walk_cost_to_i32() {
+        assert_eq!(TileWalkCost::Preferred as i32, 1);
+        assert_eq!(TileWalkCost::Normal as i32, 3);
+    }
+
+    #[test]
+    fn it_calculates_walk_cost() {
+        use TileKind as Tk;
+        use TileWalkCost::*;
+
+        let sq = square(0, 0);
+        let mut tilemap = TileMap::<TestScene>::default();
+
+        // out of bounds returns none
+        assert_eq!(tilemap.walk_cost(square(-1, 0), Entity::PLACEHOLDER), None);
+
+        // in bounds, but no tile returns normal
+        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), Some(Normal));
+
+        // if there's a wall returns none
+        tilemap.squares.insert(sq, smallvec![Tk::None, Tk::Wall]);
+        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), None);
+        tilemap.squares.insert(sq, smallvec![Tk::Wall, Tk::None]);
+        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), None);
+
+        // if there's a trail returns preferred
+        tilemap.squares.insert(sq, smallvec![Tk::None, Tk::Trail]);
+        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), Some(Preferred));
+        tilemap.squares.insert(sq, smallvec![Tk::Trail, Tk::None,]);
+        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), Some(Preferred));
+
+        // if there's a matching character and trail, returns preferred
+        tilemap.squares.insert(
+            sq,
+            smallvec![Tk::Character(Entity::PLACEHOLDER), Tk::Trail],
+        );
+        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), Some(Preferred));
+
+        // if there's a matching character and wall, returns none
+        tilemap.squares.insert(
+            sq,
+            smallvec![Tk::Character(Entity::PLACEHOLDER), Tk::Wall],
+        );
+        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), None);
+
+        // if there's a different character and a trail, returns none
+        tilemap.squares.insert(
+            sq,
+            smallvec![Tk::Character(Entity::from_raw(10)), Tk::Trail],
+        );
+        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), None);
     }
 }

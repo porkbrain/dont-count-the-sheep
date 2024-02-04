@@ -5,17 +5,16 @@ pub mod player;
 
 use std::time::Duration;
 
-use bevy::{
-    prelude::*,
-    time::Stopwatch,
-    utils::{hashbrown::hash_map::Entry, HashMap},
-};
+use bevy::{prelude::*, time::Stopwatch, utils::HashMap};
 use bevy_grid_squared::{GridDirection, Square};
+use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_story::Character;
+use serde::{Deserialize, Serialize};
+use smallvec::SmallVec;
 
 use crate::{
-    layout::{IntoMap, Zone},
-    Player, SquareKind, TileMap,
+    layout::{IntoMap, Tile},
+    Player, TileKind, TileMap,
 };
 
 /// Entity with this component can be moved around.
@@ -46,20 +45,33 @@ pub struct ActorTarget {
     pub planned: Option<(Square, GridDirection)>,
 }
 
+/// Maps actors to zones they currently occupy.
+/// Each actor can be in multiple zones at once.
+///
+/// Only those tiles that are zones as returned by `TileKind::is_zone` are
+/// stored.
+#[derive(
+    Resource, Serialize, Deserialize, Reflect, InspectorOptions, Default,
+)]
+#[reflect(Resource, InspectorOptions)]
+pub struct ActorZoneMap<L: Default> {
+    map: HashMap<Entity, SmallVec<[TileKind<L>; 3]>>,
+}
+
 /// Some useful events for actors.
 #[derive(Event, Reflect)]
-pub enum ActorMovementEvent {
+pub enum ActorMovementEvent<T> {
     /// Is emitted when an [`Actor`] enters a zone.
     ZoneEntered {
         /// The zone that was entered.
-        zone: Zone,
+        zone: TileKind<T>,
         /// The actor that entered the zone.
         who: Who,
     },
     /// Is emitted when an [`Actor`] leaves a zone.
     ZoneLeft {
         /// The zone that was left.
-        zone: Zone,
+        zone: TileKind<T>,
         /// The actor that left the zone.
         who: Who,
     },
@@ -96,53 +108,30 @@ pub struct CharacterBundleBuilder {
 /// `run_if(event_update_condition::<ActorMovementEvent>)` and
 /// `after(actor::emit_movement_events::<T>)`.
 pub fn emit_movement_events<T: IntoMap>(
-    map: Res<TileMap<T>>,
-    mut event: EventWriter<ActorMovementEvent>,
+    tilemap: Res<TileMap<T>>,
+    mut actor_zone_map: ResMut<ActorZoneMap<T::LocalTileKind>>,
+    mut event: EventWriter<ActorMovementEvent<T::LocalTileKind>>,
 
     actors: Query<(Entity, &Actor, Option<&Player>), Changed<Transform>>,
-
-    // TODO: memory leak when entity is despawned (perhaps keep tilemap rand
-    // version)
-    mut local: Local<HashMap<Entity, Zone>>,
 ) {
     for (entity, actor, player) in actors.iter() {
         let at = actor.current_square();
 
-        if let Some(SquareKind::Zone(zone)) = map.get(&at) {
-            match local.entry(entity) {
-                // nothing new, skip
-                Entry::Occupied(entry) if *entry.get() == zone => {
-                    continue;
-                }
-                // changed zone, inform about previous zone and insert the new
-                // zone
-                Entry::Occupied(entry) => {
-                    let just_left_zone = entry.get();
-                    trace!(
-                        "Actor {:?} left zone {just_left_zone}",
-                        actor.character,
-                    );
-                    event.send(ActorMovementEvent::ZoneLeft {
-                        zone: *just_left_zone,
-                        who: Who {
-                            at,
-                            is_player: player.is_some(),
-                            entity,
-                            character: actor.character,
-                        },
-                    });
+        let Some(tiles) = tilemap.get(&at) else {
+            continue;
+        };
 
-                    entry.replace_entry(zone);
-                }
-                // just entered the zone from nowhere
-                Entry::Vacant(entry) => {
-                    entry.insert(zone);
-                }
-            };
+        let active_zones = actor_zone_map.map.entry(entity).or_default();
 
-            trace!("Actor {:?} is in zone {zone}", actor.character);
-            event.send(ActorMovementEvent::ZoneEntered {
-                zone,
+        // remove zones that are no longer active and send an event
+        active_zones.retain(|active| {
+            if tiles.contains(&active) {
+                return true;
+            }
+
+            trace!("Actor {:?} left zone {active:?}", actor.character);
+            event.send(ActorMovementEvent::ZoneLeft {
+                zone: *active,
                 who: Who {
                     at,
                     is_player: player.is_some(),
@@ -150,10 +139,21 @@ pub fn emit_movement_events<T: IntoMap>(
                     character: actor.character,
                 },
             });
-        } else if let Some(just_left_zone) = local.remove(&entity) {
-            trace!("Actor {:?} left zone {just_left_zone}", actor.character,);
-            event.send(ActorMovementEvent::ZoneLeft {
-                zone: just_left_zone,
+
+            false
+        });
+
+        // add zones that are new and send an event
+        for tile in tiles.iter().filter(|tile| tile.is_zone()) {
+            if active_zones.contains(tile) {
+                continue;
+            }
+
+            active_zones.push(*tile);
+
+            trace!("Actor {:?} is in zone {tile:?}", actor.character);
+            event.send(ActorMovementEvent::ZoneEntered {
+                zone: *tile,
                 who: Who {
                     at,
                     is_player: player.is_some(),
@@ -257,7 +257,7 @@ fn animation_step_secs(step_secs: f32, dir: GridDirection) -> f32 {
     .clamp(0.1, 0.5)
 }
 
-impl ActorMovementEvent {
+impl<T> ActorMovementEvent<T> {
     /// Whether the actor is a player.
     pub fn is_player(&self) -> bool {
         match self {

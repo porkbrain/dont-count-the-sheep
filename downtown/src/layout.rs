@@ -1,6 +1,6 @@
 use bevy::render::view::RenderLayers;
-use bevy_grid_squared::{Square, SquareLayout};
-use common_visuals::camera::{render_layer, PIXEL_ZOOM};
+use bevy_grid_squared::SquareLayout;
+use common_visuals::camera::render_layer;
 use lazy_static::lazy_static;
 use main_game_lib::{common_top_down::IntoMap, vec2_ext::Vec2Ext};
 
@@ -56,6 +56,8 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
 }
 
 impl IntoMap for Downtown {
+    type LocalTileKind = ();
+
     fn bounds() -> [i32; 4] {
         [-80, 60, -20, 160]
     }
@@ -66,15 +68,5 @@ impl IntoMap for Downtown {
 
     fn layout() -> &'static SquareLayout {
         &LAYOUT
-    }
-
-    fn cursor_position_to_square(p: Vec2) -> Square {
-        Self::layout().world_pos_to_square(
-            (p / PIXEL_ZOOM as f32).as_top_left_into_centered(),
-        )
-    }
-
-    fn extend_z(v: Vec2) -> Vec3 {
-        v.extend(10.0)
     }
 }

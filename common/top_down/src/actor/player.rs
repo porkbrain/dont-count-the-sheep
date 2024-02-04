@@ -19,7 +19,7 @@ pub fn move_around<T: IntoMap>(
     map: Res<TileMap<T>>,
     controls: Res<ActionState<GlobalAction>>,
 
-    mut player: Query<&mut Actor, With<Player>>,
+    mut player: Query<(Entity, &mut Actor), With<Player>>,
 ) {
     use GridDirection::*;
 
@@ -37,7 +37,8 @@ pub fn move_around<T: IntoMap>(
         }
     };
 
-    let Some(mut player) = player.get_single_mut_or_none() else {
+    let Some((player_entity, mut player)) = player.get_single_mut_or_none()
+    else {
         return;
     };
 
@@ -54,7 +55,8 @@ pub fn move_around<T: IntoMap>(
 
     let target = next_steps.iter().copied().find_map(|direction| {
         let target = plan_from.neighbor(direction);
-        map.can_be_stepped_on(target).then_some((target, direction))
+        map.is_walkable(target, player_entity)
+            .then_some((target, direction))
     });
 
     player.step_time = player.character.default_step_time();

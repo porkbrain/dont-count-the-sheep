@@ -8,17 +8,14 @@ pub mod layout;
 
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::app::App;
-pub use layout::{IntoMap, SquareKind, TileMap};
+pub use layout::{IntoMap, TileKind, TileMap};
 
 /// Does not add any systems, only registers generic-less types.
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<ActorMovementEvent>()
-            .register_type::<ActorMovementEvent>()
-            .register_type::<Actor>()
-            .register_type::<ActorTarget>();
+        app.register_type::<Actor>().register_type::<ActorTarget>();
 
         app.add_event::<npc::PlanPathEvent>()
             .register_type::<npc::NpcInTheMap>()

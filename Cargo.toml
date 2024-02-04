@@ -67,6 +67,7 @@ features = [
     "bevy_text",
     "bevy_ui",
     "bevy_winit",
+    "dynamic_linking",    # speeds up compile times
     "hdr",
     "multi-threaded",
     "png",
@@ -89,6 +90,6 @@ incremental = true
 
 [profile.dev]
 codegen-units = 16
-opt-level = 0
+opt-level = 1
 debug = true
 incremental = true

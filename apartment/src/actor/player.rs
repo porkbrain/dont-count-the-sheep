@@ -6,7 +6,7 @@ use main_game_lib::{
     common_ext::QueryExt,
     common_top_down::{
         actor::CharacterExt, Actor, ActorMovementEvent, ActorTarget, IntoMap,
-        SquareKind,
+        TileKind,
     },
     cutscene::IntoCutscene,
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
@@ -16,7 +16,7 @@ use super::{cutscenes, CharacterEntity};
 use crate::{
     cameras::CameraEntity,
     consts::*,
-    layout::{zones, Elevator},
+    layout::{ApartmentTileKind, Elevator},
     prelude::*,
     Apartment,
 };
@@ -99,7 +99,7 @@ pub(super) fn start_meditation_minigame_if_near_chair(
     };
 
     let square = player.current_square();
-    if !matches!(map.get(&square), Some(SquareKind::Zone(zones::MEDITATION))) {
+    if !map.is_on(square, ApartmentTileKind::MeditationZone) {
         return;
     }
 
@@ -141,7 +141,7 @@ pub(super) fn enter_the_elevator(
     };
 
     let square = player.current_square();
-    if !matches!(map.get(&square), Some(SquareKind::Zone(zones::ELEVATOR))) {
+    if !map.is_on(square, ApartmentTileKind::ElevatorZone) {
         return;
     }
 
@@ -158,7 +158,9 @@ pub(super) fn enter_the_elevator(
 /// We hide it if the character is not close to any zone.
 /// We change the image to the appropriate one based on the zone.
 pub(super) fn load_zone_overlay(
-    mut events: EventReader<ActorMovementEvent>,
+    mut events: EventReader<
+        ActorMovementEvent<<Apartment as IntoMap>::LocalTileKind>,
+    >,
 
     mut overlay: Query<
         (&mut Visibility, &mut Handle<Image>),
@@ -171,13 +173,16 @@ pub(super) fn load_zone_overlay(
         return;
     };
 
+    // TODO: refactor
     let (new_visibility, new_image) = match event {
         ActorMovementEvent::ZoneEntered { zone, .. } => match *zone {
-            zones::MEDITATION => {
+            TileKind::Local(ApartmentTileKind::MeditationZone) => {
                 (Visibility::Visible, Some(assets::WINNIE_MEDITATING))
             }
-            zones::BED => (Visibility::Visible, Some(assets::WINNIE_SLEEPING)),
-            zones::TEA => {
+            TileKind::Local(ApartmentTileKind::BedZone) => {
+                (Visibility::Visible, Some(assets::WINNIE_SLEEPING))
+            }
+            TileKind::Local(ApartmentTileKind::TeaZone) => {
                 unimplemented!()
             }
             _ => (Visibility::Hidden, None),

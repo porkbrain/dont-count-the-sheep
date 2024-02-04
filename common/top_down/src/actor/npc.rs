@@ -154,10 +154,12 @@ pub fn plan_path<T: IntoMap>(
     map: Res<TileMap<T>>,
     mut events: EventReader<PlanPathEvent>,
 
-    mut actors: Query<(&Actor, &mut NpcInTheMap)>,
+    mut actors: Query<(Entity, &Actor, &mut NpcInTheMap)>,
 ) {
     for PlanPathEvent(entity, target_square) in events.read() {
-        let Ok((actor, mut npc_in_the_map)) = actors.get_mut(*entity) else {
+        let Ok((actor_entity, actor, mut npc_in_the_map)) =
+            actors.get_mut(*entity)
+        else {
             continue;
         };
 
@@ -165,7 +167,7 @@ pub fn plan_path<T: IntoMap>(
         // TODO: limit how often this can be done per second for a given NPC
         npc_in_the_map.planned_path_index = 0;
         npc_in_the_map.planned_path = map
-            .find_path(actor.current_square(), *target_square)
+            .find_path(actor_entity, actor.current_square(), *target_square)
             .unwrap_or_default(); // no path
         trace!("Found path of len {}", npc_in_the_map.planned_path.len());
     }
@@ -175,9 +177,9 @@ pub fn plan_path<T: IntoMap>(
 pub fn run_path<T: IntoMap>(
     map: Res<TileMap<T>>,
 
-    mut actors: Query<(&mut Actor, &mut NpcInTheMap)>,
+    mut actors: Query<(Entity, &mut Actor, &mut NpcInTheMap)>,
 ) {
-    for (mut actor, mut npc_in_the_map) in actors.iter_mut() {
+    for (actor_entity, mut actor, mut npc_in_the_map) in actors.iter_mut() {
         if npc_in_the_map.planned_path.is_empty() {
             continue;
         }
@@ -191,7 +193,7 @@ pub fn run_path<T: IntoMap>(
                 else {
                     continue;
                 };
-                if !map.can_be_stepped_on(planned_square) {
+                if !map.is_walkable(planned_square, actor_entity) {
                     // we'll need to replan
                     npc_in_the_map.reset_path();
                     continue;
@@ -210,7 +212,7 @@ pub fn run_path<T: IntoMap>(
                 else {
                     continue;
                 };
-                if !map.can_be_stepped_on(planned_square) {
+                if !map.is_walkable(planned_square, actor_entity) {
                     // we'll need to replan
                     npc_in_the_map.reset_path();
                     continue;

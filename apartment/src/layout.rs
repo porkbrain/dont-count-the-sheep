@@ -2,20 +2,20 @@ use bevy::{
     ecs::event::event_update_condition, render::view::RenderLayers,
     sprite::Anchor, utils::Instant,
 };
-use bevy_grid_squared::{Square, SquareLayout};
+use bevy_grid_squared::SquareLayout;
 use common_visuals::{
-    camera::{render_layer, PIXEL_ZOOM},
-    AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer, ColorExt,
-    PRIMARY_COLOR,
+    camera::render_layer, AtlasAnimation, AtlasAnimationEnd,
+    AtlasAnimationTimer, ColorExt, PRIMARY_COLOR,
 };
 use lazy_static::lazy_static;
 use main_game_lib::{
     common_ext::QueryExt,
-    common_top_down::{actor, Actor, ActorMovementEvent, IntoMap, SquareKind},
+    common_top_down::{actor, Actor, ActorMovementEvent, IntoMap},
     cutscene::not_in_cutscene,
     vec2_ext::Vec2Ext,
 };
 use rand::{thread_rng, Rng};
+use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 
 use crate::{consts::*, prelude::*, Apartment};
@@ -34,20 +34,12 @@ const HALLWAY_FADE_TRANSITION_DURATION: Duration = from_millis(500);
 /// extend beyond this boundary.
 const HALLWAY_TOP_BOUNDARY: i32 = -20;
 
-pub(crate) mod zones {
-    use main_game_lib::common_top_down::layout::Zone;
-
-    pub(crate) const MEDITATION: Zone = 0;
-    pub(crate) const BED: Zone = 1;
-    pub(crate) const TEA: Zone = 2;
-    pub(crate) const DOOR: Zone = 3;
-    pub(crate) const ELEVATOR: Zone = 4;
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.register_type::<ApartmentTileKind>();
+
         app.add_systems(OnEnter(GlobalGameState::ApartmentLoading), spawn)
             .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn)
             .add_systems(
@@ -60,7 +52,13 @@ impl bevy::app::Plugin for Plugin {
                 Update,
                 toggle_door
                     .run_if(in_state(GlobalGameState::InApartment))
-                    .run_if(event_update_condition::<ActorMovementEvent>)
+                    .run_if(
+                        event_update_condition::<
+                            ActorMovementEvent<
+                                <Apartment as IntoMap>::LocalTileKind,
+                            >,
+                        >,
+                    )
                     .after(actor::emit_movement_events::<Apartment>),
             );
     }
@@ -357,16 +355,32 @@ fn spawn(
 
 #[derive(Reflect)]
 struct Door {
+    state: DoorState,
     open_criteria: SmallVec<[DoorOpenCriteria; 4]>,
 }
 
+#[derive(Reflect, Default)]
+enum DoorState {
+    Open,
+    #[default]
+    Closed,
+    Locked,
+}
+
+#[derive(Reflect, Default)]
 enum DoorOpenCriteria {
+    #[default]
+    Unlocked,
     Character(common_story::Character),
 }
 
 /// When player gets near the door, the door opens.
+///
+/// TODO: reimplement with zones and make reusable
 fn toggle_door(
-    mut events: EventReader<ActorMovementEvent>,
+    mut events: EventReader<
+        ActorMovementEvent<<Apartment as IntoMap>::LocalTileKind>,
+    >,
 
     mut door: Query<&mut TextureAtlasSprite, With<MainDoor>>,
 
@@ -376,12 +390,12 @@ fn toggle_door(
     for event in events.read().filter(|event| event.is_player()) {
         match event {
             ActorMovementEvent::ZoneEntered { zone, .. }
-                if *zone == zones::DOOR =>
+                if *zone == ApartmentTileKind::BedZone.into() =>
             {
                 new_door_opened = true;
             }
             ActorMovementEvent::ZoneLeft { zone, .. }
-                if *zone == zones::DOOR =>
+                if *zone == ApartmentTileKind::BedZone.into() =>
             {
                 new_door_opened = false;
             }
@@ -405,7 +419,7 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
 
 // TODO: redo
 fn smoothly_transition_hallway_color(
-    map: Res<common_top_down::TileMap<Apartment>>,
+    _map: Res<common_top_down::TileMap<Apartment>>,
 
     player: Query<&Actor, With<Player>>,
     mut sprites: Query<&mut Sprite, With<HallwayEntity>>,
@@ -421,8 +435,7 @@ fn smoothly_transition_hallway_color(
     let square = player.current_square();
 
     let in_hallway = square.y < HALLWAY_TOP_BOUNDARY;
-    let by_the_door =
-        matches!(map.get(&square), Some(SquareKind::Zone(zones::DOOR)));
+    let by_the_door = true; // TODO: reimplement with zones
 
     let target_color = if in_hallway || by_the_door {
         Color::WHITE
@@ -470,7 +483,41 @@ fn smoothly_transition_hallway_color(
     }
 }
 
+/// We arbitrarily derive the [`Default`] to allow reflection.
+/// It does not have a meaningful default value.
+#[derive(
+    Reflect, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Debug,
+)]
+#[reflect(Default)]
+pub(crate) enum ApartmentTileKind {
+    #[default]
+    BedZone,
+    ElevatorZone,
+    /// We want to darken the hallway when the player is in the apartment.
+    HallwayZone,
+    MeditationZone,
+    TeaZone,
+}
+
+impl common_top_down::layout::Tile for ApartmentTileKind {
+    fn is_walkable(&self, _: Entity) -> bool {
+        true
+    }
+
+    fn is_zone(&self) -> bool {
+        matches!(
+            self,
+            ApartmentTileKind::BedZone
+                | ApartmentTileKind::ElevatorZone
+                | ApartmentTileKind::MeditationZone
+                | ApartmentTileKind::TeaZone
+        )
+    }
+}
+
 impl IntoMap for Apartment {
+    type LocalTileKind = ApartmentTileKind;
+
     fn bounds() -> [i32; 4] {
         [-80, 40, -30, 20]
     }
@@ -481,11 +528,5 @@ impl IntoMap for Apartment {
 
     fn layout() -> &'static SquareLayout {
         &LAYOUT
-    }
-
-    fn cursor_position_to_square(p: Vec2) -> Square {
-        Self::layout().world_pos_to_square(
-            (p / PIXEL_ZOOM as f32).as_top_left_into_centered(),
-        )
     }
 }
