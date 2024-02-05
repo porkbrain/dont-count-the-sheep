@@ -4,6 +4,7 @@
 #![feature(let_chains)]
 
 pub mod actor;
+pub mod interactable;
 pub mod layout;
 
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};

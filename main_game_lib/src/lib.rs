@@ -38,6 +38,7 @@ pub fn windowed_app() -> App {
                 common_action=trace,\
                 common_assets=trace,\
                 common_top_down=trace,\
+                common_top_down::actor::npc=debug,\
                 common_loading_screen=trace,\
                 common_physics=trace,\
                 common_store=trace,\
@@ -54,7 +55,6 @@ pub fn windowed_app() -> App {
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Ciesin".into(),
-                    mode: bevy::window::WindowMode::BorderlessFullscreen,
                     ..default()
                 }),
                 ..default()

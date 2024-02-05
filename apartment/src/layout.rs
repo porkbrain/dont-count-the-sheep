@@ -2,7 +2,7 @@ use bevy::{
     ecs::event::event_update_condition, render::view::RenderLayers,
     sprite::Anchor, utils::Instant,
 };
-use bevy_grid_squared::SquareLayout;
+use bevy_grid_squared::{square, SquareLayout};
 use common_visuals::{
     camera::render_layer, AtlasAnimation, AtlasAnimationEnd,
     AtlasAnimationTimer, ColorExt, PRIMARY_COLOR,
@@ -10,13 +10,19 @@ use common_visuals::{
 use lazy_static::lazy_static;
 use main_game_lib::{
     common_ext::QueryExt,
-    common_top_down::{actor, Actor, ActorMovementEvent, IntoMap},
+    common_top_down::{
+        actor,
+        interactable::{
+            self,
+            door::{DoorBuilder, DoorOpenCriteria, DoorState},
+        },
+        Actor, ActorMovementEvent, IntoMap, TileMap,
+    },
     cutscene::not_in_cutscene,
     vec2_ext::Vec2Ext,
 };
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
-use smallvec::SmallVec;
 
 use crate::{consts::*, prelude::*, Apartment};
 
@@ -40,27 +46,30 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.register_type::<ApartmentTileKind>();
 
-        app.add_systems(OnEnter(GlobalGameState::ApartmentLoading), spawn)
-            .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn)
-            .add_systems(
-                Update,
-                smoothly_transition_hallway_color
-                    .run_if(in_state(GlobalGameState::InApartment))
-                    .run_if(not_in_cutscene()),
-            )
-            .add_systems(
-                Update,
-                toggle_door
-                    .run_if(in_state(GlobalGameState::InApartment))
-                    .run_if(
-                        event_update_condition::<
-                            ActorMovementEvent<
-                                <Apartment as IntoMap>::LocalTileKind,
-                            >,
+        app.add_systems(
+            Update,
+            spawn.run_if(in_state(GlobalGameState::ApartmentLoading)),
+        )
+        .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn)
+        .add_systems(
+            Update,
+            smoothly_transition_hallway_color
+                .run_if(in_state(GlobalGameState::InApartment))
+                .run_if(not_in_cutscene()),
+        )
+        .add_systems(
+            Update,
+            interactable::door::toggle::<Apartment>
+                .run_if(in_state(GlobalGameState::InApartment))
+                .run_if(
+                    event_update_condition::<
+                        ActorMovementEvent<
+                            <Apartment as IntoMap>::LocalTileKind,
                         >,
-                    )
-                    .after(actor::emit_movement_events::<Apartment>),
-            );
+                    >,
+                )
+                .after(actor::emit_movement_events::<Apartment>),
+        );
     }
 }
 
@@ -72,22 +81,54 @@ struct LayoutEntity;
 #[derive(Component)]
 pub(crate) struct HallwayEntity;
 
-/// The main door is a special entity that has a sprite sheet with two frames.
-/// When the player is near the door, the door opens.
-#[derive(Component)]
-struct MainDoor;
-
 /// Elevator is a special entity that has a sprite sheet with several frames.
 /// It opens when an actor is near it and closes when the actor leaves or
 /// enters.
 #[derive(Component)]
 pub(crate) struct Elevator;
 
+/// We arbitrarily derive the [`Default`] to allow reflection.
+/// It does not have a meaningful default value.
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    Deserialize,
+    Eq,
+    Hash,
+    PartialEq,
+    Reflect,
+    Serialize,
+)]
+#[reflect(Default)]
+pub(crate) enum ApartmentTileKind {
+    #[default]
+    BedZone,
+    MainDoorZone,
+    ElevatorZone,
+    /// We want to darken the hallway when the player is in the apartment.
+    HallwayZone,
+    MeditationZone,
+    TeaZone,
+}
+
 fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    tilemap: Option<ResMut<TileMap<Apartment>>>,
+
+    entities: Query<Entity, With<LayoutEntity>>,
 ) {
+    let Some(mut tilemap) = tilemap else {
+        return; // wait for tilemap to load
+    };
+
+    if !entities.is_empty() {
+        return; // already spawned
+    }
+
     #[derive(Default)]
     struct ToSpawn {
         name: &'static str,
@@ -266,7 +307,16 @@ fn spawn(
     // bedroom door opens (sprite index 2) when the player is near the door
     cmd.spawn((
         Name::from("Bedroom door"),
-        MainDoor,
+        DoorBuilder::new(ApartmentTileKind::MainDoorZone)
+            .add_open_criteria(DoorOpenCriteria::Character(
+                common_story::Character::Winnie,
+            ))
+            .with_initial_state(DoorState::Closed)
+            .with_obstacle_when_closed_between(
+                square(-40, -21),
+                square(-31, -21),
+            )
+            .build(&mut tilemap),
         LayoutEntity,
         RenderLayers::layer(render_layer::BG),
         SpriteSheetBundle {
@@ -353,62 +403,6 @@ fn spawn(
     ));
 }
 
-#[derive(Reflect)]
-struct Door {
-    state: DoorState,
-    open_criteria: SmallVec<[DoorOpenCriteria; 4]>,
-}
-
-#[derive(Reflect, Default)]
-enum DoorState {
-    Open,
-    #[default]
-    Closed,
-    Locked,
-}
-
-#[derive(Reflect, Default)]
-enum DoorOpenCriteria {
-    #[default]
-    Unlocked,
-    Character(common_story::Character),
-}
-
-/// When player gets near the door, the door opens.
-///
-/// TODO: reimplement with zones and make reusable
-fn toggle_door(
-    mut events: EventReader<
-        ActorMovementEvent<<Apartment as IntoMap>::LocalTileKind>,
-    >,
-
-    mut door: Query<&mut TextureAtlasSprite, With<MainDoor>>,
-
-    mut door_opened: Local<bool>,
-) {
-    let mut new_door_opened = *door_opened;
-    for event in events.read().filter(|event| event.is_player()) {
-        match event {
-            ActorMovementEvent::ZoneEntered { zone, .. }
-                if *zone == ApartmentTileKind::BedZone.into() =>
-            {
-                new_door_opened = true;
-            }
-            ActorMovementEvent::ZoneLeft { zone, .. }
-                if *zone == ApartmentTileKind::BedZone.into() =>
-            {
-                new_door_opened = false;
-            }
-            _ => {}
-        }
-    }
-
-    if new_door_opened != *door_opened {
-        *door_opened = new_door_opened;
-        door.single_mut().index = if *door_opened { 1 } else { 0 };
-    }
-}
-
 fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
     debug!("Despawning layout entities");
 
@@ -483,35 +477,20 @@ fn smoothly_transition_hallway_color(
     }
 }
 
-/// We arbitrarily derive the [`Default`] to allow reflection.
-/// It does not have a meaningful default value.
-#[derive(
-    Reflect, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Debug,
-)]
-#[reflect(Default)]
-pub(crate) enum ApartmentTileKind {
-    #[default]
-    BedZone,
-    ElevatorZone,
-    /// We want to darken the hallway when the player is in the apartment.
-    HallwayZone,
-    MeditationZone,
-    TeaZone,
-}
-
 impl common_top_down::layout::Tile for ApartmentTileKind {
     fn is_walkable(&self, _: Entity) -> bool {
         true
     }
 
     fn is_zone(&self) -> bool {
-        matches!(
-            self,
+        match self {
             ApartmentTileKind::BedZone
-                | ApartmentTileKind::ElevatorZone
-                | ApartmentTileKind::MeditationZone
-                | ApartmentTileKind::TeaZone
-        )
+            | ApartmentTileKind::MainDoorZone
+            | ApartmentTileKind::ElevatorZone
+            | ApartmentTileKind::HallwayZone
+            | ApartmentTileKind::MeditationZone
+            | ApartmentTileKind::TeaZone => true,
+        }
     }
 }
 

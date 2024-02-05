@@ -5,12 +5,15 @@ pub mod player;
 
 use std::time::Duration;
 
-use bevy::{prelude::*, time::Stopwatch, utils::HashMap};
+use bevy::{
+    prelude::*,
+    time::Stopwatch,
+    utils::{HashMap, HashSet},
+};
 use bevy_grid_squared::{GridDirection, Square};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_story::Character;
 use serde::{Deserialize, Serialize};
-use smallvec::SmallVec;
 
 use crate::{
     layout::{IntoMap, Tile},
@@ -54,8 +57,11 @@ pub struct ActorTarget {
     Resource, Serialize, Deserialize, Reflect, InspectorOptions, Default,
 )]
 #[reflect(Resource, InspectorOptions)]
-pub struct ActorZoneMap<L: Default> {
-    map: HashMap<Entity, SmallVec<[TileKind<L>; 3]>>,
+pub struct ActorZoneMap<L: Default + Eq + std::hash::Hash> {
+    /// Set is used to avoid duplicates.
+    /// Those could arise from a map that has the same zone multiple times in
+    /// the same square (different layer.)
+    map: HashMap<Entity, HashSet<TileKind<L>>>,
 }
 
 /// Some useful events for actors.
@@ -69,6 +75,7 @@ pub enum ActorMovementEvent<T> {
         who: Who,
     },
     /// Is emitted when an [`Actor`] leaves a zone.
+    /// TODO: also when despawned in a zone.
     ZoneLeft {
         /// The zone that was left.
         zone: TileKind<T>,
@@ -116,12 +123,28 @@ pub fn emit_movement_events<T: IntoMap>(
 ) {
     for (entity, actor, player) in actors.iter() {
         let at = actor.current_square();
+        let character = actor.character;
 
-        let Some(tiles) = tilemap.get(&at) else {
-            continue;
+        let zone_left_event = |zone| ActorMovementEvent::ZoneLeft {
+            zone,
+            who: Who {
+                at,
+                is_player: player.is_some(),
+                entity,
+                character,
+            },
         };
 
         let active_zones = actor_zone_map.map.entry(entity).or_default();
+
+        let Some(tiles) = tilemap.get(&at) else {
+            for active in active_zones.drain() {
+                trace!("Actor {character:?} left zone {active:?}");
+                event.send(zone_left_event(active));
+            }
+
+            continue;
+        };
 
         // remove zones that are no longer active and send an event
         active_zones.retain(|active| {
@@ -129,16 +152,8 @@ pub fn emit_movement_events<T: IntoMap>(
                 return true;
             }
 
-            trace!("Actor {:?} left zone {active:?}", actor.character);
-            event.send(ActorMovementEvent::ZoneLeft {
-                zone: *active,
-                who: Who {
-                    at,
-                    is_player: player.is_some(),
-                    entity,
-                    character: actor.character,
-                },
-            });
+            trace!("Actor {character:?} left zone {active:?}");
+            event.send(zone_left_event(*active));
 
             false
         });
@@ -149,16 +164,16 @@ pub fn emit_movement_events<T: IntoMap>(
                 continue;
             }
 
-            active_zones.push(*tile);
+            active_zones.insert(*tile);
 
-            trace!("Actor {:?} is in zone {tile:?}", actor.character);
+            trace!("Actor {character:?} is in zone {tile:?}");
             event.send(ActorMovementEvent::ZoneEntered {
                 zone: *tile,
                 who: Who {
                     at,
                     is_player: player.is_some(),
                     entity,
-                    character: actor.character,
+                    character,
                 },
             });
         }

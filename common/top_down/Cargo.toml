@@ -12,6 +12,7 @@ common_action.workspace = true
 common_assets.workspace = true
 common_ext.workspace = true
 common_story.workspace = true
+itertools.workspace = true
 leafwing-input-manager.workspace = true
 pathfinding.workspace = true
 ron = { workspace = true, optional = true }

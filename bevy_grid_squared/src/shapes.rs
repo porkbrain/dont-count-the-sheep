@@ -5,6 +5,18 @@ pub struct ExactSizeSquareIterator<I> {
     iter: I,
 }
 
+pub fn rectangle_between(
+    from: Square,
+    to: Square,
+) -> impl ExactSizeIterator<Item = Square> {
+    let left = from.x.min(to.x);
+    let right = from.x.max(to.x);
+    let bottom = from.y.min(to.y);
+    let top = from.y.max(to.y);
+
+    rectangle([left, right, bottom, top])
+}
+
 /// All bounds can be negative, but left <= right and bottom <= top
 pub fn rectangle(
     [left, right, bottom, top]: [i32; 4],
