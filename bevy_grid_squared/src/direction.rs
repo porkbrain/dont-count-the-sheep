@@ -76,7 +76,6 @@ impl Square {
         }
 
         // angle between the diff and the top vector
-        #[allow(illegal_floating_point_literal_pattern)]
         #[allow(clippy::approx_constant)]
         let direction = match (Vec2::from(other) - Vec2::from(self))
             .angle_between(Vec2::new(0.0, 1.0))
