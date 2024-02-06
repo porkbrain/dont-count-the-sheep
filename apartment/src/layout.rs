@@ -1,23 +1,21 @@
-use bevy::{
-    ecs::event::event_update_condition, render::view::RenderLayers,
-    sprite::Anchor, utils::Instant,
-};
+use bevy::{render::view::RenderLayers, sprite::Anchor};
 use bevy_grid_squared::{square, SquareLayout};
 use common_visuals::{
     camera::render_layer, AtlasAnimation, AtlasAnimationEnd,
-    AtlasAnimationTimer, ColorExt, PRIMARY_COLOR,
+    AtlasAnimationTimer, PRIMARY_COLOR,
 };
 use lazy_static::lazy_static;
 use main_game_lib::{
     common_ext::QueryExt,
     common_top_down::{
-        actor,
+        actor::{self, movement_event_emitted, Who},
         interactable::{
             self,
             door::{DoorBuilder, DoorOpenCriteria, DoorState},
         },
-        Actor, ActorMovementEvent, IntoMap, TileMap,
+        Actor, ActorMovementEvent, IntoMap, TileKind, TileMap,
     },
+    common_visuals::BeginInterpolationEvent,
     cutscene::not_in_cutscene,
     vec2_ext::Vec2Ext,
 };
@@ -35,10 +33,6 @@ lazy_static! {
 
 /// How long does it take to give hallway its full color.
 const HALLWAY_FADE_TRANSITION_DURATION: Duration = from_millis(500);
-/// In terms of map squares.
-/// We don't use bounding box because so far the apartment does not
-/// extend beyond this boundary.
-const HALLWAY_TOP_BOUNDARY: i32 = -20;
 
 pub(crate) struct Plugin;
 
@@ -53,21 +47,18 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn)
         .add_systems(
             Update,
-            smoothly_transition_hallway_color
+            common_visuals::systems::interpolate
                 .run_if(in_state(GlobalGameState::InApartment))
                 .run_if(not_in_cutscene()),
         )
         .add_systems(
             Update,
-            interactable::door::toggle::<Apartment>
+            (
+                watch_entry_to_hallway,
+                interactable::door::toggle::<Apartment>,
+            )
                 .run_if(in_state(GlobalGameState::InApartment))
-                .run_if(
-                    event_update_condition::<
-                        ActorMovementEvent<
-                            <Apartment as IntoMap>::LocalTileKind,
-                        >,
-                    >,
-                )
+                .run_if(movement_event_emitted::<Apartment>())
                 .after(actor::emit_movement_events::<Apartment>),
         );
     }
@@ -304,6 +295,7 @@ fn spawn(
     cmd.spawn(Name::from("Bathroom cloud atlas"))
         .insert(cloud_atlas_bundle(vec2(-176.0, 145.0)));
 
+    // TODO: the other two doors
     // bedroom door opens (sprite index 2) when the player is near the door
     cmd.spawn((
         Name::from("Bedroom door"),
@@ -322,10 +314,10 @@ fn spawn(
         SpriteSheetBundle {
             texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
                 asset_server.load(assets::BEDROOM_MAIN_DOOR),
-                vec2(26.0, 48.0),
+                vec2(27.0, 53.0),
                 2,
                 1,
-                None,
+                Some(vec2(1.0, 0.0)),
                 None,
             )),
             sprite: TextureAtlasSprite {
@@ -411,69 +403,129 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
     }
 }
 
-// TODO: redo
-fn smoothly_transition_hallway_color(
-    _map: Res<common_top_down::TileMap<Apartment>>,
+/// Listens to events about entering the hallway (or just coming to the doors.)
+///
+/// When the player enters the hallway, all hallway entities go from primary
+/// color to white.
+/// When the player leaves the hallway, reversed.
+///
+/// When an NPC (non player actor) enters the hallway, assign them the hallway
+/// component.
+/// When an NPC leaves the hallway, remove the hallway component.
+fn watch_entry_to_hallway(
+    mut cmd: Commands,
+    tilemap: Res<TileMap<Apartment>>,
+    mut movement_events: EventReader<
+        ActorMovementEvent<<Apartment as IntoMap>::LocalTileKind>,
+    >,
+    mut lerp_event: EventWriter<BeginInterpolationEvent>,
 
     player: Query<&Actor, With<Player>>,
-    mut sprites: Query<&mut Sprite, With<HallwayEntity>>,
-    mut atlases: Query<&mut TextureAtlasSprite, With<HallwayEntity>>,
-
-    // (from color, how long ago started)
-    mut local: Local<Option<(Color, Instant)>>,
+    hallway_entities: Query<Entity, With<HallwayEntity>>,
 ) {
-    let Some(player) = player.get_single_or_none() else {
-        return;
-    };
+    for event in movement_events.read() {
+        match event {
+            // player entered hallway, all entities go to white
+            ActorMovementEvent::ZoneEntered {
+                who:
+                    Who {
+                        is_player: true, ..
+                    },
+                zone: TileKind::Local(ApartmentTileKind::HallwayZone),
+            } => {
+                trace!("Player entered hallway");
+                hallway_entities.for_each(|entity| {
+                    lerp_event.send(
+                        BeginInterpolationEvent::of_color(
+                            entity,
+                            None,
+                            Color::WHITE,
+                        )
+                        .over(HALLWAY_FADE_TRANSITION_DURATION),
+                    );
+                });
+            }
+            // player left hallway, all entities go to primary
+            ActorMovementEvent::ZoneLeft {
+                who:
+                    Who {
+                        is_player: true, ..
+                    },
+                zone: TileKind::Local(ApartmentTileKind::HallwayZone),
+            } => {
+                trace!("Player left hallway");
+                hallway_entities.for_each(|entity| {
+                    lerp_event.send(
+                        BeginInterpolationEvent::of_color(
+                            entity,
+                            None,
+                            PRIMARY_COLOR,
+                        )
+                        .over(HALLWAY_FADE_TRANSITION_DURATION),
+                    );
+                });
+            }
+            // NPC entered the hallway
+            ActorMovementEvent::ZoneEntered {
+                who:
+                    Who {
+                        is_player: false,
+                        entity,
+                        ..
+                    },
+                zone: TileKind::Local(ApartmentTileKind::HallwayZone),
+            } => {
+                trace!("NPC entered hallway");
+                cmd.entity(*entity).insert(HallwayEntity);
 
-    let square = player.current_square();
+                let is_player_in_hallway = player
+                    .get_single_or_none()
+                    .map(|player| {
+                        tilemap.is_on(
+                            player.walking_from,
+                            ApartmentTileKind::HallwayZone,
+                        )
+                    })
+                    .unwrap_or(false);
 
-    let in_hallway = square.y < HALLWAY_TOP_BOUNDARY;
-    let by_the_door = true; // TODO: reimplement with zones
+                // if actor not in hallway, we need to change their color
+                if !is_player_in_hallway {
+                    lerp_event.send(
+                        BeginInterpolationEvent::of_color(
+                            *entity,
+                            None,
+                            PRIMARY_COLOR,
+                        )
+                        .over(HALLWAY_FADE_TRANSITION_DURATION),
+                    );
+                }
+            }
+            // NPC left the hallway
+            ActorMovementEvent::ZoneLeft {
+                who:
+                    Who {
+                        is_player: false,
+                        entity,
+                        ..
+                    },
+                zone: TileKind::Local(ApartmentTileKind::HallwayZone),
+            } => {
+                trace!("NPC left hallway");
+                cmd.entity(*entity).remove::<HallwayEntity>();
 
-    let target_color = if in_hallway || by_the_door {
-        Color::WHITE
-    } else {
-        PRIMARY_COLOR
-    };
-
-    // there should always be at least one hallway entity
-    // all entities have the same color
-    let sprite_color = sprites
-        .iter()
-        .next()
-        .map(|sprite| sprite.color)
-        .unwrap_or_default();
-
-    if target_color == sprite_color {
-        return;
-    }
-
-    let (from_color, transition_started_at) =
-        local.get_or_insert_with(|| (sprite_color, Instant::now()));
-
-    if *from_color == target_color {
-        *from_color = sprite_color;
-        *transition_started_at = Instant::now();
-    }
-
-    let elapsed = transition_started_at.elapsed();
-    let new_color = if elapsed > HALLWAY_FADE_TRANSITION_DURATION {
-        *local = None;
-        target_color
-    } else {
-        from_color.lerp(
-            target_color,
-            elapsed.as_secs_f32()
-                / HALLWAY_FADE_TRANSITION_DURATION.as_secs_f32(),
-        )
-    };
-
-    for mut sprite in sprites.iter_mut() {
-        sprite.color = new_color;
-    }
-    for mut sprite in atlases.iter_mut() {
-        sprite.color = new_color;
+                // if actor not in hallway, we need to change their color
+                lerp_event.send(
+                    BeginInterpolationEvent::of_color(
+                        *entity,
+                        None,
+                        Color::WHITE,
+                    )
+                    .over(HALLWAY_FADE_TRANSITION_DURATION),
+                );
+            }
+            // we don't care about other events
+            _ => {}
+        }
     }
 }
 

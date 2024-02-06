@@ -102,7 +102,6 @@ impl Square {
             _ => return None,
         };
 
-        // TODO
         Some(direction)
     }
 }

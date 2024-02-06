@@ -1,11 +1,12 @@
 //! You ought to register these systems by yourself.
 
 use bevy::prelude::*;
+use common_ext::ColorExt;
 
 use crate::{
     AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer,
-    BeginAtlasAnimationAtRandom, Flicker, SmoothTranslation,
-    SmoothTranslationEnd,
+    BeginAtlasAnimationAtRandom, BeginInterpolationEvent, ColorInterpolation,
+    Flicker, InterpolationOf, SmoothTranslation, SmoothTranslationEnd,
 };
 
 /// Advances the animation by one frame.
@@ -126,6 +127,8 @@ pub fn flicker(
 }
 
 /// Smoothly translates entities from one position to another.
+///
+/// TODO: merge with interpolation
 pub fn smoothly_translate(
     mut cmd: Commands,
     time: Res<Time>,
@@ -165,5 +168,91 @@ pub fn smoothly_translate(
                 animation.from.lerp(animation.target, lerp_factor)
             })
             .extend(keep_z);
+    }
+}
+
+/// Receives events to start interpolations.
+///
+/// This is always run last, so that no `Update` schedule system must explicitly
+/// set order.
+/// Also, this means that removal of the component will be processed before
+/// insertion of the same component.
+///
+/// This system always runs if there are any events to process, it's registered
+/// by the plugin.
+pub(crate) fn recv_begin_interpolation_events(
+    mut cmd: Commands,
+    mut events: EventReader<BeginInterpolationEvent>,
+) {
+    for BeginInterpolationEvent {
+        entity,
+        of,
+        over,
+        animation_curve: curve,
+    } in events.read()
+    {
+        let component = match of {
+            InterpolationOf::Color { from, to } => ColorInterpolation {
+                from: *from,
+                to: *to,
+                over: *over,
+                started_at: Default::default(),
+                animation_curve: curve.clone(),
+            },
+        };
+
+        cmd.entity(*entity).insert(component);
+    }
+}
+
+/// Runs interpolation logic on the entities that have the relevant components.
+/// Must run before `Last` schedule, or at least before the
+/// `recv_begin_interpolation_events`.
+pub fn interpolate(
+    mut cmd: Commands,
+    time: Res<Time>,
+
+    // color interpolation
+    mut sprites: Query<
+        (Entity, &mut Sprite, &mut ColorInterpolation),
+        Without<TextureAtlasSprite>,
+    >,
+    mut atlases: Query<
+        (Entity, &mut TextureAtlasSprite, &mut ColorInterpolation),
+        Without<Sprite>,
+    >,
+) {
+    let dt = time.delta();
+
+    let mut interpolate_color =
+        |entity: Entity,
+         interpolation: &mut ColorInterpolation,
+         color: &mut Color| {
+            interpolation.started_at.tick(dt);
+
+            let elapsed_fraction = interpolation.started_at.elapsed_secs()
+                / interpolation.over.as_secs_f32();
+
+            if elapsed_fraction >= 1.0 {
+                *color = interpolation.to;
+                cmd.entity(entity).remove::<ColorInterpolation>();
+            } else {
+                let lerp_factor = interpolation
+                    .animation_curve
+                    .as_ref()
+                    .map(|curve| curve.ease(elapsed_fraction))
+                    .unwrap_or(elapsed_fraction);
+
+                let from = interpolation.from.get_or_insert_with(|| *color);
+                *color = from.lerp(interpolation.to, lerp_factor);
+            }
+        };
+
+    for (entity, mut sprite, mut interpolation) in sprites.iter_mut() {
+        interpolate_color(entity, &mut interpolation, &mut sprite.color);
+    }
+
+    for (entity, mut atlas, mut interpolation) in atlases.iter_mut() {
+        interpolate_color(entity, &mut interpolation, &mut atlas.color);
     }
 }

@@ -88,7 +88,7 @@ pub struct TileMap<T: IntoMap> {
     squares: HashMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
     #[serde(skip)]
     #[reflect(ignore)]
-    phantom: PhantomData<T>,
+    _phantom: PhantomData<T>,
 }
 
 /// What kind of tiles do we support?
@@ -473,9 +473,12 @@ impl<L> From<L> for TileKind<L> {
 
 #[cfg(feature = "dev")]
 mod map_maker {
+    use std::collections::BTreeMap;
+
     use bevy::{
         render::view::RenderLayers, utils::HashSet, window::PrimaryWindow,
     };
+    use ron::ser::PrettyConfig;
 
     use super::*;
 
@@ -661,6 +664,7 @@ mod map_maker {
         }
     }
 
+    // TODO: only store what the user has changed with the map editor
     pub(super) fn export_map<T: IntoMap>(mut map: ResMut<TileMap<T>>) {
         // filter out needless squares
         map.squares.retain(|_, v| {
@@ -677,8 +681,37 @@ mod map_maker {
             !v.is_empty()
         });
 
+        // equivalent to tile map, but sorted so that we can serialize it
+        // and the output is deterministic
+        //
+        // this struct MUST serialize to a compatible ron output as TileMap
+        #[derive(Serialize)]
+        struct SortedTileMap<T: IntoMap> {
+            squares:
+                BTreeMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
+            #[serde(skip)]
+            _phantom: PhantomData<T>,
+        }
+
+        let tilemap_but_sorted: SortedTileMap<T> = SortedTileMap {
+            squares: map.squares.clone().into_iter().collect(),
+            _phantom: default(),
+        };
+
         // for internal use only so who cares
-        std::fs::write("map.ron", ron::to_string(&*map).unwrap()).unwrap();
+        std::fs::write(
+            "map.ron",
+            ron::ser::to_string_pretty(
+                &tilemap_but_sorted,
+                PrettyConfig::default()
+                    .compact_arrays(true)
+                    .separate_tuple_members(false)
+                    .indentor(" ".to_string())
+                    .depth_limit(2),
+            )
+            .unwrap(),
+        )
+        .unwrap();
     }
 
     impl<L> TileKind<L> {

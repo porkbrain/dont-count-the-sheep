@@ -6,9 +6,10 @@ use crate::EASE_IN_OUT;
 
 /// Describes how to drive an animation.
 /// The animation specifically integrates with texture atlas sprites.
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
 pub struct AtlasAnimation {
     /// What should happen when the last frame is reached?
+    #[reflect(ignore)]
     pub on_last_frame: AtlasAnimationEnd,
     /// The index of the first frame.
     /// Typically 0.
@@ -22,7 +23,7 @@ pub struct AtlasAnimation {
 }
 
 /// Different strategies for when the last frame of an animation is reached.
-#[derive(Default)]
+#[derive(Default, Reflect)]
 pub enum AtlasAnimationEnd {
     /// Loops the animation.
     #[default]
@@ -35,6 +36,7 @@ pub enum AtlasAnimationEnd {
     RemoveTimer,
     /// Can mutate state.
     #[allow(clippy::type_complexity)]
+    #[reflect(ignore)]
     Custom(
         Box<
             dyn Fn(
@@ -56,7 +58,7 @@ pub enum AtlasAnimationEnd {
 pub struct AtlasAnimationTimer(pub(crate) Timer);
 
 /// Allows to start an animation at random.
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
 pub struct BeginAtlasAnimationAtRandom {
     /// We roll a dice every delta seconds.
     /// This scales that delta.
@@ -70,7 +72,7 @@ pub struct BeginAtlasAnimationAtRandom {
 
 /// Shows entity at random for a given duration.
 /// Then hides it again.
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct Flicker {
     /// When did the flicker ran last?
     pub last: Instant,
@@ -81,9 +83,12 @@ pub struct Flicker {
 }
 
 /// Smoothly translates an entity from one position to another.
-#[derive(Component, Default)]
+///
+/// TODO: merge to interpolation
+#[derive(Component, Default, Reflect)]
 pub struct SmoothTranslation {
     /// What happens when we're done?
+    #[reflect(ignore)]
     pub on_finished: SmoothTranslationEnd,
     /// Where did the object start?
     pub from: Vec2,
@@ -94,17 +99,99 @@ pub struct SmoothTranslation {
     /// How long has the translation been running?
     pub stopwatch: Stopwatch,
     /// Not not provided then the translation will be linear.
+    #[reflect(ignore)]
     pub animation_curve: Option<CubicSegment<Vec2>>,
 }
 
 /// What should happen when the translation is done?
-#[derive(Default)]
+#[derive(Default, Reflect)]
 pub enum SmoothTranslationEnd {
     #[default]
     /// Just remove the component.
     RemoveSmoothTranslationComponent,
+    #[reflect(ignore)]
     /// Can schedule commands.
     Custom(Box<dyn Fn(&mut Commands) + Send + Sync>),
+}
+
+/// We use events instead of inserting the component directly because there
+/// might be races such as one interpolation finishing which removes the
+/// relevant component and another starting which inserts the same component.
+/// If the insertion is applied before the removal, the removal will actually
+/// remove the component that was just inserted.
+///
+/// Event system helps us serialize the order of the ops.
+#[derive(Event)]
+pub struct BeginInterpolationEvent {
+    /// The interpolation target.
+    /// See the enum for info about properties of which components are
+    /// affected.
+    pub of: InterpolationOf,
+    /// How long should the interpolation take?
+    /// Once the duration is over, the interpolation component is removed.
+    ///
+    /// Defaults to 1 second.
+    pub(crate) over: Duration,
+    /// The entity to interpolate.
+    pub entity: Entity,
+    /// Optionally select a cubic curve to follow instead of the default linear
+    /// interpolation.
+    pub animation_curve: Option<CubicSegment<Vec2>>,
+}
+
+impl BeginInterpolationEvent {
+    /// Interpolates the color of a sprite.
+    ///
+    /// Defaults to 1 second and lerps from the latest color to the new color
+    /// unless the initial color is provided.
+    pub fn of_color(entity: Entity, from: Option<Color>, to: Color) -> Self {
+        Self {
+            entity,
+            over: Duration::from_secs(1),
+            of: InterpolationOf::Color { from, to },
+            animation_curve: None,
+        }
+    }
+
+    /// How long should the interpolation take?
+    /// Defaults to 1 second.
+    pub fn over(mut self, over: Duration) -> Self {
+        debug_assert!(over.as_millis() > 0, "Duration mustn't be zero");
+        self.over = over;
+        self
+    }
+
+    /// Optionally select a cubic curve to follow instead of the default linear
+    /// interpolation.
+    pub fn with_animation_curve(mut self, curve: CubicSegment<Vec2>) -> Self {
+        self.animation_curve = Some(curve);
+        self
+    }
+}
+
+/// What should be interpolated?
+pub enum InterpolationOf {
+    /// Interpolate the color of [`TextureAtlasSprite`] and [`Sprite`].
+    Color {
+        /// The color to interpolate from.
+        /// If not provided, the latest color is used.
+        from: Option<Color>,
+        /// The color to interpolate to.
+        to: Color,
+    },
+}
+
+/// Interpolates the color of a sprite.
+#[derive(Component, Reflect)]
+pub struct ColorInterpolation {
+    /// Can be none on the first run, then we default it to the color of the
+    /// sprite.
+    pub(crate) from: Option<Color>,
+    pub(crate) to: Color,
+    pub(crate) started_at: Stopwatch,
+    pub(crate) over: Duration,
+    #[reflect(ignore)]
+    pub(crate) animation_curve: Option<CubicSegment<Vec2>>,
 }
 
 impl SmoothTranslation {

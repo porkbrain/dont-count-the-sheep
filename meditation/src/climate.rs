@@ -5,8 +5,9 @@ use bevy::{
     time::Stopwatch, utils::Instant,
 };
 use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
-use common_visuals::{camera::render_layer, ColorExt};
+use common_visuals::camera::render_layer;
 use itertools::Itertools;
+use main_game_lib::common_ext::ColorExt;
 
 use crate::{
     cameras::BackgroundLightScene, hoshi, path::LevelPath, prelude::*,

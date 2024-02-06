@@ -150,17 +150,13 @@ impl Character {
     fn sprite_atlas(self) -> Option<(&'static str, Vec2, usize, usize, Vec2)> {
         use common_assets::character_atlases::*;
 
-        const STANDARD_SIZE: Vec2 = Vec2::new(19.0, 35.0);
-        const STANDARD_SIZE2: Vec2 = Vec2::new(21.0, 38.0);
-        const STANDARD_PADDING: Vec2 = Vec2::new(1.0, 0.0);
+        const STANDARD_SIZE: Vec2 = Vec2::new(25.0, 46.0);
 
         match self {
             Character::Winnie => {
-                Some((WINNIE, STANDARD_SIZE, 15, 1, STANDARD_PADDING))
+                Some((WINNIE, STANDARD_SIZE, 12, 1, default()))
             }
-            Character::Marie => {
-                Some((MARIE, STANDARD_SIZE2, 15, 1, STANDARD_PADDING))
-            }
+            Character::Marie => Some((MARIE, STANDARD_SIZE, 15, 1, default())),
             _ => None,
         }
     }

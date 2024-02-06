@@ -8,7 +8,10 @@ use bevy::ecs::event::event_update_condition;
 use common_story::portrait_dialog::not_in_portrait_dialog;
 use main_game_lib::{
     common_action::{interaction_pressed, move_action_pressed},
-    common_top_down::{actor, npc::PlanPathEvent, ActorMovementEvent, IntoMap},
+    common_top_down::{
+        actor::{self, movement_event_emitted},
+        npc::PlanPathEvent,
+    },
     cutscene::not_in_cutscene,
 };
 
@@ -45,13 +48,7 @@ impl bevy::app::Plugin for Plugin {
         app.add_systems(
             Update,
             player::load_zone_overlay
-                .run_if(
-                    event_update_condition::<
-                        ActorMovementEvent<
-                            <Apartment as IntoMap>::LocalTileKind,
-                        >,
-                    >,
-                )
+                .run_if(movement_event_emitted::<Apartment>())
                 .run_if(in_state(GlobalGameState::InApartment))
                 .after(actor::emit_movement_events::<Apartment>),
         );

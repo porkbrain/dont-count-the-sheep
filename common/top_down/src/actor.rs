@@ -6,6 +6,7 @@ pub mod player;
 use std::time::Duration;
 
 use bevy::{
+    ecs::event::event_update_condition,
     prelude::*,
     time::Stopwatch,
     utils::{HashMap, HashSet},
@@ -19,6 +20,13 @@ use crate::{
     layout::{IntoMap, Tile},
     Player, TileKind, TileMap,
 };
+
+/// Use with [`IntoSystemConfigs::run_if`] to run a system only when an actor
+/// moves.
+pub fn movement_event_emitted<T: IntoMap>(
+) -> impl FnMut(Res<Events<ActorMovementEvent<T::LocalTileKind>>>) -> bool {
+    event_update_condition::<ActorMovementEvent<T::LocalTileKind>>
+}
 
 /// Entity with this component can be moved around.
 #[derive(Component, Reflect)]

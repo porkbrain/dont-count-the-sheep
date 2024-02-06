@@ -88,3 +88,19 @@ impl std::fmt::Display for Square {
         write!(f, "[{}, {}]", self.x, self.y)
     }
 }
+
+impl PartialOrd for Square {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Square {
+    /// Square is ordered by x then y
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match self.x.cmp(&other.x) {
+            std::cmp::Ordering::Equal => self.y.cmp(&other.y),
+            ord => ord,
+        }
+    }
+}

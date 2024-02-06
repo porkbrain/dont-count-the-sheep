@@ -1,5 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![deny(missing_docs)]
+#![feature(trivial_bounds)]
 
 pub mod camera;
 #[cfg(feature = "fps")]
@@ -8,7 +9,7 @@ pub mod systems;
 mod types;
 
 use bevy::{
-    app::{App, Startup, Update},
+    app::{App, Last, Startup, Update},
     diagnostic::FrameTimeDiagnosticsPlugin,
     math::{cubic_splines::CubicSegment, Vec2},
     render::color::Color,
@@ -31,26 +32,18 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<BeginInterpolationEvent>()
+            .register_type::<ColorInterpolation>()
+            .register_type::<AtlasAnimation>()
+            .register_type::<BeginAtlasAnimationAtRandom>()
+            .register_type::<Flicker>()
+            .register_type::<SmoothTranslation>();
+
+        app.add_systems(Last, systems::recv_begin_interpolation_events);
+
         #[cfg(feature = "fps")]
         app.add_plugins(FrameTimeDiagnosticsPlugin)
             .add_systems(Startup, fps::spawn)
             .add_systems(Update, (fps::update, fps::toggle));
-    }
-}
-
-/// Some useful extensions to the `Color` type.
-pub trait ColorExt {
-    /// <https://github.com/bevyengine/bevy/issues/1402>
-    fn lerp(self, other: Self, t: f32) -> Self;
-}
-
-impl ColorExt for Color {
-    fn lerp(self, other: Self, t: f32) -> Self {
-        let t = t.clamp(0.0, 1.0);
-        Color::rgb(
-            self.r() + (other.r() - self.r()) * t,
-            self.g() + (other.g() - self.g()) * t,
-            self.b() + (other.b() - self.b()) * t,
-        )
     }
 }

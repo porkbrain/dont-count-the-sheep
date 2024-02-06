@@ -5,6 +5,7 @@ edition.workspace = true
 
 [dependencies]
 bevy.workspace = true
+common_ext.workspace = true
 lazy_static.workspace = true
 rand.workspace = true
 

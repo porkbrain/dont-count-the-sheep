@@ -1427,6 +1427,7 @@ name = "common_visuals"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "common_ext",
  "lazy_static",
  "rand",
 ]
