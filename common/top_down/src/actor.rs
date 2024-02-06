@@ -156,7 +156,7 @@ pub fn emit_movement_events<T: IntoMap>(
 
         // remove zones that are no longer active and send an event
         active_zones.retain(|active| {
-            if tiles.contains(&active) {
+            if tiles.contains(active) {
                 return true;
             }
 

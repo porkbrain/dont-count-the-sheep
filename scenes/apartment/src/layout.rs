@@ -93,6 +93,7 @@ pub(crate) struct Elevator;
     Serialize,
 )]
 #[reflect(Default)]
+#[allow(clippy::enum_variant_names)]
 pub(crate) enum ApartmentTileKind {
     #[default]
     BedZone,

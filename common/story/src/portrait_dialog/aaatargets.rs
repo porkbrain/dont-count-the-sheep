@@ -20,6 +20,7 @@ pub enum DialogRoot {
 }
 
 /// These dialogs can be used in other dialogs as either choices or transitions.
+#[allow(clippy::enum_variant_names)] // this can be deleted with more dialog
 #[derive(Clone, Copy, Debug)]
 pub(super) enum DialogTargetChoice {
     TakeTheElevatorToGroundFloor,

@@ -309,10 +309,8 @@ impl<T: IntoMap> TileMap<T> {
     pub fn is_walkable(&self, square: Square, by: Entity) -> bool {
         if let Some(tiles) = self.squares.get(&square) {
             tiles.iter().all(|tile| tile.is_walkable(by))
-        } else if T::contains(square) {
-            true
         } else {
-            false
+            T::contains(square)
         }
     }
 
@@ -382,11 +380,12 @@ impl<T: IntoMap> TileMap<T> {
     ) -> Option<TileWalkCost> {
         if let Some(tiles) = self.squares.get(&square) {
             // return the lowest cost unless any of the tiles is not walkable
-            tiles.iter().fold(Some(TileWalkCost::Normal), |acc, tile| {
-                acc.and_then(|highest_cost_so_far| {
+            tiles.iter().try_fold(
+                TileWalkCost::Normal,
+                |highest_cost_so_far, tile| {
                     Some(tile.walk_cost(by)?.min(highest_cost_so_far))
-                })
-            })
+                },
+            )
         } else if T::contains(square) {
             Some(TileWalkCost::Normal)
         } else {

@@ -243,7 +243,7 @@ pub fn interpolate(
                     .map(|curve| curve.ease(elapsed_fraction))
                     .unwrap_or(elapsed_fraction);
 
-                let from = interpolation.from.get_or_insert_with(|| *color);
+                let from = interpolation.from.get_or_insert(*color);
                 *color = from.lerp(interpolation.to, lerp_factor);
             }
         };
