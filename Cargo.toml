@@ -4,7 +4,6 @@ package.edition = "2021"
 package.version = "0.1.0"
 resolver = "2"
 members = [
-    "apartment",
     "bevy_grid_squared",
     "bevy_magic_light_2d",
     "common/action",
@@ -12,18 +11,18 @@ members = [
     "common/loading_screen",
     "common/physics",
     "common/store",
-    "common/story/derive",
     "common/story",
+    "common/story/derive",
     "common/top_down",
     "common/visuals",
-    "downtown",
     "main_game_lib",
     "main_game",
-    "meditation",
+    "scenes/apartment",
+    "scenes/downtown",
+    "scenes/meditation",
 ]
 
 [workspace.dependencies]
-apartment = { path = "apartment" }
 bevy_grid_squared = { path = "bevy_grid_squared", features = ["serde"] }
 bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
 bevy_pixel_camera = "0.12"
@@ -38,17 +37,18 @@ common_store = { path = "common/store" }
 common_story = { path = "common/story" }
 common_top_down = { path = "common/top_down" }
 common_visuals = { path = "common/visuals" }
-downtown = { path = "downtown" }
 itertools = "0.12"
 lazy_static = "1.4"
 leafwing-input-manager = "0.11"
 main_game_lib = { path = "main_game_lib" }
-meditation = { path = "meditation" }
 pathfinding = "4.8"
 rand = "0.8"
 ron = "0.8"
 rusqlite = { version = "0.30", features = ["bundled", "chrono"] }
 rusqlite_migration = "1.1"
+scene_apartment = { path = "scenes/apartment" }
+scene_downtown = { path = "scenes/downtown" }
+scene_meditation = { path = "scenes/meditation" }
 serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.13"
 strum = { version = "0.26", features = ["derive"] }

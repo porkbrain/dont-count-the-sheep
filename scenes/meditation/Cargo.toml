@@ -1,5 +1,5 @@
 [package]
-name = "meditation"
+name = "scene_meditation"
 version.workspace = true
 edition.workspace = true
 

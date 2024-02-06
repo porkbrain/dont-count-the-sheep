@@ -1,5 +1,5 @@
 [package]
-name = "downtown"
+name = "scene_apartment"
 version.workspace = true
 edition.workspace = true
 
@@ -10,8 +10,12 @@ path = "src/lib.rs"
 bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true
 bevy.workspace = true
+itertools.workspace = true
 lazy_static.workspace = true
 main_game_lib.workspace = true
+rand.workspace = true
+serde.workspace = true
+smallvec.workspace = true
 
 [features]
 dev = ["bevy/glam_assert"]

@@ -160,21 +160,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "apartment"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_grid_squared",
- "bevy_pixel_camera",
- "itertools",
- "lazy_static",
- "main_game_lib",
- "rand",
- "serde",
- "smallvec",
-]
-
-[[package]]
 name = "approx"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1629,17 +1614,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
-name = "downtown"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_grid_squared",
- "bevy_pixel_camera",
- "lazy_static",
- "main_game_lib",
-]
-
-[[package]]
 name = "ecolor"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2546,11 +2520,11 @@ dependencies = [
 name = "main_game"
 version = "0.1.0"
 dependencies = [
- "apartment",
  "bevy",
- "downtown",
  "main_game_lib",
- "meditation",
+ "scene_apartment",
+ "scene_downtown",
+ "scene_meditation",
 ]
 
 [[package]]
@@ -2590,25 +2564,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8263075bb86c5a1b1427b5ae862e8889656f126e9f77c484496e8b47cf5c5558"
 dependencies = [
  "regex-automata 0.1.10",
-]
-
-[[package]]
-name = "meditation"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_magic_light_2d",
- "bevy_pixel_camera",
- "bevy_webp_anim",
- "common_assets",
- "common_loading_screen",
- "common_physics",
- "common_visuals",
- "itertools",
- "lazy_static",
- "leafwing-input-manager",
- "main_game_lib",
- "rand",
 ]
 
 [[package]]
@@ -3388,6 +3343,51 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "scene_apartment"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_grid_squared",
+ "bevy_pixel_camera",
+ "itertools",
+ "lazy_static",
+ "main_game_lib",
+ "rand",
+ "serde",
+ "smallvec",
+]
+
+[[package]]
+name = "scene_downtown"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_grid_squared",
+ "bevy_pixel_camera",
+ "lazy_static",
+ "main_game_lib",
+]
+
+[[package]]
+name = "scene_meditation"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_magic_light_2d",
+ "bevy_pixel_camera",
+ "bevy_webp_anim",
+ "common_assets",
+ "common_loading_screen",
+ "common_physics",
+ "common_visuals",
+ "itertools",
+ "lazy_static",
+ "leafwing-input-manager",
+ "main_game_lib",
+ "rand",
 ]
 
 [[package]]

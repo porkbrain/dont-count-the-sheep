@@ -28,9 +28,9 @@ fn main() {
     }
     app.add_systems(Update, start.run_if(in_state(GlobalGameState::Blank)));
 
-    apartment::add(&mut app);
-    meditation::add(&mut app);
-    downtown::add(&mut app);
+    scene_apartment::add(&mut app);
+    scene_meditation::add(&mut app);
+    scene_downtown::add(&mut app);
 
     app.run();
 }
