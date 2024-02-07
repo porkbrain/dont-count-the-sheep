@@ -77,6 +77,8 @@ impl Square {
 
         // angle between the diff and the top vector
         #[allow(clippy::approx_constant)]
+        #[allow(renamed_and_removed_lints)] // the lint was cutting edge
+        #[allow(illegal_floating_point_literal_pattern)]
         let direction = match (Vec2::from(other) - Vec2::from(self))
             .angle_between(Vec2::new(0.0, 1.0))
         {
