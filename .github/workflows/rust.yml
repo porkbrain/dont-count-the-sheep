@@ -21,6 +21,8 @@ jobs:
           components: rustfmt, clippy
       - name: Install dependencies
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      - name: Version check
+        run: rustc --version && cargo --version && rustfmt --version && clippy --version
       - name: Format
         run: cargo fmt -- --check
       - name: Check
