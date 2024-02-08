@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 use bevy::{
     math::Vec2,
     reflect::{std_traits::ReflectDefault, Reflect},
@@ -7,7 +9,7 @@ use crate::Square;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Reflect, Default)]
 #[reflect(Default)]
-pub enum Direction {
+pub enum GridDirection {
     /// ↑
     Top,
     /// ↓
@@ -31,16 +33,16 @@ pub enum Direction {
 
 impl Square {
     #[inline]
-    pub fn neighbor(self, direction: Direction) -> Self {
+    pub fn neighbor(self, direction: GridDirection) -> Self {
         let (x, y) = match direction {
-            Direction::Top => (self.x, self.y + 1),
-            Direction::Bottom => (self.x, self.y - 1),
-            Direction::Left => (self.x - 1, self.y),
-            Direction::Right => (self.x + 1, self.y),
-            Direction::TopLeft => (self.x - 1, self.y + 1),
-            Direction::TopRight => (self.x + 1, self.y + 1),
-            Direction::BottomLeft => (self.x - 1, self.y - 1),
-            Direction::BottomRight => (self.x + 1, self.y - 1),
+            GridDirection::Top => (self.x, self.y + 1),
+            GridDirection::Bottom => (self.x, self.y - 1),
+            GridDirection::Left => (self.x - 1, self.y),
+            GridDirection::Right => (self.x + 1, self.y),
+            GridDirection::TopLeft => (self.x - 1, self.y + 1),
+            GridDirection::TopRight => (self.x + 1, self.y + 1),
+            GridDirection::BottomLeft => (self.x - 1, self.y - 1),
+            GridDirection::BottomRight => (self.x + 1, self.y - 1),
         };
 
         Self::new(x, y)
@@ -48,7 +50,7 @@ impl Square {
 
     #[inline]
     pub fn neighbors(self) -> impl Iterator<Item = Self> {
-        use Direction::*;
+        use GridDirection::*;
 
         [
             Top,
@@ -68,8 +70,8 @@ impl Square {
     /// Given a square, returns the direction to the other square.
     /// They don't have to be neighbors, works at arbitrary distance.
     /// If they are the same square then returns `None`.
-    pub fn direction_to(self, other: Self) -> Option<Direction> {
-        use Direction::*;
+    pub fn direction_to(self, other: Self) -> Option<GridDirection> {
+        use GridDirection::*;
 
         if self == other {
             return None;
@@ -105,5 +107,13 @@ impl Square {
         };
 
         Some(direction)
+    }
+}
+
+impl Add<GridDirection> for Square {
+    type Output = Self;
+
+    fn add(self, rhs: GridDirection) -> Self::Output {
+        self.neighbor(rhs)
     }
 }

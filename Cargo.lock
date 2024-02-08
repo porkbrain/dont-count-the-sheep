@@ -1400,6 +1400,7 @@ dependencies = [
  "common_ext",
  "common_story",
  "itertools",
+ "lazy_static",
  "leafwing-input-manager",
  "pathfinding",
  "ron",

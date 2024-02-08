@@ -21,73 +21,6 @@ pub struct DoorBuilder<L> {
     obstacle: Option<(Square, Square)>,
 }
 
-impl<L> DoorBuilder<L> {
-    /// The only required parameter is the zone tile kind that opens the door.
-    pub fn new(zone_tile_kind: impl Into<TileKind<L>>) -> Self {
-        Self {
-            zone_tile_kind: zone_tile_kind.into(),
-            open_criteria: default(),
-            initial_state: DoorState::Closed,
-            obstacle: None,
-        }
-    }
-
-    /// If the door is closed, we insert a wall between these two squares.
-    pub fn with_obstacle_when_closed_between(
-        mut self,
-        from: Square,
-        to: Square,
-    ) -> Self {
-        self.obstacle = Some((from, to));
-        self
-    }
-
-    /// The initial state of the door.
-    /// Note that if the initial door is open, you need to graphically set the
-    /// sprite to the open state.
-    pub fn with_initial_state(mut self, state: DoorState) -> Self {
-        self.initial_state = state;
-        self
-    }
-
-    /// Add a criteria for opening the door.
-    pub fn add_open_criteria(mut self, criteria: DoorOpenCriteria) -> Self {
-        self.open_criteria.push(criteria);
-        self
-    }
-
-    /// If the door is closed, we insert a wall between the obstacle squares
-    /// if set.
-    pub fn build<T: IntoMap>(self, tilemap: &mut TileMap<T>) -> Door<L> {
-        let obstacle = self.obstacle.map(|(from, to)| {
-            let layers = if matches!(self.initial_state, DoorState::Closed) {
-                bevy_grid_squared::shapes::rectangle_between(from, to)
-                    .map(|sq| {
-                        tilemap
-                            .add_tile_to_first_empty_layer(sq, TileKind::Wall)
-                    })
-                    .collect()
-            } else {
-                vec![]
-            };
-
-            DoorObstacle {
-                rect: (from, to),
-                layers,
-            }
-        });
-
-        Door {
-            zone_tile_kind: self.zone_tile_kind,
-            state: self.initial_state,
-            open_criteria: self.open_criteria,
-            obstacle,
-
-            actors_near: 0,
-        }
-    }
-}
-
 /// A door that can be opened and closed.
 #[derive(Component, Reflect)]
 pub struct Door<L> {
@@ -205,7 +138,7 @@ fn apply_event_to_door_and_map<T: IntoMap>(
                 bevy_grid_squared::shapes::rectangle_between(*from, *to)
                     .zip(layers.drain(..))
                     .for_each(|(sq, layer)| {
-                        tilemap.set_tile_kind_layer(sq, layer, TileKind::Empty);
+                        tilemap.set_tile_kind(sq, layer, TileKind::Empty);
                     });
             }
         }
@@ -230,14 +163,84 @@ fn apply_event_to_door_and_map<T: IntoMap>(
                 bevy_grid_squared::shapes::rectangle_between(*from, *to)
                     .for_each(|sq| {
                         layers.push(
-                            tilemap.add_tile_to_first_empty_layer(
-                                sq,
-                                TileKind::Wall,
-                            ),
+                            tilemap
+                                .add_tile_to_first_empty_layer(
+                                    sq,
+                                    TileKind::Wall,
+                                )
+                                .expect("doors are always within the map"),
                         );
                     });
             }
         }
         _ => {}
     };
+}
+
+impl<L> DoorBuilder<L> {
+    /// The only required parameter is the zone tile kind that opens the door.
+    pub fn new(zone_tile_kind: impl Into<TileKind<L>>) -> Self {
+        Self {
+            zone_tile_kind: zone_tile_kind.into(),
+            open_criteria: default(),
+            initial_state: DoorState::Closed,
+            obstacle: None,
+        }
+    }
+
+    /// If the door is closed, we insert a wall between these two squares.
+    pub fn with_obstacle_when_closed_between(
+        mut self,
+        from: Square,
+        to: Square,
+    ) -> Self {
+        self.obstacle = Some((from, to));
+        self
+    }
+
+    /// The initial state of the door.
+    /// Note that if the initial door is open, you need to graphically set the
+    /// sprite to the open state.
+    pub fn with_initial_state(mut self, state: DoorState) -> Self {
+        self.initial_state = state;
+        self
+    }
+
+    /// Add a criteria for opening the door.
+    pub fn add_open_criteria(mut self, criteria: DoorOpenCriteria) -> Self {
+        self.open_criteria.push(criteria);
+        self
+    }
+
+    /// If the door is closed, we insert a wall between the obstacle squares
+    /// if set.
+    pub fn build<T: IntoMap>(self, tilemap: &mut TileMap<T>) -> Door<L> {
+        let obstacle = self.obstacle.map(|(from, to)| {
+            let layers = if matches!(self.initial_state, DoorState::Closed) {
+                bevy_grid_squared::shapes::rectangle_between(from, to)
+                    .map(|sq| {
+                        tilemap
+                            .add_tile_to_first_empty_layer(sq, TileKind::Wall)
+                            .expect("doors are always within the map")
+                    })
+                    .collect()
+            } else {
+                vec![]
+            };
+
+            DoorObstacle {
+                rect: (from, to),
+                layers,
+            }
+        });
+
+        Door {
+            zone_tile_kind: self.zone_tile_kind,
+            state: self.initial_state,
+            open_criteria: self.open_criteria,
+            obstacle,
+
+            actors_near: 0,
+        }
+    }
 }

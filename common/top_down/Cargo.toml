@@ -13,11 +13,13 @@ common_assets.workspace = true
 common_ext.workspace = true
 common_story.workspace = true
 itertools.workspace = true
+lazy_static.workspace = true
 leafwing-input-manager.workspace = true
 pathfinding.workspace = true
 ron = { workspace = true, optional = true }
 serde.workspace = true
 smallvec.workspace = true
+
 
 [features]
 dev = ["ron"]

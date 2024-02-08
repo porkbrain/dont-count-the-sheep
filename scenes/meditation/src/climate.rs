@@ -59,9 +59,6 @@ pub(crate) struct Climate {
     /// When was the mode changed and the mode itself.
     mode: (Instant, ClimateLightMode),
 }
-/// Source of light at the center of the climate.
-#[derive(Component)]
-struct ClimateLight;
 /// Evenly distributed around the climate, they shape the light into rays.
 #[derive(Component)]
 struct ClimateOccluder {

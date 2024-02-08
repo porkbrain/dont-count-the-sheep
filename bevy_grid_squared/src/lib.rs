@@ -5,14 +5,18 @@
 pub mod direction;
 pub mod shapes;
 
+use std::ops::{Add, Sub};
+
 use bevy::prelude::*;
-pub use direction::Direction as GridDirection;
+pub use direction::GridDirection;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Reflect)]
 #[reflect(Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SquareLayout {
+    /// For example in pixels
     pub square_size: f32,
+    /// Where in the world does this layout have square(0, 0).
     pub origin: Vec2,
 }
 
@@ -25,7 +29,7 @@ pub struct Square {
 }
 
 #[inline]
-pub const fn square(x: i32, y: i32) -> Square {
+pub const fn sq(x: i32, y: i32) -> Square {
     Square::new(x, y)
 }
 
@@ -102,5 +106,63 @@ impl Ord for Square {
             std::cmp::Ordering::Equal => self.y.cmp(&other.y),
             ord => ord,
         }
+    }
+}
+
+impl Add for Square {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        sq(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+impl Add<&Square> for Square {
+    type Output = Self;
+
+    fn add(self, rhs: &Square) -> Self::Output {
+        sq(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+impl Add for &Square {
+    type Output = Square;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        sq(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+impl Add<Square> for &Square {
+    type Output = Square;
+
+    fn add(self, rhs: Square) -> Self::Output {
+        sq(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+
+impl Sub for Square {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        sq(self.x - rhs.x, self.y - rhs.y)
+    }
+}
+impl Sub<&Square> for Square {
+    type Output = Self;
+
+    fn sub(self, rhs: &Square) -> Self::Output {
+        sq(self.x - rhs.x, self.y - rhs.y)
+    }
+}
+impl Sub for &Square {
+    type Output = Square;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        sq(self.x - rhs.x, self.y - rhs.y)
+    }
+}
+impl Sub<Square> for &Square {
+    type Output = Square;
+
+    fn sub(self, rhs: Square) -> Self::Output {
+        sq(self.x - rhs.x, self.y - rhs.y)
     }
 }
