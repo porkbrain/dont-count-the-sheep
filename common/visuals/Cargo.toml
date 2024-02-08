@@ -12,4 +12,4 @@ rand.workspace = true
 [features]
 default = ["fps"]
 
-fps = []
+fps = ["bevy/default_font"]
