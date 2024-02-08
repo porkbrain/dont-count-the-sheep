@@ -3,7 +3,7 @@
 pub mod npc;
 pub mod player;
 
-use std::{iter, time::Duration};
+use std::time::Duration;
 
 use bevy::{
     ecs::event::event_update_condition,
@@ -154,7 +154,7 @@ pub fn emit_movement_events<T: IntoMap>(
 
         let active_zones = actor_zone_map.map.entry(entity).or_default();
 
-        let Some(tiles) = tilemap.get(&at) else {
+        let Some(tiles) = tilemap.get(at) else {
             for active in active_zones.drain() {
                 trace!("Actor {character:?} left zone {active:?}");
                 event.send(zone_left_event(active));
@@ -494,73 +494,57 @@ lazy_static! {
     ///
     /// The second tuple member is the distance from origin in squares.
     static ref ACTOR_ZONE_AT_ORIGIN: Vec<(Square, usize)> = {
-        let distance_two = vec![
-                        sq(-1, 2),sq(0, 2),sq(1, 2),
-                sq(-2,1),                            sq(2,1),
-                sq(-2,0),          /*O*/             sq(2,0),
-                sq(-2,-1),                           sq(2,-1),
-                        sq(-1,-2),sq(0,-2),sq(1,-2),
-        ];
-        let distance_three = vec![
-        sq(-3,0),                                             sq(3,0),
+        let tiles_setup = vec![
+                        sq(-1, 2),sq(0, 2),sq(1, 2),sq(2, 2),
+                sq(-2,1),                            sq(2,1), sq(3,1),
+       sq(-3,0),sq(-2,0),            O,              sq(2,0), sq(3,0),sq(4,0),
+                sq(-2,-1),                           sq(2,-1),sq(3,-1),
+                        sq(-1,-2),sq(0,-2),sq(1,-2),sq(2, -2),
         ];
 
-        iter::once((O, 0))
-            .chain(O.neighbors().map(|sq| (sq, 1)))
-            .chain(distance_two.into_iter().map(|sq| (sq, 2)))
-            .chain(distance_three.into_iter().map(|sq| (sq, 3)))
+        O.neighbors()
+            .chain(tiles_setup.into_iter())
+            .map(|sq| (sq, sq.manhattan_distance(O) as usize))
             .collect()
     };
 }
 
 impl<T: IntoMap> TileMap<T> {
-    /// The direction the actor is facing offsets the center (`actor_stands_on`)
-    /// of the circle that will be converted to occupied squares.
+    // TODO: there is a rare scenario where two actors are centered at the same
+    // square. This method will end up preventing their movement.
+    // A remedy could be splitting `TileKind::Actor` into `ActorZone` and
+    // `ActorOrigin`.
+    // Then walkability check would permit movement over other's `ActorZone` if
+    // they share the same `ActorOrigin`.
     fn replace_actor_tiles(&mut self, entity: Entity, actor: &mut Actor) {
-        // Round up the radius to the nearest tile
-        let tile_radius = (actor.character.actor_personal_zone_px()
-            / T::layout().square_size)
-            .ceil() as i32;
-
-        let mut actor_zone_at_origin = ACTOR_ZONE_AT_ORIGIN.clone();
-
         let center = actor
             .walking_to
             .as_ref()
             .map(|t| t.square)
             .unwrap_or(actor.walking_from)
-            .neighbor(GridDirection::Top); // looks better when pushed a bit forward
+            .neighbor(GridDirection::Top); // looks better when pushed a bit up
 
-        actor.occupies.retain(|(sq, layer)| {
-            let sq_origin = sq - center; // center around origin
+        for (sq, layer) in actor.occupies.drain(..) {
+            let prev_tile = self.set_tile_kind(sq, layer, TileKind::Empty);
 
-            // keep overlapping squares
-            if actor_zone_at_origin.remove(&sq_origin) {
-                return true;
-            }
+            debug_assert_eq!(Some(TileKind::Actor(entity)), prev_tile);
+        }
 
-            // remove the non-overlapping squares
-            // we no longer use origin because we want to remove the tile from
-            // the tilemap with its actual position
-            let prev_tile =
-                self.set_tile_kind_layer(*sq, *layer, TileKind::Empty);
-            debug_assert_eq!(TileKind::Actor(entity), prev_tile);
-
-            false
-        });
         // then for the remaining squares that don't have the actor yet
-        for sq_origin in actor_zone_at_origin {
+        for (sq_origin, distance_to_center) in
+            ACTOR_ZONE_AT_ORIGIN.iter().copied()
+        {
             let sq = sq_origin + center; // center around actor
 
-            // if we didn't do this then it'd be possible for actor A to occupy
-            // all tiles around actor B, preventing their movement
-            if !self.is_walkable(sq, entity) {
+            if distance_to_center > 1 && !self.is_walkable(sq, entity) {
                 continue;
             }
 
-            let layer =
-                self.add_tile_to_first_empty_layer(sq, TileKind::Actor(entity));
-            actor.occupies.push((sq, layer));
+            if let Some(layer) =
+                self.add_tile_to_first_empty_layer(sq, TileKind::Actor(entity))
+            {
+                actor.occupies.push((sq, layer));
+            }
         }
     }
 }

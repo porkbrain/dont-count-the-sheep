@@ -1,5 +1,5 @@
 use bevy::{render::view::RenderLayers, sprite::Anchor};
-use bevy_grid_squared::{square, SquareLayout};
+use bevy_grid_squared::{sq, SquareLayout};
 use common_visuals::{
     camera::render_layer, AtlasAnimation, AtlasAnimationEnd,
     AtlasAnimationTimer, PRIMARY_COLOR,
@@ -305,10 +305,7 @@ fn spawn(
                 common_story::Character::Winnie,
             ))
             .with_initial_state(DoorState::Closed)
-            .with_obstacle_when_closed_between(
-                square(-40, -21),
-                square(-31, -21),
-            )
+            .with_obstacle_when_closed_between(sq(-40, -21), sq(-31, -21))
             .build(&mut tilemap),
         LayoutEntity,
         RenderLayers::layer(render_layer::BG),

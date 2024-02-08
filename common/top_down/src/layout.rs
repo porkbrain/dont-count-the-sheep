@@ -5,7 +5,7 @@
 use std::{marker::PhantomData, ops::RangeInclusive};
 
 use bevy::{prelude::*, utils::hashbrown::HashMap};
-use bevy_grid_squared::{square, Square, SquareLayout};
+use bevy_grid_squared::{sq, Square, SquareLayout};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_assets::RonLoader;
 use common_ext::QueryExt;
@@ -16,6 +16,9 @@ use crate::{
     actor::{self, player},
     ActorMovementEvent,
 };
+
+/// A tile is uniquely identified by (`x`, `y`) of the square and a layer index.
+pub type TileIndex = (Square, usize);
 
 /// Some map.
 pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
@@ -71,8 +74,8 @@ pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
     /// Range of y world pos coordinates.
     fn y_range() -> RangeInclusive<f32> {
         let [_, _, bottom, top] = Self::bounds();
-        let min_y = Self::layout().square_to_world_pos(square(0, bottom)).y;
-        let max_y = Self::layout().square_to_world_pos(square(0, top)).y;
+        let min_y = Self::layout().square_to_world_pos(sq(0, bottom)).y;
+        let max_y = Self::layout().square_to_world_pos(sq(0, top)).y;
 
         min_y..=max_y
     }
@@ -123,7 +126,7 @@ pub enum TileKind<L> {
     /// We use [`Entity`] to make it apparent that this will be dynamically
     /// updated on runtime.
     /// This variant mustn't be loaded from map ron file.
-    Character(Entity),
+    Actor(Entity),
     /// Specific for a given map.
     Local(L),
 }
@@ -249,13 +252,14 @@ impl Tile for () {
 }
 
 impl<L: Tile> Tile for TileKind<L> {
+    #[inline]
     fn is_walkable(&self, by: Entity) -> bool {
         match self {
             Self::Empty => true,
             Self::Wall => false,
             Self::Trail => true,
-            Self::Character(entity) if *entity == by => true,
-            Self::Character(_) => false, // don't walk over others
+            Self::Actor(entity) if *entity == by => true,
+            Self::Actor(_) => false, // don't walk over others
             Self::Local(l) => l.is_walkable(by),
         }
     }
@@ -272,10 +276,8 @@ impl<L: Tile> Tile for TileKind<L> {
             Self::Wall => None,
             Self::Empty => Some(TileWalkCost::Normal),
             Self::Trail => Some(TileWalkCost::Preferred),
-            Self::Character(entity) if *entity == by => {
-                Some(TileWalkCost::Normal)
-            }
-            Self::Character(_) => None, // don't walk over others
+            Self::Actor(entity) if *entity == by => Some(TileWalkCost::Normal),
+            Self::Actor(_) => None, // don't walk over others
             Self::Local(l) => l.walk_cost(by),
         }
     }
@@ -283,11 +285,12 @@ impl<L: Tile> Tile for TileKind<L> {
 
 impl<T: IntoMap> TileMap<T> {
     /// Get the kind of a tile.
-    pub fn get(
-        &self,
-        square: &Square,
-    ) -> Option<&[TileKind<T::LocalTileKind>]> {
-        self.squares.get(square).map(|tiles| tiles.as_slice())
+    pub fn get(&self, square: Square) -> Option<&[TileKind<T::LocalTileKind>]> {
+        if !T::contains(square) {
+            return None;
+        }
+
+        self.squares.get(&square).map(|tiles| tiles.as_slice())
     }
 
     /// Whether the given square has the given kind of tile in any layer.
@@ -306,6 +309,7 @@ impl<T: IntoMap> TileMap<T> {
     /// Whether there's something on the given square that cannot be walked over
     /// such as a wall, an object or a character.
     /// Also checks bounds.
+    #[inline]
     pub fn is_walkable(&self, square: Square, by: Entity) -> bool {
         if let Some(tiles) = self.squares.get(&square) {
             tiles.iter().all(|tile| tile.is_walkable(by))
@@ -318,16 +322,21 @@ impl<T: IntoMap> TileMap<T> {
     /// Then return the index of the layer.
     ///
     /// Must not be called with `TileKind::None`.
+    #[inline]
     pub fn add_tile_to_first_empty_layer(
         &mut self,
         to: Square,
         tile: impl Into<TileKind<T::LocalTileKind>>,
-    ) -> usize {
+    ) -> Option<usize> {
+        if !T::contains(to) {
+            return None;
+        }
+
         let into_tile = tile.into();
         debug_assert_ne!(into_tile, TileKind::Empty);
 
         let tiles = self.squares.entry(to).or_default();
-        tiles
+        let layer = tiles
             .iter_mut()
             .enumerate()
             .find_map(|(index, tile)| {
@@ -342,19 +351,26 @@ impl<T: IntoMap> TileMap<T> {
                 let layer = tiles.len();
                 tiles.push(into_tile);
                 layer
-            })
+            });
+
+        Some(layer)
     }
 
     /// Set the kind of a tile in a specific layer.
     /// If the layer does not exist, it will be created.
     /// Returns the previous kind of the tile, or [`TileKind::Empty`] if it did
     /// not exist.
-    pub fn set_tile_kind_layer(
+    #[inline]
+    pub fn set_tile_kind(
         &mut self,
         of: Square,
         layer: usize,
         kind: impl Into<TileKind<T::LocalTileKind>>,
-    ) -> TileKind<T::LocalTileKind> {
+    ) -> Option<TileKind<T::LocalTileKind>> {
+        if !T::contains(of) {
+            return None;
+        }
+
         let tiles = self.squares.entry(of).or_default();
 
         if tiles.len() <= layer {
@@ -365,7 +381,40 @@ impl<T: IntoMap> TileMap<T> {
         let current = *tile;
         *tile = kind.into();
 
-        current
+        Some(current)
+    }
+
+    /// Same as [`Self::set_tile_kind_layer`] but only sets the tile if the
+    /// function `unless` returns `false`.
+    ///
+    /// You can be sure that `tiles[layer]` will not panic in the `unless`
+    /// function.
+    pub fn set_tile_kind_unless(
+        &mut self,
+        of: Square,
+        layer: usize,
+        kind: impl Into<TileKind<T::LocalTileKind>>,
+        unless: impl FnOnce(&[TileKind<T::LocalTileKind>]) -> bool,
+    ) -> Option<TileKind<T::LocalTileKind>> {
+        if !T::contains(of) {
+            return None;
+        }
+
+        let tiles = self.squares.entry(of).or_default();
+
+        if tiles.len() <= layer {
+            tiles.resize(layer + 1, TileKind::Empty);
+        }
+
+        if unless(tiles.as_slice()) {
+            return None;
+        }
+
+        let tile = &mut tiles[layer]; // safe cuz we just resized
+        let current = *tile;
+        *tile = kind.into();
+
+        Some(current)
     }
 
     /// Returns [`None`] if not walkable, otherwise the cost of walking to the
@@ -664,22 +713,7 @@ mod map_maker {
     }
 
     // TODO: only store what the user has changed with the map editor
-    pub(super) fn export_map<T: IntoMap>(mut map: ResMut<TileMap<T>>) {
-        // filter out needless squares
-        map.squares.retain(|_, v| {
-            v.iter_mut().for_each(|tile| {
-                if matches!(tile, TileKind::Character(_)) {
-                    *tile = TileKind::Empty;
-                }
-            });
-
-            while v.ends_with(&[TileKind::Empty]) {
-                v.pop();
-            }
-
-            !v.is_empty()
-        });
-
+    pub(super) fn export_map<T: IntoMap>(map: Res<TileMap<T>>) {
         // equivalent to tile map, but sorted so that we can serialize it
         // and the output is deterministic
         //
@@ -692,10 +726,25 @@ mod map_maker {
             _phantom: PhantomData<T>,
         }
 
-        let tilemap_but_sorted: SortedTileMap<T> = SortedTileMap {
+        let mut tilemap_but_sorted: SortedTileMap<T> = SortedTileMap {
             squares: map.squares.clone().into_iter().collect(),
             _phantom: default(),
         };
+
+        // filter out needless squares
+        tilemap_but_sorted.squares.retain(|_, v| {
+            v.iter_mut().for_each(|tile| {
+                if matches!(tile, TileKind::Actor { .. }) {
+                    *tile = TileKind::Empty;
+                }
+            });
+
+            while v.ends_with(&[TileKind::Empty]) {
+                v.pop();
+            }
+
+            !v.is_empty()
+        });
 
         // for internal use only so who cares
         std::fs::write(
@@ -719,7 +768,7 @@ mod map_maker {
                 Self::Empty => Color::BLACK.with_a(0.25),
                 Self::Wall => Color::BLACK.with_a(0.8),
                 Self::Trail => Color::WHITE.with_a(0.25),
-                Self::Character(_) => Color::GOLD.with_a(0.25),
+                Self::Actor { .. } => Color::GOLD.with_a(0.25),
                 Self::Local(_) => Color::RED.with_a(0.25),
             }
         }
@@ -797,61 +846,58 @@ mod tests {
         use TileKind as Tk;
         use TileWalkCost::*;
 
-        let sq = square(0, 0);
+        let o = sq(0, 0);
         let mut tilemap = TileMap::<TestScene>::default();
 
         // out of bounds returns none
-        assert_eq!(tilemap.walk_cost(square(-1, 0), Entity::PLACEHOLDER), None);
+        assert_eq!(tilemap.walk_cost(sq(-1, 0), Entity::PLACEHOLDER), None);
 
         // in bounds, but no tile returns normal
-        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), Some(Normal));
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Normal));
 
         // if there's a wall returns none
-        tilemap.squares.insert(sq, smallvec![Tk::Empty, Tk::Wall]);
-        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), None);
-        tilemap.squares.insert(sq, smallvec![Tk::Wall, Tk::Empty]);
-        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), None);
+        tilemap.squares.insert(o, smallvec![Tk::Empty, Tk::Wall]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
+        tilemap.squares.insert(o, smallvec![Tk::Wall, Tk::Empty]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
 
         // if there's a trail returns preferred
-        tilemap.squares.insert(sq, smallvec![Tk::Empty, Tk::Trail]);
-        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), Some(Preferred));
-        tilemap.squares.insert(sq, smallvec![Tk::Trail, Tk::Empty,]);
-        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), Some(Preferred));
+        tilemap.squares.insert(o, smallvec![Tk::Empty, Tk::Trail]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Preferred));
+        tilemap.squares.insert(o, smallvec![Tk::Trail, Tk::Empty,]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Preferred));
 
         // if there's a matching character and trail, returns preferred
-        tilemap.squares.insert(
-            sq,
-            smallvec![Tk::Character(Entity::PLACEHOLDER), Tk::Trail],
-        );
-        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), Some(Preferred));
+        tilemap
+            .squares
+            .insert(o, smallvec![Tk::Actor(Entity::PLACEHOLDER,), Tk::Trail]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Preferred));
 
         // if there's a matching character and wall, returns none
-        tilemap.squares.insert(
-            sq,
-            smallvec![Tk::Character(Entity::PLACEHOLDER), Tk::Wall],
-        );
-        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), None);
+        tilemap
+            .squares
+            .insert(o, smallvec![Tk::Actor(Entity::PLACEHOLDER,), Tk::Wall]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
 
         // if there's a different character and a trail, returns none
-        tilemap.squares.insert(
-            sq,
-            smallvec![Tk::Character(Entity::from_raw(10)), Tk::Trail],
-        );
-        assert_eq!(tilemap.walk_cost(sq, Entity::PLACEHOLDER), None);
+        tilemap
+            .squares
+            .insert(o, smallvec![Tk::Actor(Entity::from_raw(10),), Tk::Trail]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
     }
 
     #[test]
     fn it_adds_tiles_to_first_empty_layer() {
         let mut tilemap = TileMap::<TestScene>::default();
-        let sq = square(0, 0);
+        let sq = sq(0, 0);
 
         assert_eq!(
             tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
-            0
+            Some(0)
         );
         assert_eq!(
             tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
-            1
+            Some(1)
         );
 
         tilemap.squares.insert(
@@ -860,38 +906,50 @@ mod tests {
         );
         assert_eq!(
             tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
-            1
+            Some(1)
         );
     }
 
     #[test]
     fn it_sets_tile_kind_layer() {
         let mut tilemap = TileMap::<TestScene>::default();
-        let sq = square(0, 0);
+        let sq = sq(0, 0);
 
         assert_eq!(
-            tilemap.set_tile_kind_layer(sq, 0, TileKind::Wall),
-            TileKind::Empty
+            tilemap.set_tile_kind(sq, 0, TileKind::Wall),
+            Some(TileKind::Empty)
         );
         assert_eq!(
-            tilemap.set_tile_kind_layer(sq, 0, TileKind::Wall),
-            TileKind::Wall
+            tilemap.set_tile_kind(sq, 0, TileKind::Wall),
+            Some(TileKind::Wall)
         );
         assert_eq!(
-            tilemap.set_tile_kind_layer(sq, 1, TileKind::Wall),
-            TileKind::Empty
+            tilemap.set_tile_kind(sq, 1, TileKind::Wall),
+            Some(TileKind::Empty)
         );
         assert_eq!(
-            tilemap.set_tile_kind_layer(sq, 1, TileKind::Wall),
-            TileKind::Wall
+            tilemap.set_tile_kind(sq, 1, TileKind::Wall),
+            Some(TileKind::Wall)
         );
         assert_eq!(
-            tilemap.set_tile_kind_layer(sq, 5, TileKind::Wall),
-            TileKind::Empty
+            tilemap.set_tile_kind(sq, 5, TileKind::Wall),
+            Some(TileKind::Empty)
         );
         assert_eq!(
-            tilemap.set_tile_kind_layer(sq, 4, TileKind::Wall),
-            TileKind::Empty
+            tilemap.set_tile_kind(sq, 4, TileKind::Wall),
+            Some(TileKind::Empty)
         );
+    }
+
+    #[test]
+    fn it_doesnt_do_anything_outside_map_bounds() {
+        let mut tilemap = TileMap::<TestScene>::default();
+
+        assert_eq!(
+            tilemap.add_tile_to_first_empty_layer(sq(-100, 0), TileKind::Wall),
+            None
+        );
+
+        assert_eq!(tilemap.set_tile_kind(sq(100, 0), 0, TileKind::Wall), None);
     }
 }
