@@ -35,6 +35,16 @@ pub(super) struct TileMapMakerToolbar<L: Tile> {
     /// released the mouse.
     #[reflect(ignore)]
     begin_rect_at: Option<Square>,
+    /// Copy of map is inserted when the map is loaded from fs, and then edited
+    /// ONLY by the user map editing actions.
+    /// No dynamic game logic should edit it.
+    /// When we save the game, we store this map instead of the [`TileMap`]
+    /// resource.
+    ///
+    /// We keep the copy in sync with the map resource in terms of the tiles
+    /// being laid out in the same layers.
+    #[reflect(ignore)]
+    copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
 }
 
 pub(super) fn visualize_map<T: IntoMap>(
@@ -116,29 +126,38 @@ pub(super) fn change_square_kind<T: IntoMap>(
     } else if stop_painting_rect
         && let Some(begin_rect_at) = toolbar.begin_rect_at.take()
     {
-        trace!("Painting rect from {begin_rect_at} to {clicked_at}");
         for square in selection_rect(begin_rect_at, clicked_at) {
-            let tiles = map.squares.entry(square).or_default();
-            if tiles.len() <= toolbar.layer {
-                tiles.resize(toolbar.layer + 1, TileKind::Empty);
-            }
-
-            if toolbar.paint_over_tiles
-                || tiles[toolbar.layer] == TileKind::Empty
-            {
-                tiles[toolbar.layer] = toolbar.paint;
-            }
+            try_paint(&mut toolbar, &mut map, square);
         }
     } else if paint_single_square {
-        let tiles = map.squares.entry(clicked_at).or_default();
-        if tiles.len() <= toolbar.layer {
-            tiles.resize(toolbar.layer + 1, TileKind::Empty);
-        }
-
-        if toolbar.paint_over_tiles || tiles[toolbar.layer] == TileKind::Empty {
-            tiles[toolbar.layer] = toolbar.paint;
-        }
+        try_paint(&mut toolbar, &mut map, clicked_at);
     }
+}
+
+/// If a square can be painted, paint it.
+fn try_paint<T: IntoMap>(
+    toolbar: &mut TileMapMakerToolbar<T::LocalTileKind>,
+    map: &mut TileMap<T>,
+    at: Square,
+) {
+    if !T::contains(at) {
+        return;
+    }
+
+    let tiles = map.squares.entry(at).or_default();
+    if tiles.len() <= toolbar.layer {
+        tiles.resize(toolbar.layer + 1, TileKind::Empty);
+    }
+
+    let can_paint =
+        toolbar.paint_over_tiles || tiles[toolbar.layer] == TileKind::Empty;
+    if !can_paint {
+        return;
+    }
+
+    tiles[toolbar.layer] = toolbar.paint;
+    // store the user change to the copy that will be saved
+    toolbar.copy_of_map.insert(at, tiles.clone());
 }
 
 pub(super) fn recolor_squares<T: IntoMap>(
@@ -179,8 +198,9 @@ pub(super) fn recolor_squares<T: IntoMap>(
     }
 }
 
-// TODO: only store what the user has changed with the map editor
-pub(super) fn export_map<T: IntoMap>(map: Res<TileMap<T>>) {
+pub(super) fn export_map<T: IntoMap>(
+    toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
+) {
     // equivalent to tile map, but sorted so that we can serialize it
     // and the output is deterministic
     //
@@ -193,28 +213,41 @@ pub(super) fn export_map<T: IntoMap>(map: Res<TileMap<T>>) {
     }
 
     let mut tilemap_but_sorted: SortedTileMap<T> = SortedTileMap {
-        squares: map.squares.clone().into_iter().collect(),
+        squares: toolbar.copy_of_map.clone().into_iter().collect(),
         _phantom: default(),
     };
 
     // filter out needless squares
-    tilemap_but_sorted.squares.retain(|_, v| {
-        v.iter_mut().for_each(|tile| {
-            if matches!(tile, TileKind::Actor { .. }) {
-                *tile = TileKind::Empty;
-            }
-        });
-
-        while v.ends_with(&[TileKind::Empty]) {
-            v.pop();
+    tilemap_but_sorted.squares.retain(|sq, tiles| {
+        if !T::contains(*sq) {
+            return false;
         }
 
-        !v.is_empty()
+        for tile in tiles.as_slice() {
+            match tile {
+                // Should not happen
+                TileKind::Actor(_) => {
+                    error!("Actor tile found in toolbar map");
+                    return false;
+                }
+                // these are fine
+                TileKind::Wall | TileKind::Empty | TileKind::Trail => {}
+                // fine for now but we might want to skip some of these in the
+                // future
+                TileKind::Local(_) => {}
+            }
+        }
+
+        while tiles.ends_with(&[TileKind::Empty]) {
+            tiles.pop();
+        }
+
+        !tiles.is_empty()
     });
 
-    // for internal use only so who cares
+    // for internal use only so who cares about unwraps and paths
     std::fs::write(
-        "map.ron",
+        format!("main_game/assets/{}", T::asset_path()),
         ron::ser::to_string_pretty(
             &tilemap_but_sorted,
             PrettyConfig::default()
@@ -270,4 +303,18 @@ fn cursor_to_square(
         camera.viewport_to_world_2d(camera_transform, cursor_pos)?;
 
     Some(layout.world_pos_to_square(world_pos))
+}
+
+impl<L: Tile> TileMapMakerToolbar<L> {
+    pub(super) fn new(
+        copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
+    ) -> Self {
+        Self {
+            copy_of_map,
+            paint: default(),
+            layer: 0,
+            paint_over_tiles: false,
+            begin_rect_at: None,
+        }
+    }
 }

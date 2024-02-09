@@ -40,7 +40,7 @@ pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
     /// and tile coordinates?
     fn layout() -> &'static SquareLayout;
 
-    /// Path to the map .ron asset.
+    /// Path to the map .ron asset relative to the assets directory.
     fn asset_path() -> &'static str;
 
     /// Given a position on the map, add a z coordinate.
@@ -222,8 +222,8 @@ pub fn register<T: IntoMap, S: States>(app: &mut App, loading: S, running: S) {
         use bevy::input::common_conditions::input_just_pressed;
         use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
-        app.init_resource::<map_maker::TileMapMakerToolbar<T::LocalTileKind>>()
-            .register_type::<map_maker::TileMapMakerToolbar<T::LocalTileKind>>()
+        // we insert the toolbar along with the map
+        app.register_type::<map_maker::TileMapMakerToolbar<T::LocalTileKind>>()
             .add_plugins(ResourceInspectorPlugin::<
                 map_maker::TileMapMakerToolbar<T::LocalTileKind>,
             >::default());
@@ -522,7 +522,18 @@ fn try_insert_map_as_resource<T: IntoMap>(
     // we cannot call remove straight away because panics - the handle is
     // removed, the map is not loaded yet and asset loader expects it to exist
     if map_assets.get(map).is_some() {
-        cmd.insert_resource(map_assets.remove(map).unwrap()); // safe ^
+        let loaded_map = map_assets.remove(map).unwrap(); // safe ^
+
+        #[cfg(feature = "dev")]
+        {
+            // include the loaded map in the toolbar, which will allow us to
+            // store ONLY user changes, not dynamic changes made by the logic
+            cmd.insert_resource(map_maker::TileMapMakerToolbar::new(
+                loaded_map.squares.clone(),
+            ));
+        }
+
+        cmd.insert_resource(loaded_map);
         cmd.init_resource::<actor::ActorZoneMap<T::LocalTileKind>>();
         cmd.entity(entity).despawn();
     }
