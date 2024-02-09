@@ -11,6 +11,9 @@ use crate::layout::{IntoMap, TileMap};
 
 /// The entity that the player controls.
 /// Bound it with [`Actor`] to allow movement.
+///
+/// This information is duplicated.
+/// It's also stored on the [`Actor`] component as a flag.
 #[derive(Component, Reflect)]
 pub struct Player;
 

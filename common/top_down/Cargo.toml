@@ -3,6 +3,7 @@ name = "common_top_down"
 version.workspace = true
 edition.workspace = true
 
+
 [dependencies]
 bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true
@@ -16,6 +17,7 @@ itertools.workspace = true
 lazy_static.workspace = true
 leafwing-input-manager.workspace = true
 pathfinding.workspace = true
+rand.workspace = true
 ron = { workspace = true, optional = true }
 serde.workspace = true
 smallvec.workspace = true

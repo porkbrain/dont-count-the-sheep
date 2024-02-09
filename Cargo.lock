@@ -1403,6 +1403,7 @@ dependencies = [
  "lazy_static",
  "leafwing-input-manager",
  "pathfinding",
+ "rand",
  "ron",
  "serde",
  "smallvec",

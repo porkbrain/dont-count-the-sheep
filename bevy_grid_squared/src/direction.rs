@@ -33,7 +33,7 @@ pub enum GridDirection {
 
 impl Square {
     #[inline]
-    pub fn neighbor(self, direction: GridDirection) -> Self {
+    pub const fn neighbor(self, direction: GridDirection) -> Self {
         let (x, y) = match direction {
             GridDirection::Top => (self.x, self.y + 1),
             GridDirection::Bottom => (self.x, self.y - 1),
@@ -48,8 +48,11 @@ impl Square {
         Self::new(x, y)
     }
 
+    /// These are the 4 neighbors of a square with manhattan distance 1 and
+    /// the 4 diagonal neighbors with manhattan distance 2:
+    /// ↑, ↓, ←, →, ↖, ↗, ↙, ↘
     #[inline]
-    pub fn neighbors(self) -> impl Iterator<Item = Self> {
+    pub fn neighbors_with_diagonal(self) -> impl Iterator<Item = Self> {
         use GridDirection::*;
 
         [
@@ -65,6 +68,18 @@ impl Square {
         .iter()
         .copied()
         .map(move |direction| self.neighbor(direction))
+    }
+
+    /// These are the only 4 neighbors of a square with manhattan distance 1:
+    /// ↑, ↓, ←, →
+    #[inline]
+    pub fn neighbours_no_diagonal(self) -> impl Iterator<Item = Self> {
+        use GridDirection::*;
+
+        [Top, Bottom, Left, Right]
+            .iter()
+            .copied()
+            .map(move |direction| self.neighbor(direction))
     }
 
     /// Given a square, returns the direction to the other square.
@@ -115,5 +130,13 @@ impl Add<GridDirection> for Square {
 
     fn add(self, rhs: GridDirection) -> Self::Output {
         self.neighbor(rhs)
+    }
+}
+
+impl Add<&GridDirection> for Square {
+    type Output = Self;
+
+    fn add(self, rhs: &GridDirection) -> Self::Output {
+        self.neighbor(*rhs)
     }
 }

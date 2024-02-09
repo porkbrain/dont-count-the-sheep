@@ -55,6 +55,7 @@ pub(super) fn spawn(
     .insert(
         common_story::Character::Winnie
             .bundle_builder()
+            .is_player(true)
             .with_initial_position(initial_position)
             .with_walking_to(walking_to)
             .with_initial_step_time(step_time)
