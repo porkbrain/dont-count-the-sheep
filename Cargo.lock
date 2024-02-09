@@ -1375,6 +1375,7 @@ dependencies = [
  "common_story_derive",
  "common_visuals",
  "itertools",
+ "serde",
  "strum",
 ]
 
