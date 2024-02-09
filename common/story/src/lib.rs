@@ -15,7 +15,11 @@ use bevy::{
 };
 use common_assets::store::AssetList;
 use common_visuals::camera::{order, render_layer};
-use strum::{EnumIter, IntoEnumIterator};
+use serde::{Deserialize, Serialize};
+use strum::{
+    AsRefStr, Display, EnumCount, EnumIter, EnumString, IntoEnumIterator,
+    IntoStaticStr,
+};
 
 /// Used in conjunction with [`common_assets::AssetStore`] to keep loaded assets
 /// in memory. Thanks to implementation of [`AssetList`] you can now use the
@@ -23,7 +27,23 @@ use strum::{EnumIter, IntoEnumIterator};
 pub struct DialogAssets;
 
 /// List of all the NPCs and player characters.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Reflect, EnumIter)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Reflect,
+    EnumIter,
+    Serialize,
+    Deserialize,
+    Hash,
+    EnumString,
+    Display,
+    IntoStaticStr,
+    AsRefStr,
+    EnumCount,
+)]
 pub enum Character {
     /// Main playable character
     Winnie,

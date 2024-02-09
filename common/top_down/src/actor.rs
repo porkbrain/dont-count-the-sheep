@@ -84,7 +84,9 @@ pub struct ActorZoneMap<L: Default + Eq + std::hash::Hash> {
     /// Set is used to avoid duplicates.
     /// Those could arise from a map that has the same zone multiple times in
     /// the same square (different layer.)
-    map: HashMap<Entity, HashSet<TileKind<L>>>,
+    ///
+    /// The second tuple member is whether the actor is a player.
+    map: HashMap<Entity, (Character, bool, HashSet<TileKind<L>>)>,
 }
 
 /// Some useful events for actors.
@@ -118,7 +120,9 @@ pub struct Who {
     /// The character that entered the zone.
     pub character: Character,
     /// Where was the actor at the moment when the event was sent.
-    pub at: Square,
+    ///
+    /// Can be none if the actor was despawned.
+    pub at: Option<Square>,
 }
 
 /// Helps setup a character bundle.
@@ -138,28 +142,34 @@ pub struct CharacterBundleBuilder {
 /// If you listen to this event then condition your system to run on
 /// `run_if(event_update_condition::<ActorMovementEvent>)` and
 /// `after(actor::emit_movement_events::<T>)`.
+///
+/// We also emit a zone left event when an actor is despawned.
 pub fn emit_movement_events<T: IntoMap>(
     tilemap: Res<TileMap<T>>,
     mut actor_zone_map: ResMut<ActorZoneMap<T::LocalTileKind>>,
     mut event: EventWriter<ActorMovementEvent<T::LocalTileKind>>,
+    mut removed: RemovedComponents<Actor>,
 
-    actors: Query<(Entity, &Actor, Option<&Player>), Changed<Transform>>,
+    actors: Query<(Entity, &Actor), Changed<Transform>>,
 ) {
-    for (entity, actor, player) in actors.iter() {
+    for (entity, actor) in actors.iter() {
         let at = actor.current_square();
         let character = actor.character;
 
         let zone_left_event = |zone| ActorMovementEvent::ZoneLeft {
             zone,
             who: Who {
-                at,
-                is_player: player.is_some(),
+                at: Some(at),
+                is_player: actor.is_player,
                 entity,
                 character,
             },
         };
 
-        let active_zones = actor_zone_map.map.entry(entity).or_default();
+        let (_, _, active_zones) =
+            actor_zone_map.map.entry(entity).or_insert_with(|| {
+                (actor.character, actor.is_player, HashSet::new())
+            });
 
         let Some(tiles) = tilemap.get(at) else {
             for active in active_zones.drain() {
@@ -194,12 +204,38 @@ pub fn emit_movement_events<T: IntoMap>(
             event.send(ActorMovementEvent::ZoneEntered {
                 zone: *tile,
                 who: Who {
-                    at,
-                    is_player: player.is_some(),
+                    at: Some(at),
+                    is_player: actor.is_player,
                     entity,
                     character,
                 },
             });
+        }
+    }
+
+    // When an actor is despawned (or their `Actor` component is removed -
+    // that's unlikely though), then we need to emit the zone left event.
+    // Otherwise the zone will be left hanging with an actor that's no longer
+    // there.
+    //
+    // There won't be any conflicts with the above loop because the actor
+    // component will not be in the query.
+    for entity in removed.read() {
+        if let Some((character, is_player, active_zones)) =
+            actor_zone_map.map.remove(&entity)
+        {
+            for active in active_zones {
+                trace!("Actor {entity:?} despawned in zone {active:?}");
+                event.send(ActorMovementEvent::ZoneLeft {
+                    zone: active,
+                    who: Who {
+                        at: None,
+                        is_player,
+                        entity,
+                        character,
+                    },
+                });
+            }
         }
     }
 }
@@ -223,7 +259,9 @@ pub fn animate_movement<T: IntoMap>(
     >,
 ) {
     for (entity, mut actor, sprite, transform) in actors.iter_mut() {
-        debug_assert!(!actor.is_player);
+        // sometimes we remove the `Player` component to take away control from
+        // the player
+
         animate_movement_for_actor::<T>(
             &time,
             &mut tilemap,
@@ -939,7 +977,7 @@ mod tests {
         system_id: SystemId,
         actors_to_move: &[(Entity, &[GridDirection])],
     ) {
-        for _ in 0..30 {
+        for _ in 0..50 {
             w.run_system(system_id).unwrap();
             w.increment_change_tick();
             let mut time = w.get_resource_mut::<Time>().unwrap();
