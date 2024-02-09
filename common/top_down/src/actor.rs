@@ -687,15 +687,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_runs_tests_many_times() {
-        for _ in 0..100 {
-            // it_does_not_get_stuck_when_two_actors_are_centered_at_the_same_tile_and_walk_in_opposite_directions();
+    fn it_runs_tests_that_check_actors_dont_get_stuck_many_times() {
+        for _ in 0..1000 {
+            it_does_not_get_stuck_when_two_actors_are_centered_at_the_same_tile_and_walk_in_opposite_directions();
 
             it_does_not_get_stuck_when_first_actor_moves_and_second_stays_still(
             );
 
-            // it_does_not_get_stuck_when_first_actor_stays_still_and_second_moves(
-            // );
+            it_does_not_get_stuck_when_first_actor_stays_still_and_second_moves(
+            );
         }
     }
 
@@ -770,6 +770,9 @@ mod tests {
                     // fallback
                     GridDirection::TopLeft,
                     GridDirection::BottomLeft,
+                    // walk around if necessary
+                    GridDirection::Top,
+                    GridDirection::Bottom,
                 ],
             )],
         );
@@ -784,9 +787,7 @@ mod tests {
                 .walking_from
         };
 
-        let marie_pos = actor_pos(marie);
         let winnie_pos = actor_pos(winnie);
-        println!("{winnie_pos} {marie_pos}");
         assert!(winnie_pos.x < -10, "Winnie didn't make it {winnie_pos}");
         assert_eq!(
             &[TileKind::Actor(winnie)],
@@ -818,6 +819,9 @@ mod tests {
                     // fallback
                     GridDirection::TopRight,
                     GridDirection::BottomRight,
+                    // walk around if necessary
+                    GridDirection::Top,
+                    GridDirection::Bottom,
                 ],
             )],
         );
