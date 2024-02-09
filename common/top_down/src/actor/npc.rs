@@ -16,10 +16,6 @@ use crate::{Actor, ActorTarget, IntoMap, TileMap};
 /// can be interacted with.
 #[derive(Component, Reflect, Default)]
 pub struct NpcInTheMap {
-    /// The squares that this NPC occupies in the hashmap.
-    /// More than one because we don't want the player to walk too near.
-    /// TODO
-    influence: Vec<Square>,
     /// Queue of squares that the NPC is planning to visit or has already
     /// visited.
     /// That's determined by the index.

@@ -97,16 +97,16 @@ pub(crate) fn update(
             text.sections[1].style.color = if value >= 120.0 {
                 // Above 120 FPS, use green color
                 Color::rgb(0.0, 1.0, 0.0)
-            } else if value >= 60.0 {
-                // Between 60-120 FPS, gradually transition from yellow to green
+            } else if value >= 50.0 {
+                // Between 50-120 FPS, gradually transition from yellow to green
                 Color::rgb(
-                    (1.0 - (value - 60.0) / (120.0 - 60.0)) as f32,
+                    (1.0 - (value - 50.0) / (120.0 - 50.0)) as f32,
                     1.0,
                     0.0,
                 )
             } else if value >= 30.0 {
-                // Between 30-60 FPS, gradually transition from red to yellow
-                Color::rgb(1.0, ((value - 30.0) / (60.0 - 30.0)) as f32, 0.0)
+                // Between 30-50 FPS, gradually transition from red to yellow
+                Color::rgb(1.0, ((value - 30.0) / (50.0 - 30.0)) as f32, 0.0)
             } else {
                 // Below 30 FPS, use red color
                 Color::rgb(1.0, 0.0, 0.0)
