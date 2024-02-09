@@ -223,6 +223,7 @@ pub fn animate_movement<T: IntoMap>(
     >,
 ) {
     for (entity, mut actor, sprite, transform) in actors.iter_mut() {
+        debug_assert!(!actor.is_player);
         animate_movement_for_actor::<T>(
             &time,
             &mut tilemap,
@@ -239,6 +240,7 @@ pub fn animate_movement<T: IntoMap>(
     if let Some((entity, mut actor, sprite, transform)) =
         player.get_single_mut_or_none()
     {
+        debug_assert!(actor.is_player);
         animate_movement_for_actor::<T>(
             &time,
             &mut tilemap,
@@ -275,7 +277,7 @@ fn animate_movement_for_actor<T: IntoMap>(
         sprite.index = standing_still_sprite_index;
 
         // we need to update the tiles that the actor occupies because other
-        // actors might be moving around it
+        // actors might be moving around it, freeing up some space
         tilemap.replace_actor_tiles(entity, actor);
 
         // nowhere to move
@@ -298,7 +300,7 @@ fn animate_movement_for_actor<T: IntoMap>(
     let to = T::layout().square_to_world_pos(walking_to.square);
 
     if lerp_factor >= 1.0 {
-        // reached the target square, wat else
+        // reached the target, wat else
 
         let new_from = walking_to.square;
 
@@ -382,6 +384,8 @@ impl Actor {
 
     /// Whether the actor is a player.
     /// Set it with the [`CharacterBundleBuilder::is_player`] method.
+    ///
+    /// This information is duplicated by the [`Player`] component.
     pub fn is_player(&self) -> bool {
         self.is_player
     }
@@ -612,7 +616,7 @@ impl<T: IntoMap> TileMap<T> {
                 // a) A player
                 //    - Clear the way for the player by evicting all non-player
                 //      actors from [top down left right]
-                //    - Player must go last is the iteration over all actor
+                //    - Player must go last in the iteration over all actor
                 //      movement
                 0 if actor.is_player && self.any_on(square, with_another) => {
                     for sq_to_clear in square
