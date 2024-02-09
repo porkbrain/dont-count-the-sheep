@@ -83,7 +83,15 @@ pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
 
 /// Holds the tiles in a hash map.
 #[derive(
-    Asset, Resource, Serialize, Deserialize, Reflect, InspectorOptions, Default,
+    Asset,
+    Resource,
+    Serialize,
+    Deserialize,
+    Reflect,
+    InspectorOptions,
+    Default,
+    Clone,
+    Debug,
 )]
 #[reflect(Resource, InspectorOptions)]
 pub struct TileMap<T: IntoMap> {
@@ -285,6 +293,7 @@ impl<L: Tile> Tile for TileKind<L> {
 
 impl<T: IntoMap> TileMap<T> {
     /// Get the kind of a tile.
+    #[inline]
     pub fn get(&self, square: Square) -> Option<&[TileKind<T::LocalTileKind>]> {
         if !T::contains(square) {
             return None;
@@ -294,6 +303,7 @@ impl<T: IntoMap> TileMap<T> {
     }
 
     /// Whether the given square has the given kind of tile in any layer.
+    #[inline]
     pub fn is_on(
         &self,
         square: Square,
@@ -316,6 +326,20 @@ impl<T: IntoMap> TileMap<T> {
         } else {
             T::contains(square)
         }
+    }
+
+    /// Whether the predicate matches any tile on the given square.
+    /// Returns `false` if the square is out of bounds or has no tiles.
+    #[inline]
+    pub fn any_on(
+        &self,
+        square: Square,
+        predicate: impl Fn(TileKind<T::LocalTileKind>) -> bool,
+    ) -> bool {
+        self.squares
+            .get(&square)
+            .map(|tiles| tiles.iter().any(|tile| predicate(*tile)))
+            .unwrap_or(false)
     }
 
     /// For given square, find the first `None` tile or insert a new layer.
@@ -384,44 +408,12 @@ impl<T: IntoMap> TileMap<T> {
         Some(current)
     }
 
-    /// Same as [`Self::set_tile_kind_layer`] but only sets the tile if the
-    /// function `unless` returns `false`.
-    ///
-    /// You can be sure that `tiles[layer]` will not panic in the `unless`
-    /// function.
-    pub fn set_tile_kind_unless(
-        &mut self,
-        of: Square,
-        layer: usize,
-        kind: impl Into<TileKind<T::LocalTileKind>>,
-        unless: impl FnOnce(&[TileKind<T::LocalTileKind>]) -> bool,
-    ) -> Option<TileKind<T::LocalTileKind>> {
-        if !T::contains(of) {
-            return None;
-        }
-
-        let tiles = self.squares.entry(of).or_default();
-
-        if tiles.len() <= layer {
-            tiles.resize(layer + 1, TileKind::Empty);
-        }
-
-        if unless(tiles.as_slice()) {
-            return None;
-        }
-
-        let tile = &mut tiles[layer]; // safe cuz we just resized
-        let current = *tile;
-        *tile = kind.into();
-
-        Some(current)
-    }
-
     /// Returns [`None`] if not walkable, otherwise the cost of walking to the
     /// tile.
     /// This is useful for pathfinding.
     /// The higher the cost, the less likely the character will want to walk
     /// over it.
+    #[inline]
     pub fn walk_cost(
         &self,
         square: Square,
@@ -831,7 +823,7 @@ mod tests {
         }
 
         fn asset_path() -> &'static str {
-            "test_scene.ron"
+            unreachable!()
         }
     }
 

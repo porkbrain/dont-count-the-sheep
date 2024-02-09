@@ -157,6 +157,9 @@ impl Character {
                 Some((WINNIE, STANDARD_SIZE, 12, 1, default()))
             }
             Character::Marie => Some((MARIE, STANDARD_SIZE, 15, 1, default())),
+            Character::Unnamed => {
+                Some((UNNAMED, STANDARD_SIZE, 15, 1, default()))
+            }
             _ => None,
         }
     }

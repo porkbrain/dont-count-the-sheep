@@ -166,3 +166,15 @@ impl Sub<Square> for &Square {
         sq(self.x - rhs.x, self.y - rhs.y)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_calcs_manhattan_distance() {
+        assert_eq!(2, sq(0, 0).manhattan_distance(sq(0, 2)));
+        assert_eq!(2, sq(0, 2).manhattan_distance(sq(0, 0)));
+        assert_eq!(2, sq(0, 0).manhattan_distance(sq(1, 1)));
+    }
+}
