@@ -184,7 +184,8 @@ pub(super) fn load_zone_overlay(
                 (Visibility::Visible, Some(assets::WINNIE_SLEEPING))
             }
             TileKind::Local(ApartmentTileKind::TeaZone) => {
-                unimplemented!()
+                // TODO
+                return;
             }
             _ => (Visibility::Hidden, None),
         },
