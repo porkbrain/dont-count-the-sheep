@@ -3,7 +3,7 @@
 pub mod npc;
 pub mod player;
 
-use std::time::Duration;
+use std::{iter, time::Duration};
 
 use bevy::{
     ecs::event::event_update_condition,
@@ -13,8 +13,11 @@ use bevy::{
 };
 use bevy_grid_squared::{sq, GridDirection, Square};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
+use common_ext::QueryExt;
 use common_story::Character;
+use itertools::Itertools;
 use lazy_static::lazy_static;
+use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -30,7 +33,7 @@ pub fn movement_event_emitted<T: IntoMap>(
 }
 
 /// Entity with this component can be moved around.
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Debug)]
 pub struct Actor {
     /// What's the character type that's being represented.
     pub character: Character,
@@ -52,10 +55,13 @@ pub struct Actor {
     /// more squares.
     /// Also, different characters can occupy different squares.
     occupies: Vec<TileIndex>,
+    /// This information is duplicated.
+    /// We also have a player component that's assigned to the player entity.
+    is_player: bool,
 }
 
 /// Target for an actor to walk towards.
-#[derive(Reflect)]
+#[derive(Reflect, Debug)]
 pub struct ActorTarget {
     /// The target square actor walks to.
     pub square: Square,
@@ -123,6 +129,7 @@ pub struct CharacterBundleBuilder {
     walking_to: Option<ActorTarget>,
     initial_step_time: Option<Duration>,
     color: Option<Color>,
+    is_player: bool,
 }
 
 /// Sends events when an actor does something interesting.
@@ -206,21 +213,32 @@ pub fn animate_movement<T: IntoMap>(
     time: Res<Time>,
     mut tilemap: ResMut<TileMap<T>>,
 
-    mut actors: Query<(
-        Entity,
-        &mut Actor,
-        &mut TextureAtlasSprite,
-        &mut Transform,
-    )>,
+    mut actors: Query<
+        (Entity, &mut Actor, &mut TextureAtlasSprite, &mut Transform),
+        Without<Player>,
+    >,
+    mut player: Query<
+        (Entity, &mut Actor, &mut TextureAtlasSprite, &mut Transform),
+        With<Player>,
+    >,
 ) {
     for (entity, mut actor, sprite, transform) in actors.iter_mut() {
-        if actor.occupies.is_empty() {
-            // One time initialization of the actor's tiles.
-            // It's more convenient to do it here than during
-            // the building process of the actor.
-            tilemap.replace_actor_tiles(entity, &mut actor);
-        }
+        animate_movement_for_actor::<T>(
+            &time,
+            &mut tilemap,
+            entity,
+            &mut actor,
+            sprite,
+            transform,
+        );
+    }
 
+    // the player goes always last because of how we handle occupied tiles:
+    // the later actor has an advantage
+    // see `TileMap::replace_actor_tiles`
+    if let Some((entity, mut actor, sprite, transform)) =
+        player.get_single_mut_or_none()
+    {
         animate_movement_for_actor::<T>(
             &time,
             &mut tilemap,
@@ -252,10 +270,15 @@ fn animate_movement_for_actor<T: IntoMap>(
     };
 
     let Some(walking_to) = actor.walking_to.as_mut() else {
-        // TODO: recalc the occupied tiles
-        // actor is standing still, nothing else to do
+        // actor is standing still
+
         sprite.index = standing_still_sprite_index;
 
+        // we need to update the tiles that the actor occupies because other
+        // actors might be moving around it
+        tilemap.replace_actor_tiles(entity, actor);
+
+        // nowhere to move
         return;
     };
 
@@ -356,6 +379,12 @@ impl Actor {
             .map(|to| to.square)
             .unwrap_or(self.walking_from)
     }
+
+    /// Whether the actor is a player.
+    /// Set it with the [`CharacterBundleBuilder::is_player`] method.
+    pub fn is_player(&self) -> bool {
+        self.is_player
+    }
 }
 
 impl ActorTarget {
@@ -389,6 +418,7 @@ impl CharacterExt for common_story::Character {
 
 impl CharacterBundleBuilder {
     /// For which character to build the bundle.
+    #[must_use]
     pub fn new(character: common_story::Character) -> Self {
         Self {
             character,
@@ -397,7 +427,16 @@ impl CharacterBundleBuilder {
             walking_to: default(),
             initial_step_time: default(),
             color: default(),
+            is_player: false,
         }
+    }
+
+    /// Whether the actor is a player.
+    #[must_use]
+    pub fn is_player(mut self, is_player: bool) -> Self {
+        self.is_player = is_player;
+
+        self
     }
 
     /// Where to spawn the character.
@@ -405,6 +444,7 @@ impl CharacterBundleBuilder {
     /// `common_layout` crate).
     /// The specific layout is provided in the [`CharacterBundleBuilder::build`]
     /// method's `T`.
+    #[must_use]
     pub fn with_initial_position(mut self, initial_position: Vec2) -> Self {
         self.initial_position = initial_position;
 
@@ -413,6 +453,7 @@ impl CharacterBundleBuilder {
 
     /// When the map is loaded, the character is spawned facing this
     /// direction.
+    #[must_use]
     pub fn with_initial_direction(
         mut self,
         initial_direction: GridDirection,
@@ -423,6 +464,7 @@ impl CharacterBundleBuilder {
     }
 
     /// Where to walk to initially.
+    #[must_use]
     pub fn with_walking_to(mut self, walking_to: Option<ActorTarget>) -> Self {
         self.walking_to = walking_to;
 
@@ -430,6 +472,7 @@ impl CharacterBundleBuilder {
     }
 
     /// How long does it take to move one square.
+    #[must_use]
     pub fn with_initial_step_time(
         mut self,
         step_time: Option<Duration>,
@@ -440,6 +483,7 @@ impl CharacterBundleBuilder {
     }
 
     /// Sets the color of the sprite.
+    #[must_use]
     pub fn with_sprite_color(mut self, color: Option<Color>) -> Self {
         self.color = color;
 
@@ -455,7 +499,9 @@ impl CharacterBundleBuilder {
     /// # Important
     /// Since we don't yet have entity, we don't insert tiles into the
     /// tilemap. This will be immediately remedied in the
-    /// [`animate_movement`] system.
+    /// [`animate_movement`] system, where the actor's tiles are recalculated
+    /// when they stand still or when they do their first step.
+    #[must_use]
     pub fn build<T: IntoMap>(self) -> impl Bundle {
         let CharacterBundleBuilder {
             character,
@@ -464,6 +510,7 @@ impl CharacterBundleBuilder {
             walking_to,
             initial_step_time: step_time,
             color,
+            is_player,
         } = self;
 
         let step_time = step_time.unwrap_or(character.default_step_time());
@@ -480,6 +527,7 @@ impl CharacterBundleBuilder {
                 walking_from: T::layout().world_pos_to_square(initial_position),
                 walking_to,
                 occupies,
+                is_player,
             },
             SpriteSheetBundle {
                 texture_atlas: character.sprite_atlas_handle(),
@@ -498,7 +546,12 @@ impl CharacterBundleBuilder {
     }
 }
 
+/// Equal to where the actor is standing.
+/// We will add the actors position to all values produced by
+/// `ACTOR_ZONE_AT_ORIGIN`.
 const O: Square = sq(0, 0);
+/// We push the origin of the actor's zone shape up as it looks more natural.
+const O_UP: Square = O.neighbor(GridDirection::Top);
 
 lazy_static! {
     /// I tried implementing Bresenham's circle (filled) and couple of
@@ -516,39 +569,31 @@ lazy_static! {
         let tiles_setup = vec![
                         sq(-1, 2),sq(0, 2),sq(1, 2),sq(2, 2),
                 sq(-2,1),                            sq(2,1), sq(3,1),
-       sq(-3,0),sq(-2,0),            O,              sq(2,0), sq(3,0),sq(4,0),
+       sq(-3,0),sq(-2,0),          /*O_UP*/          sq(2,0), sq(3,0),sq(4,0),
                 sq(-2,-1),                           sq(2,-1),sq(3,-1),
                         sq(-1,-2),sq(0,-2),sq(1,-2),sq(2, -2),
         ];
 
-        O.neighbors()
-            .chain(tiles_setup.into_iter())
-            .map(|sq| (sq, sq.manhattan_distance(O) as usize))
+        iter::once(O_UP).chain(O_UP.neighbors_with_diagonal())
+            .chain(tiles_setup.into_iter().map(|sq| sq + O_UP))
+            // the distance from the actual origin where the actor stands
+            .map(|s| (s, s.manhattan_distance(O) as usize))
             .collect()
     };
 }
 
 impl<T: IntoMap> TileMap<T> {
-    // TODO: there is a rare scenario where two actors are centered at the same
-    // square. This method will end up preventing their movement.
-    // A remedy could be splitting `TileKind::Actor` into `ActorZone` and
-    // `ActorOrigin`.
-    // Then walkability check would permit movement over other's `ActorZone` if
-    // they share the same `ActorOrigin`.
     fn replace_actor_tiles(&mut self, entity: Entity, actor: &mut Actor) {
         let actor_stands_at = actor
             .walking_to
             .as_ref()
             .map(|t| t.square)
             .unwrap_or(actor.walking_from);
-        // looks better when pushed a bit up
-        // TODO: this should be a part of the `ACTOR_ZONE_AT_ORIGIN` setup
-        let center_of_tile_zone_shape =
-            actor_stands_at.neighbor(GridDirection::Top);
 
         for (sq, layer) in actor.occupies.drain(..) {
-            let prev_tile = self.set_tile_kind(sq, layer, TileKind::Empty);
-            debug_assert_eq!(Some(TileKind::Actor(entity)), prev_tile);
+            // we can't assume it to eq the actor's tile because in some rare
+            // edge cases we evict the actor, see below
+            self.set_tile_kind(sq, layer, TileKind::Empty);
         }
 
         // then for the remaining squares that don't have the actor yet
@@ -557,23 +602,66 @@ impl<T: IntoMap> TileMap<T> {
         {
             let square = sq_origin + actor_stands_at;
 
+            let with_another =
+                |t| matches!(t, TileKind::Actor(a) if a != entity);
+
             match distance_to_center {
-                // if there's a different actor standing on the same spot
-                // (rare but possible)
-                0 if self.any_on(
-                    square,
-                    |t| matches!(t, TileKind::Actor(a) if a != entity),
-                ) =>
-                {
-                    // if is player, clear the way for them by removing all non
-                    // player actors from [top down left right] + square
+                // If there's a different actor standing on the same spot
+                // (rare but possible), we have following strategies:
+                //
+                // a) A player
+                //    - Clear the way for the player by evicting all non-player
+                //      actors from [top down left right]
+                //    - Player must go last is the iteration over all actor
+                //      movement
+                0 if actor.is_player && self.any_on(square, with_another) => {
+                    for sq_to_clear in square
+                        .neighbours_no_diagonal()
+                        .chain(iter::once(square))
+                    {
+                        self.map_tiles(sq_to_clear, |tile| {
+                            if let TileKind::Actor(a) = tile {
+                                if a != entity {
+                                    return TileKind::Empty;
+                                }
+                            }
 
-                    // if is npc, collect all tiles that are walkable except for
-                    // that they have actors, and pick one at random to set
-                    // the walking_to target, then continue;
-
-                    println!("kerfuflle");
+                            tile
+                        });
+                    }
                 }
+                // b) An NPC
+                //    - Collect all tiles that have an actor OR are walkable
+                //    - Pick one at random to set the walking_to target
+                //    - Continue onto the next square
+                0 if !actor.is_player && self.any_on(square, with_another) => {
+                    let candidates = square
+                        .neighbors_with_diagonal()
+                        .filter(|sq| {
+                            // either has an actor or is walkable
+                            self.all_on(*sq, |tile| {
+                                matches!(tile, TileKind::Actor(_))
+                                    || tile.is_walkable(entity)
+                            })
+                        })
+                        .collect_vec();
+
+                    // pick a random index from candidates
+                    let Some(new_target) = candidates.choose(&mut thread_rng())
+                    else {
+                        // Spawned in the middle of a nowhere? All directions
+                        // are unwalkable. Perhaps caught in some big dynamic
+                        // obstacle?
+                        error!("Actor is stuck - nowhere to go for {actor:?}");
+                        continue;
+                    };
+
+                    actor.walking_to = Some(ActorTarget::new(*new_target));
+                    // don't add the actor to this tile so that the other actor
+                    // who's standing there doesn't move until this one leaves
+                    continue;
+                }
+
                 // other actors might be there, don't block their movement
                 2.. if !self.is_walkable(square, entity) => {
                     continue;
@@ -599,6 +687,19 @@ mod tests {
     use super::*;
 
     #[test]
+    fn it_runs_tests_many_times() {
+        for _ in 0..100 {
+            // it_does_not_get_stuck_when_two_actors_are_centered_at_the_same_tile_and_walk_in_opposite_directions();
+
+            it_does_not_get_stuck_when_first_actor_moves_and_second_stays_still(
+            );
+
+            // it_does_not_get_stuck_when_first_actor_stays_still_and_second_moves(
+            // );
+        }
+    }
+
+    #[test]
     fn it_does_not_get_stuck_when_two_actors_are_centered_at_the_same_tile_and_walk_in_opposite_directions(
     ) {
         let (mut w, system_id, marie, winnie) = prepare_world();
@@ -609,7 +710,26 @@ mod tests {
         run_system_several_times(
             &mut w,
             system_id,
-            &[(winnie, winnie_direction), (marie, marie_direction)],
+            &[
+                (
+                    winnie,
+                    &[
+                        winnie_direction,
+                        // fallback
+                        GridDirection::TopLeft,
+                        GridDirection::BottomLeft,
+                    ],
+                ),
+                (
+                    marie,
+                    &[
+                        marie_direction,
+                        // fallback
+                        GridDirection::TopRight,
+                        GridDirection::BottomRight,
+                    ],
+                ),
+            ],
         );
 
         let tilemap = w.get_resource::<TileMap<TestScene>>().unwrap();
@@ -623,7 +743,7 @@ mod tests {
         };
 
         let winnie_pos = actor_pos(winnie);
-        assert!(winnie_pos.x < -10); // you're gonna go far kid
+        assert!(winnie_pos.x < -10, "Winnie is on {winnie_pos}"); // you're gonna go far kid
         assert_eq!(
             &[TileKind::Actor(winnie)],
             tilemap.get(winnie_pos).unwrap()
@@ -643,7 +763,15 @@ mod tests {
         run_system_several_times(
             &mut w,
             system_id,
-            &[(winnie, winnie_direction)],
+            &[(
+                winnie,
+                &[
+                    winnie_direction,
+                    // fallback
+                    GridDirection::TopLeft,
+                    GridDirection::BottomLeft,
+                ],
+            )],
         );
 
         let tilemap = w.get_resource::<TileMap<TestScene>>().unwrap();
@@ -656,7 +784,9 @@ mod tests {
                 .walking_from
         };
 
+        let marie_pos = actor_pos(marie);
         let winnie_pos = actor_pos(winnie);
+        println!("{winnie_pos} {marie_pos}");
         assert!(winnie_pos.x < -10, "Winnie didn't make it {winnie_pos}");
         assert_eq!(
             &[TileKind::Actor(winnie)],
@@ -664,20 +794,32 @@ mod tests {
         );
 
         let marie_pos = actor_pos(marie);
-        assert_eq!(sq(0, 0), marie_pos); // no movement for her
-        assert_eq!(&[TileKind::Actor(marie)], tilemap.get(marie_pos).unwrap());
+        let is_actor_alone = tilemap.all_on(marie_pos, |t| match t {
+            TileKind::Actor(e) if e == marie => true,
+            TileKind::Empty => true,
+            _ => false,
+        });
+        assert!(is_actor_alone, "Marie not alone on {marie_pos}");
     }
 
     #[test]
     fn it_does_not_get_stuck_when_first_actor_stays_still_and_second_moves() {
         let (mut w, system_id, winnie, marie) = prepare_world();
 
-        let marie_direction = GridDirection::Left;
+        let marie_direction = GridDirection::Right;
 
         run_system_several_times(
             &mut w,
             system_id,
-            &[(marie, marie_direction)],
+            &[(
+                marie,
+                &[
+                    marie_direction,
+                    // fallback
+                    GridDirection::TopRight,
+                    GridDirection::BottomRight,
+                ],
+            )],
         );
 
         let tilemap = w.get_resource::<TileMap<TestScene>>().unwrap();
@@ -695,11 +837,12 @@ mod tests {
         assert_eq!(&[TileKind::Actor(marie)], tilemap.get(marie_pos).unwrap());
 
         let winnie_pos = actor_pos(winnie);
-        assert_eq!(sq(0, 0), winnie_pos); // no movement for her
-        assert_eq!(
-            &[TileKind::Actor(winnie)],
-            tilemap.get(winnie_pos).unwrap()
-        );
+        let is_actor_alone = tilemap.all_on(winnie_pos, |t| match t {
+            TileKind::Actor(e) if e == winnie => true,
+            TileKind::Empty => true,
+            _ => false,
+        });
+        assert!(is_actor_alone, "Winnie not alone on {winnie_pos}");
     }
 
     #[derive(Default, Reflect, Clone, Debug)]
@@ -741,6 +884,7 @@ mod tests {
                 walking_from: sq(0, 0),
                 walking_to: None, // we get them moving later
                 occupies: vec![],
+                is_player: false,
             })
             .insert(SpatialBundle::default())
             .insert(TextureAtlasSprite::new(0))
@@ -753,6 +897,7 @@ mod tests {
                 walking_from: sq(0, 0),
                 walking_to: None, // we get them moving later
                 occupies: vec![],
+                is_player: false,
             })
             .insert(SpatialBundle::default())
             .insert(TextureAtlasSprite::new(0))
@@ -779,18 +924,20 @@ mod tests {
 
     /// Run the system several times and move the actors in the given direction
     /// each time.
+    /// More directions can be added to the array, first one that's walkable
+    /// will be chosen.
     fn run_system_several_times(
         w: &mut World,
         system_id: SystemId,
-        actors_to_move: &[(Entity, GridDirection)],
+        actors_to_move: &[(Entity, &[GridDirection])],
     ) {
-        for _ in 0..20 {
+        for _ in 0..30 {
             w.run_system(system_id).unwrap();
             w.increment_change_tick();
             let mut time = w.get_resource_mut::<Time>().unwrap();
             time.advance_by(STEP_TIME + Duration::from_millis(1));
 
-            let mut move_actor = |actor_entity, direction| {
+            let mut move_actor = |actor_entity, directions| {
                 let tilemap = TileMap::<TestScene>::clone(
                     w.get_resource::<TileMap<TestScene>>().unwrap(),
                 );
@@ -798,11 +945,15 @@ mod tests {
                 let mut entity_ref = w.get_entity_mut(actor_entity).unwrap();
                 let mut actor_comp = entity_ref.get_mut::<Actor>().unwrap();
                 if actor_comp.walking_to.is_none() {
-                    let goto = actor_comp.walking_from + direction;
+                    for direction in directions {
+                        let goto = actor_comp.walking_from + direction;
 
-                    if tilemap.is_walkable(goto, actor_entity) {
-                        // go in direction if possible
-                        actor_comp.walking_to = Some(ActorTarget::new(goto));
+                        if tilemap.is_walkable(goto, actor_entity) {
+                            // go in direction if possible
+                            actor_comp.walking_to =
+                                Some(ActorTarget::new(goto));
+                            break;
+                        }
                     }
                 }
             };

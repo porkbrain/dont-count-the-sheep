@@ -342,6 +342,20 @@ impl<T: IntoMap> TileMap<T> {
             .unwrap_or(false)
     }
 
+    /// Whether the predicate matches all tiles on the given square.
+    /// Returns `false` if the square is out of bounds or has no tiles.
+    #[inline]
+    pub fn all_on(
+        &self,
+        square: Square,
+        predicate: impl Fn(TileKind<T::LocalTileKind>) -> bool,
+    ) -> bool {
+        self.squares
+            .get(&square)
+            .map(|tiles| tiles.iter().all(|tile| predicate(*tile)))
+            .unwrap_or(false)
+    }
+
     /// For given square, find the first `None` tile or insert a new layer.
     /// Then return the index of the layer.
     ///
@@ -408,6 +422,22 @@ impl<T: IntoMap> TileMap<T> {
         Some(current)
     }
 
+    /// Map each tile on the given square to the given kind.
+    #[inline]
+    pub fn map_tiles(
+        &mut self,
+        of: Square,
+        map: impl Fn(TileKind<T::LocalTileKind>) -> TileKind<T::LocalTileKind>,
+    ) {
+        let Some(tiles) = self.squares.get_mut(&of) else {
+            return;
+        };
+
+        for tile in tiles.iter_mut() {
+            *tile = map(*tile);
+        }
+    }
+
     /// Returns [`None`] if not walkable, otherwise the cost of walking to the
     /// tile.
     /// This is useful for pathfinding.
@@ -447,7 +477,7 @@ impl<T: IntoMap> TileMap<T> {
         let (path, _cost) = pathfinding::prelude::astar(
             &from,
             |square| {
-                square.neighbors().filter_map(|neighbor| {
+                square.neighbors_with_diagonal().filter_map(|neighbor| {
                     self.walk_cost(neighbor, who)
                         .map(|cost| (neighbor, cost as i32))
                 })
