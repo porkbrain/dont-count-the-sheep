@@ -57,6 +57,10 @@ pub struct Actor {
     occupies: Vec<TileIndex>,
     /// This information is duplicated.
     /// We also have a player component that's assigned to the player entity.
+    ///
+    /// However, we do sometimes remove the [`Player`] component to take away
+    /// control from the player.
+    /// On the other hand, we never change this flag.
     is_player: bool,
 }
 
@@ -100,7 +104,6 @@ pub enum ActorMovementEvent<T> {
         who: Who,
     },
     /// Is emitted when an [`Actor`] leaves a zone.
-    /// TODO: also when despawned in a zone.
     ZoneLeft {
         /// The zone that was left.
         zone: TileKind<T>,
@@ -116,6 +119,11 @@ pub struct Who {
     /// Otherwise an NPC.
     pub is_player: bool,
     /// The entity that entered the zone.
+    ///
+    /// If we sent [`ActorMovementEvent::ZoneEntered`] for a given entity
+    /// that's a player, we guarantee that we will send a
+    /// [`ActorMovementEvent::ZoneLeft`] for the same entity with the same
+    /// `is_player` flag.
     pub entity: Entity,
     /// The character that entered the zone.
     pub character: Character,
@@ -413,6 +421,8 @@ impl<T> ActorMovementEvent<T> {
 
 impl Actor {
     /// Get the current square.
+    /// That is the square that the actor is about to arrive to if they're
+    /// walking, or the square they're standing on if they're not walking.
     pub fn current_square(&self) -> Square {
         self.walking_to
             .as_ref()
@@ -602,12 +612,10 @@ lazy_static! {
     /// Given that most of the time we will have standard radii and layouts,
     /// and that this logic runs on every actor movement, implementing a
     /// static felt right.
-    /// The squares are centered around (0, 0) and the actor's current
+    /// The squares are centered around `O` and the actor's current
     /// position needs to be added to each square, or equivalently the center
     /// must be subtracted from each square before checking `contains`.
-    ///
-    /// The second tuple member is the distance from origin in squares.
-    static ref ACTOR_ZONE_AT_ORIGIN: Vec<(Square, usize)> = {
+    static ref ACTOR_ZONE_AT_ORIGIN: Vec<Square> = {
         let tiles_setup = vec![
                         sq(-1, 2),sq(0, 2),sq(1, 2),sq(2, 2),
                 sq(-2,1),                            sq(2,1), sq(3,1),
@@ -618,106 +626,87 @@ lazy_static! {
 
         iter::once(O_UP).chain(O_UP.neighbors_with_diagonal())
             .chain(tiles_setup.into_iter().map(|sq| sq + O_UP))
-            // the distance from the actual origin where the actor stands
-            .map(|s| (s, s.manhattan_distance(O) as usize))
             .collect()
     };
 }
 
 impl<T: IntoMap> TileMap<T> {
     fn replace_actor_tiles(&mut self, entity: Entity, actor: &mut Actor) {
-        let actor_stands_at = actor
-            .walking_to
-            .as_ref()
-            .map(|t| t.square)
-            .unwrap_or(actor.walking_from);
-
         for (sq, layer) in actor.occupies.drain(..) {
             // we can't assume it to eq the actor's tile because in some rare
             // edge cases we evict the actor, see below
             self.set_tile_kind(sq, layer, TileKind::Empty);
         }
 
-        // then for the remaining squares that don't have the actor yet
-        for (sq_origin, distance_to_center) in
-            ACTOR_ZONE_AT_ORIGIN.iter().copied()
-        {
-            let square = sq_origin + actor_stands_at;
+        let actor_stands_at = actor.current_square();
 
-            let with_another =
-                |t| matches!(t, TileKind::Actor(a) if a != entity);
+        let can_move = self.can_actor_move(entity, actor_stands_at);
+        // If the actor cannot move (rare but possible), we have following
+        // strategies:
+        if !can_move && actor.is_player {
+            // a) A player
+            //    - Clear the way for the player by evicting all non-player
+            //      actors from [top down left right]
+            //    - Player must go last in the iteration over all actor movement
 
-            match distance_to_center {
-                // If there's a different actor standing on the same spot
-                // (rare but possible), we have following strategies:
-                //
-                // a) A player
-                //    - Clear the way for the player by evicting all non-player
-                //      actors from [top down left right]
-                //    - Player must go last in the iteration over all actor
-                //      movement
-                0 if actor.is_player && self.any_on(square, with_another) => {
-                    for sq_to_clear in square
-                        .neighbours_no_diagonal()
-                        .chain(iter::once(square))
-                    {
-                        self.map_tiles(sq_to_clear, |tile| {
-                            if let TileKind::Actor(a) = tile {
-                                if a != entity {
-                                    return TileKind::Empty;
-                                }
-                            }
-
-                            tile
-                        });
+            for sq_to_clear in actor_stands_at.neighbours_no_diagonal() {
+                self.map_tiles(sq_to_clear, |tile| {
+                    if let TileKind::Actor(a) = tile {
+                        if a != entity {
+                            return TileKind::Empty;
+                        }
                     }
-                }
-                // b) An NPC
-                //    - Collect all tiles that have an actor OR are walkable
-                //    - Pick one at random to set the walking_to target
-                //    - Continue onto the next square
-                0 if !actor.is_player && self.any_on(square, with_another) => {
-                    let candidates = square
-                        .neighbors_with_diagonal()
-                        .filter(|sq| {
-                            // either has an actor or is walkable
-                            self.all_on(*sq, |tile| {
-                                matches!(tile, TileKind::Actor(_))
-                                    || tile.is_walkable(entity)
-                            })
-                        })
-                        .collect_vec();
 
-                    // pick a random index from candidates
-                    let Some(new_target) = candidates.choose(&mut thread_rng())
-                    else {
-                        // Spawned in the middle of a nowhere? All directions
-                        // are unwalkable. Perhaps caught in some big dynamic
-                        // obstacle?
-                        error!("Actor is stuck - nowhere to go for {actor:?}");
-                        continue;
-                    };
-
-                    actor.walking_to = Some(ActorTarget::new(*new_target));
-                    // don't add the actor to this tile so that the other actor
-                    // who's standing there doesn't move until this one leaves
-                    continue;
-                }
-
-                // other actors might be there, don't block their movement
-                2.. if !self.is_walkable(square, entity) => {
-                    continue;
-                }
-                // all fine, we can occupy this square
-                _ => {}
+                    tile
+                });
             }
+        } else if !can_move && actor.is_player {
+            // b) An NPC
+            //    - Collect all tiles that have an actor OR are walkable
+            //    - Pick one at random to set the walking_to target
+            //    - Continue onto the next square
 
-            if let Some(layer) = self
-                .add_tile_to_first_empty_layer(square, TileKind::Actor(entity))
+            let candidates = actor_stands_at
+                .neighbors_with_diagonal()
+                .filter(|sq| {
+                    // either has an actor or is walkable
+                    self.all_on(*sq, |tile| {
+                        matches!(tile, TileKind::Actor(_))
+                            || tile.is_walkable(entity)
+                    })
+                })
+                .collect_vec();
+
+            // pick a random index from candidates
+            if let Some(new_target) = candidates.choose(&mut thread_rng()) {
+                actor.walking_to = Some(ActorTarget::new(*new_target));
+            } else {
+                // Spawned in the middle of a nowhere? All directions
+                // are unwalkable.
+                // Perhaps caught in some big dynamic obstacle?
+                error!("Actor is stuck - nowhere to go for {actor:?}");
+            };
+        }
+
+        // then for the remaining squares that don't have the actor yet
+        for sq_origin in ACTOR_ZONE_AT_ORIGIN.iter().copied() {
+            let sq = sq_origin + actor_stands_at;
+
+            if let Some(layer) =
+                self.add_tile_to_first_empty_layer(sq, TileKind::Actor(entity))
             {
-                actor.occupies.push((square, layer));
+                actor.occupies.push((sq, layer));
             }
         }
+
+        // always will be included in `ACTOR_ZONE_AT_ORIGIN`
+        debug_assert!(self.is_on(actor_stands_at, TileKind::Actor(entity)))
+    }
+
+    #[inline]
+    fn can_actor_move(&self, entity: Entity, from: Square) -> bool {
+        from.neighbors_with_diagonal()
+            .any(|neighbour| self.is_walkable(neighbour, entity))
     }
 }
 

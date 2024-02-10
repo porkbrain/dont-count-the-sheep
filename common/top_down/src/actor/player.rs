@@ -14,6 +14,8 @@ use crate::layout::{IntoMap, TileMap};
 ///
 /// This information is duplicated.
 /// It's also stored on the [`Actor`] component as a flag.
+/// However, since we sometimes remove the [`Player`] component to disable
+/// player control, using the flag is more reliable.
 #[derive(Component, Reflect)]
 pub struct Player;
 
@@ -66,18 +68,19 @@ pub fn move_around<T: IntoMap>(
     // or else we consider the alternative directions
     let target = find_target(plan_from, primary_steps).or_else(|| {
         // if we can't move in the primary directions, try the fallback
-        let (target_square, direction) =
-            find_target(plan_from, alternative_steps?)?;
+        let (target_square, _) = find_target(plan_from, alternative_steps?)?;
         // but the fallback has to satisfy 2 conditions:
 
         // 1. next step can be made with primary directions
-        let (after_that, _) = find_target(target_square, primary_steps)?;
+        let (square_after_that, direction_after_that) =
+            find_target(target_square, primary_steps)?;
 
         // 2. next step won't move us back to where we are now
-        if target_square == after_that {
+        if target_square == square_after_that {
             None
         } else {
-            Some((target_square, direction))
+            // we use the upcoming direction to avoid flickering
+            Some((target_square, direction_after_that))
         }
     });
 
