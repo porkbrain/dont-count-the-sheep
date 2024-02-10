@@ -660,7 +660,7 @@ impl<T: IntoMap> TileMap<T> {
                     tile
                 });
             }
-        } else if !can_move && actor.is_player {
+        } else if !can_move && !actor.is_player {
             // b) An NPC
             //    - Collect all tiles that have an actor OR are walkable
             //    - Pick one at random to set the walking_to target
@@ -719,7 +719,7 @@ mod tests {
 
     #[test]
     fn it_runs_tests_that_check_actors_dont_get_stuck_many_times() {
-        for _ in 0..1000 {
+        for _ in 0..10000 {
             it_does_not_get_stuck_when_two_actors_are_centered_at_the_same_tile_and_walk_in_opposite_directions();
 
             it_does_not_get_stuck_when_first_actor_moves_and_second_stays_still(
@@ -746,18 +746,26 @@ mod tests {
                     winnie,
                     &[
                         winnie_direction,
-                        // fallback
-                        GridDirection::TopLeft,
+                        // fallback to avoiding each other, prefer bottom
                         GridDirection::BottomLeft,
+                        GridDirection::Bottom,
+                        GridDirection::BottomRight,
+                        GridDirection::TopLeft,
+                        GridDirection::Top,
+                        GridDirection::TopRight,
                     ],
                 ),
                 (
                     marie,
                     &[
                         marie_direction,
-                        // fallback
+                        // fallback to avoiding each other, prefer top
                         GridDirection::TopRight,
+                        GridDirection::Top,
+                        GridDirection::TopLeft,
                         GridDirection::BottomRight,
+                        GridDirection::Bottom,
+                        GridDirection::BottomLeft,
                     ],
                 ),
             ],
@@ -774,13 +782,17 @@ mod tests {
         };
 
         let winnie_pos = actor_pos(winnie);
-        assert!(winnie_pos.x < -10, "Winnie is on {winnie_pos}"); // you're gonna go far kid
+        let marie_pos = actor_pos(marie);
+
+        assert!(
+            winnie_pos.x < -10,
+            "Winnie is on {winnie_pos}, Marie on {marie_pos}"
+        ); // you're gonna go far kid
         assert_eq!(
             &[TileKind::Actor(winnie)],
             tilemap.get(winnie_pos).unwrap()
         );
 
-        let marie_pos = actor_pos(marie);
         assert!(marie_pos.x > 10); // you're gonna go far kid
         assert_eq!(&[TileKind::Actor(marie)], tilemap.get(marie_pos).unwrap());
     }
@@ -804,6 +816,9 @@ mod tests {
                     // walk around if necessary
                     GridDirection::Top,
                     GridDirection::Bottom,
+                    // sometimes you gotta backtrack
+                    GridDirection::TopRight,
+                    GridDirection::BottomRight,
                 ],
             )],
         );
@@ -853,6 +868,9 @@ mod tests {
                     // walk around if necessary
                     GridDirection::Top,
                     GridDirection::Bottom,
+                    // sometimes you gotta backtrack
+                    GridDirection::TopLeft,
+                    GridDirection::BottomLeft,
                 ],
             )],
         );

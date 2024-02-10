@@ -137,6 +137,12 @@ pub enum TileKind<L> {
     /// We use [`Entity`] to make it apparent that this will be dynamically
     /// updated on runtime.
     /// This variant mustn't be loaded from map ron file.
+    ///
+    /// OPTIMIZE: To reduce storage overhead, we could store the entity in an
+    /// array on the tilemap and use a u32 index to reference it here.
+    /// Getting rid of 4 bytes per tile would mean we'd fetch 12 less bytes on
+    /// each square access.
+    /// The entity array access should be cheap.
     Actor(Entity),
     /// Specific for a given map.
     Local(L),
@@ -699,5 +705,38 @@ mod tests {
         );
 
         assert_eq!(tilemap.set_tile_kind(sq(100, 0), 0, TileKind::Wall), None);
+    }
+
+    #[derive(
+        Default,
+        Reflect,
+        Hash,
+        PartialEq,
+        Eq,
+        Debug,
+        Serialize,
+        Deserialize,
+        Clone,
+        Copy,
+    )]
+    struct TestTileKind;
+
+    impl Tile for TestTileKind {
+        fn is_walkable(&self, _: Entity) -> bool {
+            true
+        }
+
+        fn is_zone(&self) -> bool {
+            false
+        }
+    }
+
+    #[test]
+    fn it_has_small_size_of_tilekind() {
+        assert_eq!(std::mem::size_of::<TileKind<TestTileKind>>(), 12);
+
+        let square: SmallVec<[TileKind<TestTileKind>; 3]> =
+            smallvec![default(), default(), default(), default(), default()];
+        assert_eq!(std::mem::size_of_val(&square), 48);
     }
 }
