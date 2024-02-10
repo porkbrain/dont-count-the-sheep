@@ -32,7 +32,9 @@ lazy_static! {
 }
 
 /// How long does it take to give hallway its full color.
-const HALLWAY_FADE_TRANSITION_DURATION: Duration = from_millis(500);
+const HALLWAY_FADE_IN_TRANSITION_DURATION: Duration = from_millis(500);
+/// How long when leaving the hallway to make it into the dark primary color.
+const HALLWAY_FADE_OUT_TRANSITION_DURATION: Duration = from_millis(1500);
 
 pub(crate) struct Plugin;
 
@@ -426,13 +428,21 @@ fn watch_entry_to_hallway(
 ) {
     for event in movement_events.read() {
         match event {
-            // player entered hallway, all entities go to white
+            // player entered hallway or is by the door, all entities go to
+            // white
             ActorMovementEvent::ZoneEntered {
                 who:
                     Who {
                         is_player: true, ..
                     },
                 zone: TileKind::Local(ApartmentTileKind::HallwayZone),
+            }
+            | ActorMovementEvent::ZoneEntered {
+                who:
+                    Who {
+                        is_player: true, ..
+                    },
+                zone: TileKind::Local(ApartmentTileKind::MainDoorZone),
             } => {
                 trace!("Player entered hallway");
                 hallway_entities.for_each(|entity| {
@@ -442,7 +452,7 @@ fn watch_entry_to_hallway(
                             None,
                             Color::WHITE,
                         )
-                        .over(HALLWAY_FADE_TRANSITION_DURATION),
+                        .over(HALLWAY_FADE_IN_TRANSITION_DURATION),
                     );
                 });
             }
@@ -462,7 +472,36 @@ fn watch_entry_to_hallway(
                             None,
                             PRIMARY_COLOR,
                         )
-                        .over(HALLWAY_FADE_TRANSITION_DURATION),
+                        .over(HALLWAY_FADE_OUT_TRANSITION_DURATION),
+                    );
+                });
+            }
+            // Player left the door zone. This mean either
+            // a) they are in the hallway - don't do anything
+            // b) they are in the apartment - darken the hallway
+            ActorMovementEvent::ZoneLeft {
+                who:
+                    Who {
+                        at: Some(sq),
+                        is_player: true,
+                        ..
+                    },
+                zone: TileKind::Local(ApartmentTileKind::MainDoorZone),
+            } if !tilemap.is_on(
+                *sq,
+                TileKind::Local(ApartmentTileKind::HallwayZone),
+            ) =>
+            {
+                // b)
+                trace!("Player left the door zone into the apartment");
+                hallway_entities.for_each(|entity| {
+                    lerp_event.send(
+                        BeginInterpolationEvent::of_color(
+                            entity,
+                            None,
+                            PRIMARY_COLOR,
+                        )
+                        .over(HALLWAY_FADE_OUT_TRANSITION_DURATION),
                     );
                 });
             }
@@ -489,7 +528,8 @@ fn watch_entry_to_hallway(
                     })
                     .unwrap_or(false);
 
-                // if actor not in hallway, we need to change their color
+                // if actor in the hallway but player is not, we need to change
+                // their color back to primary
                 if !is_player_in_hallway {
                     lerp_event.send(
                         BeginInterpolationEvent::of_color(
@@ -497,7 +537,7 @@ fn watch_entry_to_hallway(
                             None,
                             PRIMARY_COLOR,
                         )
-                        .over(HALLWAY_FADE_TRANSITION_DURATION),
+                        .over(HALLWAY_FADE_OUT_TRANSITION_DURATION),
                     );
                 }
             }
@@ -521,7 +561,7 @@ fn watch_entry_to_hallway(
                         None,
                         Color::WHITE,
                     )
-                    .over(HALLWAY_FADE_TRANSITION_DURATION),
+                    .over(HALLWAY_FADE_IN_TRANSITION_DURATION),
                 );
             }
             // we don't care about other events
