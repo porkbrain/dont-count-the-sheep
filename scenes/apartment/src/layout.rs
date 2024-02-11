@@ -602,6 +602,10 @@ impl common_top_down::layout::Tile for ApartmentTileKind {
 impl IntoMap for Apartment {
     type LocalTileKind = ApartmentTileKind;
 
+    fn name() -> &'static str {
+        "apartment"
+    }
+
     fn bounds() -> [i32; 4] {
         [-80, 40, -30, 20]
     }

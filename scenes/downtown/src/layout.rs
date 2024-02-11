@@ -58,6 +58,10 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
 impl IntoMap for Downtown {
     type LocalTileKind = ();
 
+    fn name() -> &'static str {
+        "downtown"
+    }
+
     fn bounds() -> [i32; 4] {
         [-80, 60, -20, 160]
     }

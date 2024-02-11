@@ -918,6 +918,10 @@ mod tests {
         fn asset_path() -> &'static str {
             unreachable!()
         }
+
+        fn name() -> &'static str {
+            unreachable!()
+        }
     }
 
     const STEP_TIME: Duration = Duration::from_secs(1);

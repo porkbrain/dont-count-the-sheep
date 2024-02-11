@@ -16,6 +16,7 @@ scene_downtown.workspace = true
 scene_meditation.workspace = true
 
 [build-dependencies]
+common_top_down = { workspace = true, features = ["build-script"] }
 scene_apartment.workspace = true
 
 [features]

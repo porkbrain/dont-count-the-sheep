@@ -36,9 +36,7 @@ pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
     type LocalTileKind: Tile;
 
     /// Alphabetical only name of the map.
-    fn name() -> &'static str {
-        std::any::type_name::<Self>()
-    }
+    fn name() -> &'static str;
 
     /// Size in number of tiles.
     /// `[left, right, bottom, top]`
@@ -214,12 +212,11 @@ pub enum TileWalkCost {
 /// We draw an overlay with tiles that you can edit with left and right mouse
 /// buttons.
 pub fn register<T: IntoMap, S: States>(app: &mut App, loading: S, running: S) {
-    app.init_asset_loader::<RonLoader<TileMap<T>>>()
+    app.add_event::<ActorMovementEvent<T::LocalTileKind>>()
+        .init_asset_loader::<RonLoader<TileMap<T>>>()
         .init_asset::<TileMap<T>>()
         .register_type::<TileKind<T::LocalTileKind>>()
         .register_type::<TileMap<T>>()
-        .register_type::<RonLoader<TileMap<T>>>()
-        .add_event::<ActorMovementEvent<T::LocalTileKind>>()
         .register_type::<ActorMovementEvent<T::LocalTileKind>>();
 
     app.add_systems(OnEnter(loading.clone()), start_loading_map::<T>)
@@ -654,6 +651,10 @@ mod tests {
         }
 
         fn asset_path() -> &'static str {
+            unreachable!()
+        }
+
+        fn name() -> &'static str {
             unreachable!()
         }
     }

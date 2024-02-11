@@ -20,6 +20,8 @@
 //!
 //! [wiki-dot]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 
+use std::fmt::Display;
+
 use bevy::{
     ecs::entity::Entity,
     utils::{
@@ -80,7 +82,7 @@ pub trait GraphExt {
     fn into_svg(self) -> Result<Vec<u8>, std::io::Error>;
 
     /// Returns DOT string of the graph.
-    fn into_dot(&self) -> String;
+    fn as_dot(&self) -> String;
 }
 
 /// Series of steps to compute the relationships between the local tile kind
@@ -131,7 +133,7 @@ impl GraphExt for Graph {
         )
     }
 
-    fn into_dot(&self) -> String {
+    fn as_dot(&self) -> String {
         use graphviz_rust::printer::DotPrinter;
         self.print(&mut graphviz_rust::printer::PrinterContext::default())
     }
@@ -150,10 +152,7 @@ impl<L: Tile> LocalTileKindGraph<L> {
     where
         T::LocalTileKind: Ord,
     {
-        let map: TileMap<T> = TileMap {
-            squares: ron::de::from_bytes(tilemap_bytes).unwrap(),
-            _phantom: std::marker::PhantomData,
-        };
+        let map: TileMap<T> = ron::de::from_bytes(tilemap_bytes).unwrap();
 
         let mut compute_step = GraphComputeStep::default();
         loop {
@@ -170,25 +169,22 @@ impl<L: Tile> LocalTileKindGraph<L> {
 
     /// Returns a [`Graph`] representation of the relationships between the
     /// local tile kind variants [`L`] in the tile map.
-    pub fn as_dotgraph<T: IntoMap<LocalTileKind = L>>(
+    ///
+    /// The ID of the graph will be `graph_{name}`.
+    pub fn as_dotgraph(
         &self,
-    ) -> graphviz_rust::dot_structures::Graph
-    where
-        T::LocalTileKind: Ord,
-    {
-        let mut g = graph!(di id!(format!("graph_{}", T::name())));
+        name: impl Display,
+    ) -> graphviz_rust::dot_structures::Graph {
+        let mut g = graph!(di id!(format!("graph_{name}")));
         // some breathing room
         g.add_stmt(attr!("nodesep", 0.5).into());
         g.add_stmt(attr!("ranksep", 1.0).into());
 
         // map tile kinds to nodes
-        let nodes: HashMap<T::LocalTileKind, _> =
-            T::LocalTileKind::zones_iter()
-                .filter(|kind| kind.is_zone())
-                .map(|kind| {
-                    (kind, node!({ format!("{kind:?}").to_lowercase() }))
-                })
-                .collect();
+        let nodes: HashMap<L, _> = L::zones_iter()
+            .filter(|kind| kind.is_zone())
+            .map(|kind| (kind, node!({ format!("{kind:?}").to_lowercase() })))
+            .collect();
         // add nodes straight away - some might not be in any relationship, and
         // we want them in the graph
         for (_, node) in &nodes {
@@ -229,13 +225,14 @@ impl<L: Tile> LocalTileKindGraph<L> {
                     continue;
                 } else {
                     let top_level_superset = own_supersets
-                        .unwrap()
+                        .unwrap() // safe cuz else if ^
                         .iter()
                         .find(|own_superset| {
                             top_level_subgraphs.contains_key(*own_superset)
                         })
                         .unwrap();
 
+                    // safe cuz contains_key ^
                     top_level_subgraphs.get_mut(top_level_superset).unwrap()
                 };
 
