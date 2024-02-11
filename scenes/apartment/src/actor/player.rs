@@ -5,8 +5,8 @@ use common_visuals::camera::render_layer;
 use main_game_lib::{
     common_ext::QueryExt,
     common_top_down::{
-        actor::CharacterExt, Actor, ActorMovementEvent, ActorTarget, IntoMap,
-        TileKind,
+        actor::CharacterExt, Actor, ActorMovementEvent, ActorTarget, TileKind,
+        TopDownScene,
     },
     cutscene::IntoCutscene,
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
@@ -160,7 +160,7 @@ pub(super) fn enter_the_elevator(
 /// We change the image to the appropriate one based on the zone.
 pub(super) fn load_zone_overlay(
     mut events: EventReader<
-        ActorMovementEvent<<Apartment as IntoMap>::LocalTileKind>,
+        ActorMovementEvent<<Apartment as TopDownScene>::LocalTileKind>,
     >,
 
     mut overlay: Query<

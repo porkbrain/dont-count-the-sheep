@@ -6,7 +6,7 @@ use main_game_lib::{
             behaviors::IdlyWaiting, BehaviorLeaf, BehaviorNode, BehaviorTree,
             NpcInTheMap,
         },
-        IntoMap,
+        TopDownScene,
     },
     common_visuals::camera::render_layer,
     vec2_ext::Vec2Ext,

@@ -2,7 +2,7 @@ use bevy::render::view::RenderLayers;
 use bevy_grid_squared::SquareLayout;
 use common_visuals::camera::render_layer;
 use lazy_static::lazy_static;
-use main_game_lib::{common_top_down::IntoMap, vec2_ext::Vec2Ext};
+use main_game_lib::{common_top_down::TopDownScene, vec2_ext::Vec2Ext};
 
 use crate::{prelude::*, Downtown};
 
@@ -55,7 +55,7 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
     }
 }
 
-impl IntoMap for Downtown {
+impl TopDownScene for Downtown {
     type LocalTileKind = ();
 
     fn name() -> &'static str {

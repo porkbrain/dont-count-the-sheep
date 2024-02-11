@@ -2,7 +2,7 @@ use std::fs;
 
 use common_top_down::{
     layout::build_pathfinding_graph::{self, GraphExt},
-    IntoMap,
+    TopDownScene,
 };
 use scene_apartment::Apartment;
 
@@ -14,7 +14,7 @@ fn main() {
 /// Also, updates the docs folder with a .svg file of the graph.
 ///
 /// Does this only if the tilemap file has changed or doesn't exist.
-fn build_tile_graph<T: IntoMap>()
+fn build_tile_graph<T: TopDownScene>()
 where
     T::LocalTileKind: Ord,
 {

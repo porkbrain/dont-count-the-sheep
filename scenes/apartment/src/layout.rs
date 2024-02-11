@@ -13,7 +13,7 @@ use main_game_lib::{
             self,
             door::{DoorBuilder, DoorOpenCriteria, DoorState},
         },
-        Actor, ActorMovementEvent, IntoMap, TileKind, TileMap,
+        Actor, ActorMovementEvent, TileKind, TileMap, TopDownScene,
     },
     common_visuals::BeginInterpolationEvent,
     cutscene::not_in_cutscene,
@@ -426,7 +426,7 @@ fn watch_entry_to_hallway(
     mut cmd: Commands,
     tilemap: Res<TileMap<Apartment>>,
     mut movement_events: EventReader<
-        ActorMovementEvent<<Apartment as IntoMap>::LocalTileKind>,
+        ActorMovementEvent<<Apartment as TopDownScene>::LocalTileKind>,
     >,
     mut lerp_event: EventWriter<BeginInterpolationEvent>,
 
@@ -599,7 +599,7 @@ impl common_top_down::layout::Tile for ApartmentTileKind {
     }
 }
 
-impl IntoMap for Apartment {
+impl TopDownScene for Apartment {
     type LocalTileKind = ApartmentTileKind;
 
     fn name() -> &'static str {

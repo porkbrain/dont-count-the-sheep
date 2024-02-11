@@ -70,7 +70,7 @@ impl<I> ExactSizeIterator for ExactSizeSquareIterator<I> where
 }
 
 mod bresenham_circle {
-    //! This code was copied from https://github.com/expenses/line_drawing
+    //! This code was copied from <https://github.com/expenses/line_drawing>
 
     use crate::Square;
 

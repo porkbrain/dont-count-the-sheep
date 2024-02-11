@@ -32,7 +32,7 @@ use bevy::{
 use graphviz_rust::{dot_generator::*, dot_structures::*};
 use itertools::Itertools;
 
-use crate::{layout::Tile, IntoMap, TileKind, TileMap};
+use crate::{layout::Tile, TileKind, TileMap, TopDownScene};
 
 /// Map of tile kind variant [`L`] to those other variants (not including
 /// itself - proper supersets) whose instances fully contain it (the key.)
@@ -64,7 +64,7 @@ pub type Neighbors<L> = HashSet<(L, L)>;
 
 /// Describes relationships between the local tile kind variants [`L`] in the
 /// tile map.
-/// That is, for a `T: IntoMap` the `L` is `T::LocalTileKind`.
+/// That is, for a `T: TopDownScene` the `L` is `T::LocalTileKind`.
 pub struct LocalTileKindGraph<L> {
     /// See the type alias `SupersetsOf`.
     pub supersets_of: SupersetsOf<L>,
@@ -146,7 +146,7 @@ impl<L: Tile> LocalTileKindGraph<L> {
     /// The bytes should be serializable to a `TileMap<T>`'s squares.
     /// That would be the RON file asset stored by the
     /// [`crate::layout::map_maker`].
-    pub fn compute_from<T: IntoMap<LocalTileKind = L>>(
+    pub fn compute_from<T: TopDownScene<LocalTileKind = L>>(
         tilemap_bytes: &[u8],
     ) -> Self
     where
@@ -362,7 +362,7 @@ impl<L: std::fmt::Debug> std::fmt::Debug for LocalTileKindGraph<L> {
 }
 
 impl<L: Tile + Ord> GraphComputeStep<L> {
-    fn next_step<T: IntoMap<LocalTileKind = L>>(
+    fn next_step<T: TopDownScene<LocalTileKind = L>>(
         self,
         map: &TileMap<T>,
     ) -> GraphComputeResult<L> {
@@ -409,7 +409,7 @@ impl<L: Tile + Ord> GraphComputeStep<L> {
 }
 
 /// Find which tiles are supersets of which.
-fn find_supersets<T: IntoMap>(
+fn find_supersets<T: TopDownScene>(
     map: &TileMap<T>,
 ) -> SupersetsOf<T::LocalTileKind> {
     let mut supersets_of: SupersetsOf<_> = default();
@@ -454,7 +454,7 @@ fn find_subsets<L: Tile>(supersets_of: &SupersetsOf<L>) -> SubsetsOf<L> {
 
 /// Find which tiles overlap in the same square and are not supersets
 /// of each other
-fn find_overlaps<T: IntoMap>(
+fn find_overlaps<T: TopDownScene>(
     map: &TileMap<T>,
     supersets_of: &SupersetsOf<T::LocalTileKind>,
     subsets_of: &SubsetsOf<T::LocalTileKind>,
@@ -489,7 +489,7 @@ where
 
 /// Check which non overlapping tiles are walkable neighbors but are not
 /// supersets of each other
-fn find_neighbors<T: IntoMap>(
+fn find_neighbors<T: TopDownScene>(
     map: &TileMap<T>,
     supersets_of: &SupersetsOf<T::LocalTileKind>,
     subsets_of: &SubsetsOf<T::LocalTileKind>,

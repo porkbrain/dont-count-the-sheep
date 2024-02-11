@@ -47,7 +47,7 @@ pub(super) struct TileMapMakerToolbar<L: Tile> {
     copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
 }
 
-pub(super) fn visualize_map<T: IntoMap>(
+pub(super) fn visualize_map<T: TopDownScene>(
     mut cmd: Commands,
     map: Res<TileMap<T>>,
 ) {
@@ -88,7 +88,7 @@ pub(super) fn visualize_map<T: IntoMap>(
     }
 }
 
-pub(super) fn change_square_kind<T: IntoMap>(
+pub(super) fn change_square_kind<T: TopDownScene>(
     mouse: Res<Input<MouseButton>>,
     mut map: ResMut<TileMap<T>>,
     mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
@@ -135,7 +135,7 @@ pub(super) fn change_square_kind<T: IntoMap>(
 }
 
 /// If a square can be painted, paint it.
-fn try_paint<T: IntoMap>(
+fn try_paint<T: TopDownScene>(
     toolbar: &mut TileMapMakerToolbar<T::LocalTileKind>,
     map: &mut TileMap<T>,
     at: Square,
@@ -160,7 +160,7 @@ fn try_paint<T: IntoMap>(
     toolbar.copy_of_map.insert(at, tiles.clone());
 }
 
-pub(super) fn recolor_squares<T: IntoMap>(
+pub(super) fn recolor_squares<T: TopDownScene>(
     map: ResMut<TileMap<T>>,
     toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
 
@@ -200,7 +200,7 @@ pub(super) fn recolor_squares<T: IntoMap>(
     }
 }
 
-pub(super) fn export_map<T: IntoMap>(
+pub(super) fn export_map<T: TopDownScene>(
     toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
 ) {
     // equivalent to tile map, but sorted so that we can serialize it
@@ -208,7 +208,7 @@ pub(super) fn export_map<T: IntoMap>(
     //
     // this struct MUST serialize to a compatible ron output as TileMap
     #[derive(Serialize)]
-    struct SortedTileMap<T: IntoMap> {
+    struct SortedTileMap<T: TopDownScene> {
         squares: BTreeMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
         #[serde(skip)]
         _phantom: PhantomData<T>,

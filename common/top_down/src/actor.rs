@@ -21,13 +21,13 @@ use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    layout::{IntoMap, Tile, TileIndex},
+    layout::{Tile, TileIndex, TopDownScene},
     Player, TileKind, TileMap,
 };
 
 /// Use with [`IntoSystemConfigs::run_if`] to run a system only when an actor
 /// moves.
-pub fn movement_event_emitted<T: IntoMap>(
+pub fn movement_event_emitted<T: TopDownScene>(
 ) -> impl FnMut(Res<Events<ActorMovementEvent<T::LocalTileKind>>>) -> bool {
     event_update_condition::<ActorMovementEvent<T::LocalTileKind>>
 }
@@ -152,7 +152,7 @@ pub struct CharacterBundleBuilder {
 /// `after(actor::emit_movement_events::<T>)`.
 ///
 /// We also emit a zone left event when an actor is despawned.
-pub fn emit_movement_events<T: IntoMap>(
+pub fn emit_movement_events<T: TopDownScene>(
     tilemap: Res<TileMap<T>>,
     mut actor_zone_map: ResMut<ActorZoneMap<T::LocalTileKind>>,
     mut event: EventWriter<ActorMovementEvent<T::LocalTileKind>>,
@@ -252,8 +252,8 @@ pub fn emit_movement_events<T: IntoMap>(
 /// Other systems will only edit the `Actor` component to plan the movement.
 ///
 /// The z is based off y.
-/// See the [`IntoMap::extend_z`] for more info.
-pub fn animate_movement<T: IntoMap>(
+/// See the [`TopDownScene::extend_z`] for more info.
+pub fn animate_movement<T: TopDownScene>(
     time: Res<Time>,
     mut tilemap: ResMut<TileMap<T>>,
 
@@ -298,7 +298,7 @@ pub fn animate_movement<T: IntoMap>(
     }
 }
 
-fn animate_movement_for_actor<T: IntoMap>(
+fn animate_movement_for_actor<T: TopDownScene>(
     time: &Time,
     tilemap: &mut TileMap<T>,
     entity: Entity,
@@ -492,8 +492,8 @@ impl CharacterBundleBuilder {
     }
 
     /// Where to spawn the character.
-    /// Converted into the square by `IntoMap::world_pos_to_square` (see the
-    /// `common_layout` crate).
+    /// Converted into the square by [`TopDownScene::layout`] (see
+    /// the `common_layout` crate).
     /// The specific layout is provided in the [`CharacterBundleBuilder::build`]
     /// method's `T`.
     #[must_use]
@@ -554,7 +554,7 @@ impl CharacterBundleBuilder {
     /// [`animate_movement`] system, where the actor's tiles are recalculated
     /// when they stand still or when they do their first step.
     #[must_use]
-    pub fn build<T: IntoMap>(self) -> impl Bundle {
+    pub fn build<T: TopDownScene>(self) -> impl Bundle {
         let CharacterBundleBuilder {
             character,
             initial_position,
@@ -630,7 +630,7 @@ lazy_static! {
     };
 }
 
-impl<T: IntoMap> TileMap<T> {
+impl<T: TopDownScene> TileMap<T> {
     fn replace_actor_tiles(&mut self, entity: Entity, actor: &mut Actor) {
         for (sq, layer) in actor.occupies.drain(..) {
             // we can't assume it to eq the actor's tile because in some rare
@@ -901,7 +901,7 @@ mod tests {
     #[derive(Default, Reflect, Clone, Debug)]
     struct TestScene;
 
-    impl IntoMap for TestScene {
+    impl TopDownScene for TestScene {
         type LocalTileKind = ();
 
         fn bounds() -> [i32; 4] {

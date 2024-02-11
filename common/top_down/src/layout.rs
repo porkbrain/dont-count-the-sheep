@@ -26,8 +26,7 @@ use crate::{
 pub type TileIndex = (Square, usize);
 
 /// Some map.
-/// TODO: rename
-pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
+pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     /// Tile kind that is unique to this map.
     /// Will parametrize the [`TileKind::Local`] enum's variant.
     ///
@@ -103,7 +102,7 @@ pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
     Debug,
 )]
 #[reflect(Resource, InspectorOptions)]
-pub struct TileMap<T: IntoMap> {
+pub struct TileMap<T: TopDownScene> {
     /// There can be multiple layers of tiles on a single square.
     squares: HashMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
     #[serde(skip)]
@@ -202,8 +201,8 @@ pub enum TileWalkCost {
     Normal = 3,
 }
 
-/// Registers layout map for `T` where `T` is a type implementing [`IntoMap`].
-/// This would be your level layout.
+/// Registers layout map for `T` where `T` is a type implementing
+/// [`TopDownScene`]. This would be your level layout.
 /// When [`crate::Actor`]s enter a zone within the map,
 /// [`crate::ActorMovementEvent`] event is emitted.
 ///
@@ -211,7 +210,11 @@ pub enum TileWalkCost {
 /// to `map.ron` in the current directory.
 /// We draw an overlay with tiles that you can edit with left and right mouse
 /// buttons.
-pub fn register<T: IntoMap, S: States>(app: &mut App, loading: S, running: S) {
+pub fn register<T: TopDownScene, S: States>(
+    app: &mut App,
+    loading: S,
+    running: S,
+) {
     app.add_event::<ActorMovementEvent<T::LocalTileKind>>()
         .init_asset_loader::<RonLoader<TileMap<T>>>()
         .init_asset::<TileMap<T>>()
@@ -318,7 +321,7 @@ impl<L: Tile> Tile for TileKind<L> {
     }
 }
 
-impl<T: IntoMap> TileMap<T> {
+impl<T: TopDownScene> TileMap<T> {
     /// Get the kind of a tile.
     #[inline]
     pub fn get(&self, square: Square) -> Option<&[TileKind<T::LocalTileKind>]> {
@@ -537,7 +540,10 @@ impl<L> TileKind<L> {
 /// Tells the game to start loading the map.
 /// We need to keep checking for this to be done by calling
 /// [`try_insert_map_as_resource`].
-fn start_loading_map<T: IntoMap>(mut cmd: Commands, assets: Res<AssetServer>) {
+fn start_loading_map<T: TopDownScene>(
+    mut cmd: Commands,
+    assets: Res<AssetServer>,
+) {
     let handle: Handle<TileMap<T>> = assets.load(T::asset_path());
     cmd.spawn(handle);
 }
@@ -548,7 +554,7 @@ fn start_loading_map<T: IntoMap>(mut cmd: Commands, assets: Res<AssetServer>) {
 ///
 /// You should then check for the map as a resource in your systems and continue
 /// with your game.
-fn try_insert_map_as_resource<T: IntoMap>(
+fn try_insert_map_as_resource<T: TopDownScene>(
     mut cmd: Commands,
     mut map_assets: ResMut<Assets<TileMap<T>>>,
     map: Query<(Entity, &Handle<TileMap<T>>)>,
@@ -580,7 +586,7 @@ fn try_insert_map_as_resource<T: IntoMap>(
     }
 }
 
-fn remove_resources<T: IntoMap>(mut cmd: Commands) {
+fn remove_resources<T: TopDownScene>(mut cmd: Commands) {
     cmd.remove_resource::<TileMap<T>>();
     cmd.remove_resource::<actor::ActorZoneMap<T::LocalTileKind>>();
 
@@ -636,7 +642,7 @@ mod tests {
         }
     }
 
-    impl IntoMap for TestScene {
+    impl TopDownScene for TestScene {
         type LocalTileKind = TestTileKind;
 
         fn bounds() -> [i32; 4] {

@@ -8,7 +8,7 @@ use bevy_grid_squared::Square;
 use itertools::Itertools;
 use smallvec::SmallVec;
 
-use crate::{ActorMovementEvent, IntoMap, TileKind, TileMap};
+use crate::{ActorMovementEvent, TileKind, TileMap, TopDownScene};
 
 /// For [`Door`]
 pub struct DoorBuilder<L> {
@@ -73,7 +73,7 @@ pub enum DoorOpenCriteria {
 ///
 /// Run this after the [`crate::actor::emit_movement_events`] system and only
 /// if there are events.
-pub fn toggle<T: IntoMap>(
+pub fn toggle<T: TopDownScene>(
     mut tilemap: ResMut<TileMap<T>>,
     mut events: EventReader<ActorMovementEvent<T::LocalTileKind>>,
 
@@ -98,11 +98,11 @@ pub fn toggle<T: IntoMap>(
 ///
 /// Optionally, the door can have an obstacle that's inserted into the map when
 /// the door is closed.
-fn apply_event_to_door_and_map<T: IntoMap>(
+fn apply_event_to_door_and_map<T: TopDownScene>(
     tilemap: &mut ResMut<TileMap<T>>,
     door: &mut Door<T::LocalTileKind>,
     sprite: &mut Mut<'_, TextureAtlasSprite>,
-    event: &ActorMovementEvent<<T as IntoMap>::LocalTileKind>,
+    event: &ActorMovementEvent<<T as TopDownScene>::LocalTileKind>,
 ) {
     match event {
         ActorMovementEvent::ZoneEntered { zone, who }
@@ -214,7 +214,7 @@ impl<L> DoorBuilder<L> {
 
     /// If the door is closed, we insert a wall between the obstacle squares
     /// if set.
-    pub fn build<T: IntoMap>(self, tilemap: &mut TileMap<T>) -> Door<L> {
+    pub fn build<T: TopDownScene>(self, tilemap: &mut TileMap<T>) -> Door<L> {
         let obstacle = self.obstacle.map(|(from, to)| {
             let layers = if matches!(self.initial_state, DoorState::Closed) {
                 bevy_grid_squared::shapes::rectangle_between(from, to)
