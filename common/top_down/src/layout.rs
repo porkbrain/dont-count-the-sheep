@@ -2,6 +2,8 @@
 //! Where can the character go? Where are the walls? Where are the immovable
 //! objects?
 
+#[cfg(feature = "build-script")]
+pub mod build_pathfinding_graph;
 #[cfg(feature = "dev")]
 mod map_maker;
 
@@ -24,6 +26,7 @@ use crate::{
 pub type TileIndex = (Square, usize);
 
 /// Some map.
+/// TODO: rename
 pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
     /// Tile kind that is unique to this map.
     /// Will parametrize the [`TileKind::Local`] enum's variant.
@@ -31,6 +34,11 @@ pub trait IntoMap: 'static + Send + Sync + TypePath + Default {
     /// If the map has some sort of special tiles, use an enum here.
     /// Otherwise, set to unit type.
     type LocalTileKind: Tile;
+
+    /// Alphabetical only name of the map.
+    fn name() -> &'static str {
+        std::any::type_name::<Self>()
+    }
 
     /// Size in number of tiles.
     /// `[left, right, bottom, top]`
@@ -171,6 +179,11 @@ pub trait Tile:
     /// This is used to emit events about entering/leaving zones.
     fn is_zone(&self) -> bool;
 
+    /// Returns an iterator over all the zone tiles.
+    /// This is used to automatically construct graph of zone relationships
+    /// for pathfinding.
+    fn zones_iter() -> impl Iterator<Item = Self>;
+
     /// Returns [`None`] if not walkable, otherwise the cost of walking to the
     /// tile.
     /// This is useful for pathfinding.
@@ -266,6 +279,10 @@ impl Tile for () {
     fn is_zone(&self) -> bool {
         false
     }
+
+    fn zones_iter() -> impl Iterator<Item = Self> {
+        std::iter::empty()
+    }
 }
 
 impl<L: Tile> Tile for TileKind<L> {
@@ -286,6 +303,10 @@ impl<L: Tile> Tile for TileKind<L> {
             Self::Local(l) => l.is_zone(),
             _ => false,
         }
+    }
+
+    fn zones_iter() -> impl Iterator<Item = Self> {
+        std::iter::empty()
     }
 
     fn walk_cost(&self, by: Entity) -> Option<TileWalkCost> {
@@ -587,8 +608,39 @@ mod tests {
     #[derive(Default, Reflect)]
     struct TestScene;
 
+    #[derive(
+        Default,
+        Reflect,
+        Hash,
+        PartialEq,
+        Eq,
+        Debug,
+        Serialize,
+        Deserialize,
+        Clone,
+        Copy,
+    )]
+    enum TestTileKind {
+        #[default]
+        Empty,
+    }
+
+    impl Tile for TestTileKind {
+        fn is_walkable(&self, _: Entity) -> bool {
+            true
+        }
+
+        fn is_zone(&self) -> bool {
+            false
+        }
+
+        fn zones_iter() -> impl Iterator<Item = Self> {
+            std::iter::empty()
+        }
+    }
+
     impl IntoMap for TestScene {
-        type LocalTileKind = ();
+        type LocalTileKind = TestTileKind;
 
         fn bounds() -> [i32; 4] {
             [0, 10, 0, 10]
@@ -722,30 +774,6 @@ mod tests {
         );
 
         assert_eq!(tilemap.set_tile_kind(sq(100, 0), 0, TileKind::Wall), None);
-    }
-
-    #[derive(
-        Default,
-        Reflect,
-        Hash,
-        PartialEq,
-        Eq,
-        Debug,
-        Serialize,
-        Deserialize,
-        Clone,
-        Copy,
-    )]
-    struct TestTileKind;
-
-    impl Tile for TestTileKind {
-        fn is_walkable(&self, _: Entity) -> bool {
-            true
-        }
-
-        fn is_zone(&self) -> bool {
-            false
-        }
     }
 
     #[test]
