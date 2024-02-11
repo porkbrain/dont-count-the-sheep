@@ -25,7 +25,7 @@ use prelude::*;
 /// We use it as identifiable generic in some common logic such as layout or
 /// asset.
 #[derive(TypePath, Default)]
-pub(crate) struct Apartment;
+pub struct Apartment;
 
 pub fn add(app: &mut App) {
     info!("Adding apartment to app");
@@ -208,5 +208,11 @@ fn smooth_exit(
 impl AssetList for Apartment {
     fn folders() -> &'static [&'static str] {
         &[assets::FOLDER]
+    }
+}
+
+impl std::fmt::Display for Apartment {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "apartment")
     }
 }

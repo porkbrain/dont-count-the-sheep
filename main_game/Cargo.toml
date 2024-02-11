@@ -2,6 +2,7 @@
 name = "main_game"
 edition.workspace = true
 version.workspace = true
+default-run = "game"
 
 [[bin]]
 name = "game"
@@ -13,6 +14,9 @@ main_game_lib.workspace = true
 scene_apartment.workspace = true
 scene_downtown.workspace = true
 scene_meditation.workspace = true
+
+[build-dependencies]
+scene_apartment.workspace = true
 
 [features]
 dev = ["scene_meditation/dev", "scene_downtown/dev", "scene_apartment/dev"]

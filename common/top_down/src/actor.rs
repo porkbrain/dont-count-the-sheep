@@ -649,7 +649,7 @@ impl<T: IntoMap> TileMap<T> {
             //      actors from [top down left right]
             //    - Player must go last in the iteration over all actor movement
 
-            for sq_to_clear in actor_stands_at.neighbours_no_diagonal() {
+            for sq_to_clear in actor_stands_at.neighbors_no_diagonal() {
                 self.map_tiles(sq_to_clear, |tile| {
                     if let TileKind::Actor(a) = tile {
                         if a != entity {
@@ -706,7 +706,7 @@ impl<T: IntoMap> TileMap<T> {
     #[inline]
     fn can_actor_move(&self, entity: Entity, from: Square) -> bool {
         from.neighbors_with_diagonal()
-            .any(|neighbour| self.is_walkable(neighbour, entity))
+            .any(|neighbor| self.is_walkable(neighbor, entity))
     }
 }
 

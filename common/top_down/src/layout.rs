@@ -497,6 +497,23 @@ impl<T: IntoMap> TileMap<T> {
 
         Some(path)
     }
+
+    /// Access the map of squares to tiles.
+    pub fn squares(
+        &self,
+    ) -> &HashMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>> {
+        &self.squares
+    }
+}
+
+impl<L> TileKind<L> {
+    /// If the tile is local, returns it.
+    pub fn into_local(self) -> Option<L> {
+        match self {
+            Self::Local(l) => Some(l),
+            _ => None,
+        }
+    }
 }
 
 /// Tells the game to start loading the map.

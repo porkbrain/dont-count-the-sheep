@@ -189,7 +189,9 @@ pub(super) fn recolor_squares<T: IntoMap>(
             if squares_painted.as_ref().map_or(false, |s| s.contains(at))
                 && (toolbar.paint_over_tiles || tile_kind == TileKind::Empty)
             {
-                toolbar.paint.color()
+                toolbar.paint.color_selected()
+            } else if tile_kind == toolbar.paint {
+                tile_kind.color_selected()
             } else {
                 tile_kind.color()
             };
@@ -261,7 +263,7 @@ pub(super) fn export_map<T: IntoMap>(
     .unwrap();
 }
 
-impl<L> TileKind<L> {
+impl<L: Eq> TileKind<L> {
     fn color(self) -> Color {
         match self {
             Self::Empty => Color::BLACK.with_a(0.25),
@@ -269,6 +271,17 @@ impl<L> TileKind<L> {
             Self::Trail => Color::WHITE.with_a(0.25),
             Self::Actor { .. } => Color::GOLD.with_a(0.25),
             Self::Local(_) => Color::RED.with_a(0.25),
+        }
+    }
+
+    fn color_selected(self) -> Color {
+        match self {
+            Self::Empty => Color::BLACK.with_a(0.25),
+            Self::Wall => Color::BLACK.with_a(0.9),
+            Self::Trail => Color::WHITE.with_a(0.5),
+            // no point as it's not selectable
+            Self::Actor { .. } => self.color(),
+            Self::Local(_) => Color::GREEN.with_a(0.25),
         }
     }
 }

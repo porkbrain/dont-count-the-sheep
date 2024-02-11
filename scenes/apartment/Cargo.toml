@@ -16,6 +16,7 @@ main_game_lib.workspace = true
 rand.workspace = true
 serde.workspace = true
 smallvec.workspace = true
+strum.workspace = true
 
 [features]
 dev = ["bevy/glam_assert"]

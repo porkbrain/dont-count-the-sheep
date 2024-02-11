@@ -21,6 +21,7 @@ use main_game_lib::{
 };
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
+use strum::EnumIter;
 
 use crate::{consts::*, prelude::*, Apartment};
 
@@ -88,21 +89,27 @@ pub(crate) struct Elevator;
     Debug,
     Default,
     Deserialize,
+    EnumIter,
     Eq,
     Hash,
+    Ord,
     PartialEq,
+    PartialOrd,
     Reflect,
     Serialize,
+    strum::Display,
 )]
 #[reflect(Default)]
 #[allow(clippy::enum_variant_names)]
-pub(crate) enum ApartmentTileKind {
-    #[default]
-    BedZone,
-    MainDoorZone,
-    ElevatorZone,
+pub enum ApartmentTileKind {
     /// We want to darken the hallway when the player is in the apartment.
     HallwayZone,
+    /// Everything that's in the player's apartment.
+    PlayerApartmentZone,
+    #[default]
+    BedZone,
+    ElevatorZone,
+    PlayerDoorZone,
     MeditationZone,
     TeaZone,
 }
@@ -302,7 +309,7 @@ fn spawn(
     // bedroom door opens (sprite index 2) when the player is near the door
     cmd.spawn((
         Name::from("Bedroom door"),
-        DoorBuilder::new(ApartmentTileKind::MainDoorZone)
+        DoorBuilder::new(ApartmentTileKind::PlayerDoorZone)
             .add_open_criteria(DoorOpenCriteria::Character(
                 common_story::Character::Winnie,
             ))
@@ -442,7 +449,7 @@ fn watch_entry_to_hallway(
                     Who {
                         is_player: true, ..
                     },
-                zone: TileKind::Local(ApartmentTileKind::MainDoorZone),
+                zone: TileKind::Local(ApartmentTileKind::PlayerDoorZone),
             } => {
                 trace!("Player entered hallway");
                 hallway_entities.for_each(|entity| {
@@ -486,7 +493,7 @@ fn watch_entry_to_hallway(
                         is_player: true,
                         ..
                     },
-                zone: TileKind::Local(ApartmentTileKind::MainDoorZone),
+                zone: TileKind::Local(ApartmentTileKind::PlayerDoorZone),
             } if !tilemap.is_on(
                 *sq,
                 TileKind::Local(ApartmentTileKind::HallwayZone),
@@ -577,12 +584,13 @@ impl common_top_down::layout::Tile for ApartmentTileKind {
 
     fn is_zone(&self) -> bool {
         match self {
-            ApartmentTileKind::BedZone
-            | ApartmentTileKind::MainDoorZone
-            | ApartmentTileKind::ElevatorZone
-            | ApartmentTileKind::HallwayZone
-            | ApartmentTileKind::MeditationZone
-            | ApartmentTileKind::TeaZone => true,
+            Self::BedZone
+            | Self::PlayerDoorZone
+            | Self::PlayerApartmentZone
+            | Self::ElevatorZone
+            | Self::HallwayZone
+            | Self::MeditationZone
+            | Self::TeaZone => true,
         }
     }
 }
@@ -602,3 +610,332 @@ impl IntoMap for Apartment {
         &LAYOUT
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use bevy::utils::hashbrown::{HashMap, HashSet};
+//     use graphviz_rust::into_attr::IntoAttribute;
+//     use itertools::Itertools;
+//     use main_game_lib::common_top_down::layout::Tile;
+//     use strum::IntoEnumIterator;
+
+//     use super::*;
+
+//     #[test]
+//     fn xd() {
+//         let bytes =
+//             include_bytes!("../../../main_game/assets/apartment/map.ron");
+
+//         let map = ron::de::from_bytes::<TileMap<Apartment>>(bytes).unwrap();
+//         let squares = map.squares();
+
+//         fn get_local_zones<'a>(
+//             tiles: &'a [TileKind<ApartmentTileKind>],
+//         ) -> impl Iterator<Item = ApartmentTileKind> + 'a {
+//             tiles
+//                 .iter()
+//                 .filter(|tile| tile.is_zone())
+//                 .filter_map(|tile| tile.into_local())
+//         }
+
+//         // find which tiles are supersets for which
+//         // (tile, its supersets)
+//         let mut supersets_of: HashMap<_, HashSet<_>> = default();
+//         for tiles in squares.values() {
+//             let locals: HashSet<_> = get_local_zones(&tiles).collect();
+
+//             for local in locals.iter().copied() {
+//                 let local_supersets =
+//                     supersets_of.entry(local).or_insert_with(|| {
+//                         ApartmentTileKind::iter()
+//                             .filter(|superset| {
+//                                 superset != &local && superset.is_zone()
+//                             })
+//                             .collect()
+//                     });
+
+//                 local_supersets.retain(|another| locals.contains(another));
+//             }
+//         }
+//         supersets_of.retain(|_, supersets| !supersets.is_empty());
+
+//         let subsets_of = {
+//             let mut subsets: HashMap<_, HashSet<_>> = default();
+
+//             for (superset, subset) in
+//                 supersets_of.iter().flat_map(|(subset, supersets)| {
+//                     supersets.iter().map(move |superset| (*superset,
+// *subset))                 })
+//             {
+//                 subsets
+//                     .entry(superset)
+//                     .or_insert_with(HashSet::new)
+//                     .insert(subset);
+//             }
+
+//             subsets
+//         };
+
+//         // find which tiles overlap in the same square and are not supersets
+//         // of each other
+//         let mut overlaps: HashSet<_> = default();
+//         for tiles in squares.values() {
+//             let locals = get_local_zones(&tiles).collect_vec();
+
+//             for local in locals.clone() {
+//                 let local_supersets = supersets_of.get(&local);
+//                 let local_subsets = subsets_of.get(&local);
+
+//                 for another in locals.clone() {
+//                     if local == another
+//                         || local_supersets.is_some_and(|s| s.contains(&another))
+//                         || local_subsets.is_some_and(|s| s.contains(&another))
+//                     {
+//                         continue;
+//                     }
+
+//                     let pair = (local.min(another), another.max(local));
+//                     overlaps.insert(pair);
+//                 }
+//             }
+//         }
+
+//         // check which non overlapping tiles are walkable neighbors but are
+// not         // supersets of each other
+//         let mut neighbors: HashSet<_> = default();
+//         for (sq, tiles) in squares.iter() {
+//             let locals = get_local_zones(&tiles).collect_vec();
+
+//             for neighbor_sq in sq.neighbors_with_diagonal() {
+//                 let Some(neighbor_locals) = squares.get(&neighbor_sq) else {
+//                     continue;
+//                 };
+
+//                 if !map.is_walkable(neighbor_sq, Entity::PLACEHOLDER) {
+//                     continue;
+//                 }
+
+//                 let neighbor_locals =
+//                     get_local_zones(&neighbor_locals).collect_vec();
+
+//                 for local in locals.clone() {
+//                     let local_supersets = supersets_of.get(&local);
+//                     let local_subsets = subsets_of.get(&local);
+
+//                     for another in neighbor_locals.clone() {
+//                         if local == another
+//                             || local_supersets
+//                                 .is_some_and(|s| s.contains(&another))
+//                             || local_subsets
+//                                 .is_some_and(|s| s.contains(&another))
+//                         {
+//                             continue;
+//                         }
+
+//                         let pair = (local.min(another), another.max(local));
+
+//                         if !overlaps.contains(&pair) {
+//                             neighbors.insert(pair);
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//         let neighbors = neighbors;
+
+//         println!("supersets");
+//         for (a, b) in &supersets_of {
+//             println!("{:?} is subset of {:?}", a, b);
+//         }
+
+//         println!("subsets");
+//         for (a, b) in &subsets_of {
+//             println!("{:?} is superset of {:?}", a, b);
+//         }
+
+//         println!("overlaps");
+//         for (a, b) in &overlaps {
+//             println!("{:?} overlaps with {:?}", a, b);
+//         }
+
+//         println!("neighbors");
+//         for (a, b) in &neighbors {
+//             println!("{:?} neighbors with {:?}", a, b);
+//         }
+
+//         use graphviz_rust::{
+//             attributes::*,
+//             cmd::{CommandArg, Format},
+//             dot_generator::*,
+//             dot_structures::*,
+//             exec, parse,
+//             printer::{DotPrinter, PrinterContext},
+//         };
+
+//         // let mut g = graph!(id!("id");
+//         //      node!("nod"),
+//         //      subgraph!("sb";
+//         //          edge!(node_id!("a") => subgraph!(;
+//         //             node!("n";
+//         //             NodeAttributes::color(color_name::black),
+//         // NodeAttributes::shape(shape::egg))         ))
+//         //     ),
+//         //     edge!(node_id!("a1") => node_id!(esc "a2");
+//         // vec![attr!("label","b"), attr!("arrowhead", "vee")]) );
+
+//         println!();
+//         println!();
+//         println!();
+
+//         let mut g = graph!(di id!(format!("graph_{}",
+// Apartment.to_string())));         g.add_stmt(attr!("nodesep", 0.5).into());
+//         g.add_stmt(attr!("ranksep", 1.0).into());
+
+//         let nodes: HashMap<_, _> = ApartmentTileKind::iter()
+//             .filter(|kind| kind.is_zone())
+//             .map(|kind| (kind, node!(kind.to_string().to_lowercase())))
+//             .collect();
+//         for (_, node) in &nodes {
+//             g.add_stmt(node.clone().into());
+//         }
+
+//         let mut subgraphs: HashMap<_, _> = subsets_of
+//             .iter()
+//             .filter_map(|(superset, _)| {
+//                 let own_supersets = supersets_of.get(superset);
+
+//                 if own_supersets.is_none() {
+//                     Some((
+//                         *superset,
+//                         subgraph!(id!(format!(
+//                             "cluster_{}",
+//                             superset.to_string().to_lowercase()
+//                         ))),
+//                     ))
+//                 } else {
+//                     None
+//                 }
+//             })
+//             .collect();
+
+//         for (superset, subsets) in subsets_of {
+//             let own_supersets = supersets_of.get(&superset);
+
+//             // determines whether styling applies
+//             let subgraph = if let Some(s) = subgraphs.get_mut(&superset) {
+//                 s
+//             } else {
+//                 let top_level_superset = own_supersets
+//                     .unwrap()
+//                     .iter()
+//                     .find(|own_superset|
+// subgraphs.contains_key(*own_superset))                     .unwrap();
+
+//                 subgraphs.get_mut(top_level_superset).unwrap()
+//             };
+
+//             let superset_node = nodes.get(&superset).unwrap();
+
+//             for subset in subsets {
+//                 let is_broadest_subset = {
+//                     let subset_supersets =
+// supersets_of.get(&subset).unwrap();                     let
+// is_the_only_superset = subset_supersets.len() == 1                         &&
+// subset_supersets.contains(&superset);
+
+//                     is_the_only_superset || {
+//                         if let Some(own_supersets) = own_supersets {
+//                             own_supersets.iter().all(|own_superset| {
+//                                 subset_supersets.contains(own_superset)
+//                             })
+//                         } else {
+//                             false
+//                         }
+//                     }
+//                 };
+
+//                 if !is_broadest_subset {
+//                     continue;
+//                 }
+
+//                 let subset_node = nodes.get(&subset).unwrap();
+
+//                 subgraph.stmts.push(
+//                     Edge {
+//                         ty: EdgeTy::Pair(
+//                             Vertex::N(superset_node.id.clone()),
+//                             Vertex::N(subset_node.id.clone()),
+//                         ),
+//                         attributes: vec![],
+//                     }
+//                     .into(),
+//                 );
+//             }
+//         }
+//         for (_, subgraph) in subgraphs {
+//             g.add_stmt(subgraph.into());
+//         }
+
+//         for (a, b) in overlaps {
+//             let a = nodes.get(&a).unwrap();
+//             let b = nodes.get(&b).unwrap();
+
+//             g.add_stmt(
+//                 Edge {
+//                     ty: EdgeTy::Pair(
+//                         Vertex::N(a.id.clone()),
+//                         Vertex::N(b.id.clone()),
+//                     ),
+//                     attributes: vec![],
+//                 }
+//                 .into(),
+//             );
+//             g.add_stmt(
+//                 Edge {
+//                     ty: EdgeTy::Pair(
+//                         Vertex::N(b.id.clone()),
+//                         Vertex::N(a.id.clone()),
+//                     ),
+//                     attributes: vec![],
+//                 }
+//                 .into(),
+//             );
+//         }
+
+//         for (a, b) in neighbors {
+//             let a = nodes.get(&a).unwrap();
+//             let b = nodes.get(&b).unwrap();
+
+//             g.add_stmt(
+//                 Edge {
+//                     ty: EdgeTy::Pair(
+//                         Vertex::N(a.id.clone()),
+//                         Vertex::N(b.id.clone()),
+//                     ),
+//                     attributes: vec![attr!("arrowhead", "tee")],
+//                 }
+//                 .into(),
+//             );
+//             g.add_stmt(
+//                 Edge {
+//                     ty: EdgeTy::Pair(
+//                         Vertex::N(b.id.clone()),
+//                         Vertex::N(a.id.clone()),
+//                     ),
+//                     attributes: vec![attr!("arrowhead", "tee")],
+//                 }
+//                 .into(),
+//             );
+//         }
+
+//         let graph_svg = exec(
+//             g.clone(),
+//             &mut PrinterContext::default(),
+//             vec![Format::Svg.into()],
+//         )
+//         .unwrap();
+//         std::fs::write("graph.svg", graph_svg).unwrap();
+
+//         panic!("{}", g.print(&mut PrinterContext::default()));
+//     }
+// }
