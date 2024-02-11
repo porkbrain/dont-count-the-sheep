@@ -1,0 +1,28 @@
+on:
+  push:
+    branches: ["master"]
+
+jobs:
+  scc:
+    runs-on: ubuntu-latest
+    name: Info about LoC
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Calculate LoC
+        id: scc
+        uses: Adapt-API/scc-docker-action@master
+        with:
+          args: ${{ env.workspace }} -i rs --format json src
+      - name: Print LoC
+        run: |
+          echo
+          echo -n "${{ steps.scc.outputs.scc }}"
+          echo -n "${{ fromJson(steps.scc.outputs.scc)[0].Code }}"
+      - name: Make LoC badge
+        uses: emibcn/badge-action@v2.0.2
+        with:
+          label: LoC
+          status: ${{ fromJson(steps.scc.outputs.scc)[0].Code }}
+          color: "blue"
+          path: .github/loc.svg
