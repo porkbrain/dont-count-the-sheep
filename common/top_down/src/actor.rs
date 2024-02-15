@@ -9,7 +9,7 @@ use bevy::{
     ecs::event::event_update_condition,
     prelude::*,
     time::Stopwatch,
-    utils::{HashMap, HashSet},
+    utils::{EntityHashMap, HashSet},
 };
 use bevy_grid_squared::{sq, GridDirection, Square};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
@@ -78,7 +78,7 @@ pub struct ActorTarget {
 /// Maps actors to zones they currently occupy.
 /// Each actor can be in multiple zones at once.
 ///
-/// Only those tiles that are zones as returned by `TileKind::is_zone` are
+/// Only those tiles that are zones as returned by [`TileKind::is_zone`] are
 /// stored.
 #[derive(
     Resource, Serialize, Deserialize, Reflect, InspectorOptions, Default,
@@ -90,7 +90,7 @@ pub struct ActorZoneMap<L: Default + Eq + std::hash::Hash> {
     /// the same square (different layer.)
     ///
     /// The second tuple member is whether the actor is a player.
-    map: HashMap<Entity, (Character, bool, HashSet<TileKind<L>>)>,
+    map: EntityHashMap<Entity, (Character, bool, HashSet<TileKind<L>>)>,
 }
 
 /// Some useful events for actors.

@@ -4,6 +4,7 @@
 #![feature(let_chains)]
 
 pub mod actor;
+pub mod cameras;
 pub mod interactable;
 pub mod layout;
 
