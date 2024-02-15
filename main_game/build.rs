@@ -4,10 +4,10 @@ use common_top_down::{
     layout::build_pathfinding_graph::{self, GraphExt},
     TopDownScene,
 };
-use scene_apartment::Apartment;
 
 fn main() {
-    build_tile_graph::<Apartment>();
+    build_tile_graph::<scene_apartment::Apartment>();
+    build_tile_graph::<scene_dev_playground::DevPlayground>();
 }
 
 /// Build a graph of the tilemap and store it in the assets folder.
@@ -41,6 +41,7 @@ where
     // hash in the file header.
 
     let dot_g = g.as_dotgraph(T::name());
+    // panic!("{g:?}");
     let svg = dot_g.into_svg().unwrap();
 
     let scene_path =

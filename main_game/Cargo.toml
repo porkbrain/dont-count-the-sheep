@@ -26,6 +26,7 @@ scene_dev_playground = { workspace = true, optional = true }
 common_top_down = { workspace = true, features = ["build-script"] }
 md5.workspace = true
 scene_apartment.workspace = true
+scene_dev_playground.workspace = true
 
 
 [features]
