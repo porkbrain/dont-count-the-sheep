@@ -16,7 +16,7 @@
 //! You can visualize how the graph with the [`LocalTileKindGraph::as_dotgraph`]
 //! method.
 //! The graph can be either converted to an SVG with the [`GraphExt::into_svg`]
-//! or a [DOT][wiki-dot] string with the [`GraphExt::into_dot`] method.
+//! or a [DOT][wiki-dot] string with the [`GraphExt::as_dot`] method.
 //!
 //! [wiki-dot]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 
@@ -34,7 +34,7 @@ use itertools::Itertools;
 
 use crate::{layout::Tile, TileKind, TileMap, TopDownScene};
 
-/// Map of tile kind variant [`L`] to those other variants (not including
+/// Map of tile kind variant `L` to those other variants (not including
 /// itself - proper supersets) whose instances fully contain it (the key.)
 /// If square contains the key variant, it contains also all the variants in the
 /// value set.
@@ -42,7 +42,7 @@ use crate::{layout::Tile, TileKind, TileMap, TopDownScene};
 /// `(tile, its supersets)`
 pub type SupersetsOf<L> = HashMap<L, HashSet<L>>;
 
-/// Map of tile kind variant [`L`] to those other variants (not including
+/// Map of tile kind variant `L` to those other variants (not including
 /// itself - proper subsets) whose instances are fully contained by it (the
 /// key.) If square contains any of the value set variants, it contains also the
 /// key variant.
@@ -50,19 +50,19 @@ pub type SupersetsOf<L> = HashMap<L, HashSet<L>>;
 /// `(tile, its subsets)`
 pub type SubsetsOf<L> = HashMap<L, HashSet<L>>;
 
-/// Set of pairs of tile kind variants [`L`] that overlap in the same square and
+/// Set of pairs of tile kind variants `L` that overlap in the same square and
 /// are not supersets of each other.
 ///
 /// `(tile, another)`
 pub type Overlaps<L> = HashSet<(L, L)>;
 
-/// Set of pairs of tile kind variants [`L`] that are walkable neighbors and are
+/// Set of pairs of tile kind variants `L` that are walkable neighbors and are
 /// not supersets of each other neither overlap in the same square.
 ///
 /// `(tile, another)`
 pub type Neighbors<L> = HashSet<(L, L)>;
 
-/// Describes relationships between the local tile kind variants [`L`] in the
+/// Describes relationships between the local tile kind variants `L` in the
 /// tile map.
 /// That is, for a `T: TopDownScene` the `L` is `T::LocalTileKind`.
 pub struct LocalTileKindGraph<L> {
@@ -86,16 +86,16 @@ pub trait GraphExt {
 }
 
 /// Series of steps to compute the relationships between the local tile kind
-/// variants [`L`] in the tile map.
+/// variants `L` in the tile map.
 #[derive(Default)]
 enum GraphComputeStep<L> {
-    /// First find for each tile kind variant [`L`] all tiles that contain
+    /// First find for each tile kind variant `L` all tiles that contain
     /// every single instance of it.
     /// This computes the [`SupersetsOf<L>`].
     #[default]
     Supersets,
     /// Then from the previous result construct the inverse of it, which is
-    /// for each tile kind variant [`L`] all tiles that are contained in it.
+    /// for each tile kind variant `L` all tiles that are contained in it.
     /// This computes the [`SubsetsOf<L>`].
     Subsets { from_supersets: SupersetsOf<L> },
     /// The find which tiles overlap in the same square and are not supersets
@@ -140,12 +140,12 @@ impl GraphExt for Graph {
 }
 
 impl<L: Tile> LocalTileKindGraph<L> {
-    /// Find all relationships between the local tile kind variants [`L`] in the
-    /// tile map [`T`].
+    /// Find all relationships between the local tile kind variants `L` in the
+    /// tile map `T`.
     ///
     /// The bytes should be serializable to a `TileMap<T>`'s squares.
     /// That would be the RON file asset stored by the
-    /// [`crate::layout::map_maker`].
+    /// `crate::layout::map_maker`.
     pub fn compute_from<T: TopDownScene<LocalTileKind = L>>(
         tilemap_bytes: &[u8],
     ) -> Self
@@ -168,7 +168,7 @@ impl<L: Tile> LocalTileKindGraph<L> {
     }
 
     /// Returns a [`Graph`] representation of the relationships between the
-    /// local tile kind variants [`L`] in the tile map.
+    /// local tile kind variants `L` in the tile map.
     ///
     /// The ID of the graph will be `graph_{name}`.
     pub fn as_dotgraph(
@@ -414,7 +414,7 @@ fn find_supersets<T: TopDownScene>(
 ) -> SupersetsOf<T::LocalTileKind> {
     let mut supersets_of: SupersetsOf<_> = default();
     for tiles in map.squares().values() {
-        let locals: HashSet<_> = get_local_zones(&tiles).collect();
+        let locals: HashSet<_> = get_local_zones(tiles).collect();
 
         for local in locals.iter().copied() {
             let local_supersets =
@@ -464,7 +464,7 @@ where
 {
     let mut overlaps: Overlaps<T::LocalTileKind> = default();
     for tiles in map.squares().values() {
-        let locals = get_local_zones(&tiles).collect_vec();
+        let locals = get_local_zones(tiles).collect_vec();
 
         for local in locals.clone() {
             let local_supersets = supersets_of.get(&local);
@@ -501,7 +501,7 @@ where
     let mut neighbors: Neighbors<T::LocalTileKind> = default();
 
     for (sq, tiles) in map.squares().iter() {
-        let locals = get_local_zones(&tiles).collect_vec();
+        let locals = get_local_zones(tiles).collect_vec();
 
         for neighbor_sq in sq.neighbors_with_diagonal() {
             let Some(neighbor_locals) = map.squares().get(&neighbor_sq) else {
@@ -513,7 +513,7 @@ where
             }
 
             let neighbor_locals =
-                get_local_zones(&neighbor_locals).collect_vec();
+                get_local_zones(neighbor_locals).collect_vec();
 
             for local in locals.clone() {
                 let local_supersets = supersets_of.get(&local);
@@ -539,9 +539,9 @@ where
     neighbors
 }
 
-fn get_local_zones<'a, L: Tile>(
-    tiles: &'a [TileKind<L>],
-) -> impl Iterator<Item = L> + 'a {
+fn get_local_zones<L: Tile>(
+    tiles: &[TileKind<L>],
+) -> impl Iterator<Item = L> + '_ {
     tiles
         .iter()
         .filter(|tile| tile.is_zone())
