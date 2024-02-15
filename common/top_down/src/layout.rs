@@ -504,6 +504,9 @@ impl<T: TopDownScene> TileMap<T> {
         from: Square,
         to: Square,
     ) -> Option<Vec<Square>> {
+        // get zones on from square, and to square.
+        //
+
         let (path, _cost) = pathfinding::prelude::astar(
             &from,
             |square| {

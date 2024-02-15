@@ -1,21 +1,19 @@
 [package]
-name = "scene_apartment"
+name = "scene_dev_playground"
 version.workspace = true
 edition.workspace = true
 
 
 [dependencies]
+bevy = { workspace = true, features = ["glam_assert"] }
 bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true
-bevy.workspace = true
+common_top_down = { workspace = true, features = ["build-script"] }
 itertools.workspace = true
 lazy_static.workspace = true
-main_game_lib.workspace = true
+main_game_lib = { workspace = true, features = ["dev-playground"] }
+md5.workspace = true
 rand.workspace = true
 serde.workspace = true
 smallvec.workspace = true
 strum.workspace = true
-
-
-[features]
-dev = ["bevy/glam_assert"]

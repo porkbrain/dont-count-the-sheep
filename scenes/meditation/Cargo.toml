@@ -3,8 +3,6 @@ name = "scene_meditation"
 version.workspace = true
 edition.workspace = true
 
-[lib]
-path = "src/lib.rs"
 
 [dependencies]
 bevy_magic_light_2d.workspace = true
@@ -20,6 +18,7 @@ lazy_static.workspace = true
 leafwing-input-manager.workspace = true
 main_game_lib.workspace = true
 rand.workspace = true
+
 
 [features]
 dev = ["bevy/glam_assert"]

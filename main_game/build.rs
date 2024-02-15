@@ -25,10 +25,13 @@ where
 
     println!("cargo:rerun-if-changed={map_path}");
 
+    let tilemap_bytes = fs::read(&map_path).expect("map RON file in assets");
+    let tilemap_md5sum = format!("{:x}", md5::compute(&tilemap_bytes));
+
+    //
+
     // TODO: find the graph if assets folder. if exists, compare hash in the
     // file header with the hash of the tilemap file. if it's the same, skip
-
-    let tilemap_bytes = fs::read(&map_path).expect("map RON file in assets");
 
     let g = build_pathfinding_graph::LocalTileKindGraph::compute_from::<T>(
         &tilemap_bytes,

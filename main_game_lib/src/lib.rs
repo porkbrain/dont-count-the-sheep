@@ -54,7 +54,7 @@ pub fn windowed_app() -> App {
             .set(ImagePlugin::default_nearest())
             .set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "Ciesin".into(),
+                    title: "Don't Count The Sheep".into(),
                     ..default()
                 }),
                 ..default()

@@ -35,6 +35,9 @@ pub enum GlobalGameState {
 
     /// Performs all necessary cleanup and exits the game.
     Exit,
+
+    #[cfg(feature = "dev-playground")]
+    InDevPlayground,
 }
 
 /// What are the allowed transitions between game states?
@@ -51,6 +54,9 @@ pub enum GlobalGameStateTransition {
     ApartmentQuittingToExit,
     /// Go to downtown
     ApartmentQuittingToDowntownLoading,
+
+    #[cfg(feature = "dev")]
+    BlankToInTest,
 }
 
 /// Certain states have multiple allowed transitions.
@@ -90,6 +96,10 @@ impl GlobalGameStateTransitionStack {
             (Some(ApartmentQuittingToDowntownLoading), ApartmentQuitting) => {
                 Some(DowntownLoading)
             }
+
+            #[cfg(feature = "dev")]
+            (Some(BlankToInTest), Blank) => Some(InDevPlayground),
+
             (Some(transition), state) => {
                 error!(
                     "Next transition {transition:?} does not match {state:?}"
