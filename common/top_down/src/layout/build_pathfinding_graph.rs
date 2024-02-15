@@ -20,7 +20,10 @@
 //!
 //! [wiki-dot]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
 
-use std::fmt::Display;
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fmt::Display,
+};
 
 use bevy::{
     ecs::entity::Entity,
@@ -139,7 +142,10 @@ impl GraphExt for Graph {
     }
 }
 
-impl<L: Tile> LocalTileKindGraph<L> {
+impl<L: Tile> LocalTileKindGraph<L>
+where
+    L: Ord,
+{
     /// Find all relationships between the local tile kind variants `L` in the
     /// tile map `T`.
     ///
@@ -148,10 +154,7 @@ impl<L: Tile> LocalTileKindGraph<L> {
     /// `crate::layout::map_maker`.
     pub fn compute_from<T: TopDownScene<LocalTileKind = L>>(
         tilemap_bytes: &[u8],
-    ) -> Self
-    where
-        T::LocalTileKind: Ord,
-    {
+    ) -> Self {
         let map: TileMap<T> = ron::de::from_bytes(tilemap_bytes).unwrap();
 
         let mut compute_step = GraphComputeStep::default();
@@ -171,6 +174,8 @@ impl<L: Tile> LocalTileKindGraph<L> {
     /// local tile kind variants `L` in the tile map.
     ///
     /// The ID of the graph will be `graph_{name}`.
+    ///
+    /// We order everything to make the graph deterministic.
     pub fn as_dotgraph(
         &self,
         name: impl Display,
@@ -181,7 +186,7 @@ impl<L: Tile> LocalTileKindGraph<L> {
         g.add_stmt(attr!("ranksep", 1.0).into());
 
         // map tile kinds to nodes
-        let nodes: HashMap<L, _> = L::zones_iter()
+        let nodes: BTreeMap<L, _> = L::zones_iter()
             .filter(|kind| kind.is_zone())
             .map(|kind| (kind, node!({ format!("{kind:?}").to_lowercase() })))
             .collect();
@@ -193,7 +198,7 @@ impl<L: Tile> LocalTileKindGraph<L> {
 
         // tiles that are supersets of others but have no supersets themselves
         // are called top level, and have their own subgraph
-        let mut top_level_subgraphs: HashMap<_, _> = self
+        let mut top_level_subgraphs: BTreeMap<_, _> = self
             .subsets_of
             .iter()
             .filter_map(|(superset, _)| {
@@ -213,7 +218,8 @@ impl<L: Tile> LocalTileKindGraph<L> {
             .collect();
 
         // this is all single directional edges, going from subset -> superset
-        for (superset, subsets) in &self.subsets_of {
+        let subsets_of: BTreeMap<_, _> = self.subsets_of.iter().collect();
+        for (superset, subsets) in subsets_of {
             let own_supersets = self.supersets_of.get(superset);
 
             // which subgraph do we belong to?
@@ -221,8 +227,10 @@ impl<L: Tile> LocalTileKindGraph<L> {
                 if let Some(s) = top_level_subgraphs.get_mut(superset) {
                     s
                 } else if own_supersets.is_none() {
-                    // has no supersets and no subsets
-                    continue;
+                    unreachable!(
+                        "{superset:?} cannot have subsets ({subsets:?}), \
+                        no supersets but also not a top level subgraph"
+                    );
                 } else {
                     let top_level_superset = own_supersets
                         .unwrap() // safe cuz else if ^
@@ -238,6 +246,7 @@ impl<L: Tile> LocalTileKindGraph<L> {
 
             let superset_node = nodes.get(superset).unwrap();
 
+            let subsets: BTreeSet<_> = subsets.iter().collect();
             for subset in subsets {
                 // determines whether there exists ANOTHER subset of the
                 // superset that is also a superset of THIS subset
@@ -248,15 +257,20 @@ impl<L: Tile> LocalTileKindGraph<L> {
                     let is_the_only_superset = subset_supersets.len() == 1
                         && subset_supersets.contains(superset);
 
-                    is_the_only_superset || {
-                        if let Some(own_supersets) = own_supersets {
-                            own_supersets.iter().all(|own_superset| {
-                                subset_supersets.contains(own_superset)
+                    is_the_only_superset
+                        || own_supersets
+                            .map(|own_supersets| {
+                                subset_supersets
+                                    .difference(own_supersets)
+                                    .count()
                             })
-                        } else {
-                            false
-                        }
-                    }
+                            // if there's only one superset of the subset
+                            // that's not in superset's own supersets, then
+                            // it's the broadest subset
+                            // (the one subset's superset being the superset
+                            // itself, ie collecting the difference would yield
+                            // the superset)
+                            .is_some_and(|difference| difference == 1)
                 };
 
                 if !is_broadest_subset {
@@ -285,7 +299,8 @@ impl<L: Tile> LocalTileKindGraph<L> {
         }
 
         // bidirectional relationships
-        for (a, b) in &self.overlaps {
+        let overlaps: BTreeSet<_> = self.overlaps.iter().collect();
+        for (a, b) in overlaps {
             let a = nodes.get(a).unwrap();
             let b = nodes.get(b).unwrap();
 
@@ -312,7 +327,8 @@ impl<L: Tile> LocalTileKindGraph<L> {
         }
 
         // also bidirectional relationships
-        for (a, b) in &self.neighbors {
+        let neighbors: BTreeSet<_> = self.neighbors.iter().collect();
+        for (a, b) in neighbors {
             let a = nodes.get(a).unwrap();
             let b = nodes.get(b).unwrap();
 
@@ -344,18 +360,18 @@ impl<L: Tile> LocalTileKindGraph<L> {
 
 impl<L: std::fmt::Debug> std::fmt::Debug for LocalTileKindGraph<L> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "LocalTileKindGraph")?;
+        writeln!(f, "LocalTileKindGraph")?;
         for (a, b) in &self.supersets_of {
-            write!(f, "{a:?} is subset of {b:?}")?;
+            writeln!(f, "{a:?} is subset of {b:?}")?;
         }
         for (a, b) in &self.subsets_of {
-            write!(f, "{a:?} is superset of {b:?}")?;
+            writeln!(f, "{a:?} is superset of {b:?}")?;
         }
         for (a, b) in &self.overlaps {
-            write!(f, "{a:?} overlaps with {b:?}")?;
+            writeln!(f, "{a:?} overlaps with {b:?}")?;
         }
         for (a, b) in &self.neighbors {
-            write!(f, "{a:?} neighbors with {b:?}")?;
+            writeln!(f, "{a:?} neighbors with {b:?}")?;
         }
         writeln!(f)
     }
