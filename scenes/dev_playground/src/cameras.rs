@@ -1,6 +1,7 @@
 use bevy::render::view::RenderLayers;
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use common_visuals::camera::{order, render_layer, PIXEL_ZOOM};
+use main_game_lib::common_visuals::camera::MainCamera;
 
 use crate::prelude::*;
 
@@ -10,6 +11,12 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GlobalGameState::Blank), spawn)
             .add_systems(OnExit(GlobalGameState::InDevPlayground), despawn);
+
+        app.add_systems(
+            Update,
+            common_top_down::cameras::track_player_with_main_camera
+                .run_if(in_state(GlobalGameState::InDevPlayground)),
+        );
     }
 }
 
@@ -20,7 +27,8 @@ fn spawn(mut cmd: Commands) {
     debug!("Spawning camera");
 
     cmd.spawn((
-        Name::from("Test camera"),
+        Name::from("Dev plaground camera"),
+        MainCamera,
         CameraEntity,
         PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,

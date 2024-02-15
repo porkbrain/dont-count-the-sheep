@@ -4,7 +4,7 @@ use main_game_lib::{common_top_down, common_top_down::TopDownScene};
 use serde::{Deserialize, Serialize};
 use strum::{EnumIter, IntoEnumIterator};
 
-use crate::{prelude::*, Test};
+use crate::{prelude::*, DevPlayground};
 
 lazy_static! {
     static ref LAYOUT: SquareLayout = SquareLayout {
@@ -17,7 +17,7 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<TestTileKind>();
+        app.register_type::<DevPlaygroundTileKind>();
     }
 }
 
@@ -41,7 +41,7 @@ impl bevy::app::Plugin for Plugin {
 )]
 #[reflect(Default)]
 #[allow(clippy::enum_variant_names)]
-pub enum TestTileKind {
+pub enum DevPlaygroundTileKind {
     #[default]
     ZoneA,
     ZoneB,
@@ -53,7 +53,7 @@ pub enum TestTileKind {
     ZoneH,
 }
 
-impl common_top_down::layout::Tile for TestTileKind {
+impl common_top_down::layout::Tile for DevPlaygroundTileKind {
     fn is_walkable(&self, _: Entity) -> bool {
         true
     }
@@ -76,11 +76,11 @@ impl common_top_down::layout::Tile for TestTileKind {
     }
 }
 
-impl TopDownScene for Test {
-    type LocalTileKind = TestTileKind;
+impl TopDownScene for DevPlayground {
+    type LocalTileKind = DevPlaygroundTileKind;
 
     fn name() -> &'static str {
-        "test"
+        "dev_playground"
     }
 
     fn bounds() -> [i32; 4] {
@@ -88,7 +88,7 @@ impl TopDownScene for Test {
     }
 
     fn asset_path() -> &'static str {
-        "../../scenes/test/assets/map.ron"
+        "../../scenes/dev_playground/assets/map.ron"
     }
 
     fn layout() -> &'static SquareLayout {

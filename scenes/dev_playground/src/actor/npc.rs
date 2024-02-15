@@ -13,7 +13,7 @@ use main_game_lib::{
 };
 
 use super::CharacterEntity;
-use crate::{prelude::*, Test};
+use crate::{prelude::*, DevPlayground};
 
 pub(super) fn spawn(mut cmd: Commands) {
     cmd.spawn((
@@ -25,7 +25,7 @@ pub(super) fn spawn(mut cmd: Commands) {
         common_story::Character::Marie
             .bundle_builder()
             .with_initial_position(vec2(-80.0, -100.0))
-            .build::<Test>(),
+            .build::<DevPlayground>(),
     )
     .insert(BehaviorTree::new(ExampleBehavior));
 
@@ -38,7 +38,7 @@ pub(super) fn spawn(mut cmd: Commands) {
         common_story::Character::Unnamed
             .bundle_builder()
             .with_initial_position(vec2(-150.0, -100.0))
-            .build::<Test>(),
+            .build::<DevPlayground>(),
     )
     .insert(BehaviorTree::new(ExampleBehavior2));
 }
@@ -47,10 +47,10 @@ struct ExampleBehavior;
 
 impl From<ExampleBehavior> for BehaviorNode {
     fn from(_: ExampleBehavior) -> Self {
-        let from = Test::layout().world_pos_to_square(
+        let from = DevPlayground::layout().world_pos_to_square(
             vec2(490.0, 280.0).as_top_left_into_centered(),
         );
-        let to = Test::layout().world_pos_to_square(
+        let to = DevPlayground::layout().world_pos_to_square(
             vec2(470.0, 120.0).as_top_left_into_centered(),
         );
 
@@ -70,9 +70,9 @@ struct ExampleBehavior2;
 
 impl From<ExampleBehavior2> for BehaviorNode {
     fn from(_: ExampleBehavior2) -> Self {
-        let from = Test::layout()
+        let from = DevPlayground::layout()
             .world_pos_to_square(vec2(84.0, 274.0).as_top_left_into_centered());
-        let to = Test::layout().world_pos_to_square(
+        let to = DevPlayground::layout().world_pos_to_square(
             vec2(160.0, 120.0).as_top_left_into_centered(),
         );
 

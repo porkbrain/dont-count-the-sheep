@@ -10,7 +10,7 @@ use main_game_lib::{
     cutscene::not_in_cutscene,
 };
 
-use crate::{prelude::*, Test};
+use crate::{prelude::*, DevPlayground};
 
 #[derive(Component, Reflect)]
 struct CharacterEntity;
@@ -27,7 +27,7 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             Update,
-            (common_top_down::actor::player::move_around::<Test>
+            (common_top_down::actor::player::move_around::<DevPlayground>
                 .run_if(move_action_pressed()),)
                 .run_if(in_state(GlobalGameState::InDevPlayground))
                 .run_if(not_in_portrait_dialog())
@@ -36,7 +36,7 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             FixedUpdate,
-            common_top_down::actor::animate_movement::<Test>
+            common_top_down::actor::animate_movement::<DevPlayground>
                 .run_if(in_state(GlobalGameState::InDevPlayground)),
         );
 
@@ -44,9 +44,9 @@ impl bevy::app::Plugin for Plugin {
             Update,
             (
                 common_top_down::actor::npc::drive_behavior,
-                common_top_down::actor::npc::plan_path::<Test>
+                common_top_down::actor::npc::plan_path::<DevPlayground>
                     .run_if(event_update_condition::<PlanPathEvent>),
-                common_top_down::actor::npc::run_path::<Test>,
+                common_top_down::actor::npc::run_path::<DevPlayground>,
             )
                 .chain()
                 .run_if(in_state(GlobalGameState::InDevPlayground)),

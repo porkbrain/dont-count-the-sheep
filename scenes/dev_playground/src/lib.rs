@@ -17,10 +17,10 @@ use prelude::*;
 /// We use it as identifiable generic in some common logic such as layout or
 /// asset.
 #[derive(TypePath, Default)]
-pub struct Test;
+pub struct DevPlayground;
 
 pub fn add(app: &mut App) {
-    info!("Adding test to app");
+    info!("Adding dev playground to app");
 
     debug!("Adding plugins");
 
@@ -31,14 +31,14 @@ pub fn add(app: &mut App) {
     app.add_systems(
         OnEnter(GlobalGameState::Blank),
         (
-            common_assets::store::insert_as_resource::<Test>,
+            common_assets::store::insert_as_resource::<DevPlayground>,
             common_assets::store::insert_as_resource::<DialogAssets>,
         ),
     );
 
     debug!("Adding map layout");
 
-    common_top_down::layout::register::<Test, _>(
+    common_top_down::layout::register::<DevPlayground, _>(
         app,
         GlobalGameState::Blank,
         GlobalGameState::InDevPlayground,
@@ -94,9 +94,9 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    map: Option<Res<common_top_down::TileMap<Test>>>,
+    map: Option<Res<common_top_down::TileMap<DevPlayground>>>,
     asset_server: Res<AssetServer>,
-    asset_store: Res<AssetStore<Test>>,
+    asset_store: Res<AssetStore<DevPlayground>>,
 ) {
     if map.is_none() {
         return;
@@ -110,10 +110,10 @@ fn finish_when_everything_loaded(
     next_state.set(GlobalGameState::InDevPlayground);
 }
 
-impl AssetList for Test {}
+impl AssetList for DevPlayground {}
 
-impl std::fmt::Display for Test {
+impl std::fmt::Display for DevPlayground {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", Test::name())
+        write!(f, "{}", DevPlayground::name())
     }
 }
