@@ -3,7 +3,7 @@ use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use common_visuals::camera::{order, render_layer, PIXEL_ZOOM};
 use main_game_lib::common_visuals::camera::MainCamera;
 
-use crate::prelude::*;
+use crate::{prelude::*, DevPlayground};
 
 pub(crate) struct Plugin;
 
@@ -15,6 +15,9 @@ impl bevy::app::Plugin for Plugin {
         app.add_systems(
             Update,
             common_top_down::cameras::track_player_with_main_camera
+                .after(
+                    common_top_down::actor::animate_movement::<DevPlayground>,
+                )
                 .run_if(in_state(GlobalGameState::InDevPlayground)),
         );
     }

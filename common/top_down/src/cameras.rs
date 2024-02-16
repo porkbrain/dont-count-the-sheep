@@ -7,11 +7,11 @@ use common_action::{ActionState, GlobalAction};
 use common_ext::QueryExt;
 use common_visuals::{
     camera::{MainCamera, PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH},
-    EASE_IN_OUT,
+    BeginInterpolationEvent, EASE_IN_OUT,
 };
 use lazy_static::lazy_static;
 
-use crate::Player;
+use crate::{Actor, Player};
 
 lazy_static! {
     /// If the player leaves this bounding box, the camera follows her.
@@ -24,6 +24,10 @@ lazy_static! {
 
     };
 }
+
+/// When the player stops moving, nudge the camera towards the
+/// player's direction by a few pixels.
+const NUDGE_CAMERA_TOWARDS_PLAYER_DIRECTION_BY_PXS: f32 = 20.0;
 
 /// How smooth is the transition of the camera from wherever it is to the
 /// player's position.
@@ -58,32 +62,42 @@ pub enum CameraState {
 /// [`CameraState::StickToPlayer`].
 ///
 /// If the player stops moving, the state is removed.
+///
+/// Recommended to run after the player's movement animation:
+///
+/// ```rust,ignore
+/// track_player_with_main_camera.after(
+///     common_top_down::actor::animate_movement::<MyScene>,
+/// )
+/// ```
 pub fn track_player_with_main_camera(
     cmd: Commands,
     controls: Res<ActionState<GlobalAction>>,
     time: Res<Time>,
+    events: EventWriter<BeginInterpolationEvent>,
 
-    player: Query<&Transform, (Without<MainCamera>, With<Player>)>,
+    player: Query<(&Actor, &Transform), (Without<MainCamera>, With<Player>)>,
     camera: Query<
         (Entity, &mut Transform, Option<&mut CameraState>),
         (With<MainCamera>, Without<Player>),
     >,
 ) {
-    track_player::<MainCamera>(cmd, controls, time, player, camera);
+    track_player::<MainCamera>(cmd, controls, time, events, player, camera);
 }
 
 fn track_player<C: Component>(
     mut cmd: Commands,
     controls: Res<ActionState<GlobalAction>>,
     time: Res<Time>,
+    mut events: EventWriter<BeginInterpolationEvent>,
 
-    player: Query<&Transform, (Without<C>, With<Player>)>,
+    player: Query<(&Actor, &Transform), (Without<C>, With<Player>)>,
     mut camera: Query<
         (Entity, &mut Transform, Option<&mut CameraState>),
         (With<C>, Without<Player>),
     >,
 ) {
-    let Some(player) = player.get_single_or_none() else {
+    let Some((actor, player_pos)) = player.get_single_or_none() else {
         return;
     };
 
@@ -91,6 +105,12 @@ fn track_player<C: Component>(
         camera.get_single_mut_or_none()
     else {
         return;
+    };
+
+    let any_movement = || {
+        controls.get_pressed().into_iter().any(|a| {
+            !matches!(a, GlobalAction::Cancel | GlobalAction::Interact)
+        })
     };
 
     match state.as_deref_mut() {
@@ -101,7 +121,7 @@ fn track_player<C: Component>(
                 *BOUNDING_BOX_SIZE,
             );
 
-            if !bounding_box.contains(player.translation.truncate()) {
+            if !bounding_box.contains(player_pos.translation.truncate()) {
                 trace!("Player left the bounding box, camera follows her");
                 cmd.entity(camera_entity)
                     .insert(CameraState::SyncWithPlayer {
@@ -123,28 +143,39 @@ fn track_player<C: Component>(
 
             if lerp_factor >= 1.0 - f32::EPSILON {
                 trace!("Camera is now synced with player");
-                cmd.entity(camera_entity).insert(CameraState::StickToPlayer);
+
+                if any_movement() {
+                    cmd.entity(camera_entity)
+                        .insert(CameraState::StickToPlayer);
+                } else {
+                    cmd.entity(camera_entity).remove::<CameraState>();
+                }
             } else {
                 let new_translation = initial_position
-                    .lerp(player.translation.truncate(), lerp_factor)
+                    .lerp(player_pos.translation.truncate(), lerp_factor)
                     .extend(camera.translation.z);
                 camera.translation = new_translation;
             }
         }
         // keep on player until they stop moving
+        Some(CameraState::StickToPlayer) if any_movement() => {
+            let z = camera.translation.z;
+            camera.translation = player_pos.translation.truncate().extend(z);
+        }
         Some(CameraState::StickToPlayer) => {
-            let any_movement = controls.get_pressed().into_iter().any(|a| {
-                !matches!(a, GlobalAction::Cancel | GlobalAction::Interact)
-            });
+            trace!("Player stopped moving, camera stops following her");
+            cmd.entity(camera_entity).remove::<CameraState>();
 
-            if !any_movement {
-                // TODO: a short movement in the direction of the player
-                trace!("Player stopped moving, camera stops following her");
-                cmd.entity(camera_entity).remove::<CameraState>();
-            } else {
-                let z = camera.translation.z;
-                camera.translation = player.translation.truncate().extend(z);
-            }
+            let cam_pos = camera.translation.truncate();
+
+            let move_in_direction = Vec2::from(actor.direction)
+                * NUDGE_CAMERA_TOWARDS_PLAYER_DIRECTION_BY_PXS;
+
+            events.send(BeginInterpolationEvent::of_translation(
+                camera_entity,
+                None,
+                cam_pos + move_in_direction,
+            ))
         }
     };
 }

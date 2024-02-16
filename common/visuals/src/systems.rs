@@ -7,6 +7,7 @@ use crate::{
     AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer,
     BeginAtlasAnimationAtRandom, BeginInterpolationEvent, ColorInterpolation,
     Flicker, InterpolationOf, SmoothTranslation, SmoothTranslationEnd,
+    TranslationInterpolation,
 };
 
 /// Advances the animation by one frame.
@@ -191,17 +192,27 @@ pub(crate) fn recv_begin_interpolation_events(
         animation_curve: curve,
     } in events.read()
     {
-        let component = match of {
-            InterpolationOf::Color { from, to } => ColorInterpolation {
-                from: *from,
-                to: *to,
-                over: *over,
-                started_at: Default::default(),
-                animation_curve: curve.clone(),
-            },
+        let mut entity_cmd = cmd.entity(*entity);
+        match of {
+            InterpolationOf::Color { from, to } => {
+                entity_cmd.insert(ColorInterpolation {
+                    from: *from,
+                    to: *to,
+                    over: *over,
+                    started_at: Default::default(),
+                    animation_curve: curve.clone(),
+                })
+            }
+            InterpolationOf::Translation { from, to } => {
+                entity_cmd.insert(TranslationInterpolation {
+                    from: *from,
+                    to: *to,
+                    over: *over,
+                    started_at: Default::default(),
+                    animation_curve: curve.clone(),
+                })
+            }
         };
-
-        cmd.entity(*entity).insert(component);
     }
 }
 
@@ -221,8 +232,17 @@ pub fn interpolate(
         (Entity, &mut TextureAtlasSprite, &mut ColorInterpolation),
         Without<Sprite>,
     >,
+
+    // translation interpolation
+    mut translations: Query<(
+        Entity,
+        &mut Transform,
+        &mut TranslationInterpolation,
+    )>,
 ) {
     let dt = time.delta();
+
+    // color interpolation
 
     let mut interpolate_color =
         |entity: Entity,
@@ -254,5 +274,33 @@ pub fn interpolate(
 
     for (entity, mut atlas, mut interpolation) in atlases.iter_mut() {
         interpolate_color(entity, &mut interpolation, &mut atlas.color);
+    }
+
+    // translation interpolation
+
+    for (entity, mut transform, mut interpolation) in translations.iter_mut() {
+        interpolation.started_at.tick(dt);
+
+        let elapsed_fraction = interpolation.started_at.elapsed_secs()
+            / interpolation.over.as_secs_f32();
+
+        if elapsed_fraction >= 1.0 {
+            transform.translation =
+                interpolation.to.extend(transform.translation.z);
+            cmd.entity(entity).remove::<TranslationInterpolation>();
+        } else {
+            let lerp_factor = interpolation
+                .animation_curve
+                .as_ref()
+                .map(|curve| curve.ease(elapsed_fraction))
+                .unwrap_or(elapsed_fraction);
+
+            let from = interpolation
+                .from
+                .get_or_insert(transform.translation.truncate());
+            transform.translation = from
+                .lerp(interpolation.to, lerp_factor)
+                .extend(transform.translation.z);
+        }
     }
 }

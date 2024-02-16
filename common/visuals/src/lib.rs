@@ -33,6 +33,7 @@ pub struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BeginInterpolationEvent>()
+            .register_type::<TranslationInterpolation>()
             .register_type::<ColorInterpolation>()
             .register_type::<AtlasAnimation>()
             .register_type::<BeginAtlasAnimationAtRandom>()

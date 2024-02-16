@@ -140,3 +140,20 @@ impl Add<&GridDirection> for Square {
         self.neighbor(*rhs)
     }
 }
+
+impl From<GridDirection> for Vec2 {
+    fn from(direction: GridDirection) -> Self {
+        use GridDirection::*;
+
+        match direction {
+            Top => Vec2::new(0.0, 1.0),
+            Bottom => Vec2::new(0.0, -1.0),
+            Left => Vec2::new(-1.0, 0.0),
+            Right => Vec2::new(1.0, 0.0),
+            TopLeft => Vec2::new(-1.0, 1.0),
+            TopRight => Vec2::new(1.0, 1.0),
+            BottomLeft => Vec2::new(-1.0, -1.0),
+            BottomRight => Vec2::new(1.0, -1.0),
+        }
+    }
+}

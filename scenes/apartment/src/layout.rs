@@ -16,7 +16,6 @@ use main_game_lib::{
         Actor, ActorMovementEvent, TileKind, TileMap, TopDownScene,
     },
     common_visuals::BeginInterpolationEvent,
-    cutscene::not_in_cutscene,
     vec2_ext::Vec2Ext,
 };
 use rand::{thread_rng, Rng};
@@ -48,12 +47,6 @@ impl bevy::app::Plugin for Plugin {
             spawn.run_if(in_state(GlobalGameState::ApartmentLoading)),
         )
         .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn)
-        .add_systems(
-            Update,
-            common_visuals::systems::interpolate
-                .run_if(in_state(GlobalGameState::InApartment))
-                .run_if(not_in_cutscene()),
-        )
         .add_systems(
             Update,
             (
