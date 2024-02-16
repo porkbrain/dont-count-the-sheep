@@ -2,6 +2,7 @@
 #![deny(missing_docs)]
 #![feature(trivial_bounds)]
 #![feature(let_chains)]
+#![allow(clippy::type_complexity)]
 
 pub mod actor;
 pub mod cameras;

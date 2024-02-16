@@ -16,7 +16,7 @@ use crate::Player;
 lazy_static! {
     /// If the player leaves this bounding box, the camera follows her.
     /// The box is centered at camera position.
-    static ref BOUNDING_BOX_SIZE: Vec2 = {
+    pub static ref BOUNDING_BOX_SIZE: Vec2 = {
 
         1.5 * vec2(PIXEL_VISIBLE_WIDTH, PIXEL_VISIBLE_HEIGHT)
     / //------------------------------------------------------
@@ -25,10 +25,13 @@ lazy_static! {
     };
 }
 
-const SYNCING_DURATION: Duration = Duration::from_millis(2000);
+/// How smooth is the transition of the camera from wherever it is to the
+/// player's position.
+pub const SYNCING_DURATION: Duration = Duration::from_millis(2000);
 
-/// If the player leaves a bounding box defined with [`BOUNDING_BOX_SIZE`],
-/// this state is inserted with the [`CameraState::SyncWithPlayer`] variant.
+/// If the player leaves a bounding box defined with
+/// [`static@BOUNDING_BOX_SIZE`], this state is inserted with the
+/// [`CameraState::SyncWithPlayer`] variant.
 #[derive(Component)]
 pub enum CameraState {
     /// While camera state is this, cameras are translated towards the player
@@ -47,9 +50,9 @@ pub enum CameraState {
     StickToPlayer,
 }
 
-/// If the player leaves a bounding box defined with [`BOUNDING_BOX_SIZE`],
-/// [`MainCamera`] entity gets a new component [`CameraState::SyncWithPlayer`]
-/// variant.
+/// If the player leaves a bounding box defined with
+/// [`static@BOUNDING_BOX_SIZE`], [`MainCamera`] entity gets a new component
+/// [`CameraState::SyncWithPlayer`] variant.
 ///
 /// If the camera catches up with the player, the state is changed to
 /// [`CameraState::StickToPlayer`].

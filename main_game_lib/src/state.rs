@@ -54,9 +54,6 @@ pub enum GlobalGameStateTransition {
     ApartmentQuittingToExit,
     /// Go to downtown
     ApartmentQuittingToDowntownLoading,
-
-    #[cfg(feature = "dev")]
-    BlankToInTest,
 }
 
 /// Certain states have multiple allowed transitions.
@@ -96,9 +93,6 @@ impl GlobalGameStateTransitionStack {
             (Some(ApartmentQuittingToDowntownLoading), ApartmentQuitting) => {
                 Some(DowntownLoading)
             }
-
-            #[cfg(feature = "dev")]
-            (Some(BlankToInTest), Blank) => Some(InDevPlayground),
 
             (Some(transition), state) => {
                 error!(
