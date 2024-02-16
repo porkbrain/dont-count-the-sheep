@@ -6,7 +6,7 @@ use common_story::portrait_dialog::not_in_portrait_dialog;
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     common_action::move_action_pressed,
-    common_top_down::{actor::CharacterExt, ActorTarget, IntoMap},
+    common_top_down::{actor::CharacterExt, ActorTarget, TopDownScene},
 };
 
 use crate::{prelude::*, Downtown};

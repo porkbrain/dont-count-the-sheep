@@ -20,7 +20,7 @@ pub(crate) mod bolt {
     pub(crate) struct Bolt {
         /// Relative to the Polpo it's about to hit.
         /// The Polpo is the origin.
-        from: Pos2,
+        from: Vec2,
         /// Since it's an effect that's supposed to be short-lived, we don't
         /// need the pause functionality of Stopwatch.
         spawned_at: Instant,
@@ -54,7 +54,7 @@ pub(crate) mod bolt {
     #[inline]
     pub(crate) fn get_bundle_with_respect_to_origin_at_zero(
         asset_server: &Res<AssetServer>,
-        from_with_respect_to_polpo_as_origin: Pos2,
+        from_with_respect_to_polpo_as_origin: Vec2,
     ) -> impl Bundle {
         (
             Bolt {

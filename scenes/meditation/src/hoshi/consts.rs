@@ -90,7 +90,7 @@ mod body_and_face_sprite_sizes {
 
     pub(crate) const BODY_ATLAS_ROWS: usize = 10;
     pub(crate) const BODY_ATLAS_COLS: usize = 10;
-    /// We use padding because some sprites had artifacts from their neighbours.
+    /// We use padding because some sprites had artifacts from their neighbors.
     pub(crate) const BODY_ATLAS_PADDING: Vec2 = vec2(3.0, 3.0);
     pub(crate) const BODY_WIDTH: f32 = 35.0;
     pub(crate) const BODY_HEIGHT: f32 = 35.0;

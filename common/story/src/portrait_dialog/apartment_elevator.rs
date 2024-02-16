@@ -36,7 +36,7 @@ impl AsChoice for TakeTheElevatorToFirstFloor {
 impl AsSequence for TakeTheElevatorToFirstFloor {
     fn sequence() -> Vec<Step> {
         // TODO: Say "Okey, still not working ..." if this is not the first time
-        // "The neighbours surely are thrilled"
+        // "The neighbors surely are thrilled"
 
         vec![
             Step::text(

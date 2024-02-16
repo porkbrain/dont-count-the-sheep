@@ -13,7 +13,7 @@ use main_game_lib::{
             self,
             door::{DoorBuilder, DoorOpenCriteria, DoorState},
         },
-        Actor, ActorMovementEvent, IntoMap, TileKind, TileMap,
+        Actor, ActorMovementEvent, TileKind, TileMap, TopDownScene,
     },
     common_visuals::BeginInterpolationEvent,
     cutscene::not_in_cutscene,
@@ -21,6 +21,7 @@ use main_game_lib::{
 };
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
+use strum::{EnumIter, IntoEnumIterator};
 
 use crate::{consts::*, prelude::*, Apartment};
 
@@ -88,21 +89,27 @@ pub(crate) struct Elevator;
     Debug,
     Default,
     Deserialize,
+    EnumIter,
     Eq,
     Hash,
+    Ord,
     PartialEq,
+    PartialOrd,
     Reflect,
     Serialize,
+    strum::Display,
 )]
 #[reflect(Default)]
 #[allow(clippy::enum_variant_names)]
-pub(crate) enum ApartmentTileKind {
-    #[default]
-    BedZone,
-    MainDoorZone,
-    ElevatorZone,
+pub enum ApartmentTileKind {
     /// We want to darken the hallway when the player is in the apartment.
     HallwayZone,
+    /// Everything that's in the player's apartment.
+    PlayerApartmentZone,
+    #[default]
+    BedZone,
+    ElevatorZone,
+    PlayerDoorZone,
     MeditationZone,
     TeaZone,
 }
@@ -257,7 +264,7 @@ fn spawn(
 
     // cloud atlas is rendered on top of the bg but below the furniture
 
-    let mut cloud_atlas_bundle = |position: Pos2| {
+    let mut cloud_atlas_bundle = |position: Vec2| {
         (
             LayoutEntity,
             RenderLayers::layer(render_layer::BG),
@@ -302,7 +309,7 @@ fn spawn(
     // bedroom door opens (sprite index 2) when the player is near the door
     cmd.spawn((
         Name::from("Bedroom door"),
-        DoorBuilder::new(ApartmentTileKind::MainDoorZone)
+        DoorBuilder::new(ApartmentTileKind::PlayerDoorZone)
             .add_open_criteria(DoorOpenCriteria::Character(
                 common_story::Character::Winnie,
             ))
@@ -419,7 +426,7 @@ fn watch_entry_to_hallway(
     mut cmd: Commands,
     tilemap: Res<TileMap<Apartment>>,
     mut movement_events: EventReader<
-        ActorMovementEvent<<Apartment as IntoMap>::LocalTileKind>,
+        ActorMovementEvent<<Apartment as TopDownScene>::LocalTileKind>,
     >,
     mut lerp_event: EventWriter<BeginInterpolationEvent>,
 
@@ -442,7 +449,7 @@ fn watch_entry_to_hallway(
                     Who {
                         is_player: true, ..
                     },
-                zone: TileKind::Local(ApartmentTileKind::MainDoorZone),
+                zone: TileKind::Local(ApartmentTileKind::PlayerDoorZone),
             } => {
                 trace!("Player entered hallway");
                 hallway_entities.for_each(|entity| {
@@ -486,7 +493,7 @@ fn watch_entry_to_hallway(
                         is_player: true,
                         ..
                     },
-                zone: TileKind::Local(ApartmentTileKind::MainDoorZone),
+                zone: TileKind::Local(ApartmentTileKind::PlayerDoorZone),
             } if !tilemap.is_on(
                 *sq,
                 TileKind::Local(ApartmentTileKind::HallwayZone),
@@ -571,24 +578,42 @@ fn watch_entry_to_hallway(
 }
 
 impl common_top_down::layout::Tile for ApartmentTileKind {
+    #[inline]
     fn is_walkable(&self, _: Entity) -> bool {
         true
     }
 
+    #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            ApartmentTileKind::BedZone
-            | ApartmentTileKind::MainDoorZone
-            | ApartmentTileKind::ElevatorZone
-            | ApartmentTileKind::HallwayZone
-            | ApartmentTileKind::MeditationZone
-            | ApartmentTileKind::TeaZone => true,
+            Self::BedZone
+            | Self::PlayerDoorZone
+            | Self::PlayerApartmentZone
+            | Self::ElevatorZone
+            | Self::HallwayZone
+            | Self::MeditationZone
+            | Self::TeaZone => true,
         }
     }
-}
 
-impl IntoMap for Apartment {
+    #[inline]
+    fn zones_iter() -> impl Iterator<Item = Self> {
+        Self::iter().filter(|kind| kind.is_zone())
+    }
+
+    #[inline]
+    fn zone_group(&self) -> Option<common_top_down::layout::ZoneGroup> {
+        self.zone_group_autogen()
+    }
+}
+include!("autogen/zone_groups.rs");
+
+impl TopDownScene for Apartment {
     type LocalTileKind = ApartmentTileKind;
+
+    fn name() -> &'static str {
+        "apartment"
+    }
 
     fn bounds() -> [i32; 4] {
         [-80, 40, -30, 20]

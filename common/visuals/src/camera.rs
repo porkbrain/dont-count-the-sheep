@@ -1,6 +1,8 @@
 //! Getting multiple cameras to work right is easier if all config lives
 //! together like a happy family.
 
+use bevy::ecs::component::Component;
+
 /// One pixel is 3x3 pixels on screen.
 pub const PIXEL_ZOOM: i32 = 3;
 
@@ -8,6 +10,11 @@ pub const PIXEL_ZOOM: i32 = 3;
 pub const PIXEL_VISIBLE_WIDTH: f32 = 640.0;
 /// What's shown on screen [`PIXEL_ZOOM`].
 pub const PIXEL_VISIBLE_HEIGHT: f32 = 360.0;
+
+/// Usually, a scene has one main camera that renders the world and then some
+/// auxiliary cameras that render the light scene, loading screen, UI, etc.
+#[derive(Component)]
+pub struct MainCamera;
 
 pub mod render_layer {
     //! Render layers are assigned to entities and cameras to decide what is

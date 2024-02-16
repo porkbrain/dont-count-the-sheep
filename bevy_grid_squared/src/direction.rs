@@ -73,7 +73,7 @@ impl Square {
     /// These are the only 4 neighbors of a square with manhattan distance 1:
     /// ↑, ↓, ←, →
     #[inline]
-    pub fn neighbours_no_diagonal(self) -> impl Iterator<Item = Self> {
+    pub fn neighbors_no_diagonal(self) -> impl Iterator<Item = Self> {
         use GridDirection::*;
 
         [Top, Bottom, Left, Right]

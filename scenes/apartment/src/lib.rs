@@ -17,6 +17,7 @@ use common_story::{portrait_dialog::in_portrait_dialog, DialogAssets};
 use consts::START_LOADING_SCREEN_AFTER;
 use main_game_lib::{
     common_action::{interaction_just_pressed, move_action_just_pressed},
+    common_top_down::TopDownScene,
     GlobalGameStateTransitionStack,
 };
 use prelude::*;
@@ -25,7 +26,7 @@ use prelude::*;
 /// We use it as identifiable generic in some common logic such as layout or
 /// asset.
 #[derive(TypePath, Default)]
-pub(crate) struct Apartment;
+pub struct Apartment;
 
 pub fn add(app: &mut App) {
     info!("Adding apartment to app");
@@ -208,5 +209,11 @@ fn smooth_exit(
 impl AssetList for Apartment {
     fn folders() -> &'static [&'static str] {
         &[assets::FOLDER]
+    }
+}
+
+impl std::fmt::Display for Apartment {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Apartment::name())
     }
 }

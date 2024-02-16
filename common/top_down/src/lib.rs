@@ -2,14 +2,16 @@
 #![deny(missing_docs)]
 #![feature(trivial_bounds)]
 #![feature(let_chains)]
+#![allow(clippy::type_complexity)]
 
 pub mod actor;
+pub mod cameras;
 pub mod interactable;
 pub mod layout;
 
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::app::App;
-pub use layout::{IntoMap, TileKind, TileMap};
+pub use layout::{TileKind, TileMap, TopDownScene};
 
 /// Does not add any systems, only registers generic-less types.
 pub struct Plugin;

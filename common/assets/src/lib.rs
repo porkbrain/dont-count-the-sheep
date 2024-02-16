@@ -52,7 +52,7 @@ impl<T: Asset + DeserializeOwned> AssetLoader for RonLoader<T> {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
 
-            Ok(ron::from_str(std::str::from_utf8(&bytes)?)?)
+            Ok(ron::de::from_bytes(&bytes)?)
         })
     }
 

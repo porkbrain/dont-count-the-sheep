@@ -2,10 +2,17 @@
 name = "main_game"
 edition.workspace = true
 version.workspace = true
+default-run = "game"
 
 [[bin]]
 name = "game"
 path = "src/main.rs"
+
+[[bin]]
+name = "dev_playground"
+path = "src/main_dev_playground.rs"
+required-features = ["dev_playground"]
+
 
 [dependencies]
 bevy.workspace = true
@@ -13,6 +20,10 @@ main_game_lib.workspace = true
 scene_apartment.workspace = true
 scene_downtown.workspace = true
 scene_meditation.workspace = true
+scene_dev_playground = { workspace = true, optional = true }
+
 
 [features]
 dev = ["scene_meditation/dev", "scene_downtown/dev", "scene_apartment/dev"]
+# see the dev playground scene
+dev_playground = ["scene_dev_playground", "bevy/glam_assert"]

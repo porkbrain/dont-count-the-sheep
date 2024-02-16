@@ -8,3 +8,5 @@ You can configure initial positions when loading this scene.
 See the `GlobalStore` for more details.
 
 There's a hallway with an elevator that leads to the downtown area.
+
+![Graph of zones](docs/tile-graph.svg)

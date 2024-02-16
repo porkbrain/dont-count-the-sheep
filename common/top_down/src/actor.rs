@@ -9,7 +9,7 @@ use bevy::{
     ecs::event::event_update_condition,
     prelude::*,
     time::Stopwatch,
-    utils::{HashMap, HashSet},
+    utils::{EntityHashMap, HashSet},
 };
 use bevy_grid_squared::{sq, GridDirection, Square};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
@@ -21,13 +21,13 @@ use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    layout::{IntoMap, Tile, TileIndex},
+    layout::{Tile, TileIndex, TopDownScene},
     Player, TileKind, TileMap,
 };
 
 /// Use with [`IntoSystemConfigs::run_if`] to run a system only when an actor
 /// moves.
-pub fn movement_event_emitted<T: IntoMap>(
+pub fn movement_event_emitted<T: TopDownScene>(
 ) -> impl FnMut(Res<Events<ActorMovementEvent<T::LocalTileKind>>>) -> bool {
     event_update_condition::<ActorMovementEvent<T::LocalTileKind>>
 }
@@ -78,7 +78,7 @@ pub struct ActorTarget {
 /// Maps actors to zones they currently occupy.
 /// Each actor can be in multiple zones at once.
 ///
-/// Only those tiles that are zones as returned by `TileKind::is_zone` are
+/// Only those tiles that are zones as returned by [`TileKind::is_zone`] are
 /// stored.
 #[derive(
     Resource, Serialize, Deserialize, Reflect, InspectorOptions, Default,
@@ -90,7 +90,7 @@ pub struct ActorZoneMap<L: Default + Eq + std::hash::Hash> {
     /// the same square (different layer.)
     ///
     /// The second tuple member is whether the actor is a player.
-    map: HashMap<Entity, (Character, bool, HashSet<TileKind<L>>)>,
+    map: EntityHashMap<Entity, (Character, bool, HashSet<TileKind<L>>)>,
 }
 
 /// Some useful events for actors.
@@ -152,7 +152,7 @@ pub struct CharacterBundleBuilder {
 /// `after(actor::emit_movement_events::<T>)`.
 ///
 /// We also emit a zone left event when an actor is despawned.
-pub fn emit_movement_events<T: IntoMap>(
+pub fn emit_movement_events<T: TopDownScene>(
     tilemap: Res<TileMap<T>>,
     mut actor_zone_map: ResMut<ActorZoneMap<T::LocalTileKind>>,
     mut event: EventWriter<ActorMovementEvent<T::LocalTileKind>>,
@@ -252,8 +252,8 @@ pub fn emit_movement_events<T: IntoMap>(
 /// Other systems will only edit the `Actor` component to plan the movement.
 ///
 /// The z is based off y.
-/// See the [`IntoMap::extend_z`] for more info.
-pub fn animate_movement<T: IntoMap>(
+/// See the [`TopDownScene::extend_z`] for more info.
+pub fn animate_movement<T: TopDownScene>(
     time: Res<Time>,
     mut tilemap: ResMut<TileMap<T>>,
 
@@ -298,7 +298,7 @@ pub fn animate_movement<T: IntoMap>(
     }
 }
 
-fn animate_movement_for_actor<T: IntoMap>(
+fn animate_movement_for_actor<T: TopDownScene>(
     time: &Time,
     tilemap: &mut TileMap<T>,
     entity: Entity,
@@ -492,8 +492,8 @@ impl CharacterBundleBuilder {
     }
 
     /// Where to spawn the character.
-    /// Converted into the square by `IntoMap::world_pos_to_square` (see the
-    /// `common_layout` crate).
+    /// Converted into the square by [`TopDownScene::layout`] (see
+    /// the `common_layout` crate).
     /// The specific layout is provided in the [`CharacterBundleBuilder::build`]
     /// method's `T`.
     #[must_use]
@@ -554,7 +554,7 @@ impl CharacterBundleBuilder {
     /// [`animate_movement`] system, where the actor's tiles are recalculated
     /// when they stand still or when they do their first step.
     #[must_use]
-    pub fn build<T: IntoMap>(self) -> impl Bundle {
+    pub fn build<T: TopDownScene>(self) -> impl Bundle {
         let CharacterBundleBuilder {
             character,
             initial_position,
@@ -630,7 +630,7 @@ lazy_static! {
     };
 }
 
-impl<T: IntoMap> TileMap<T> {
+impl<T: TopDownScene> TileMap<T> {
     fn replace_actor_tiles(&mut self, entity: Entity, actor: &mut Actor) {
         for (sq, layer) in actor.occupies.drain(..) {
             // we can't assume it to eq the actor's tile because in some rare
@@ -649,7 +649,7 @@ impl<T: IntoMap> TileMap<T> {
             //      actors from [top down left right]
             //    - Player must go last in the iteration over all actor movement
 
-            for sq_to_clear in actor_stands_at.neighbours_no_diagonal() {
+            for sq_to_clear in actor_stands_at.neighbors_no_diagonal() {
                 self.map_tiles(sq_to_clear, |tile| {
                     if let TileKind::Actor(a) = tile {
                         if a != entity {
@@ -706,7 +706,7 @@ impl<T: IntoMap> TileMap<T> {
     #[inline]
     fn can_actor_move(&self, entity: Entity, from: Square) -> bool {
         from.neighbors_with_diagonal()
-            .any(|neighbour| self.is_walkable(neighbour, entity))
+            .any(|neighbor| self.is_walkable(neighbor, entity))
     }
 }
 
@@ -901,7 +901,7 @@ mod tests {
     #[derive(Default, Reflect, Clone, Debug)]
     struct TestScene;
 
-    impl IntoMap for TestScene {
+    impl TopDownScene for TestScene {
         type LocalTileKind = ();
 
         fn bounds() -> [i32; 4] {
@@ -916,6 +916,10 @@ mod tests {
         }
 
         fn asset_path() -> &'static str {
+            unreachable!()
+        }
+
+        fn name() -> &'static str {
             unreachable!()
         }
     }

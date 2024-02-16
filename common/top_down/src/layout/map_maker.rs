@@ -1,6 +1,7 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fs};
 
 use bevy::{render::view::RenderLayers, utils::HashSet, window::PrimaryWindow};
+use map_maker::build_pathfinding_graph::{GraphExt, LocalTileKindGraph};
 use ron::ser::PrettyConfig;
 
 use super::*;
@@ -47,7 +48,7 @@ pub(super) struct TileMapMakerToolbar<L: Tile> {
     copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
 }
 
-pub(super) fn visualize_map<T: IntoMap>(
+pub(super) fn visualize_map<T: TopDownScene>(
     mut cmd: Commands,
     map: Res<TileMap<T>>,
 ) {
@@ -88,7 +89,7 @@ pub(super) fn visualize_map<T: IntoMap>(
     }
 }
 
-pub(super) fn change_square_kind<T: IntoMap>(
+pub(super) fn change_square_kind<T: TopDownScene>(
     mouse: Res<Input<MouseButton>>,
     mut map: ResMut<TileMap<T>>,
     mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
@@ -135,7 +136,7 @@ pub(super) fn change_square_kind<T: IntoMap>(
 }
 
 /// If a square can be painted, paint it.
-fn try_paint<T: IntoMap>(
+fn try_paint<T: TopDownScene>(
     toolbar: &mut TileMapMakerToolbar<T::LocalTileKind>,
     map: &mut TileMap<T>,
     at: Square,
@@ -160,7 +161,7 @@ fn try_paint<T: IntoMap>(
     toolbar.copy_of_map.insert(at, tiles.clone());
 }
 
-pub(super) fn recolor_squares<T: IntoMap>(
+pub(super) fn recolor_squares<T: TopDownScene>(
     map: ResMut<TileMap<T>>,
     toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
 
@@ -189,7 +190,9 @@ pub(super) fn recolor_squares<T: IntoMap>(
             if squares_painted.as_ref().map_or(false, |s| s.contains(at))
                 && (toolbar.paint_over_tiles || tile_kind == TileKind::Empty)
             {
-                toolbar.paint.color()
+                toolbar.paint.color_selected()
+            } else if tile_kind == toolbar.paint {
+                tile_kind.color_selected()
             } else {
                 tile_kind.color()
             };
@@ -198,27 +201,13 @@ pub(super) fn recolor_squares<T: IntoMap>(
     }
 }
 
-pub(super) fn export_map<T: IntoMap>(
-    toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
-) {
-    // equivalent to tile map, but sorted so that we can serialize it
-    // and the output is deterministic
-    //
-    // this struct MUST serialize to a compatible ron output as TileMap
-    #[derive(Serialize)]
-    struct SortedTileMap<T: IntoMap> {
-        squares: BTreeMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
-        #[serde(skip)]
-        _phantom: PhantomData<T>,
-    }
-
-    let mut tilemap_but_sorted: SortedTileMap<T> = SortedTileMap {
-        squares: toolbar.copy_of_map.clone().into_iter().collect(),
-        _phantom: default(),
-    };
-
+pub(super) fn export_map<T: TopDownScene>(
+    mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
+) where
+    T::LocalTileKind: Ord,
+{
     // filter out needless squares
-    tilemap_but_sorted.squares.retain(|sq, tiles| {
+    toolbar.copy_of_map.retain(|sq, tiles| {
         if !T::contains(*sq) {
             return false;
         }
@@ -245,6 +234,21 @@ pub(super) fn export_map<T: IntoMap>(
         !tiles.is_empty()
     });
 
+    // equivalent to tile map, but sorted so that we can serialize it
+    // and the output is deterministic
+    //
+    // this struct MUST serialize to a compatible ron output as TileMap
+    #[derive(Serialize)]
+    struct SortedTileMap<T: TopDownScene> {
+        squares: BTreeMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
+        #[serde(skip)]
+        _phantom: PhantomData<T>,
+    }
+    let tilemap_but_sorted: SortedTileMap<T> = SortedTileMap {
+        squares: toolbar.copy_of_map.clone().into_iter().collect(),
+        _phantom: default(),
+    };
+
     // for internal use only so who cares about unwraps and paths
     std::fs::write(
         format!("main_game/assets/{}", T::asset_path()),
@@ -259,9 +263,29 @@ pub(super) fn export_map<T: IntoMap>(
         .unwrap(),
     )
     .unwrap();
+
+    let g = LocalTileKindGraph::compute_from(&TileMap::<T> {
+        squares: toolbar.copy_of_map.clone(),
+        _phantom: default(),
+    });
+
+    let scene_path =
+        go_back_in_dir_tree_until_path_found(format!("scenes/{}", T::name()));
+
+    let dot_g = g.as_dotgraph(T::name());
+    info!("Graphviz dot graph: \n{}", dot_g.as_dot());
+    let svg = dot_g.into_svg().unwrap();
+    fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg).unwrap();
+
+    let zone_groups_rs = g.generate_zone_groups_rs();
+    fs::write(
+        format!("{scene_path}/src/autogen/zone_groups.rs"),
+        zone_groups_rs,
+    )
+    .unwrap();
 }
 
-impl<L> TileKind<L> {
+impl<L: Eq> TileKind<L> {
     fn color(self) -> Color {
         match self {
             Self::Empty => Color::BLACK.with_a(0.25),
@@ -269,6 +293,17 @@ impl<L> TileKind<L> {
             Self::Trail => Color::WHITE.with_a(0.25),
             Self::Actor { .. } => Color::GOLD.with_a(0.25),
             Self::Local(_) => Color::RED.with_a(0.25),
+        }
+    }
+
+    fn color_selected(self) -> Color {
+        match self {
+            Self::Empty => Color::BLACK.with_a(0.25),
+            Self::Wall => Color::BLACK.with_a(0.9),
+            Self::Trail => Color::WHITE.with_a(0.5),
+            // no point as it's not selectable
+            Self::Actor { .. } => self.color(),
+            Self::Local(_) => Color::GREEN.with_a(0.25),
         }
     }
 }
@@ -303,6 +338,18 @@ fn cursor_to_square(
         camera.viewport_to_world_2d(camera_transform, cursor_pos)?;
 
     Some(layout.world_pos_to_square(world_pos))
+}
+
+fn go_back_in_dir_tree_until_path_found(mut path: String) -> String {
+    const MAX_DEPTH: usize = 5;
+    for _ in 0..MAX_DEPTH {
+        if std::path::Path::new(&path).exists() {
+            return path;
+        }
+        path = format!("../{path}");
+    }
+
+    panic!("Could not find path to {path}");
 }
 
 impl<L: Tile> TileMapMakerToolbar<L> {

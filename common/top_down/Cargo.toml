@@ -13,6 +13,8 @@ common_action.workspace = true
 common_assets.workspace = true
 common_ext.workspace = true
 common_story.workspace = true
+common_visuals.workspace = true
+graphviz-rust = { workspace = true, optional = true }
 itertools.workspace = true
 lazy_static.workspace = true
 leafwing-input-manager.workspace = true
@@ -21,7 +23,8 @@ rand.workspace = true
 ron = { workspace = true, optional = true }
 serde.workspace = true
 smallvec.workspace = true
+strum.workspace = true
 
 
 [features]
-dev = ["ron"]
+dev = ["ron", "graphviz-rust"]

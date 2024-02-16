@@ -9,7 +9,7 @@ use std::ops::{AddAssign, Not};
 use bevy::prelude::*;
 use bevy_grid_squared::Square;
 
-use crate::{Actor, ActorTarget, IntoMap, TileMap};
+use crate::{Actor, ActorTarget, TileMap, TopDownScene};
 
 /// Describes state of an NPC that's positioned in the current map.
 /// As opposed to just an abstract simulation, this NPC is actively moving and
@@ -146,7 +146,7 @@ pub fn drive_behavior(
 /// If no path can be found, the planned path is set to an empty vector.
 ///
 /// Condition this to run only on new event.
-pub fn plan_path<T: IntoMap>(
+pub fn plan_path<T: TopDownScene>(
     map: Res<TileMap<T>>,
     mut events: EventReader<PlanPathEvent>,
 
@@ -163,14 +163,18 @@ pub fn plan_path<T: IntoMap>(
         // TODO: limit how often this can be done per second for a given NPC
         npc_in_the_map.planned_path_index = 0;
         npc_in_the_map.planned_path = map
-            .find_path(actor_entity, actor.current_square(), *target_square)
+            .find_partial_path(
+                actor_entity,
+                actor.current_square(),
+                *target_square,
+            )
             .unwrap_or_default(); // no path
         trace!("Found path of len {}", npc_in_the_map.planned_path.len());
     }
 }
 
 /// Takes tiles from the planned path and sets it as the actor's goal path.
-pub fn run_path<T: IntoMap>(
+pub fn run_path<T: TopDownScene>(
     map: Res<TileMap<T>>,
 
     mut actors: Query<(Entity, &mut Actor, &mut NpcInTheMap)>,

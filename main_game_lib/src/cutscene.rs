@@ -65,7 +65,9 @@ pub fn not_in_cutscene() -> impl FnMut(Option<Res<Cutscene>>) -> bool {
     move |cutscene| cutscene.is_none()
 }
 
+/// A trait for creating cutscenes.
 pub trait IntoCutscene {
+    /// A cutscene is a sequence of steps.
     fn sequence(self) -> Vec<CutsceneStep>;
 
     /// If true, the cutscene will be letterboxed with two black bars: above and
@@ -114,6 +116,7 @@ pub struct Cutscene {
     letterboxing_entities: Option<[Entity; 3]>,
 }
 
+/// What are the possible operations that a cutscene can perform?
 #[derive(Reflect, Clone, strum::Display)]
 pub enum CutsceneStep {
     /// (condition, on_true, on_false)
@@ -136,8 +139,11 @@ pub enum CutsceneStep {
     /// This typically is used to start an animation when the entity has
     /// [`AtlasAnimation`] component.
     InsertAtlasAnimationTimerTo {
+        /// Will be used with [`Commands`] to insert the component.
         entity: Entity,
+        /// How long should the animation last.
         duration: Duration,
+        /// This is typically [`TimerMode::Repeating`].
         mode: TimerMode,
     },
     /// An entity that has [`AtlasAnimation`] component will have its
@@ -221,6 +227,7 @@ struct LetterboxingTopQuad;
 #[derive(Component)]
 struct LetterboxingBottomQuad;
 
+/// Registers all the necessary systems that handle cutscene logic.
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -235,6 +242,7 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
+/// Spawns the given cutscene.
 pub fn spawn_cutscene<Scene: IntoCutscene>(
     cmd: &mut Commands,
     cutscene: Scene,
