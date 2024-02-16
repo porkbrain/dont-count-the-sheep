@@ -43,6 +43,7 @@ pub fn windowed_app() -> App {
                 common_assets=trace,\
                 common_top_down=trace,\
                 common_top_down::actor::npc=debug,\
+                common_top_down::cameras=debug,\
                 common_loading_screen=trace,\
                 common_physics=trace,\
                 common_store=trace,\

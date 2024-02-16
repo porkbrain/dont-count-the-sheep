@@ -153,6 +153,23 @@ impl BeginInterpolationEvent {
         }
     }
 
+    /// Interpolates translation of an entity.
+    ///
+    /// Defaults to 1 second and lerps from the latest position to the new
+    /// position unless the initial position is provided.
+    pub fn of_translation(
+        entity: Entity,
+        from: Option<Vec2>,
+        to: Vec2,
+    ) -> Self {
+        Self {
+            entity,
+            over: Duration::from_secs(1),
+            of: InterpolationOf::Translation { from, to },
+            animation_curve: None,
+        }
+    }
+
     /// How long should the interpolation take?
     /// Defaults to 1 second.
     pub fn over(mut self, over: Duration) -> Self {
@@ -179,6 +196,14 @@ pub enum InterpolationOf {
         /// The color to interpolate to.
         to: Color,
     },
+    /// Interpolate the position of an entity.
+    Translation {
+        /// Where does the object start?
+        /// If not provided, the current position is used.
+        from: Option<Vec2>,
+        /// Where should the object end up?
+        to: Vec2,
+    },
 }
 
 /// Interpolates the color of a sprite.
@@ -188,6 +213,19 @@ pub struct ColorInterpolation {
     /// sprite.
     pub(crate) from: Option<Color>,
     pub(crate) to: Color,
+    pub(crate) started_at: Stopwatch,
+    pub(crate) over: Duration,
+    #[reflect(ignore)]
+    pub(crate) animation_curve: Option<CubicSegment<Vec2>>,
+}
+
+/// Interpolates translation of an entity.
+#[derive(Component, Reflect)]
+pub struct TranslationInterpolation {
+    /// Can be none on the first run, then we default it to the position of the
+    /// entity.
+    pub(crate) from: Option<Vec2>,
+    pub(crate) to: Vec2,
     pub(crate) started_at: Stopwatch,
     pub(crate) over: Duration,
     #[reflect(ignore)]

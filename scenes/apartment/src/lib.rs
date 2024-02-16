@@ -18,6 +18,7 @@ use consts::START_LOADING_SCREEN_AFTER;
 use main_game_lib::{
     common_action::{interaction_just_pressed, move_action_just_pressed},
     common_top_down::TopDownScene,
+    cutscene::not_in_cutscene,
     GlobalGameStateTransitionStack,
 };
 use prelude::*;
@@ -95,6 +96,7 @@ pub fn add(app: &mut App) {
         (
             common_visuals::systems::advance_atlas_animation,
             common_visuals::systems::smoothly_translate,
+            common_visuals::systems::interpolate.run_if(not_in_cutscene()),
         )
             .run_if(in_state(GlobalGameState::InApartment)),
     );
