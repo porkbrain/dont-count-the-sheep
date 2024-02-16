@@ -578,10 +578,12 @@ fn watch_entry_to_hallway(
 }
 
 impl common_top_down::layout::Tile for ApartmentTileKind {
+    #[inline]
     fn is_walkable(&self, _: Entity) -> bool {
         true
     }
 
+    #[inline]
     fn is_zone(&self) -> bool {
         match self {
             Self::BedZone
@@ -594,10 +596,17 @@ impl common_top_down::layout::Tile for ApartmentTileKind {
         }
     }
 
+    #[inline]
     fn zones_iter() -> impl Iterator<Item = Self> {
         Self::iter().filter(|kind| kind.is_zone())
     }
+
+    #[inline]
+    fn zone_group(&self) -> Option<common_top_down::layout::ZoneGroup> {
+        self.zone_group_autogen()
+    }
 }
+include!("autogen/zone_groups.rs");
 
 impl TopDownScene for Apartment {
     type LocalTileKind = ApartmentTileKind;

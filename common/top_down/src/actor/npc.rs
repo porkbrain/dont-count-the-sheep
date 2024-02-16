@@ -163,7 +163,11 @@ pub fn plan_path<T: TopDownScene>(
         // TODO: limit how often this can be done per second for a given NPC
         npc_in_the_map.planned_path_index = 0;
         npc_in_the_map.planned_path = map
-            .find_path(actor_entity, actor.current_square(), *target_square)
+            .find_partial_path(
+                actor_entity,
+                actor.current_square(),
+                *target_square,
+            )
             .unwrap_or_default(); // no path
         trace!("Found path of len {}", npc_in_the_map.planned_path.len());
     }

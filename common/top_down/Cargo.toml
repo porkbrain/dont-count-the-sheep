@@ -27,5 +27,4 @@ strum.workspace = true
 
 
 [features]
-dev = ["ron"]
-build-script = ["graphviz-rust", "ron"]
+dev = ["ron", "graphviz-rust"]

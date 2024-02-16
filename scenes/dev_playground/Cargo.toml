@@ -8,11 +8,10 @@ edition.workspace = true
 bevy = { workspace = true, features = ["glam_assert"] }
 bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true
-common_top_down = { workspace = true, features = ["build-script"] }
+common_top_down.workspace = true
 itertools.workspace = true
 lazy_static.workspace = true
 main_game_lib = { workspace = true, features = ["dev-playground"] }
-md5.workspace = true
 rand.workspace = true
 serde.workspace = true
 smallvec.workspace = true

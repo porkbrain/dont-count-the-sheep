@@ -1,4 +1,5 @@
 use bevy_grid_squared::SquareLayout;
+use common_top_down::layout::ZoneGroup;
 use lazy_static::lazy_static;
 use main_game_lib::{common_top_down, common_top_down::TopDownScene};
 use serde::{Deserialize, Serialize};
@@ -51,13 +52,18 @@ pub enum DevPlaygroundTileKind {
     ZoneF,
     ZoneG,
     ZoneH,
+    ZoneI,
+    ZoneJ,
+    ZoneK,
 }
 
 impl common_top_down::layout::Tile for DevPlaygroundTileKind {
+    #[inline]
     fn is_walkable(&self, _: Entity) -> bool {
         true
     }
 
+    #[inline]
     fn is_zone(&self) -> bool {
         match self {
             Self::ZoneA
@@ -67,14 +73,24 @@ impl common_top_down::layout::Tile for DevPlaygroundTileKind {
             | Self::ZoneE
             | Self::ZoneF
             | Self::ZoneG
-            | Self::ZoneH => true,
+            | Self::ZoneH
+            | Self::ZoneI
+            | Self::ZoneJ
+            | Self::ZoneK => true,
         }
     }
 
+    #[inline]
     fn zones_iter() -> impl Iterator<Item = Self> {
         Self::iter().filter(|kind| kind.is_zone())
     }
+
+    #[inline]
+    fn zone_group(&self) -> Option<ZoneGroup> {
+        self.zone_group_autogen()
+    }
 }
+include!("autogen/zone_groups.rs");
 
 impl TopDownScene for DevPlayground {
     type LocalTileKind = DevPlaygroundTileKind;

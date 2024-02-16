@@ -18,11 +18,17 @@ use crate::{
 /// to `map.ron` in the current directory.
 /// We draw an overlay with tiles that you can edit with left and right mouse
 /// buttons.
+///
+/// The `Ord` bound is required for the map maker export.
+/// If needed, this function can be reorganized to avoid the bound in
+/// production.
 pub fn register<T: TopDownScene, S: States>(
     app: &mut App,
     loading: S,
     running: S,
-) {
+) where
+    T::LocalTileKind: Ord,
+{
     app.add_event::<ActorMovementEvent<T::LocalTileKind>>()
         .init_asset_loader::<RonLoader<TileMap<T>>>()
         .init_asset::<TileMap<T>>()
