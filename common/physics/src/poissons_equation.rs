@@ -26,10 +26,11 @@ pub fn register_visualization<
     S: States,
 >(
     app: &mut App,
+    state: S,
 ) {
     app.add_systems(
         bevy::app::Startup,
-        systems::spawn_visualization::<T, W>.run_if(in_state(state)),
+        systems::spawn_visualization::<T, W>.run_if(in_state(state.clone())),
     )
     .add_systems(
         bevy::app::Update,

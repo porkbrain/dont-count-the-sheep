@@ -349,7 +349,7 @@ fn go_back_in_dir_tree_until_path_found(mut path: String) -> String {
         path = format!("../{path}");
     }
 
-    panic!("Could not find path to {}", path);
+    panic!("Could not find path to {path}");
 }
 
 impl<L: Tile> TileMapMakerToolbar<L> {

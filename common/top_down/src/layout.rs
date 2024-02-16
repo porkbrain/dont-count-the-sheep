@@ -500,8 +500,6 @@ impl<T: TopDownScene> TileMap<T> {
 
         if let Some(to_zone) = self.zone_group(to) {
             if Some(to_zone) == self.zone_group(from) {
-                info!("In same group");
-
                 // a)
 
                 // short-circuiting is alright bcs we already got a positive
@@ -521,7 +519,6 @@ impl<T: TopDownScene> TileMap<T> {
                 // so we want a square that has a tile that's a neighbour or
                 // overlaps with any zone of the target?
 
-                info!("strictly_better {strictly_better:?}");
                 if strictly_better.is_empty() {
                     // we've already used all group info we could
 
@@ -538,7 +535,6 @@ impl<T: TopDownScene> TileMap<T> {
                 }
             } else {
                 // b)
-                info!("In different group");
 
                 self.partial_astar(who, from, to, |square: &_| {
                     self.zone_group(*square) == Some(to_zone)
