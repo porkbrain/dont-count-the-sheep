@@ -264,7 +264,7 @@ fn spawn(
 
     // cloud atlas is rendered on top of the bg but below the furniture
 
-    let mut cloud_atlas_bundle = |position: Pos2| {
+    let mut cloud_atlas_bundle = |position: Vec2| {
         (
             LayoutEntity,
             RenderLayers::layer(render_layer::BG),

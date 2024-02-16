@@ -1,5 +1,11 @@
+//! Game state management.
+
 use crate::prelude::*;
 
+/// Provides control for the game states.
+/// Each scene can add whatever state it needs to this enum.
+/// Transitions between states are controlled by the
+/// [`GlobalGameStateTransitionStack`]. It defines what transitions are allowed.
 #[derive(States, Default, Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
 pub enum GlobalGameState {
     /// Dummy state so that we can do loading transitions.
@@ -36,6 +42,7 @@ pub enum GlobalGameState {
     /// Performs all necessary cleanup and exits the game.
     Exit,
 
+    /// A state for development purposes.
     #[cfg(feature = "dev-playground")]
     InDevPlayground,
 }
@@ -63,10 +70,12 @@ pub struct GlobalGameStateTransitionStack {
     stack: Vec<GlobalGameStateTransition>,
 }
 impl GlobalGameStateTransitionStack {
+    /// Expect a transition.
     pub fn push(&mut self, transition: GlobalGameStateTransition) {
         self.stack.push(transition);
     }
 
+    /// Given state that's ready to transition, where should we go next?
     pub fn pop_next_for(
         &mut self,
         state: GlobalGameState,

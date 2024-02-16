@@ -1,5 +1,6 @@
+#![doc = include_str!("../../README.md")]
 #![feature(trivial_bounds)]
-// #![deny(missing_docs)]
+#![deny(missing_docs)]
 
 pub mod cutscene;
 pub mod prelude;
@@ -19,6 +20,9 @@ pub use common_top_down;
 pub use common_visuals::{self, PRIMARY_COLOR};
 pub use state::*;
 
+/// Constructs a new app with all the necessary plugins and systems.
+///
+/// Main game bin then adds scenes and runs it.
 pub fn windowed_app() -> App {
     let mut app = App::new();
 

@@ -6,7 +6,7 @@ A top down pixelart game created with [Bevy](https://bevyengine.org/).
 
 # Organization
 
-There are crates with common logic that help with for example [animation](common/visuals/), [input handling](common/action/), [loading screen](common/loading_screen/), [map layout, npc and player control](common/top_down/) and more in the [`common`](common/) directory.
+There are crates in the [`common`](common/) directory that help with [animation](common/visuals/), [input handling](common/action/), [loading screen](common/loading_screen/), [map layout, npc and player control](common/top_down/) and more.
 These crates typically either export plugins or systems that one has to register themselves.
 
 Then there's the [main game lib](main_game_lib/).

@@ -309,7 +309,7 @@ impl Climate {
     /// In interval [0, 1], how strongly is target lit by the climate?
     /// This ignores any possible obstacle in the way and just computes angle
     /// between the closest ray and the target.
-    pub(crate) fn ray_bath(&self, self_pos: Pos2, target_pos: Pos2) -> f32 {
+    pub(crate) fn ray_bath(&self, self_pos: Vec2, target_pos: Vec2) -> f32 {
         let angle_to_ray =
             self.angle_between_closest_ray_and_point(self_pos, target_pos);
 
