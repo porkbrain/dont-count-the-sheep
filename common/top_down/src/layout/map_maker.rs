@@ -158,7 +158,11 @@ fn try_paint<T: TopDownScene>(
 
     tiles[toolbar.layer] = toolbar.paint;
     // store the user change to the copy that will be saved
-    toolbar.copy_of_map.insert(at, tiles.clone());
+    let copy_entry = toolbar.copy_of_map.entry(at).or_default();
+    if copy_entry.len() <= toolbar.layer {
+        copy_entry.resize(toolbar.layer + 1, TileKind::Empty);
+    }
+    copy_entry[toolbar.layer] = toolbar.paint;
 }
 
 pub(super) fn recolor_squares<T: TopDownScene>(

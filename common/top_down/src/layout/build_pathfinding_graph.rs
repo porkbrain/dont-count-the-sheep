@@ -275,14 +275,17 @@ where
             ));
         }
 
-        autogen
+        let mut output = autogen
             .replace(
                 "%L%",
                 &iter::once("crate")
                     .chain(L::type_path().split("::").skip(1))
                     .join("::"),
             )
-            .replace("%ZONE_GROUPS%", &zone_groups_str)
+            .replace("%ZONE_GROUPS%", &zone_groups_str);
+
+        output.push_str("\n");
+        output
     }
 
     /// Returns a [`Graph`] representation of the relationships between the
