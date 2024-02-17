@@ -191,7 +191,8 @@ impl BeginInterpolationEvent {
         };
     }
 
-    /// Equivalent to [`Self::insert_to`] but with a more explicit name.
+    /// Equivalent to [`Self::insert_to`] but just takes the [`EntityCommands`]
+    /// directly.
     pub fn insert(self, cmd: &mut Commands) {
         let mut entity_cmd = cmd.entity(self.entity);
         self.insert_to(&mut entity_cmd);
