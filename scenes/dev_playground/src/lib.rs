@@ -59,7 +59,6 @@ pub fn add(app: &mut App) {
         FixedUpdate,
         (
             common_visuals::systems::advance_atlas_animation,
-            common_visuals::systems::smoothly_translate,
             common_visuals::systems::interpolate,
         )
             .run_if(in_state(GlobalGameState::InDevPlayground)),

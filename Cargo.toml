@@ -24,43 +24,8 @@ members = [
 ]
 
 
-[workspace.dependencies]
-bevy_grid_squared = { path = "bevy_grid_squared", features = ["serde"] }
-bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
-bevy_pixel_camera = "0.12"
-bevy_webp_anim = "0.2"
-bevy-inspector-egui = { version = "0.22", default-features = false }
-common_action = { path = "common/action" }
-common_assets = { path = "common/assets" }
-common_ext = { path = "common/ext" }
-common_loading_screen = { path = "common/loading_screen" }
-common_physics = { path = "common/physics" }
-common_store = { path = "common/store" }
-common_story = { path = "common/story" }
-common_top_down = { path = "common/top_down" }
-common_visuals = { path = "common/visuals" }
-graphviz-rust = "0.7"
-itertools = "0.12"
-lazy_static = "1.4"
-leafwing-input-manager = "0.11"
-main_game_lib = { path = "main_game_lib" }
-pathfinding = "4.8"
-rand = "0.8"
-ron = "0.8"
-rusqlite = { version = "0.30", features = ["bundled", "chrono"] }
-rusqlite_migration = "1.1"
-scene_apartment = { path = "scenes/apartment" }
-scene_dev_playground = { path = "scenes/dev_playground" }
-scene_downtown = { path = "scenes/downtown" }
-scene_meditation = { path = "scenes/meditation" }
-serde = { version = "1.0", features = ["derive"] }
-smallvec = "1.13"
-strum = { version = "0.26", features = ["derive"] }
-thiserror = "1.0"
-
-
 [workspace.dependencies.bevy]
-version = "0.12.1"
+version = "0.12.1" # ready for 0.13
 default-features = false
 features = [
     "bevy_asset",
@@ -80,6 +45,43 @@ features = [
     "webgl2",
     "x11",
 ]
+
+[workspace.dependencies]
+bevy_pixel_camera = "0.12"                                           # waiting for 0.13 support
+bevy_webp_anim = "0.2"                                               # ready for 0.13
+bevy-inspector-egui = { version = "0.22", default-features = false } # waiting for 0.13 support
+leafwing-input-manager = "0.11"                                      # waiting for 0.13 support
+
+scene_apartment = { path = "scenes/apartment" }
+scene_dev_playground = { path = "scenes/dev_playground" }
+scene_downtown = { path = "scenes/downtown" }
+scene_meditation = { path = "scenes/meditation" }
+
+bevy_grid_squared = { path = "bevy_grid_squared", features = ["serde"] }
+bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
+common_action = { path = "common/action" }
+common_assets = { path = "common/assets" }
+common_ext = { path = "common/ext" }
+common_loading_screen = { path = "common/loading_screen" }
+common_physics = { path = "common/physics" }
+common_store = { path = "common/store" }
+common_story = { path = "common/story" }
+common_top_down = { path = "common/top_down" }
+common_visuals = { path = "common/visuals" }
+main_game_lib = { path = "main_game_lib" }
+
+graphviz-rust = "0.7"
+itertools = "0.12"
+lazy_static = "1.4"
+pathfinding = "4.8"
+rand = "0.8"
+ron = "0.8"
+rusqlite = { version = "0.30", features = ["bundled", "chrono"] }
+rusqlite_migration = "1.1"
+serde = { version = "1.0", features = ["derive"] }
+smallvec = "1.13"
+strum = { version = "0.26", features = ["derive"] }
+thiserror = "1.0"
 
 
 [profile.release]

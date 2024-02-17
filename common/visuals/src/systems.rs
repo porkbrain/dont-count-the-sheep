@@ -6,7 +6,7 @@ use common_ext::ColorExt;
 use crate::{
     AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer,
     BeginAtlasAnimationAtRandom, BeginInterpolationEvent, ColorInterpolation,
-    Flicker, InterpolationOf, SmoothTranslation, SmoothTranslationEnd,
+    Flicker, InterpolationOf, OnInterpolationFinished,
     TranslationInterpolation,
 };
 
@@ -127,51 +127,6 @@ pub fn flicker(
     }
 }
 
-/// Smoothly translates entities from one position to another.
-///
-/// TODO: merge with interpolation
-pub fn smoothly_translate(
-    mut cmd: Commands,
-    time: Res<Time>,
-
-    mut entities: Query<(Entity, &mut Transform, &mut SmoothTranslation)>,
-) {
-    let dt = time.delta();
-    for (entity, mut transform, mut animation) in entities.iter_mut() {
-        animation.stopwatch.tick(dt);
-
-        let keep_z = transform.translation.z;
-
-        if animation.stopwatch.elapsed() >= animation.duration {
-            transform.translation = animation.target.extend(keep_z);
-
-            match &animation.on_finished {
-                SmoothTranslationEnd::RemoveSmoothTranslationComponent => {
-                    cmd.entity(entity).remove::<SmoothTranslation>();
-                }
-                SmoothTranslationEnd::Custom(fun) => fun(&mut cmd),
-            }
-            continue;
-        }
-
-        let lerp_factor = animation.stopwatch.elapsed_secs()
-            / animation.duration.as_secs_f32();
-
-        transform.translation = animation
-            .animation_curve
-            .as_ref()
-            .map(|curve| {
-                animation
-                    .from
-                    .lerp(animation.target, curve.ease(lerp_factor))
-            })
-            .unwrap_or_else(|| {
-                animation.from.lerp(animation.target, lerp_factor)
-            })
-            .extend(keep_z);
-    }
-}
-
 /// Receives events to start interpolations.
 ///
 /// This is always run last, so that no `Update` schedule system must explicitly
@@ -190,6 +145,7 @@ pub(crate) fn recv_begin_interpolation_events(
         of,
         over,
         animation_curve: curve,
+        when_finished,
     } in events.read()
     {
         let mut entity_cmd = cmd.entity(*entity);
@@ -201,6 +157,7 @@ pub(crate) fn recv_begin_interpolation_events(
                     over: *over,
                     started_at: Default::default(),
                     animation_curve: curve.clone(),
+                    when_finished: when_finished.clone(),
                 })
             }
             InterpolationOf::Translation { from, to } => {
@@ -210,6 +167,7 @@ pub(crate) fn recv_begin_interpolation_events(
                     over: *over,
                     started_at: Default::default(),
                     animation_curve: curve.clone(),
+                    when_finished: when_finished.clone(),
                 })
             }
         };
@@ -256,6 +214,13 @@ pub fn interpolate(
             if elapsed_fraction >= 1.0 {
                 *color = interpolation.to;
                 cmd.entity(entity).remove::<ColorInterpolation>();
+
+                match &interpolation.when_finished {
+                    Some(OnInterpolationFinished::Custom(fun)) => {
+                        fun(&mut cmd);
+                    }
+                    None => {}
+                }
             } else {
                 let lerp_factor = interpolation
                     .animation_curve
@@ -288,6 +253,13 @@ pub fn interpolate(
             transform.translation =
                 interpolation.to.extend(transform.translation.z);
             cmd.entity(entity).remove::<TranslationInterpolation>();
+
+            match &interpolation.when_finished {
+                Some(OnInterpolationFinished::Custom(fun)) => {
+                    fun(&mut cmd);
+                }
+                None => {}
+            }
         } else {
             let lerp_factor = interpolation
                 .animation_curve

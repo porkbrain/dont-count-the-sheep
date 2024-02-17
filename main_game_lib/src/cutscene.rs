@@ -27,7 +27,7 @@ use common_visuals::{
         order, render_layer, PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH,
         PIXEL_ZOOM,
     },
-    AtlasAnimation, AtlasAnimationTimer, SmoothTranslation,
+    AtlasAnimation, AtlasAnimationTimer, BeginInterpolationEvent,
 };
 
 use crate::{
@@ -286,12 +286,6 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
                 Name::new("Letterboxing: top quad"),
                 RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
                 LetterboxingTopQuad,
-                SmoothTranslation {
-                    from: TOP_QUAD_INITIAL_POS,
-                    target: TOP_QUAD_TARGET_POS,
-                    duration: LETTERBOXING_FADE_IN_DURATION,
-                    ..default()
-                },
                 SpriteBundle {
                     sprite: Sprite {
                         color: Color::BLACK,
@@ -308,18 +302,19 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
                 },
             ))
             .id();
+        BeginInterpolationEvent::of_translation(
+            top,
+            Some(TOP_QUAD_INITIAL_POS),
+            TOP_QUAD_TARGET_POS,
+        )
+        .over(LETTERBOXING_FADE_IN_DURATION)
+        .insert_to(cmd);
 
         let bottom = cmd
             .spawn((
                 Name::new("Letterboxing: bottom quad"),
                 LetterboxingBottomQuad,
                 RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
-                SmoothTranslation {
-                    from: LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
-                    target: LETTERBOXING_BOTTOM_QUAD_TARGET_POS,
-                    duration: LETTERBOXING_FADE_IN_DURATION,
-                    ..default()
-                },
                 SpriteBundle {
                     sprite: Sprite {
                         color: Color::BLACK,
@@ -336,6 +331,13 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
                 },
             ))
             .id();
+        BeginInterpolationEvent::of_translation(
+            top,
+            Some(LETTERBOXING_BOTTOM_QUAD_INITIAL_POS),
+            LETTERBOXING_BOTTOM_QUAD_TARGET_POS,
+        )
+        .over(LETTERBOXING_FADE_IN_DURATION)
+        .insert_to(cmd);
 
         Some([camera, top, bottom])
     } else {
@@ -386,26 +388,26 @@ impl Cutscene {
             if let Some(entities) = self.letterboxing_entities.take() {
                 // smoothly animate quads out and when down, despawn everything
 
-                cmd.entity(entities[2]).insert(SmoothTranslation {
-                    from: LETTERBOXING_BOTTOM_QUAD_TARGET_POS,
-                    target: LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
-                    duration: LETTERBOXING_FADE_OUT_DURATION,
-                    ..default()
-                });
+                BeginInterpolationEvent::of_translation(
+                    entities[2],
+                    Some(LETTERBOXING_BOTTOM_QUAD_TARGET_POS),
+                    LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
+                )
+                .over(LETTERBOXING_FADE_OUT_DURATION)
+                .insert_to(cmd);
 
-                cmd.entity(entities[1]).insert(SmoothTranslation {
-                    from: LETTERBOXING_TOP_QUAD_TARGET_POS,
-                    target: LETTERBOXING_TOP_QUAD_INITIAL_POS,
-                    duration: LETTERBOXING_FADE_OUT_DURATION,
-                    on_finished: common_visuals::SmoothTranslationEnd::Custom(
-                        Box::new(move |cmd: &mut Commands| {
-                            cmd.entity(entities[0]).despawn();
-                            cmd.entity(entities[1]).despawn();
-                            cmd.entity(entities[2]).despawn();
-                        }),
-                    ),
-                    ..default()
-                });
+                BeginInterpolationEvent::of_translation(
+                    entities[1],
+                    Some(LETTERBOXING_TOP_QUAD_TARGET_POS),
+                    LETTERBOXING_TOP_QUAD_INITIAL_POS,
+                )
+                .over(LETTERBOXING_FADE_OUT_DURATION)
+                .when_finished_do(move |cmd: &mut Commands| {
+                    cmd.entity(entities[0]).despawn();
+                    cmd.entity(entities[1]).despawn();
+                    cmd.entity(entities[2]).despawn();
+                })
+                .insert_to(cmd);
             }
         } else {
             self.stopwatch.reset();
@@ -736,7 +738,7 @@ fn begin_moving_entity(
     if let Ok(transform) = transforms.get(*who) {
         let from = transform.translation.truncate();
 
-        let target = match to {
+        let to = match to {
             Destination::Entity(entity) => transforms
                 .get(*entity)
                 .expect("Entity in cutscene must exist") // SOFTEN
@@ -745,13 +747,10 @@ fn begin_moving_entity(
             Destination::Position(pos) => *pos,
         };
 
-        cmd.entity(*who).insert(SmoothTranslation {
-            from,
-            target,
-            duration: *over,
-            animation_curve: animation_curve.clone(),
-            ..default()
-        });
+        BeginInterpolationEvent::of_translation(*who, Some(from), to)
+            .over(*over)
+            .with_animation_opt_curve(animation_curve.clone())
+            .insert_to(&mut cmd);
     }
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
