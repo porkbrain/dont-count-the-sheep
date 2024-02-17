@@ -75,7 +75,7 @@ pub trait IntoCutscene {
     /// A camera and two quads are spawned for this purpose.
     /// They are despawned when the cutscene ends.
     ///
-    /// Make sure you run the [`common_visuals::systems::smoothly_translate`]
+    /// Make sure you run the [`common_visuals::systems::interpolate`]
     /// system.
     ///
     /// <https://en.wikipedia.org/wiki/Letterboxing_(filming)>
@@ -193,9 +193,9 @@ pub enum CutsceneStep {
     BeginPortraitDialog(DialogRoot),
     /// Waits until there is no portrait dialog resource.
     WaitForPortraitDialogToEnd,
-    /// Inserts [`SmoothTranslation`] to the given entity.
-    /// The entity must have [`Transform`] component and the
-    /// [`common_visuals::systems::smoothly_translate`] system must be run.
+    /// Inserts [`common_visuals::TranslationInterpolation`] to the
+    /// given entity. The entity must have [`Transform`] component and the
+    /// [`common_visuals::systems::interpolate`] system must be run.
     /// Also, this system does not wait for the translation to end.
     /// It just starts it.
     BeginMovingEntity {
