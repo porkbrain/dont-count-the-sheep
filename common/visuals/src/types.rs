@@ -1,6 +1,8 @@
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
-use bevy::{prelude::*, time::Stopwatch, utils::Instant};
+use bevy::{
+    ecs::system::EntityCommands, prelude::*, time::Stopwatch, utils::Instant,
+};
 
 use crate::EASE_IN_OUT;
 
@@ -82,38 +84,6 @@ pub struct Flicker {
     pub shown_for: Duration,
 }
 
-/// Smoothly translates an entity from one position to another.
-///
-/// TODO: merge to interpolation
-#[derive(Component, Default, Reflect)]
-pub struct SmoothTranslation {
-    /// What happens when we're done?
-    #[reflect(ignore)]
-    pub on_finished: SmoothTranslationEnd,
-    /// Where did the object start?
-    pub from: Vec2,
-    /// Where should the object end up?
-    pub target: Vec2,
-    /// How long should the translation take?
-    pub duration: Duration,
-    /// How long has the translation been running?
-    pub stopwatch: Stopwatch,
-    /// Not not provided then the translation will be linear.
-    #[reflect(ignore)]
-    pub animation_curve: Option<CubicSegment<Vec2>>,
-}
-
-/// What should happen when the translation is done?
-#[derive(Default, Reflect)]
-pub enum SmoothTranslationEnd {
-    #[default]
-    /// Just remove the component.
-    RemoveSmoothTranslationComponent,
-    #[reflect(ignore)]
-    /// Can schedule commands.
-    Custom(Box<dyn Fn(&mut Commands) + Send + Sync>),
-}
-
 /// We use events instead of inserting the component directly because there
 /// might be races such as one interpolation finishing which removes the
 /// relevant component and another starting which inserts the same component.
@@ -137,9 +107,96 @@ pub struct BeginInterpolationEvent {
     /// Optionally select a cubic curve to follow instead of the default linear
     /// interpolation.
     pub animation_curve: Option<CubicSegment<Vec2>>,
+    /// Any extra logic when interpolation is done?
+    pub(crate) when_finished: Option<OnInterpolationFinished>,
+}
+
+/// What should happen when the interpolation is done?
+#[derive(Clone)]
+pub(crate) enum OnInterpolationFinished {
+    /// Can schedule commands.
+    Custom(Arc<dyn Fn(&mut Commands) + Send + Sync>),
 }
 
 impl BeginInterpolationEvent {
+    /// There are two ways of starting interpolations.
+    /// One is to emit this struct as an event with [`EventWriter`].
+    /// The advantage is deterministic order of operations.
+    ///
+    /// Use this method if you're not worried about the component potentially
+    /// being removed in a scenario such as:
+    ///
+    /// ```ignore
+    /// use bevy::prelude::*;
+    /// fn main() {
+    ///     App::new()
+    ///         .add_systems(Startup, setup)
+    ///         .add_systems(Update, (
+    ///             schedule_insert_foo,
+    ///             schedule_remove_foo,
+    ///         ).chain())
+    ///         .run()
+    /// }
+    ///
+    /// #[derive(Component)]
+    /// struct Bar;
+    ///
+    /// #[derive(Component)]
+    /// struct Foo;
+    ///
+    /// fn setup(mut cmd: Commands) {
+    ///     cmd.spawn(Bar);
+    /// }
+    ///
+    /// fn schedule_insert_foo(mut cmd: Commands, q: Query<Entity, With<Bar>>) {
+    ///     let bar = q.single();
+    ///     cmd.entity(bar).insert(Foo);
+    /// }
+    ///
+    /// fn schedule_remove_foo(mut cmd: Commands, q: Query<Entity, With<Bar>>) {
+    ///     let bar = q.single();
+    ///     cmd.entity(bar).remove::<Foo>();
+    /// }
+    /// ```
+    pub fn insert_to(self, entity_cmd: &mut EntityCommands) {
+        let Self {
+            of,
+            over,
+            animation_curve,
+            when_finished,
+            entity: _,
+        } = self;
+
+        match of {
+            InterpolationOf::Color { from, to } => {
+                entity_cmd.insert(ColorInterpolation {
+                    from,
+                    to,
+                    over,
+                    animation_curve,
+                    when_finished,
+                    started_at: Default::default(),
+                })
+            }
+            InterpolationOf::Translation { from, to } => {
+                entity_cmd.insert(TranslationInterpolation {
+                    from,
+                    to,
+                    over,
+                    animation_curve,
+                    when_finished,
+                    started_at: Default::default(),
+                })
+            }
+        };
+    }
+
+    /// Equivalent to [`Self::insert_to`] but with a more explicit name.
+    pub fn insert(self, cmd: &mut Commands) {
+        let mut entity_cmd = cmd.entity(self.entity);
+        self.insert_to(&mut entity_cmd);
+    }
+
     /// Interpolates the color of a sprite.
     ///
     /// Defaults to 1 second and lerps from the latest color to the new color
@@ -150,6 +207,7 @@ impl BeginInterpolationEvent {
             over: Duration::from_secs(1),
             of: InterpolationOf::Color { from, to },
             animation_curve: None,
+            when_finished: None,
         }
     }
 
@@ -167,6 +225,7 @@ impl BeginInterpolationEvent {
             over: Duration::from_secs(1),
             of: InterpolationOf::Translation { from, to },
             animation_curve: None,
+            when_finished: None,
         }
     }
 
@@ -182,6 +241,39 @@ impl BeginInterpolationEvent {
     /// interpolation.
     pub fn with_animation_curve(mut self, curve: CubicSegment<Vec2>) -> Self {
         self.animation_curve = Some(curve);
+        self
+    }
+
+    /// Like [`Self::with_animation_curve`] but works with APIs that use option.
+    pub fn with_animation_opt_curve(
+        mut self,
+        curve: Option<CubicSegment<Vec2>>,
+    ) -> Self {
+        self.animation_curve = curve;
+        self
+    }
+
+    /// Sets the animation curve to be the ubiquitous "ease-in-out".
+    pub fn with_ease_in_out(self) -> Self {
+        self.with_animation_curve(EASE_IN_OUT.clone())
+    }
+
+    /// Any commands to schedule when interpolation is done?
+    pub fn when_finished_do(
+        self,
+        when_finished: impl Fn(&mut Commands) + Send + Sync + 'static,
+    ) -> Self {
+        self.when_finished(OnInterpolationFinished::Custom(Arc::new(
+            when_finished,
+        )))
+    }
+
+    /// Any extra logic when interpolation is done?
+    pub(crate) fn when_finished(
+        mut self,
+        when_finished: OnInterpolationFinished,
+    ) -> Self {
+        self.when_finished = Some(when_finished);
         self
     }
 }
@@ -217,6 +309,8 @@ pub struct ColorInterpolation {
     pub(crate) over: Duration,
     #[reflect(ignore)]
     pub(crate) animation_curve: Option<CubicSegment<Vec2>>,
+    #[reflect(ignore)]
+    pub(crate) when_finished: Option<OnInterpolationFinished>,
 }
 
 /// Interpolates translation of an entity.
@@ -230,15 +324,8 @@ pub struct TranslationInterpolation {
     pub(crate) over: Duration,
     #[reflect(ignore)]
     pub(crate) animation_curve: Option<CubicSegment<Vec2>>,
-}
-
-impl SmoothTranslation {
-    /// Sets the animation curve to be the ubiquitous "ease-in-out".
-    pub fn with_ease_in_out(mut self) -> Self {
-        self.animation_curve = Some(EASE_IN_OUT.clone());
-
-        self
-    }
+    #[reflect(ignore)]
+    pub(crate) when_finished: Option<OnInterpolationFinished>,
 }
 
 impl Flicker {

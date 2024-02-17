@@ -27,7 +27,7 @@ use common_visuals::{
         order, render_layer, PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH,
         PIXEL_ZOOM,
     },
-    AtlasAnimation, AtlasAnimationTimer, SmoothTranslation,
+    AtlasAnimation, AtlasAnimationTimer, BeginInterpolationEvent,
 };
 
 use crate::{
@@ -75,7 +75,7 @@ pub trait IntoCutscene {
     /// A camera and two quads are spawned for this purpose.
     /// They are despawned when the cutscene ends.
     ///
-    /// Make sure you run the [`common_visuals::systems::smoothly_translate`]
+    /// Make sure you run the [`common_visuals::systems::interpolate`]
     /// system.
     ///
     /// <https://en.wikipedia.org/wiki/Letterboxing_(filming)>
@@ -193,9 +193,9 @@ pub enum CutsceneStep {
     BeginPortraitDialog(DialogRoot),
     /// Waits until there is no portrait dialog resource.
     WaitForPortraitDialogToEnd,
-    /// Inserts [`SmoothTranslation`] to the given entity.
-    /// The entity must have [`Transform`] component and the
-    /// [`common_visuals::systems::smoothly_translate`] system must be run.
+    /// Inserts [`common_visuals::TranslationInterpolation`] to the
+    /// given entity. The entity must have [`Transform`] component and the
+    /// [`common_visuals::systems::interpolate`] system must be run.
     /// Also, this system does not wait for the translation to end.
     /// It just starts it.
     BeginMovingEntity {
@@ -281,61 +281,61 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
             PIXEL_VISIBLE_HEIGHT / 2.0 - LETTERBOXING_QUAD_HEIGHT / 2.0,
         );
 
-        let top = cmd
-            .spawn((
-                Name::new("Letterboxing: top quad"),
-                RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
-                LetterboxingTopQuad,
-                SmoothTranslation {
-                    from: TOP_QUAD_INITIAL_POS,
-                    target: TOP_QUAD_TARGET_POS,
-                    duration: LETTERBOXING_FADE_IN_DURATION,
+        let mut top_entities = cmd.spawn((
+            Name::new("Letterboxing: top quad"),
+            RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
+            LetterboxingTopQuad,
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::BLACK,
+                    custom_size: Some(Vec2::new(
+                        PIXEL_VISIBLE_WIDTH,
+                        LETTERBOXING_QUAD_HEIGHT,
+                    )),
                     ..default()
                 },
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::BLACK,
-                        custom_size: Some(Vec2::new(
-                            PIXEL_VISIBLE_WIDTH,
-                            LETTERBOXING_QUAD_HEIGHT,
-                        )),
-                        ..default()
-                    },
-                    transform: Transform::from_translation(
-                        TOP_QUAD_INITIAL_POS.extend(0.0),
-                    ),
-                    ..default()
-                },
-            ))
-            .id();
+                transform: Transform::from_translation(
+                    TOP_QUAD_INITIAL_POS.extend(0.0),
+                ),
+                ..default()
+            },
+        ));
+        let top = top_entities.id();
+        BeginInterpolationEvent::of_translation(
+            top,
+            Some(TOP_QUAD_INITIAL_POS),
+            TOP_QUAD_TARGET_POS,
+        )
+        .over(LETTERBOXING_FADE_IN_DURATION)
+        .insert_to(&mut top_entities);
 
-        let bottom = cmd
-            .spawn((
-                Name::new("Letterboxing: bottom quad"),
-                LetterboxingBottomQuad,
-                RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
-                SmoothTranslation {
-                    from: LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
-                    target: LETTERBOXING_BOTTOM_QUAD_TARGET_POS,
-                    duration: LETTERBOXING_FADE_IN_DURATION,
+        let mut bottom_entities = cmd.spawn((
+            Name::new("Letterboxing: bottom quad"),
+            LetterboxingBottomQuad,
+            RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::BLACK,
+                    custom_size: Some(Vec2::new(
+                        PIXEL_VISIBLE_WIDTH,
+                        LETTERBOXING_QUAD_HEIGHT,
+                    )),
                     ..default()
                 },
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::BLACK,
-                        custom_size: Some(Vec2::new(
-                            PIXEL_VISIBLE_WIDTH,
-                            LETTERBOXING_QUAD_HEIGHT,
-                        )),
-                        ..default()
-                    },
-                    transform: Transform::from_translation(
-                        LETTERBOXING_BOTTOM_QUAD_INITIAL_POS.extend(0.0),
-                    ),
-                    ..default()
-                },
-            ))
-            .id();
+                transform: Transform::from_translation(
+                    LETTERBOXING_BOTTOM_QUAD_INITIAL_POS.extend(0.0),
+                ),
+                ..default()
+            },
+        ));
+        let bottom = bottom_entities.id();
+        BeginInterpolationEvent::of_translation(
+            top,
+            Some(LETTERBOXING_BOTTOM_QUAD_INITIAL_POS),
+            LETTERBOXING_BOTTOM_QUAD_TARGET_POS,
+        )
+        .over(LETTERBOXING_FADE_IN_DURATION)
+        .insert_to(&mut bottom_entities);
 
         Some([camera, top, bottom])
     } else {
@@ -386,26 +386,26 @@ impl Cutscene {
             if let Some(entities) = self.letterboxing_entities.take() {
                 // smoothly animate quads out and when down, despawn everything
 
-                cmd.entity(entities[2]).insert(SmoothTranslation {
-                    from: LETTERBOXING_BOTTOM_QUAD_TARGET_POS,
-                    target: LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
-                    duration: LETTERBOXING_FADE_OUT_DURATION,
-                    ..default()
-                });
+                BeginInterpolationEvent::of_translation(
+                    entities[2],
+                    Some(LETTERBOXING_BOTTOM_QUAD_TARGET_POS),
+                    LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
+                )
+                .over(LETTERBOXING_FADE_OUT_DURATION)
+                .insert(cmd);
 
-                cmd.entity(entities[1]).insert(SmoothTranslation {
-                    from: LETTERBOXING_TOP_QUAD_TARGET_POS,
-                    target: LETTERBOXING_TOP_QUAD_INITIAL_POS,
-                    duration: LETTERBOXING_FADE_OUT_DURATION,
-                    on_finished: common_visuals::SmoothTranslationEnd::Custom(
-                        Box::new(move |cmd: &mut Commands| {
-                            cmd.entity(entities[0]).despawn();
-                            cmd.entity(entities[1]).despawn();
-                            cmd.entity(entities[2]).despawn();
-                        }),
-                    ),
-                    ..default()
-                });
+                BeginInterpolationEvent::of_translation(
+                    entities[1],
+                    Some(LETTERBOXING_TOP_QUAD_TARGET_POS),
+                    LETTERBOXING_TOP_QUAD_INITIAL_POS,
+                )
+                .over(LETTERBOXING_FADE_OUT_DURATION)
+                .when_finished_do(move |cmd: &mut Commands| {
+                    cmd.entity(entities[0]).despawn();
+                    cmd.entity(entities[1]).despawn();
+                    cmd.entity(entities[2]).despawn();
+                })
+                .insert(cmd);
             }
         } else {
             self.stopwatch.reset();
@@ -736,7 +736,7 @@ fn begin_moving_entity(
     if let Ok(transform) = transforms.get(*who) {
         let from = transform.translation.truncate();
 
-        let target = match to {
+        let to = match to {
             Destination::Entity(entity) => transforms
                 .get(*entity)
                 .expect("Entity in cutscene must exist") // SOFTEN
@@ -745,13 +745,10 @@ fn begin_moving_entity(
             Destination::Position(pos) => *pos,
         };
 
-        cmd.entity(*who).insert(SmoothTranslation {
-            from,
-            target,
-            duration: *over,
-            animation_curve: animation_curve.clone(),
-            ..default()
-        });
+        BeginInterpolationEvent::of_translation(*who, Some(from), to)
+            .over(*over)
+            .with_animation_opt_curve(animation_curve.clone())
+            .insert(&mut cmd);
     }
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
