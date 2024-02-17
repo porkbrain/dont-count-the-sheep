@@ -1,6 +1,8 @@
 use std::{sync::Arc, time::Duration};
 
-use bevy::{prelude::*, time::Stopwatch, utils::Instant};
+use bevy::{
+    ecs::system::EntityCommands, prelude::*, time::Stopwatch, utils::Instant,
+};
 
 use crate::EASE_IN_OUT;
 
@@ -129,8 +131,11 @@ impl BeginInterpolationEvent {
     /// fn main() {
     ///     App::new()
     ///         .add_systems(Startup, setup)
-    ///         .add_systems(Update, (schedule_insert_foo,
-    /// schedule_remove_foo).chain())         .run()
+    ///         .add_systems(Update, (
+    ///             schedule_insert_foo,
+    ///             schedule_remove_foo,
+    ///         ).chain())
+    ///         .run()
     /// }
     ///
     /// #[derive(Component)]
@@ -153,16 +158,15 @@ impl BeginInterpolationEvent {
     ///     cmd.entity(bar).remove::<Foo>();
     /// }
     /// ```
-    pub fn insert_to(self, cmd: &mut Commands) {
+    pub fn insert_to(self, entity_cmd: &mut EntityCommands) {
         let Self {
-            entity,
             of,
             over,
             animation_curve,
             when_finished,
+            entity: _,
         } = self;
 
-        let mut entity_cmd = cmd.entity(entity);
         match of {
             InterpolationOf::Color { from, to } => {
                 entity_cmd.insert(ColorInterpolation {
@@ -185,6 +189,12 @@ impl BeginInterpolationEvent {
                 })
             }
         };
+    }
+
+    /// Equivalent to [`Self::insert_to`] but with a more explicit name.
+    pub fn insert(self, cmd: &mut Commands) {
+        let mut entity_cmd = cmd.entity(self.entity);
+        self.insert_to(&mut entity_cmd);
     }
 
     /// Interpolates the color of a sprite.
