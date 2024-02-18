@@ -260,9 +260,9 @@ impl ZoneTile for () {
         None
     }
 
-    type Successors = ();
+    type Successors = Self;
 
-    fn zone_successors(&self) -> Option<&'static [Self]> {
+    fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
         None
     }
 }
@@ -529,28 +529,22 @@ where
     }
 
     /// Path finding algorithm that returns partial path to the target.
+    ///
     /// TODO: limit the number of iterations of the A* algorithm to prevent FPS
     /// drops.
     ///
-    /// It's good when both squares are in some zone group.
-    /// This can be achieved with map maker.
-    /// Then, we search for the first square that's strictly better than what we
-    /// have now.
-    ///
-    /// The advantage of this approach is that if there are for example closed
-    /// door to the target, the character will come close to the door which
-    /// might open if they satisfy open conditions.
-    ///
-    /// The disadvantage is that in some situations, the character might not be
-    /// able to reach the target even though there's a way to get there.
-    /// We strive to design scenes in a way that supports this pathfinding
-    /// strategy.
+    /// It's good when both squares are in some zone group as we can find
+    /// minimum spanning tree between zones in the same group.
     pub fn find_partial_path(
         &self,
         who: Entity,
         from: Square,
         to: Square,
     ) -> Option<Vec<Square>> {
+        if from == to {
+            return Some(vec![]);
+        }
+
         // 3 possible situations:
         //
         // a) current and target are in the same zone group
@@ -565,88 +559,206 @@ where
         //    - brute force A* search bounded by a limit
 
         if let Some(to_zone_group) = self.zone_group(to) {
-            if Some(to_zone_group) == self.zone_group(from) {
+            // if from and to square are in the same zone group, that means we
+            // can find minimum spanning tree between the zones
+            let are_in_same_zone_group =
+                self.zone_group(from).is_some_and(|from_zone_group| {
+                    from_zone_group == to_zone_group
+                });
+
+            if are_in_same_zone_group {
                 // a)
 
-                // short-circuiting is alright bcs we already got a positive
-                // result from `zone_group` for both squares
+                // short-circuiting with "?" is alright bcs we already got a
+                // positive result from `zone_group` for both squares
 
-                // 1. get smallest zone in `to` square
-                // 2. find path between any `from` zone and smallest `to` zone
-                //    prioritize path through smallest zones possible, that is a
-                //    cost of going to a zone is associated with number of
-                //    squares it comprises
-
-                let from_tile_kinds = self.get(from)?;
-                let strictly_better: SmallVec<[_; 4]> = self
+                let smallest_to_zone = self
                     .get(to)?
                     .iter()
-                    .filter(|to_tile| to_tile.is_zone())
+                    .filter_map(|tile| Some((tile, tile.zone_size()?)))
+                    .min_by_key(|(_, size)| *size)
+                    .map(|(zone, _)| *zone)?;
+
+                let any_from_zone = self
+                    .get(from)?
+                    .iter()
+                    .find(|tile| tile.is_zone())
+                    .copied()?;
+
+                let sequence_of_zones = find_sequence_of_zones_between::<T>(
+                    any_from_zone,
+                    smallest_to_zone,
+                );
+
+                let from_tile_kinds = self.get(from)?;
+                let strictly_better_zones: Vec<_> = sequence_of_zones
+                    .iter()
                     .filter(|to_tile| !from_tile_kinds.contains(to_tile))
                     .copied()
-                    .collect(); // typically under 4 tile kinds
+                    .collect();
 
-                // TODO: an issue here is that we are not using information
-                // about neighbours and overlaps etc.
-                // strictly better works for subsets.
-                // so we want a square that has a tile that's a neighbour or
-                // overlaps with any zone of the target?
-
-                if strictly_better.is_empty() {
+                if strictly_better_zones.is_empty() {
                     // we've already used all group info we could
 
-                    // TODO: can we eliminate squares that are not in the
-                    // smallest `to` zone?
-                    self.partial_astar(who, from, to, |_| {
-                        // no extra success cond
-                        false
-                    })
+                    self.astar_and_stay_in_zone(who, from, to, smallest_to_zone)
                 } else {
-                    self.partial_astar(who, from, to, |square: &_| {
-                        self.any_on(*square, |tile| {
-                            strictly_better.contains(&tile)
-                        })
-                    })
+                    self.astar_into_strictly_better_zone(
+                        who,
+                        from,
+                        to,
+                        &sequence_of_zones,
+                        &strictly_better_zones,
+                    )
                 }
             } else {
                 // b)
 
-                self.partial_astar(who, from, to, |square: &_| {
-                    self.zone_group(*square) == Some(to_zone_group)
-                })
+                self.astar_into_zone_group(who, from, to, to_zone_group)
             }
         } else {
             // c)
 
-            self.partial_astar(who, from, to, |_| {
-                // no extra success cond
-                false
-            })
+            self.partial_astar(who, from, to)
         }
     }
 
     /// The default success cond is max iterations or reaching the target.
+    // TODO: cap *A iterations
     fn partial_astar(
         &self,
         who: Entity,
         from: Square,
         to: Square,
-        success_cond: impl Fn(&Square) -> bool,
     ) -> Option<Vec<Square>> {
-        let successors = |square: &Square| {
-            square.neighbors_with_diagonal().filter_map(|neighbor| {
-                self.walk_cost(neighbor, who)
-                    .map(|cost| (neighbor, cost as i32))
-            })
-        };
-        let heuristic = |square: &Square| square.manhattan_distance(to);
-
-        pathfinding::prelude::astar(&from, successors, heuristic, |square| {
-            // TODO: cap *A iterations
-            square == &to || success_cond(square)
-        })
+        pathfinding::prelude::astar(
+            &from,
+            // successors
+            |square: &Square| {
+                square.neighbors_with_diagonal().filter_map(|neighbor| {
+                    self.walk_cost(neighbor, who)
+                        .map(|cost| (neighbor, cost as i32))
+                })
+            },
+            // heuristic
+            |square: &Square| square.manhattan_distance(to),
+            // success
+            |square| square == &to,
+        )
         .map(|(path, _)| path)
     }
+
+    fn astar_and_stay_in_zone(
+        &self,
+        who: Entity,
+        from: Square,
+        to: Square,
+        zone_to_stay_in: TileKind<T::LocalTileKind>,
+    ) -> Option<Vec<Square>> {
+        debug_assert!(zone_to_stay_in.is_zone());
+
+        pathfinding::prelude::astar(
+            &from,
+            // successors
+            |square: &Square| {
+                square
+                    .neighbors_with_diagonal()
+                    .filter(|neighbor| self.is_on(*neighbor, zone_to_stay_in))
+                    .filter_map(|neighbor| {
+                        self.walk_cost(neighbor, who)
+                            .map(|cost| (neighbor, cost as i32))
+                    })
+            },
+            // heuristic
+            |square: &Square| square.manhattan_distance(to),
+            // success
+            |square| square == &to,
+        )
+        .map(|(path, _)| path)
+    }
+
+    fn astar_into_strictly_better_zone(
+        &self,
+        who: Entity,
+        from: Square,
+        to: Square,
+        allowed_zones: &[TileKind<T::LocalTileKind>],
+        strictly_better_zones: &[TileKind<T::LocalTileKind>],
+    ) -> Option<Vec<Square>> {
+        pathfinding::prelude::astar(
+            &from,
+            // successors
+            |square: &Square| {
+                square
+                    .neighbors_with_diagonal()
+                    .filter(|neighbor| {
+                        self.any_on(*neighbor, |tile| {
+                            allowed_zones.contains(&tile)
+                        })
+                    })
+                    .filter_map(|neighbor| {
+                        self.walk_cost(neighbor, who)
+                            .map(|cost| (neighbor, cost as i32))
+                    })
+            },
+            // heuristic
+            |square: &Square| square.manhattan_distance(to),
+            // success
+            |square| {
+                self.any_on(*square, |tile| {
+                    strictly_better_zones.contains(&tile)
+                })
+            },
+        )
+        .map(|(path, _)| path)
+    }
+
+    fn astar_into_zone_group(
+        &self,
+        who: Entity,
+        from: Square,
+        to: Square,
+        zone_group: ZoneGroup,
+    ) -> Option<Vec<Square>> {
+        pathfinding::prelude::astar(
+            &from,
+            // successors
+            |square: &Square| {
+                square.neighbors_with_diagonal().filter_map(|neighbor| {
+                    self.walk_cost(neighbor, who)
+                        .map(|cost| (neighbor, cost as i32))
+                })
+            },
+            // heuristic
+            |square: &Square| square.manhattan_distance(to),
+            // success
+            |square| self.zone_group(*square) == Some(zone_group),
+        )
+        .map(|(path, _)| path)
+    }
+}
+
+fn find_sequence_of_zones_between<T: TopDownScene>(
+    from_zone: TileKind<T::LocalTileKind>,
+    to_zone: TileKind<T::LocalTileKind>,
+) -> Vec<TileKind<T::LocalTileKind>>
+where
+    T::LocalTileKind: ZoneTile<Successors = T::LocalTileKind>,
+{
+    let succs = |zone: &TileKind<T::LocalTileKind>| {
+        zone.zone_successors().unwrap().iter().filter_map(move |s| {
+            Some((TileKind::Local(*s), s.zone_size()? as i32))
+        })
+    };
+    let heuristic = |zone: &TileKind<T::LocalTileKind>| -> i32 {
+        zone.zone_size().map(|z| z as i32).unwrap_or(i32::MAX)
+    };
+    let (path, _) =
+        pathfinding::prelude::astar(&from_zone, succs, heuristic, |zone| {
+            zone == &to_zone
+        })
+        .expect("a path between two zones in the same group");
+
+    path
 }
 
 impl<L> TileKind<L> {
@@ -668,6 +780,7 @@ impl<L> From<L> for TileKind<L> {
 #[cfg(test)]
 mod tests {
     use smallvec::smallvec;
+    use strum::{EnumIter, IntoEnumIterator};
 
     use super::*;
 
@@ -853,5 +966,380 @@ mod tests {
         let square: SmallVec<[TileKind<TestTileKind>; 3]> =
             smallvec![default(), default(), default(), default(), default()];
         assert_eq!(std::mem::size_of_val(&square), 48);
+    }
+
+    #[derive(Default, Reflect)]
+    struct DevMapTestScene;
+
+    #[derive(
+        Default,
+        Reflect,
+        EnumIter,
+        Hash,
+        PartialEq,
+        Eq,
+        PartialOrd,
+        Ord,
+        Clone,
+        Copy,
+        Debug,
+        Serialize,
+        Deserialize,
+    )]
+    enum DevMapTestTileKind {
+        #[default]
+        ZoneA,
+        ZoneB,
+        ZoneC,
+        ZoneD,
+        ZoneE,
+        ZoneF,
+        ZoneG,
+        ZoneH,
+        ZoneI,
+        ZoneJ,
+        ZoneK,
+    }
+
+    impl TopDownScene for DevMapTestScene {
+        type LocalTileKind = DevMapTestTileKind;
+
+        fn bounds() -> [i32; 4] {
+            [-11, 0, 15, 28]
+        }
+
+        fn layout() -> &'static SquareLayout {
+            &SquareLayout {
+                square_size: 1.0,
+                origin: Vec2::ZERO,
+            }
+        }
+
+        fn asset_path() -> &'static str {
+            unreachable!()
+        }
+
+        fn name() -> &'static str {
+            unreachable!()
+        }
+    }
+
+    impl Tile for DevMapTestTileKind {
+        fn is_walkable(&self, _: Entity) -> bool {
+            true
+        }
+
+        fn is_zone(&self) -> bool {
+            true
+        }
+
+        fn zones_iter() -> impl Iterator<Item = Self> {
+            Self::iter()
+        }
+    }
+
+    /// Based on the RON above.
+    impl ZoneTile for DevMapTestTileKind {
+        #[inline]
+        fn zone_group(&self) -> Option<ZoneGroup> {
+            match self {
+                Self::ZoneA => Some(ZoneGroup(0)),
+                Self::ZoneB => Some(ZoneGroup(0)),
+                Self::ZoneC => Some(ZoneGroup(0)),
+                Self::ZoneD => Some(ZoneGroup(0)),
+                Self::ZoneE => Some(ZoneGroup(0)),
+                Self::ZoneF => Some(ZoneGroup(0)),
+                Self::ZoneG => Some(ZoneGroup(0)),
+                Self::ZoneH => Some(ZoneGroup(1)),
+                Self::ZoneI => Some(ZoneGroup(1)),
+                Self::ZoneJ => Some(ZoneGroup(1)),
+                Self::ZoneK => Some(ZoneGroup(1)),
+                #[allow(unreachable_patterns)]
+                _ => None,
+            }
+        }
+        #[inline]
+        fn zone_size(&self) -> Option<usize> {
+            match self {
+                Self::ZoneA => Some(25),
+                Self::ZoneB => Some(8),
+                Self::ZoneC => Some(12),
+                Self::ZoneD => Some(9),
+                Self::ZoneE => Some(1),
+                Self::ZoneF => Some(12),
+                Self::ZoneG => Some(1),
+                Self::ZoneH => Some(4),
+                Self::ZoneI => Some(10),
+                Self::ZoneJ => Some(8),
+                Self::ZoneK => Some(4),
+                #[allow(unreachable_patterns)]
+                _ => None,
+            }
+        }
+        type Successors = Self;
+        #[inline]
+        fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
+            match self {
+                Self::ZoneA => Some(&[Self::ZoneB, Self::ZoneD, Self::ZoneE]),
+                Self::ZoneB => Some(&[Self::ZoneA, Self::ZoneC]),
+                Self::ZoneC => Some(&[Self::ZoneB, Self::ZoneF]),
+                Self::ZoneD => Some(&[Self::ZoneA, Self::ZoneE]),
+                Self::ZoneE => Some(&[Self::ZoneA, Self::ZoneD]),
+                Self::ZoneF => Some(&[Self::ZoneC, Self::ZoneG]),
+                Self::ZoneG => Some(&[Self::ZoneF]),
+                Self::ZoneH => Some(&[Self::ZoneI]),
+                Self::ZoneI => Some(&[Self::ZoneH, Self::ZoneJ, Self::ZoneK]),
+                Self::ZoneJ => Some(&[Self::ZoneI, Self::ZoneK]),
+                Self::ZoneK => Some(&[Self::ZoneI, Self::ZoneJ]),
+                #[allow(unreachable_patterns)]
+                _ => None,
+            }
+        }
+    }
+
+    /// Test map such that:
+    /// ```text
+    ///  E<-D<-A=B<->C<->F->G
+    ///
+    ///  H=I<->J->K   and K<->I
+    /// ```
+    ///
+    /// * `x=y` x and y are neighbors
+    /// * `x<->y` x and y overlap
+    /// * `x<-y` x is subset of y
+    const DEV_MAP_TEST_RON: &str = r#"(squares: {
+        (x: -10, y: 16): [Empty, Local(ZoneJ)],
+        (x: -10, y: 17): [Empty, Local(ZoneJ)],
+        (x: -10, y: 19): [Local(ZoneH)],
+        (x: -10, y: 20): [Local(ZoneH)],
+        (x: -10, y: 23): [Local(ZoneA)],
+        (x: -10, y: 24): [Local(ZoneA)],
+        (x: -10, y: 25): [Local(ZoneA)],
+        (x: -10, y: 26): [Local(ZoneA)],
+        (x: -10, y: 27): [Local(ZoneA)],
+        (x: -9, y: 16): [Empty, Local(ZoneJ), Local(ZoneK)],
+        (x: -9, y: 17): [Empty, Local(ZoneJ), Local(ZoneK)],
+        (x: -9, y: 19): [Local(ZoneH)],
+        (x: -9, y: 20): [Local(ZoneH)],
+        (x: -9, y: 23): [Local(ZoneA)],
+        (x: -9, y: 24): [Local(ZoneA), Local(ZoneD)],
+        (x: -9, y: 25): [Local(ZoneA), Local(ZoneD)],
+        (x: -9, y: 26): [Local(ZoneA), Local(ZoneD)],
+        (x: -9, y: 27): [Local(ZoneA)],
+        (x: -8, y: 16): [Local(ZoneI), Local(ZoneJ), Local(ZoneK)],
+        (x: -8, y: 17): [Local(ZoneI), Local(ZoneJ), Local(ZoneK)],
+        (x: -8, y: 18): [Local(ZoneI)],
+        (x: -8, y: 19): [Local(ZoneI)],
+        (x: -8, y: 20): [Local(ZoneI)],
+        (x: -8, y: 23): [Local(ZoneA)],
+        (x: -8, y: 24): [Local(ZoneA), Local(ZoneD)],
+        (x: -8, y: 25): [Local(ZoneA), Local(ZoneD), Local(ZoneE)],
+        (x: -8, y: 26): [Local(ZoneA), Local(ZoneD)],
+        (x: -8, y: 27): [Local(ZoneA)],
+        (x: -7, y: 16): [Local(ZoneI), Local(ZoneJ)],
+        (x: -7, y: 17): [Local(ZoneI), Local(ZoneJ)],
+        (x: -7, y: 18): [Local(ZoneI)],
+        (x: -7, y: 19): [Local(ZoneI)],
+        (x: -7, y: 20): [Local(ZoneI)],
+        (x: -7, y: 23): [Local(ZoneA)],
+        (x: -7, y: 24): [Local(ZoneA), Local(ZoneD)],
+        (x: -7, y: 25): [Local(ZoneA), Local(ZoneD)],
+        (x: -7, y: 26): [Local(ZoneA), Local(ZoneD)],
+        (x: -7, y: 27): [Local(ZoneA)],
+        (x: -6, y: 23): [Local(ZoneA)],
+        (x: -6, y: 24): [Local(ZoneA)],
+        (x: -6, y: 25): [Local(ZoneA)],
+        (x: -6, y: 26): [Local(ZoneA)],
+        (x: -6, y: 27): [Local(ZoneA)],
+        (x: -5, y: 26): [Local(ZoneB)],
+        (x: -5, y: 27): [Local(ZoneB)],
+        (x: -4, y: 26): [Local(ZoneB)],
+        (x: -4, y: 27): [Local(ZoneB)],
+        (x: -3, y: 19): [Local(ZoneF)],
+        (x: -3, y: 20): [Local(ZoneF)],
+        (x: -3, y: 21): [Local(ZoneF)],
+        (x: -3, y: 22): [Local(ZoneF)],
+        (x: -3, y: 26): [Local(ZoneB)],
+        (x: -3, y: 27): [Local(ZoneB)],
+        (x: -2, y: 19): [Local(ZoneF)],
+        (x: -2, y: 20): [Local(ZoneF), Local(ZoneG)],
+        (x: -2, y: 21): [Local(ZoneF)],
+        (x: -2, y: 22): [Local(ZoneF), Local(ZoneC)],
+        (x: -2, y: 23): [Empty, Local(ZoneC)],
+        (x: -2, y: 24): [Empty, Local(ZoneC)],
+        (x: -2, y: 25): [Empty, Local(ZoneC)],
+        (x: -2, y: 26): [Local(ZoneB), Local(ZoneC)],
+        (x: -2, y: 27): [Local(ZoneB), Local(ZoneC)],
+        (x: -1, y: 19): [Local(ZoneF)],
+        (x: -1, y: 20): [Local(ZoneF)],
+        (x: -1, y: 21): [Local(ZoneF)],
+        (x: -1, y: 22): [Local(ZoneF), Local(ZoneC)],
+        (x: -1, y: 23): [Empty, Local(ZoneC)],
+        (x: -1, y: 24): [Empty, Local(ZoneC)],
+        (x: -1, y: 25): [Empty, Local(ZoneC)],
+        (x: -1, y: 26): [Empty, Local(ZoneC)],
+        (x: -1, y: 27): [Empty, Local(ZoneC)],
+    },)"#;
+
+    #[test]
+    fn it_finds_path_between_interesting_square_pairs() {
+        #[derive(Default)]
+        struct ExampleSetting {
+            expected_partial_steps: Option<usize>,
+        }
+
+        let pairs = &[
+            (
+                sq(-7, 15),
+                sq(-9, 24),
+                "Takes a lot of steps during testing",
+                ExampleSetting {
+                    expected_partial_steps: Some(6),
+                },
+            ),
+            (
+                sq(-5, 15),
+                sq(-10, 16),
+                "Values at the edge of the map",
+                default(),
+            ),
+            (
+                sq(-8, 21),  // nowhere
+                sq(-10, 16), // ZoneJ
+                "Taking lots of steps during testing",
+                ExampleSetting {
+                    expected_partial_steps: Some(4),
+                    ..default()
+                },
+            ),
+            (sq(-2, 19), sq(-2, 20), "Going from F to (F, G)", default()),
+            (sq(-10, 25), sq(-9, 25), "Going from A to (A, D)", default()),
+            (
+                sq(-9, 25),
+                sq(-8, 25),
+                "Going from (A, D) to (A, D, E)",
+                default(),
+            ),
+            (
+                sq(-9, 25),
+                sq(-2, 20),
+                "Going from (A, D) to (F, G)",
+                ExampleSetting {
+                    expected_partial_steps: Some(4),
+                    ..default()
+                },
+            ),
+            (
+                sq(-2, 26),
+                sq(-2, 22),
+                "Going from (B, C) to (C, F)",
+                default(),
+            ),
+            (
+                sq(-10, 19),
+                sq(-8, 17),
+                "Going from H to (I, J, K)",
+                default(),
+            ),
+            (sq(-10, 25), sq(-5, 26), "Going from A to B", default()),
+        ];
+
+        let tilemap: TileMap<DevMapTestScene> =
+            ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+
+        for (
+            from,
+            to,
+            desc,
+            ExampleSetting {
+                expected_partial_steps,
+            },
+        ) in pairs
+        {
+            println!("{desc}: from {from} to {to}");
+
+            let mut partial_from = *from;
+            let mut jumps = vec![];
+            while partial_from != *to {
+                search_for_partial_path(
+                    &tilemap,
+                    1,
+                    *from,
+                    *to,
+                    &mut partial_from,
+                );
+
+                jumps.push(partial_from);
+            }
+
+            if let Some(expected_partial_steps) = expected_partial_steps {
+                assert_eq!(
+                    *expected_partial_steps,
+                    jumps.len(),
+                    "Each partial step: {jumps:?}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn it_finds_path_from_each_square_to_every_other() {
+        let tilemap: TileMap<DevMapTestScene> =
+            ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+
+        let all_squares =
+            || bevy_grid_squared::shapes::rectangle(DevMapTestScene::bounds());
+
+        for to in all_squares() {
+            println!("Finding path from all squares to {to}");
+
+            for from in all_squares() {
+                let mut partial_from = from;
+                const MAX_PARTIAL_STEPS: usize = 7;
+
+                let found = search_for_partial_path(
+                    &tilemap,
+                    MAX_PARTIAL_STEPS,
+                    from,
+                    to,
+                    &mut partial_from,
+                );
+
+                assert!(
+                    found,
+                    "Finding path from {from} to {to} took more \
+                    than {MAX_PARTIAL_STEPS} partial steps"
+                );
+            }
+        }
+    }
+
+    fn search_for_partial_path(
+        tilemap: &TileMap<DevMapTestScene>,
+        max_partial_steps: usize,
+        from: Square,
+        to: Square,
+        partial_from: &mut Square,
+    ) -> bool {
+        for _ in 0..max_partial_steps {
+            let path = tilemap.find_partial_path(
+                Entity::PLACEHOLDER,
+                *partial_from,
+                to,
+            );
+            assert!(
+                path.is_some(),
+                "from {from} (partial {partial_from}) to {to}"
+            );
+            let ends_up_on = path.unwrap().last().copied();
+            if ends_up_on.is_none() {
+                assert_eq!(to, *partial_from);
+                return true;
+            }
+
+            *partial_from = ends_up_on.unwrap();
+        }
+
+        false
     }
 }
