@@ -50,7 +50,7 @@ impl SquareLayout {
     pub const fn square_to_world_pos(&self, square: Square) -> Vec2 {
         let x = square.x as f32 * self.square_size;
         let y = square.y as f32 * self.square_size;
-        self.origin + Vec2::new(x, y)
+        Vec2::new(self.origin.x + x, self.origin.y + y)
     }
 
     #[inline]

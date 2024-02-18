@@ -9,7 +9,7 @@ use std::ops::{AddAssign, Not};
 use bevy::prelude::*;
 use bevy_grid_squared::Square;
 
-use crate::{Actor, ActorTarget, TileMap, TopDownScene};
+use crate::{layout::ZoneTile, Actor, ActorTarget, TileMap, TopDownScene};
 
 /// Describes state of an NPC that's positioned in the current map.
 /// As opposed to just an abstract simulation, this NPC is actively moving and
@@ -151,7 +151,9 @@ pub fn plan_path<T: TopDownScene>(
     mut events: EventReader<PlanPathEvent>,
 
     mut actors: Query<(Entity, &Actor, &mut NpcInTheMap)>,
-) {
+) where
+    T::LocalTileKind: ZoneTile<Successors = T::LocalTileKind>,
+{
     for PlanPathEvent(entity, target_square) in events.read() {
         let Ok((actor_entity, actor, mut npc_in_the_map)) =
             actors.get_mut(*entity)

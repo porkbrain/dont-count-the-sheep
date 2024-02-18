@@ -26,5 +26,9 @@ smallvec.workspace = true
 strum.workspace = true
 
 
+[dev-dependencies]
+ron.workspace = true
+
+
 [features]
 dev = ["ron", "graphviz-rust"]
