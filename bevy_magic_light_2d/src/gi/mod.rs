@@ -47,7 +47,7 @@ pub mod util;
 const WORKGROUP_SIZE: u32 = 8;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
-pub struct LightPassRenderLabel(&'static str);
+pub struct LightPassRenderLabel(pub &'static str);
 
 /// You can despawn the light scene by despawning all entities that have this
 /// component.
