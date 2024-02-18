@@ -145,7 +145,7 @@ pub trait ZoneTile {
     type Successors;
 
     /// Returns the zone successors of the tile if it's a zone.
-    /// That is, what zones can be reached from this zone be either being
+    /// That is, what zones can be reached from this zone by either being
     /// subsets/supersets, neighbours or overlapping.
     ///
     /// Returns [`None`] if not a zone.
@@ -233,7 +233,7 @@ pub enum TileWalkCost {
 /// in the same group.
 ///
 /// The usize is an opaque unique value assigned to the group with no meaning.
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct ZoneGroup(pub usize);
 
 /// Allow implementation for unit type for convenience.
@@ -541,6 +541,8 @@ where
         from: Square,
         to: Square,
     ) -> Option<Vec<Square>> {
+        trace!("find_partial_path {from} -> {to}");
+
         if from == to {
             return Some(vec![]);
         }
@@ -589,6 +591,7 @@ where
                     any_from_zone,
                     smallest_to_zone,
                 );
+                trace!("sequence_of_zones {sequence_of_zones:?}");
 
                 let from_tile_kinds = self.get(from)?;
                 let strictly_better_zones: Vec<_> = sequence_of_zones
@@ -600,8 +603,10 @@ where
                 if strictly_better_zones.is_empty() {
                     // we've already used all group info we could
 
+                    trace!("astar_and_stay_in_zone {smallest_to_zone:?}");
                     self.astar_and_stay_in_zone(who, from, to, smallest_to_zone)
                 } else {
+                    trace!("astar_into_strictly_better_zone {strictly_better_zones:?}");
                     self.astar_into_strictly_better_zone(
                         who,
                         from,
@@ -613,11 +618,13 @@ where
             } else {
                 // b)
 
+                trace!("astar_into_zone_group {to_zone_group:?}");
                 self.astar_into_zone_group(who, from, to, to_zone_group)
             }
         } else {
             // c)
 
+            trace!("partial_astar");
             self.partial_astar(who, from, to)
         }
     }
@@ -744,19 +751,20 @@ fn find_sequence_of_zones_between<T: TopDownScene>(
 where
     T::LocalTileKind: ZoneTile<Successors = T::LocalTileKind>,
 {
-    let succs = |zone: &TileKind<T::LocalTileKind>| {
-        zone.zone_successors().unwrap().iter().filter_map(move |s| {
-            Some((TileKind::Local(*s), s.zone_size()? as i32))
-        })
-    };
-    let heuristic = |zone: &TileKind<T::LocalTileKind>| -> i32 {
-        zone.zone_size().map(|z| z as i32).unwrap_or(i32::MAX)
-    };
-    let (path, _) =
-        pathfinding::prelude::astar(&from_zone, succs, heuristic, |zone| {
-            zone == &to_zone
-        })
-        .expect("a path between two zones in the same group");
+    let (path, _) = pathfinding::prelude::astar(
+        &from_zone,
+        // successors
+        |zone| {
+            zone.zone_successors().unwrap().iter().filter_map(move |s| {
+                Some((TileKind::Local(*s), s.zone_size()? as i32))
+            })
+        },
+        // heuristic
+        |zone| zone.zone_size().map(|z| z as i32).unwrap_or(i32::MAX),
+        // success
+        |zone| zone == &to_zone,
+    )
+    .expect("a path between two zones in the same group");
 
     path
 }
