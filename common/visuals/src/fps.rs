@@ -84,7 +84,7 @@ pub(crate) fn update(
     for mut text in &mut query {
         // try to get a "smoothed" FPS value from Bevy
         if let Some(value) = diagnostics
-            .get(FrameTimeDiagnosticsPlugin::FPS)
+            .get(&FrameTimeDiagnosticsPlugin::FPS)
             .and_then(|fps| fps.smoothed())
         {
             // Format the number as to leave space for 4 digits, just in case,
@@ -123,7 +123,7 @@ pub(crate) fn update(
 /// Toggle the FPS counter when pressing F12
 pub(crate) fn toggle(
     mut q: Query<&mut Visibility, With<FpsRoot>>,
-    kbd: Res<Input<KeyCode>>,
+    kbd: Res<ButtonInput<KeyCode>>,
 ) {
     if kbd.just_pressed(KeyCode::F12) {
         let mut vis = q.single_mut();

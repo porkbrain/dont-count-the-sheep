@@ -143,10 +143,10 @@ pub fn setup_post_processing_quad<T: LightScene>(
     target_sizes: Res<ComputedTargetSizes>,
     gi_targets_wrapper: Res<GiTargetsWrapper<T>>,
 ) {
-    let quad = Mesh::from(shape::Quad::new(Vec2::new(
+    let quad = Mesh::from(bevy::math::primitives::Rectangle::new(
         target_sizes.primary_target_size.x,
         target_sizes.primary_target_size.y,
-    )));
+    ));
 
     meshes.insert(T::post_processing_quad(), quad);
 

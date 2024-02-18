@@ -15,10 +15,7 @@
 
 use std::time::Duration;
 
-use bevy::{
-    core_pipeline::clear_color::ClearColorConfig, prelude::*,
-    render::view::RenderLayers, utils::Instant,
-};
+use bevy::{prelude::*, render::view::RenderLayers, utils::Instant};
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use common_visuals::{
     camera::{
@@ -128,7 +125,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<LoadingScreenState>()
+        app.init_state::<LoadingScreenState>()
             .register_type::<LoadingScreenState>();
 
         app.add_systems(
@@ -196,15 +193,12 @@ fn spawn_loading_screen(
         PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
         RenderLayers::layer(render_layer::LOADING),
-        UiCameraConfig { show_ui: false },
         Camera2dBundle {
             camera: Camera {
                 hdr: true,
                 order: order::LOADING,
-                ..default()
-            },
-            camera_2d: Camera2d {
                 clear_color: ClearColorConfig::None,
+                ..default()
             },
             ..default()
         },

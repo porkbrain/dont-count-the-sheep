@@ -4,7 +4,7 @@ use bevy::{
     prelude::*,
     render::{
         extract_resource::ExtractResource,
-        render_asset::RenderAssets,
+        render_asset::{RenderAssetUsages, RenderAssets},
         render_resource::*,
         renderer::RenderDevice,
         texture::{
@@ -145,6 +145,7 @@ fn create_texture_2d(size: (u32, u32), format: TextureFormat, filter: ImageFilte
             0, 0, 0, 0, 0, 0, 0, 0,
         ],
         format,
+        RenderAssetUsages::MAIN_WORLD
     );
 
     image.texture_descriptor.usage =
@@ -438,52 +439,50 @@ impl<T> FromWorld for LightPassPipeline<T> {
         let render_device = world.resource::<RenderDevice>();
 
         let sdf_bind_group_layout = render_device.create_bind_group_layout(
-            &BindGroupLayoutDescriptor {
-                label: Some("sdf_bind_group_layout"),
-                entries: &[
-                    // Camera.
-                    BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::COMPUTE,
-                        ty: BindingType::Buffer {
-                            ty: BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: Some(GpuCameraParams::min_size()),
-                        },
-                        count: None,
+            "sdf_bind_group_layout",
+            &[
+                // Camera.
+                BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::COMPUTE,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: Some(GpuCameraParams::min_size()),
                     },
-                    // Light occluders.
-                    BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: ShaderStages::COMPUTE,
-                        ty: BindingType::Buffer {
-                            ty: BufferBindingType::Storage { read_only: true },
-                            has_dynamic_offset: false,
-                            min_binding_size: Some(
-                                GpuLightOccluderBuffer::min_size(),
-                            ),
-                        },
-                        count: None,
+                    count: None,
+                },
+                // Light occluders.
+                BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: ShaderStages::COMPUTE,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Storage { read_only: true },
+                        has_dynamic_offset: false,
+                        min_binding_size: Some(
+                            GpuLightOccluderBuffer::min_size(),
+                        ),
                     },
-                    // SDF texture.
-                    BindGroupLayoutEntry {
-                        binding: 2,
-                        visibility: ShaderStages::COMPUTE,
-                        ty: BindingType::StorageTexture {
-                            access: StorageTextureAccess::ReadWrite,
-                            format: SDF_TARGET_FORMAT,
-                            view_dimension: TextureViewDimension::D2,
-                        },
-                        count: None,
+                    count: None,
+                },
+                // SDF texture.
+                BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: ShaderStages::COMPUTE,
+                    ty: BindingType::StorageTexture {
+                        access: StorageTextureAccess::ReadWrite,
+                        format: SDF_TARGET_FORMAT,
+                        view_dimension: TextureViewDimension::D2,
                     },
-                ],
-            },
+                    count: None,
+                },
+            ],
         );
 
         let ss_probe_bind_group_layout = render_device
-            .create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("ss_probe_bind_group_layout"),
-                entries: &[
+            .create_bind_group_layout(
+                "ss_probe_bind_group_layout",
+                &[
                     // Camera.
                     BindGroupLayoutEntry {
                         binding: 0,
@@ -579,12 +578,12 @@ impl<T> FromWorld for LightPassPipeline<T> {
                         count: None,
                     },
                 ],
-            });
+            );
 
         let ss_bounce_bind_group_layout = render_device
-            .create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("ss_bounce_bind_group_layout"),
-                entries: &[
+            .create_bind_group_layout(
+                "ss_bounce_bind_group_layout",
+                &[
                     // Camera.
                     BindGroupLayoutEntry {
                         binding: 0,
@@ -652,12 +651,12 @@ impl<T> FromWorld for LightPassPipeline<T> {
                         count: None,
                     },
                 ],
-            });
+            );
 
         let ss_blend_bind_group_layout = render_device
-            .create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("ss_blend_bind_group_layout"),
-                entries: &[
+            .create_bind_group_layout(
+                "ss_blend_bind_group_layout",
+                &[
                     // Camera.
                     BindGroupLayoutEntry {
                         binding: 0,
@@ -738,12 +737,12 @@ impl<T> FromWorld for LightPassPipeline<T> {
                         count: None,
                     },
                 ],
-            });
+            );
 
         let ss_filter_bind_group_layout = render_device
-            .create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("ss_filter_bind_group_layout"),
-                entries: &[
+            .create_bind_group_layout(
+                "ss_filter_bind_group_layout",
+                &[
                     // Camera.
                     BindGroupLayoutEntry {
                         binding: 0,
@@ -835,7 +834,7 @@ impl<T> FromWorld for LightPassPipeline<T> {
                         count: None,
                     },
                 ],
-            });
+            );
 
         let (shader_sdf, gi_ss_probe, gi_ss_bounce, gi_ss_blend, gi_ss_filter) = {
             let assets_server = world.resource::<AssetServer>();
