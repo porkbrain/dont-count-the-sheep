@@ -541,8 +541,6 @@ where
         from: Square,
         to: Square,
     ) -> Option<Vec<Square>> {
-        trace!("find_partial_path {from} -> {to}");
-
         if from == to {
             return Some(vec![]);
         }
@@ -587,44 +585,56 @@ where
                     .find(|tile| tile.is_zone())
                     .copied()?;
 
-                let sequence_of_zones = find_sequence_of_zones_between::<T>(
+                // It can happen that at runtime some path is blocked by
+                // some object, which we could not foresee when we were building
+                // the graph of zone relationships.
+                // Hence, test multiple routes to find some that can be made
+                // progress on.
+                let test_max_alternative_routes = 3;
+                for sequence_of_zones in find_sequences_of_zones_between::<T>(
                     any_from_zone,
                     smallest_to_zone,
-                );
-                trace!("sequence_of_zones {sequence_of_zones:?}");
+                    test_max_alternative_routes,
+                ) {
+                    let from_tile_kinds = self.get(from)?;
+                    let strictly_better_zones: Vec<_> = sequence_of_zones
+                        .iter()
+                        .filter(|to_tile| !from_tile_kinds.contains(to_tile))
+                        .copied()
+                        .collect();
 
-                let from_tile_kinds = self.get(from)?;
-                let strictly_better_zones: Vec<_> = sequence_of_zones
-                    .iter()
-                    .filter(|to_tile| !from_tile_kinds.contains(to_tile))
-                    .copied()
-                    .collect();
+                    if strictly_better_zones.is_empty() {
+                        // we've already used all group info we could
 
-                if strictly_better_zones.is_empty() {
-                    // we've already used all group info we could
-
-                    trace!("astar_and_stay_in_zone {smallest_to_zone:?}");
-                    self.astar_and_stay_in_zone(who, from, to, smallest_to_zone)
-                } else {
-                    trace!("astar_into_strictly_better_zone {strictly_better_zones:?}");
-                    self.astar_into_strictly_better_zone(
-                        who,
-                        from,
-                        to,
-                        &sequence_of_zones,
-                        &strictly_better_zones,
-                    )
+                        return self.astar_and_stay_in_zone(
+                            who,
+                            from,
+                            to,
+                            smallest_to_zone,
+                        );
+                    } else if let Some(solution_to_better_zone) = self
+                        .astar_into_strictly_better_zone(
+                            who,
+                            from,
+                            to,
+                            &sequence_of_zones,
+                            &strictly_better_zones,
+                        )
+                    {
+                        return Some(solution_to_better_zone);
+                    }
                 }
+
+                None
             } else {
                 // b)
 
-                trace!("astar_into_zone_group {to_zone_group:?}");
                 self.astar_into_zone_group(who, from, to, to_zone_group)
             }
         } else {
             // c)
 
-            trace!("partial_astar");
+            warn!("expensive partial_astar {from} -> {to}");
             self.partial_astar(who, from, to)
         }
     }
@@ -744,14 +754,30 @@ where
     }
 }
 
-fn find_sequence_of_zones_between<T: TopDownScene>(
+/// Given that the graphs are not going to be large (a handful of nodes),
+/// this should be very cheap compared to the actual pathfinding over many many
+/// squares.
+///
+/// `k` is the number of different solutions to find (if they exist).
+/// It must be 1 or more.
+/// At least one solution is guaranteed to be found because there always must be
+/// a path between two zones in the same group.
+///
+/// Note that even though the function returns an iterator, it's not lazy.
+fn find_sequences_of_zones_between<T: TopDownScene>(
     from_zone: TileKind<T::LocalTileKind>,
     to_zone: TileKind<T::LocalTileKind>,
-) -> Vec<TileKind<T::LocalTileKind>>
+    k: usize,
+) -> impl Iterator<Item = Vec<TileKind<T::LocalTileKind>>>
 where
     T::LocalTileKind: ZoneTile<Successors = T::LocalTileKind>,
 {
-    let (path, _) = pathfinding::prelude::astar(
+    debug_assert_ne!(0, k);
+    // here I want to make sure that if two zones are neighbors and there's a
+    // 3rd overlapping both, it should be included in the path
+    // perhaps zone size is not the right metric to use
+
+    pathfinding::prelude::yen(
         &from_zone,
         // successors
         |zone| {
@@ -759,14 +785,12 @@ where
                 Some((TileKind::Local(*s), s.zone_size()? as i32))
             })
         },
-        // heuristic
-        |zone| zone.zone_size().map(|z| z as i32).unwrap_or(i32::MAX),
         // success
         |zone| zone == &to_zone,
+        k,
     )
-    .expect("a path between two zones in the same group");
-
-    path
+    .into_iter()
+    .map(|(path, _)| path)
 }
 
 impl<L> TileKind<L> {
