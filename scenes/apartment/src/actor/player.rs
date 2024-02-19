@@ -8,6 +8,7 @@ use main_game_lib::{
         actor::CharacterExt, Actor, ActorMovementEvent, ActorTarget, TileKind,
         TopDownScene,
     },
+    common_visuals::BeginInterpolationEvent,
     cutscene::IntoCutscene,
     GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
@@ -91,6 +92,7 @@ pub(super) fn start_meditation_minigame_if_near_chair(
     mut next_state: ResMut<NextState<GlobalGameState>>,
     store: Res<GlobalStore>,
     map: Res<common_top_down::TileMap<Apartment>>,
+    asset_server: Res<AssetServer>,
 
     player: Query<(Entity, &Actor), With<Player>>,
     mut overlay: Query<&mut Sprite, With<TransparentOverlay>>,
@@ -116,8 +118,20 @@ pub(super) fn start_meditation_minigame_if_near_chair(
     cmd.entity(entity).despawn_recursive();
     overlay.single_mut().color.set_a(1.0);
 
+    let mut entity_cmd = cmd.spawn(SpriteBundle {
+        texture: asset_server
+            .load(common_assets::meditation::LOADING_SCREEN_ROCK),
+        visibility: Visibility::Hidden,
+        ..default()
+    });
+    let rock = entity_cmd.id();
+    BeginInterpolationEvent::of_translation(rock, None, vec2(-300.0, 80.0))
+        .over(from_millis(2500))
+        .insert_to(&mut entity_cmd);
+
     cmd.insert_resource(LoadingScreenSettings {
-        bg_image_asset: Some(common_assets::meditation::LOADING_SCREEN),
+        bg_image_asset: Some(common_assets::meditation::LOADING_SCREEN_BG),
+        entities_to_render_with_bg_image: vec![rock],
         stare_at_loading_screen_for_at_least: Some(
             WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
         ),

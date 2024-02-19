@@ -58,6 +58,12 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         FixedUpdate,
+        // loading screen has a floating rock
+        common_visuals::systems::interpolate
+            .run_if(in_state(GlobalGameState::MeditationLoading)),
+    );
+    app.add_systems(
+        FixedUpdate,
         common_visuals::systems::advance_atlas_animation
             .run_if(in_state(GlobalGameState::MeditationInGame)),
     );

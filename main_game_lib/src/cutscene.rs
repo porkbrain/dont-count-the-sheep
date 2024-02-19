@@ -281,7 +281,7 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
             PIXEL_VISIBLE_HEIGHT / 2.0 - LETTERBOXING_QUAD_HEIGHT / 2.0,
         );
 
-        let mut top_entities = cmd.spawn((
+        let mut top_cmd = cmd.spawn((
             Name::new("Letterboxing: top quad"),
             RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
             LetterboxingTopQuad,
@@ -300,16 +300,16 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
                 ..default()
             },
         ));
-        let top = top_entities.id();
+        let top = top_cmd.id();
         BeginInterpolationEvent::of_translation(
             top,
             Some(TOP_QUAD_INITIAL_POS),
             TOP_QUAD_TARGET_POS,
         )
         .over(LETTERBOXING_FADE_IN_DURATION)
-        .insert_to(&mut top_entities);
+        .insert_to(&mut top_cmd);
 
-        let mut bottom_entities = cmd.spawn((
+        let mut bottom_cmd = cmd.spawn((
             Name::new("Letterboxing: bottom quad"),
             LetterboxingBottomQuad,
             RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
@@ -328,14 +328,14 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
                 ..default()
             },
         ));
-        let bottom = bottom_entities.id();
+        let bottom = bottom_cmd.id();
         BeginInterpolationEvent::of_translation(
             top,
             Some(LETTERBOXING_BOTTOM_QUAD_INITIAL_POS),
             LETTERBOXING_BOTTOM_QUAD_TARGET_POS,
         )
         .over(LETTERBOXING_FADE_IN_DURATION)
-        .insert_to(&mut bottom_entities);
+        .insert_to(&mut bottom_cmd);
 
         Some([camera, top, bottom])
     } else {

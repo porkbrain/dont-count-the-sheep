@@ -91,6 +91,13 @@ pub struct LoadingScreenSettings {
     /// - [`LoadingScreenState::FadeInQuadToHideBg`] goes straight to
     ///   [`LoadingScreenState::FadeOutQuadToShowGame`]
     pub bg_image_asset: Option<&'static str>,
+    /// If bg image is provided, these entities will have their visibility set
+    /// to hidden in the beginning.
+    /// Then they'll be set to visible when the bg image is loaded.
+    /// Then they'll be _removed_ when the bg image is removed.
+    ///
+    /// The module also inserts appropriate [`RenderLayers`] to these entities.
+    pub entities_to_render_with_bg_image: Vec<Entity>,
     /// How long does it take to fade in the quad that hides the load out
     /// scene.
     pub fade_loading_screen_in: Duration,
@@ -247,6 +254,13 @@ fn spawn_loading_screen(
                 ..default()
             },
         ));
+
+        for entity in &settings.entities_to_render_with_bg_image {
+            cmd.entity(*entity).insert((
+                Visibility::Hidden,
+                RenderLayers::layer(render_layer::LOADING),
+            ));
+        }
     }
 
     next_state.set(LoadingScreenState::FadeInQuadWhileBgLoading);
@@ -270,6 +284,7 @@ fn fade_in_quad_while_bg_loading(
 }
 
 fn wait_for_bg_to_load(
+    mut cmd: Commands,
     asset_server: Res<AssetServer>,
     mut next_state: ResMut<NextState<LoadingScreenState>>,
     settings: Res<LoadingScreenSettings>,
@@ -290,6 +305,10 @@ fn wait_for_bg_to_load(
     trace!("Bg loaded");
 
     *visibility = Visibility::Visible;
+
+    for entity in &settings.entities_to_render_with_bg_image {
+        cmd.entity(*entity).insert(Visibility::Visible);
+    }
 
     next_state.set(LoadingScreenState::FadeOutQuadToShowBg);
 }
@@ -356,6 +375,7 @@ fn fade_in_quad_to_hide_bg(
 fn remove_bg(
     mut cmd: Commands,
     mut next_state: ResMut<NextState<LoadingScreenState>>,
+    settings: Res<LoadingScreenSettings>,
 
     mut query: Query<Entity, With<LoadingImage>>,
 ) {
@@ -364,6 +384,10 @@ fn remove_bg(
     let entity = query.single_mut();
 
     cmd.entity(entity).despawn_recursive();
+
+    for entity in &settings.entities_to_render_with_bg_image {
+        cmd.entity(*entity).despawn_recursive();
+    }
 
     next_state.set(LoadingScreenState::FadeOutQuadToShowGame);
 }
@@ -439,6 +463,7 @@ impl Default for LoadingScreenSettings {
     fn default() -> Self {
         Self {
             bg_image_asset: None,
+            entities_to_render_with_bg_image: Vec::new(),
             fade_loading_screen_in: DEFAULT_FADE_LOADING_SCREEN_IN,
             fade_loading_screen_out: DEFAULT_FADE_LOADING_SCREEN_OUT,
             stare_at_loading_screen_for_at_least: None,

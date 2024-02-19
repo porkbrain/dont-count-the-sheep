@@ -41,7 +41,10 @@ pub mod downtown {
 pub mod meditation {
     pub const FOLDER: &str = "meditation";
 
-    pub const LOADING_SCREEN: &str = "meditation/textures/loading_screen.png";
+    pub const LOADING_SCREEN_BG: &str =
+        "meditation/textures/loading_screen_bg.png";
+    pub const LOADING_SCREEN_ROCK: &str =
+        "meditation/textures/loading_screen_rock.png";
 
     pub const BACKGROUND_DEFAULT: &str = "meditation/textures/bg/default.png";
     pub const SHOOTING_STAR_ATLAS: &str =
