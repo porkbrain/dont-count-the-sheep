@@ -293,10 +293,16 @@ pub(super) fn rotate(
     >,
     time: Res<Time>,
 ) {
-    let Some((vel, mut angvel, mut transform)) = hoshi.get_single_mut_or_none()
+    let Some((Velocity(vel), mut angvel, mut transform)) =
+        hoshi.get_single_mut_or_none()
     else {
         return;
     };
+
+    if vel == &Vec2::ZERO {
+        // we call normalize on velocity which is undefined for zero vector
+        return;
+    }
 
     const UPRIGHT_ROTATION: Quat = Quat::from_xyzw(0.0, 0.0, 0.0, 1.0);
 
