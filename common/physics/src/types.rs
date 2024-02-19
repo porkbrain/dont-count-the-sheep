@@ -6,12 +6,12 @@ use bevy::prelude::*;
 pub use crate::poissons_equation::types::*;
 
 #[derive(Default, Deref, DerefMut, Debug, Clone, Copy, PartialEq)]
-pub struct Radians(f32);
+pub struct Radians(pub f32);
 
 #[derive(
     Component, Default, Deref, DerefMut, Clone, Copy, PartialEq, Debug,
 )]
-pub struct Velocity(Vec2);
+pub struct Velocity(pub Vec2);
 
 /// Positive should be counter-clockwise.
 #[derive(
