@@ -216,13 +216,13 @@ pub fn change_selection(
         return;
     }
 
-    let up = controls.pressed(GlobalAction::MoveUp)
-        || controls.pressed(GlobalAction::MoveUpLeft)
-        || controls.pressed(GlobalAction::MoveUpRight);
+    let up = controls.pressed(&GlobalAction::MoveUp)
+        || controls.pressed(&GlobalAction::MoveUpLeft)
+        || controls.pressed(&GlobalAction::MoveUpRight);
 
-    let down = controls.pressed(GlobalAction::MoveDown)
-        || controls.pressed(GlobalAction::MoveDownLeft)
-        || controls.pressed(GlobalAction::MoveDownRight);
+    let down = controls.pressed(&GlobalAction::MoveDown)
+        || controls.pressed(&GlobalAction::MoveDownLeft)
+        || controls.pressed(&GlobalAction::MoveDownRight);
 
     if !up && !down {
         return;

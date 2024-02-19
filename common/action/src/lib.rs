@@ -11,6 +11,7 @@ use leafwing_input_manager::{
     user_input::{InputKind, UserInput},
     Actionlike,
 };
+use strum::{EnumIter, IntoEnumIterator};
 
 /// Registers necessary types, inserts resources and adds the dependent
 /// [`InputManagerPlugin`].
@@ -28,7 +29,9 @@ impl bevy::app::Plugin for Plugin {
 }
 
 /// These actions are used throughout the game.
-#[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
+#[derive(
+    Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect, EnumIter,
+)]
 pub enum GlobalAction {
     /// Going only up.
     MoveUp,
@@ -61,7 +64,7 @@ pub enum GlobalAction {
 pub fn interaction_pressed(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
     move |action_state: Res<ActionState<GlobalAction>>| {
-        action_state.pressed(GlobalAction::Interact)
+        action_state.pressed(&GlobalAction::Interact)
     }
 }
 
@@ -69,7 +72,7 @@ pub fn interaction_pressed(
 pub fn interaction_just_pressed(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
     move |action_state: Res<ActionState<GlobalAction>>| {
-        action_state.just_pressed(GlobalAction::Interact)
+        action_state.just_pressed(&GlobalAction::Interact)
     }
 }
 
@@ -77,14 +80,14 @@ pub fn interaction_just_pressed(
 pub fn move_action_pressed(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
     move |action_state: Res<ActionState<GlobalAction>>| {
-        action_state.pressed(GlobalAction::MoveUp)
-            || action_state.pressed(GlobalAction::MoveDown)
-            || action_state.pressed(GlobalAction::MoveLeft)
-            || action_state.pressed(GlobalAction::MoveRight)
-            || action_state.pressed(GlobalAction::MoveUpLeft)
-            || action_state.pressed(GlobalAction::MoveUpRight)
-            || action_state.pressed(GlobalAction::MoveDownLeft)
-            || action_state.pressed(GlobalAction::MoveDownRight)
+        action_state.pressed(&GlobalAction::MoveUp)
+            || action_state.pressed(&GlobalAction::MoveDown)
+            || action_state.pressed(&GlobalAction::MoveLeft)
+            || action_state.pressed(&GlobalAction::MoveRight)
+            || action_state.pressed(&GlobalAction::MoveUpLeft)
+            || action_state.pressed(&GlobalAction::MoveUpRight)
+            || action_state.pressed(&GlobalAction::MoveDownLeft)
+            || action_state.pressed(&GlobalAction::MoveDownRight)
     }
 }
 
@@ -92,14 +95,14 @@ pub fn move_action_pressed(
 pub fn move_action_just_pressed(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
     move |action_state: Res<ActionState<GlobalAction>>| {
-        action_state.just_pressed(GlobalAction::MoveUp)
-            || action_state.just_pressed(GlobalAction::MoveDown)
-            || action_state.just_pressed(GlobalAction::MoveLeft)
-            || action_state.just_pressed(GlobalAction::MoveRight)
-            || action_state.just_pressed(GlobalAction::MoveUpLeft)
-            || action_state.just_pressed(GlobalAction::MoveUpRight)
-            || action_state.just_pressed(GlobalAction::MoveDownLeft)
-            || action_state.just_pressed(GlobalAction::MoveDownRight)
+        action_state.just_pressed(&GlobalAction::MoveUp)
+            || action_state.just_pressed(&GlobalAction::MoveDown)
+            || action_state.just_pressed(&GlobalAction::MoveLeft)
+            || action_state.just_pressed(&GlobalAction::MoveRight)
+            || action_state.just_pressed(&GlobalAction::MoveUpLeft)
+            || action_state.just_pressed(&GlobalAction::MoveUpRight)
+            || action_state.just_pressed(&GlobalAction::MoveDownLeft)
+            || action_state.just_pressed(&GlobalAction::MoveDownRight)
     }
 }
 
@@ -107,9 +110,9 @@ impl GlobalAction {
     fn input_map() -> InputMap<Self> {
         let mut input_map = InputMap::default();
 
-        for action in GlobalAction::variants() {
+        for action in GlobalAction::iter() {
             for input in GlobalAction::default_keyboard_input(action) {
-                input_map.insert(input, action);
+                input_map.insert(action, input);
             }
         }
 

@@ -31,7 +31,7 @@ pub(super) fn normal(
     };
     mode.tick(&time);
 
-    if mode.can_use_special && controls.pressed(GlobalAction::Interact) {
+    if mode.can_use_special && controls.pressed(&GlobalAction::Interact) {
         if let Some(angle) = unit_circle_angle(&controls) {
             debug!("Send loading special");
             broadcast.send(ActionEvent::StartLoadingSpecial {
@@ -55,18 +55,18 @@ pub(super) fn normal(
         }
     }
 
-    let pressed_left = controls.pressed(GlobalAction::MoveLeft)
-        || controls.pressed(GlobalAction::MoveDownLeft)
-        || controls.pressed(GlobalAction::MoveUpLeft);
-    let pressed_right = controls.pressed(GlobalAction::MoveRight)
-        || controls.pressed(GlobalAction::MoveDownRight)
-        || controls.pressed(GlobalAction::MoveUpRight);
-    let pressed_down = controls.pressed(GlobalAction::MoveDown)
-        || controls.pressed(GlobalAction::MoveDownLeft)
-        || controls.pressed(GlobalAction::MoveDownRight);
-    let pressed_up = controls.pressed(GlobalAction::MoveUp)
-        || controls.pressed(GlobalAction::MoveUpLeft)
-        || controls.pressed(GlobalAction::MoveUpRight);
+    let pressed_left = controls.pressed(&GlobalAction::MoveLeft)
+        || controls.pressed(&GlobalAction::MoveDownLeft)
+        || controls.pressed(&GlobalAction::MoveUpLeft);
+    let pressed_right = controls.pressed(&GlobalAction::MoveRight)
+        || controls.pressed(&GlobalAction::MoveDownRight)
+        || controls.pressed(&GlobalAction::MoveUpRight);
+    let pressed_down = controls.pressed(&GlobalAction::MoveDown)
+        || controls.pressed(&GlobalAction::MoveDownLeft)
+        || controls.pressed(&GlobalAction::MoveDownRight);
+    let pressed_up = controls.pressed(&GlobalAction::MoveUp)
+        || controls.pressed(&GlobalAction::MoveUpLeft)
+        || controls.pressed(&GlobalAction::MoveUpRight);
 
     let dt = time.delta_seconds();
     let gvec = gravity.gradient_at(ChangeOfBasis::from(*transform))
@@ -218,21 +218,21 @@ pub(crate) fn loading_special(
 fn unit_circle_angle(a: &ActionState<GlobalAction>) -> Option<Radians> {
     use GlobalAction::*;
 
-    let angle = if a.pressed(MoveLeft) {
+    let angle = if a.pressed(&MoveLeft) {
         PI // ←
-    } else if a.pressed(MoveRight) {
+    } else if a.pressed(&MoveRight) {
         2.0 * PI // →
-    } else if a.pressed(MoveUp) {
+    } else if a.pressed(&MoveUp) {
         PI / 2.0 // ↑
-    } else if a.pressed(MoveDown) {
+    } else if a.pressed(&MoveDown) {
         3.0 * PI / 2.0 // ↓
-    } else if a.pressed(MoveUpLeft) {
+    } else if a.pressed(&MoveUpLeft) {
         3.0 * PI / 4.0 // ↖
-    } else if a.pressed(MoveUpRight) {
+    } else if a.pressed(&MoveUpRight) {
         PI / 4.0 // ↗
-    } else if a.pressed(MoveDownRight) {
+    } else if a.pressed(&MoveDownRight) {
         7.0 * PI / 4.0 // ↘
-    } else if a.pressed(MoveDownLeft) {
+    } else if a.pressed(&MoveDownLeft) {
         5.0 * PI / 4.0 // ↙
     } else {
         return None;
