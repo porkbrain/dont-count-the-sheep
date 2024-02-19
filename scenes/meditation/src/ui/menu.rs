@@ -56,7 +56,7 @@ pub(super) fn open(
 ) {
     debug!("Pausing to open menu");
     // prevent accidental immediate unpausing
-    controls.consume(GlobalAction::Cancel);
+    controls.consume(&GlobalAction::Cancel);
 
     next_state.set(GlobalGameState::MeditationInMenu);
 }
@@ -67,7 +67,7 @@ pub(super) fn close(
 ) {
     debug!("Closing menu and unpausing");
     // prevent accidental immediate pausing
-    controls.consume(GlobalAction::Cancel);
+    controls.consume(&GlobalAction::Cancel);
 
     next_state.set(GlobalGameState::MeditationInGame);
 }
@@ -85,8 +85,8 @@ pub(super) fn change_selection(
     let mut menu = menu.single_mut();
     let curr_selection = menu.selection;
 
-    let pressed_up = controls.just_pressed(GlobalAction::MoveUp);
-    let pressed_down = controls.just_pressed(GlobalAction::MoveDown);
+    let pressed_up = controls.just_pressed(&GlobalAction::MoveUp);
+    let pressed_down = controls.just_pressed(&GlobalAction::MoveDown);
 
     let new_selection = if pressed_up {
         Some(curr_selection.prev())
@@ -133,7 +133,7 @@ pub(super) fn select(
     debug!("Going with {curr_selection:?}");
 
     match curr_selection {
-        Selection::Resume => controls.press(GlobalAction::Cancel),
+        Selection::Resume => controls.press(&GlobalAction::Cancel),
         Selection::Restart => {
             // just a quick loading screen, no bg
             cmd.insert_resource(LoadingScreenSettings {
