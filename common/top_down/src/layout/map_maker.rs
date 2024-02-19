@@ -281,10 +281,10 @@ pub(super) fn export_map<T: TopDownScene>(
     let svg = dot_g.into_svg().unwrap();
     fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg).unwrap();
 
-    let zone_groups_rs = g.generate_zone_groups_rs();
+    let zone_tile_impl_rs = g.generate_zone_tile_impl_rs();
     fs::write(
-        format!("{scene_path}/src/autogen/zone_groups.rs"),
-        zone_groups_rs,
+        format!("{scene_path}/src/autogen/zone_tile_impl.rs"),
+        zone_tile_impl_rs,
     )
     .unwrap();
 }

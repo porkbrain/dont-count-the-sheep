@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 mod actor;
+mod autogen;
 mod cameras;
 mod layout;
 mod prelude;

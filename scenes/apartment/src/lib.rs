@@ -4,6 +4,7 @@
 #![feature(trivial_bounds)]
 
 mod actor;
+mod autogen;
 mod cameras;
 mod consts;
 mod layout;
