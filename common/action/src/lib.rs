@@ -120,44 +120,44 @@ impl GlobalAction {
     }
 
     fn default_keyboard_input(action: GlobalAction) -> Vec<UserInput> {
-        use InputKind::Keyboard as Kbd;
-        use KeyCode as Key;
+        use InputKind::PhysicalKey as Kbd;
+        use KeyCode::*;
         use UserInput::{Chord, Single};
 
         match action {
             Self::MoveDown => {
-                vec![Single(Kbd(Key::S)), Single(Kbd(Key::Down))]
+                vec![Single(Kbd(KeyS)), Single(Kbd(ArrowDown))]
             }
             Self::MoveLeft => {
-                vec![Single(Kbd(Key::A)), Single(Kbd(Key::Left))]
+                vec![Single(Kbd(KeyA)), Single(Kbd(ArrowLeft))]
             }
             Self::MoveRight => {
-                vec![Single(Kbd(Key::D)), Single(Kbd(Key::Right))]
+                vec![Single(Kbd(KeyD)), Single(Kbd(ArrowRight))]
             }
             Self::MoveUp => {
-                vec![Single(Kbd(Key::W)), Single(Kbd(Key::Up))]
+                vec![Single(Kbd(KeyW)), Single(Kbd(ArrowUp))]
             }
             Self::MoveDownLeft => vec![
-                Chord(vec![Kbd(Key::S), Kbd(Key::A)]),
-                Chord(vec![Kbd(Key::Down), Kbd(Key::Left)]),
+                Chord(vec![Kbd(KeyS), Kbd(KeyA)]),
+                Chord(vec![Kbd(ArrowDown), Kbd(ArrowLeft)]),
             ],
             Self::MoveDownRight => vec![
-                Chord(vec![Kbd(Key::S), Kbd(Key::D)]),
-                Chord(vec![Kbd(Key::Down), Kbd(Key::Right)]),
+                Chord(vec![Kbd(KeyS), Kbd(KeyD)]),
+                Chord(vec![Kbd(ArrowDown), Kbd(ArrowRight)]),
             ],
             Self::MoveUpLeft => vec![
-                Chord(vec![Kbd(Key::W), Kbd(Key::A)]),
-                Chord(vec![Kbd(Key::Up), Kbd(Key::Left)]),
+                Chord(vec![Kbd(KeyW), Kbd(KeyA)]),
+                Chord(vec![Kbd(ArrowUp), Kbd(ArrowLeft)]),
             ],
             Self::MoveUpRight => vec![
-                Chord(vec![Kbd(Key::W), Kbd(Key::D)]),
-                Chord(vec![Kbd(Key::Up), Kbd(Key::Right)]),
+                Chord(vec![Kbd(KeyW), Kbd(KeyD)]),
+                Chord(vec![Kbd(ArrowUp), Kbd(ArrowRight)]),
             ],
             Self::Interact => {
-                vec![Single(Kbd(Key::Space)), Single(Kbd(Key::Return))]
+                vec![Single(Kbd(Space)), Single(Kbd(Enter))]
             }
             Self::Cancel => {
-                vec![Single(Kbd(Key::Escape))]
+                vec![Single(Kbd(Escape))]
             }
         }
     }
