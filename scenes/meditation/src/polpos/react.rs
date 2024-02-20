@@ -70,7 +70,7 @@ pub(super) fn to_environment(
     mut score: EventWriter<PolpoDestroyedEvent>,
     time: Res<Time>,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 
     mut climate: Query<
         (&Climate, &Transform, &mut OmniLightSource2D),
@@ -95,7 +95,7 @@ pub(super) fn to_environment(
         ),
     >,
     mut polpos: Query<
-        (Entity, &mut Polpo, &Transform, &mut TextureAtlasSprite),
+        (Entity, &mut Polpo, &Transform, &mut TextureAtlas),
         (Without<Climate>, Without<Hoshi>, Without<PolpoOccluder>),
     >,
 ) {
@@ -217,17 +217,19 @@ pub(super) fn to_environment(
                         RenderLayers::layer(render_layer::OBJ),
                     ))
                     .insert(SpriteSheetBundle {
-                        texture_atlas: texture_atlases.add(
-                            TextureAtlas::from_grid(
-                                asset_server.load(assets::TV_STATIC_ATLAS),
-                                vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
-                                STATIC_ATLAS_FRAMES,
-                                1,
-                                None,
-                                None,
+                        texture: asset_server.load(assets::TV_STATIC_ATLAS),
+                        atlas: TextureAtlas {
+                            index: first_frame,
+                            layout: texture_atlases.add(
+                                TextureAtlasLayout::from_grid(
+                                    vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
+                                    STATIC_ATLAS_FRAMES,
+                                    1,
+                                    None,
+                                    None,
+                                ),
                             ),
-                        ),
-                        sprite: TextureAtlasSprite::new(first_frame),
+                        },
                         transform: Transform::from_translation(
                             vec2(0.0, 0.0).extend(zindex::POLPO_STATIC),
                         ),

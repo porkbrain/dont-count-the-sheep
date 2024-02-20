@@ -96,7 +96,7 @@ pub(crate) mod black_hole {
     pub(crate) fn spawn(
         cmd: &mut Commands,
         asset_server: &Res<AssetServer>,
-        texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+        texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
         gravity: &mut EventWriter<PoissonsEquationUpdateEvent<Gravity>>,
         at_translation: Vec2,
     ) {
@@ -127,7 +127,7 @@ pub(crate) mod black_hole {
                             -BLACK_HOLE_GRAVITY,
                             ChangeOfBasis::new(at_translation),
                         ),
-                    )
+                    );
                 });
             },
         ));
@@ -149,14 +149,17 @@ pub(crate) mod black_hole {
             RenderLayers::layer(render_layer::BG),
         ))
         .insert(SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load(assets::BLACKHOLE_ATLAS),
-                vec2(BLACK_HOLE_SPRITE_SIZE, BLACK_HOLE_SPRITE_SIZE),
-                BLACK_HOLE_ATLAS_FRAMES,
-                1,
-                None,
-                None,
-            )),
+            texture: asset_server.load(assets::BLACKHOLE_ATLAS),
+            atlas: TextureAtlas {
+                index: 0,
+                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                    vec2(BLACK_HOLE_SPRITE_SIZE, BLACK_HOLE_SPRITE_SIZE),
+                    BLACK_HOLE_ATLAS_FRAMES,
+                    1,
+                    None,
+                    None,
+                )),
+            },
             transform: Transform::from_translation(
                 at_translation.extend(zindex::BLACK_HOLE),
             ),

@@ -45,7 +45,7 @@ pub(super) fn sprite_loading_special(
     mut hoshi: Query<(&mode::LoadingSpecial, &mut Velocity, &Transform)>,
     mut set: ParamSet<(
         Query<
-            (Entity, &mut TextureAtlasSprite, &mut Transform),
+            (Entity, &mut Sprite, &mut TextureAtlas, &mut Transform),
             (
                 With<SparkEffect>,
                 Without<AtlasAnimationTimer>,
@@ -53,11 +53,11 @@ pub(super) fn sprite_loading_special(
             ),
         >,
         Query<
-            &mut TextureAtlasSprite,
+            &mut TextureAtlas,
             (With<HoshiBody>, Without<mode::LoadingSpecial>),
         >,
         Query<
-            &mut TextureAtlasSprite,
+            &mut TextureAtlas,
             (With<HoshiFace>, Without<mode::LoadingSpecial>),
         >,
     )>,
@@ -69,13 +69,17 @@ pub(super) fn sprite_loading_special(
 
     let dt = time.delta_seconds();
 
-    if let Some((spark_entity, mut spark_atlas, mut spark_transform)) =
-        set.p0().get_single_mut_or_none()
+    if let Some((
+        spark_entity,
+        mut spark_sprite,
+        mut spark_atlas,
+        mut spark_transform,
+    )) = set.p0().get_single_mut_or_none()
     {
         let elapsed = mode.activated.elapsed();
 
         if elapsed > START_SPARK_ANIMATION_AFTER_ELAPSED {
-            spark_atlas.custom_size = Some(Vec2::splat(SPARK_SIDE));
+            spark_sprite.custom_size = Some(Vec2::splat(SPARK_SIDE));
             spark_atlas.index = 1;
             cmd.entity(spark_entity).insert(AtlasAnimationTimer::new(
                 SPARK_FRAME_TIME,
@@ -90,7 +94,7 @@ pub(super) fn sprite_loading_special(
 
             let square_side =
                 INITIAL_SIZE - (INITIAL_SIZE - END_SIZE) * animation_elapsed;
-            spark_atlas.custom_size = Some(Vec2::splat(square_side));
+            spark_sprite.custom_size = Some(Vec2::splat(square_side));
 
             // smoothly:
             // vec.x when animation_elapsed 0
@@ -131,12 +135,9 @@ pub(super) fn sprite(
         ),
         With<mode::Normal>,
     >,
-    mut body: Query<
-        &mut TextureAtlasSprite,
-        (With<HoshiBody>, Without<HoshiFace>),
-    >,
+    mut body: Query<&mut TextureAtlas, (With<HoshiBody>, Without<HoshiFace>)>,
     mut face: Query<
-        (&mut Visibility, &mut TextureAtlasSprite),
+        (&mut Visibility, &mut TextureAtlas),
         (With<HoshiFace>, Without<HoshiBody>),
     >,
 ) {

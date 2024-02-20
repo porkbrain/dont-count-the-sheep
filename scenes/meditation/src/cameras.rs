@@ -1,5 +1,5 @@
 use bevy::{
-    core_pipeline::{bloom::BloomSettings, clear_color::ClearColorConfig},
+    core_pipeline::bloom::BloomSettings,
     render::{camera::RenderTarget, view::RenderLayers},
 };
 use bevy_magic_light_2d::{
@@ -75,7 +75,6 @@ fn spawn_cameras(mut cmd: Commands) {
             ..default()
         },
         RenderLayers::layer(BackgroundLightScene::render_layer_index()),
-        UiCameraConfig { show_ui: false },
     ));
 
     cmd.spawn((
@@ -87,10 +86,8 @@ fn spawn_cameras(mut cmd: Commands) {
             camera: Camera {
                 hdr: true,
                 order: order::LIGHT,
-                ..default()
-            },
-            camera_2d: Camera2d {
                 clear_color: ClearColorConfig::None,
+                ..default()
             },
             ..default()
         },
@@ -113,7 +110,6 @@ fn spawn_bg_render_camera(
         // For some reason, everything breaks if 0 is not included.
         // I don't know why.
         RenderLayers::from_layers(&[0, render_layer::BG]),
-        UiCameraConfig { show_ui: false },
     ))
     .insert(Camera2dBundle {
         camera: Camera {

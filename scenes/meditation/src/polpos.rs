@@ -150,7 +150,7 @@ fn destroyed(
     mut gravity: EventWriter<PoissonsEquationUpdateEvent<Gravity>>,
     mut spawner: ResMut<spawner::Spawner>,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 
     mut score: Query<&mut crate::ui::Score>,
 ) {
