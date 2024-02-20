@@ -13,8 +13,8 @@
 use std::{sync::OnceLock, time::Duration};
 
 use bevy::{
-    core_pipeline::clear_color::ClearColorConfig, ecs::system::SystemId,
-    math::vec2, prelude::*, render::view::RenderLayers, time::Stopwatch,
+    ecs::system::SystemId, math::vec2, prelude::*, render::view::RenderLayers,
+    time::Stopwatch,
 };
 use bevy_grid_squared::{GridDirection, Square};
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
@@ -265,10 +265,8 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
                     camera: Camera {
                         hdr: true,
                         order: order::CUTSCENE_LETTERBOXING,
-                        ..default()
-                    },
-                    camera_2d: Camera2d {
                         clear_color: ClearColorConfig::None,
+                        ..default()
                     },
                     ..default()
                 },

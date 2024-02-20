@@ -159,12 +159,13 @@ pub trait ZoneTile {
     Serialize,
     Deserialize,
     Reflect,
-    InspectorOptions,
+    // InspectorOptions,
     Default,
     Clone,
     Debug,
 )]
-#[reflect(Resource, InspectorOptions)]
+#[reflect(Resource)]
+// #[reflect(Resource, InspectorOptions)]
 pub struct TileMap<T: TopDownScene> {
     /// There can be multiple layers of tiles on a single square.
     squares: HashMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,

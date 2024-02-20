@@ -175,7 +175,7 @@ fn track_player<C: Component>(
                 camera_entity,
                 None,
                 cam_pos + move_in_direction,
-            ))
+            ));
         }
     };
 }

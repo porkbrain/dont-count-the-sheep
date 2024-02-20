@@ -9,10 +9,7 @@ pub mod portrait_dialog;
 
 use std::time::Duration;
 
-use bevy::{
-    core_pipeline::clear_color::ClearColorConfig, prelude::*,
-    render::view::RenderLayers,
-};
+use bevy::{prelude::*, render::view::RenderLayers};
 use common_assets::store::AssetList;
 use common_visuals::camera::{order, render_layer};
 use serde::{Deserialize, Serialize};
@@ -87,10 +84,8 @@ pub fn spawn_camera(mut cmd: Commands) {
             camera: Camera {
                 hdr: true,
                 order: order::DIALOG,
-                ..default()
-            },
-            camera_2d: Camera2d {
                 clear_color: ClearColorConfig::None,
+                ..default()
             },
             ..default()
         },
@@ -144,9 +139,38 @@ impl Character {
             Character::Otter => "Otter",
         }
     }
-}
 
-impl Character {
+    /// This handle always refers to an existing texture atlas.
+    #[inline]
+    pub fn sprite_atlas_layout_handle(self) -> Handle<TextureAtlasLayout> {
+        const ROOT: u128 = 1684183453418242348;
+
+        Handle::weak_from_u128(ROOT + self as u128)
+    }
+
+    /// The asset to load for the character atlas.
+    pub fn sprite_atlas_texture_path(self) -> &'static str {
+        use common_assets::character_atlases::*;
+
+        match self {
+            Character::Winnie => WINNIE,
+            Character::Marie => MARIE,
+            Character::Unnamed => UNNAMED,
+            _ => unimplemented!(),
+        }
+    }
+
+    /// Loads all sprite atlases and stores them to the [`Assets`].
+    /// Each atlas has a unique handle.
+    /// Call this once when setting up the game.
+    pub fn load_all_sprite_atlas_layouts(
+        texture_atlases: &mut Assets<TextureAtlasLayout>,
+    ) {
+        for character in Self::iter() {
+            character.insert_sprite_atlas_layout(texture_atlases);
+        }
+    }
+
     fn portrait_asset_path(self) -> &'static str {
         use common_assets::portraits::*;
 
@@ -166,56 +190,28 @@ impl Character {
         }
     }
 
-    /// Returns arguments to [`TextureAtlas::from_grid`].
-    fn sprite_atlas(self) -> Option<(&'static str, Vec2, usize, usize, Vec2)> {
-        use common_assets::character_atlases::*;
-
+    /// Returns arguments to [`TextureAtlasLayout::from_grid`].
+    fn sprite_atlas(self) -> Option<(Vec2, usize, usize, Vec2)> {
         const STANDARD_SIZE: Vec2 = Vec2::new(25.0, 46.0);
 
         match self {
-            Character::Winnie => {
-                Some((WINNIE, STANDARD_SIZE, 12, 1, default()))
-            }
-            Character::Marie => Some((MARIE, STANDARD_SIZE, 15, 1, default())),
-            Character::Unnamed => {
-                Some((UNNAMED, STANDARD_SIZE, 15, 1, default()))
-            }
+            Character::Winnie => Some((STANDARD_SIZE, 12, 1, default())),
+            Character::Marie => Some((STANDARD_SIZE, 15, 1, default())),
+            Character::Unnamed => Some((STANDARD_SIZE, 15, 1, default())),
             _ => None,
         }
     }
 
-    /// This handle always refers to an existing texture atlas.
     #[inline]
-    pub fn sprite_atlas_handle(self) -> Handle<TextureAtlas> {
-        const ROOT: u128 = 1684183453418242348;
-
-        Handle::weak_from_u128(ROOT + self as u128)
-    }
-
-    /// Loads all sprite atlases and stores them to the [`Assets`].
-    /// Each atlas has a unique handle.
-    pub fn load_all_sprite_atlases(
-        asset_server: &AssetServer,
-        texture_atlases: &mut Assets<TextureAtlas>,
-    ) {
-        for character in Self::iter() {
-            character.insert_sprite_atlas(asset_server, texture_atlases);
-        }
-    }
-
-    #[inline]
-    fn insert_sprite_atlas(
+    fn insert_sprite_atlas_layout(
         self,
-        asset_server: &AssetServer,
-        texture_atlases: &mut Assets<TextureAtlas>,
+        texture_atlases: &mut Assets<TextureAtlasLayout>,
     ) {
-        let Some((path, size, cols, rows, padding)) = self.sprite_atlas()
-        else {
+        let Some((size, cols, rows, padding)) = self.sprite_atlas() else {
             return;
         };
 
-        let atlas = TextureAtlas::from_grid(
-            asset_server.load(path),
+        let atlas = TextureAtlasLayout::from_grid(
             size,
             cols,
             rows,
@@ -223,6 +219,6 @@ impl Character {
             None,
         );
 
-        texture_atlases.insert(self.sprite_atlas_handle(), atlas);
+        texture_atlases.insert(self.sprite_atlas_layout_handle(), atlas);
     }
 }

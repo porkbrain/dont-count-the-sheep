@@ -26,7 +26,7 @@ pub use state::*;
 pub fn windowed_app() -> App {
     let mut app = App::new();
 
-    app.add_state::<GlobalGameState>()
+    app.init_state::<GlobalGameState>()
         .register_type::<GlobalGameState>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
         .insert_resource(GlobalGameStateTransitionStack::default())
@@ -55,6 +55,7 @@ pub fn windowed_app() -> App {
                 meditation::hoshi::sprite=debug,\
                 "
                 .to_string(),
+                ..default()
             })
             .set(ImagePlugin::default_nearest())
             .set(WindowPlugin {
@@ -66,11 +67,11 @@ pub fn windowed_app() -> App {
             }),
     );
 
-    // dev only
-    app.add_plugins((
-        WorldInspectorPlugin::new(),
-        StateInspectorPlugin::<GlobalGameState>::default(),
-    ));
+    // dev only TODO
+    // app.add_plugins((
+    //     WorldInspectorPlugin::new(),
+    //     StateInspectorPlugin::<GlobalGameState>::default(),
+    // ));
 
     app.add_plugins((
         bevy_magic_light_2d::Plugin,
@@ -100,15 +101,13 @@ pub fn windowed_app() -> App {
 
 /// All assets that should be kept in memory throughout the game.
 fn begin_loading_static_assets_on_startup(
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    common_story::Character::load_all_sprite_atlases(
-        &asset_server,
+    common_story::Character::load_all_sprite_atlas_layouts(
         &mut texture_atlases,
     );
 }
 
 fn exit(mut exit: EventWriter<AppExit>) {
-    exit.send(AppExit)
+    exit.send(AppExit);
 }

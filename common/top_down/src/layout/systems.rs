@@ -56,10 +56,11 @@ pub fn register<T: TopDownScene, S: States>(
         use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
         // we insert the toolbar along with the map
-        app.register_type::<map_maker::TileMapMakerToolbar<T::LocalTileKind>>()
-            .add_plugins(ResourceInspectorPlugin::<
-                map_maker::TileMapMakerToolbar<T::LocalTileKind>,
-            >::default());
+        // TODO:
+        // app.register_type::<map_maker::TileMapMakerToolbar<T::LocalTileKind>>()
+        //     .add_plugins(ResourceInspectorPlugin::<
+        //         map_maker::TileMapMakerToolbar<T::LocalTileKind>,
+        //     >::default());
 
         app.add_systems(
             OnEnter(running.clone()),
@@ -77,7 +78,7 @@ pub fn register<T: TopDownScene, S: States>(
         app.add_systems(
             Update,
             map_maker::export_map::<T>
-                .run_if(input_just_pressed(KeyCode::Return))
+                .run_if(input_just_pressed(KeyCode::Enter))
                 .run_if(in_state(running)),
         );
     }

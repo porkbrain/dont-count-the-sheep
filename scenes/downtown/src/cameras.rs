@@ -57,11 +57,8 @@ fn spawn(mut cmd: Commands) {
             camera: Camera {
                 hdr: true,
                 order: order::DEV,
+                clear_color: ClearColorConfig::None,
                 ..default()
-            },
-            camera_2d: Camera2d {
-                clear_color:
-                    bevy::core_pipeline::clear_color::ClearColorConfig::None,
             },
             ..default()
         },

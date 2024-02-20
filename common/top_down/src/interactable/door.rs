@@ -77,7 +77,7 @@ pub fn toggle<T: TopDownScene>(
     mut tilemap: ResMut<TileMap<T>>,
     mut events: EventReader<ActorMovementEvent<T::LocalTileKind>>,
 
-    mut door: Query<(&mut Door<T::LocalTileKind>, &mut TextureAtlasSprite)>,
+    mut door: Query<(&mut Door<T::LocalTileKind>, &mut TextureAtlas)>,
 ) {
     let events = events.read().collect_vec();
 
@@ -101,7 +101,7 @@ pub fn toggle<T: TopDownScene>(
 fn apply_event_to_door_and_map<T: TopDownScene>(
     tilemap: &mut ResMut<TileMap<T>>,
     door: &mut Door<T::LocalTileKind>,
-    sprite: &mut Mut<'_, TextureAtlasSprite>,
+    sprite: &mut Mut<'_, TextureAtlas>,
     event: &ActorMovementEvent<<T as TopDownScene>::LocalTileKind>,
 ) {
     match event {

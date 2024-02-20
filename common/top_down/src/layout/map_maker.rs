@@ -9,8 +9,10 @@ use super::*;
 #[derive(Component)]
 pub(super) struct SquareSprite(Square);
 
-#[derive(Resource, Reflect, InspectorOptions, Default)]
-#[reflect(Resource, InspectorOptions)]
+#[derive(Resource, Reflect, Default)]
+#[reflect(Resource)]
+// #[derive(Resource, Reflect, InspectorOptions, Default)]
+// #[reflect(Resource, InspectorOptions)]
 pub(super) struct TileMapMakerToolbar<L: Tile> {
     // these are configurable
     // ~
@@ -90,10 +92,10 @@ pub(super) fn visualize_map<T: TopDownScene>(
 }
 
 pub(super) fn change_square_kind<T: TopDownScene>(
-    mouse: Res<Input<MouseButton>>,
+    mouse: Res<ButtonInput<MouseButton>>,
     mut map: ResMut<TileMap<T>>,
     mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
-    keyboard: Res<Input<KeyCode>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
 
     windows: Query<&Window, With<PrimaryWindow>>,
     cameras: Query<(&Camera, &GlobalTransform, Option<&RenderLayers>)>,
