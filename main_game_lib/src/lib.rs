@@ -8,8 +8,7 @@ pub mod state;
 pub mod vec2_ext;
 
 use bevy::{app::AppExit, prelude::*};
-// use bevy_inspector_egui::quick::{StateInspectorPlugin,
-// WorldInspectorPlugin};
+use bevy_inspector_egui::quick::{StateInspectorPlugin, WorldInspectorPlugin};
 use bevy_pixel_camera::PixelCameraPlugin;
 pub use common_action;
 pub use common_assets;
@@ -72,11 +71,11 @@ pub fn windowed_app() -> App {
         .insert_resource(GlobalGameStateTransitionStack::default())
         .register_type::<GlobalGameStateTransitionStack>();
 
-    // dev only TODO
-    // app.add_plugins((
-    //     WorldInspectorPlugin::new(),
-    //     StateInspectorPlugin::<GlobalGameState>::default(),
-    // ));
+    // TODO: dev only
+    app.add_plugins((
+        WorldInspectorPlugin::new(),
+        StateInspectorPlugin::<GlobalGameState>::default(),
+    ));
 
     app.add_plugins((
         bevy_magic_light_2d::Plugin,

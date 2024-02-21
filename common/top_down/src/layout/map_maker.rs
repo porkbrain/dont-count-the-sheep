@@ -9,10 +9,8 @@ use super::*;
 #[derive(Component)]
 pub(super) struct SquareSprite(Square);
 
-#[derive(Resource, Reflect, Default)]
-#[reflect(Resource)]
-// #[derive(Resource, Reflect, InspectorOptions, Default)]
-// #[reflect(Resource, InspectorOptions)]
+#[derive(Resource, Reflect, InspectorOptions, Default)]
+#[reflect(Resource, InspectorOptions)]
 pub(super) struct TileMapMakerToolbar<L: Tile> {
     // these are configurable
     // ~

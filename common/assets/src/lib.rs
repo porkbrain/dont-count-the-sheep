@@ -48,7 +48,7 @@ impl<T: Asset + DeserializeOwned> AssetLoader for RonLoader<T> {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
 
-            trace!("Loading RON for {}", T::type_path(),);
+            bevy::log::trace!("Loading RON for {}", T::type_path(),);
             Ok(ron::de::from_bytes(&bytes)?)
         })
     }

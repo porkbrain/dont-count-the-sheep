@@ -12,8 +12,7 @@ use std::{marker::PhantomData, ops::RangeInclusive};
 
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 use bevy_grid_squared::{sq, Square, SquareLayout};
-// use bevy_inspector_egui::{prelude::ReflectInspectorOptions,
-// InspectorOptions};
+use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use smallvec::SmallVec;
 pub use systems::*;
@@ -160,13 +159,12 @@ pub trait ZoneTile {
     Serialize,
     Deserialize,
     Reflect,
-    // InspectorOptions,
+    InspectorOptions,
     Default,
     Clone,
     Debug,
 )]
-#[reflect(Resource)]
-// #[reflect(Resource, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
 pub struct TileMap<T: TopDownScene> {
     /// There can be multiple layers of tiles on a single square.
     squares: HashMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,

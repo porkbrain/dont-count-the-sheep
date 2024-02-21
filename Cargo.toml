@@ -49,7 +49,7 @@ features = [
 [workspace.dependencies]
 bevy_pixel_camera = "0.13"
 bevy_webp_anim = "0.3"
-# bevy-inspector-egui = { version = "0.22", default-features = false } # waiting for 0.13 support
+bevy-inspector-egui = { version = "0.23", default-features = false }
 leafwing-input-manager = "0.13"
 
 scene_apartment = { path = "scenes/apartment" }

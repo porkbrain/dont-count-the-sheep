@@ -12,8 +12,7 @@ use bevy::{
     utils::HashSet,
 };
 use bevy_grid_squared::{sq, GridDirection, Square};
-// use bevy_inspector_egui::{prelude::ReflectInspectorOptions,
-// InspectorOptions};
+use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_ext::QueryExt;
 use common_story::Character;
 use itertools::Itertools;
@@ -82,15 +81,9 @@ pub struct ActorTarget {
 /// Only those tiles that are zones as returned by [`TileKind::is_zone`] are
 /// stored.
 #[derive(
-    Resource,
-    Serialize,
-    Deserialize,
-    Reflect,
-    Default,
-    /* InspectorOptions, */
+    Resource, Serialize, Deserialize, Reflect, Default, InspectorOptions,
 )]
-// #[reflect(Resource, InspectorOptions)]
-#[reflect(Resource)]
+#[reflect(Resource, InspectorOptions)]
 pub struct ActorZoneMap<L: Default + Eq + std::hash::Hash> {
     /// Set is used to avoid duplicates.
     /// Those could arise from a map that has the same zone multiple times in
