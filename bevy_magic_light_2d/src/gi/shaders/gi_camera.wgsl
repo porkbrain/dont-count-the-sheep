@@ -82,7 +82,7 @@ fn bilinear_sample_r(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> f32 {
 fn bilinear_sample_rgba(t: texture_2d<f32>, s: sampler, uv: vec2<f32>) -> vec4<f32> {
     let dims = textureDimensions(t);
     let scaled_uv = uv * vec2<f32>(dims);
-    
+
     let r_texels = textureGather(0, t, s, uv);
     let r = bilinear_filter(r_texels, scaled_uv);
     let g_texels = textureGather(1, t, s, uv);

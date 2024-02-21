@@ -905,7 +905,7 @@ impl<T> FromWorld for LightPassPipeline<T> {
 
         let ss_filter_pipeline =
             pipeline_cache.queue_compute_pipeline(ComputePipelineDescriptor {
-                label: Some("gi_filer_pipeline".into()),
+                label: Some("gi_filter_pipeline".into()),
                 layout: vec![ss_filter_bind_group_layout.clone()],
                 shader: gi_ss_filter,
                 shader_defs: vec![],

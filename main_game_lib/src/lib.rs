@@ -33,6 +33,7 @@ pub fn windowed_app() -> App {
                 filter: "\
                 warn,\
                 apartment=trace,\
+                bevy_magic_light_2d=trace,\
                 common_action=trace,\
                 common_assets=trace,\
                 common_loading_screen=trace,\
@@ -45,8 +46,8 @@ pub fn windowed_app() -> App {
                 common_visuals=trace,\
                 dev_playground=trace,\
                 downtown=trace,\
-                main_game_lib=trace,\
                 game=trace,\
+                main_game_lib=trace,\
                 meditation=trace,\
                 meditation::hoshi::sprite=debug,\
                 "
