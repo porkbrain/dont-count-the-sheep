@@ -21,7 +21,7 @@ pub fn advance_atlas_animation(
         Entity,
         &AtlasAnimation,
         &mut AtlasAnimationTimer,
-        &mut TextureAtlasSprite,
+        &mut TextureAtlas,
         &mut Visibility,
     )>,
 ) {
@@ -182,14 +182,7 @@ pub fn interpolate(
     time: Res<Time>,
 
     // color interpolation
-    mut sprites: Query<
-        (Entity, &mut Sprite, &mut ColorInterpolation),
-        Without<TextureAtlasSprite>,
-    >,
-    mut atlases: Query<
-        (Entity, &mut TextureAtlasSprite, &mut ColorInterpolation),
-        Without<Sprite>,
-    >,
+    mut sprites: Query<(Entity, &mut Sprite, &mut ColorInterpolation)>,
 
     // translation interpolation
     mut translations: Query<(
@@ -202,43 +195,32 @@ pub fn interpolate(
 
     // color interpolation
 
-    let mut interpolate_color =
-        |entity: Entity,
-         interpolation: &mut ColorInterpolation,
-         color: &mut Color| {
-            interpolation.started_at.tick(dt);
-
-            let elapsed_fraction = interpolation.started_at.elapsed_secs()
-                / interpolation.over.as_secs_f32();
-
-            if elapsed_fraction >= 1.0 {
-                *color = interpolation.to;
-                cmd.entity(entity).remove::<ColorInterpolation>();
-
-                match &interpolation.when_finished {
-                    Some(OnInterpolationFinished::Custom(fun)) => {
-                        fun(&mut cmd);
-                    }
-                    None => {}
-                }
-            } else {
-                let lerp_factor = interpolation
-                    .animation_curve
-                    .as_ref()
-                    .map(|curve| curve.ease(elapsed_fraction))
-                    .unwrap_or(elapsed_fraction);
-
-                let from = interpolation.from.get_or_insert(*color);
-                *color = from.lerp(interpolation.to, lerp_factor);
-            }
-        };
-
     for (entity, mut sprite, mut interpolation) in sprites.iter_mut() {
-        interpolate_color(entity, &mut interpolation, &mut sprite.color);
-    }
+        interpolation.started_at.tick(dt);
 
-    for (entity, mut atlas, mut interpolation) in atlases.iter_mut() {
-        interpolate_color(entity, &mut interpolation, &mut atlas.color);
+        let elapsed_fraction = interpolation.started_at.elapsed_secs()
+            / interpolation.over.as_secs_f32();
+
+        if elapsed_fraction >= 1.0 {
+            sprite.color = interpolation.to;
+            cmd.entity(entity).remove::<ColorInterpolation>();
+
+            match &interpolation.when_finished {
+                Some(OnInterpolationFinished::Custom(fun)) => {
+                    fun(&mut cmd);
+                }
+                None => {}
+            }
+        } else {
+            let lerp_factor = interpolation
+                .animation_curve
+                .as_ref()
+                .map(|curve| curve.ease(elapsed_fraction))
+                .unwrap_or(elapsed_fraction);
+
+            let from = interpolation.from.get_or_insert(sprite.color);
+            sprite.color = from.lerp(interpolation.to, lerp_factor);
+        }
     }
 
     // translation interpolation

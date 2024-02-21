@@ -6,10 +6,10 @@ pub mod player;
 use std::{iter, time::Duration};
 
 use bevy::{
-    ecs::event::event_update_condition,
+    ecs::{entity::EntityHashMap, event::event_update_condition},
     prelude::*,
     time::Stopwatch,
-    utils::{EntityHashMap, HashSet},
+    utils::HashSet,
 };
 use bevy_grid_squared::{sq, GridDirection, Square};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
@@ -81,7 +81,7 @@ pub struct ActorTarget {
 /// Only those tiles that are zones as returned by [`TileKind::is_zone`] are
 /// stored.
 #[derive(
-    Resource, Serialize, Deserialize, Reflect, InspectorOptions, Default,
+    Resource, Serialize, Deserialize, Reflect, Default, InspectorOptions,
 )]
 #[reflect(Resource, InspectorOptions)]
 pub struct ActorZoneMap<L: Default + Eq + std::hash::Hash> {
@@ -90,7 +90,7 @@ pub struct ActorZoneMap<L: Default + Eq + std::hash::Hash> {
     /// the same square (different layer.)
     ///
     /// The second tuple member is whether the actor is a player.
-    map: EntityHashMap<Entity, (Character, bool, HashSet<TileKind<L>>)>,
+    map: EntityHashMap<(Character, bool, HashSet<TileKind<L>>)>,
 }
 
 /// Some useful events for actors.
@@ -258,11 +258,11 @@ pub fn animate_movement<T: TopDownScene>(
     mut tilemap: ResMut<TileMap<T>>,
 
     mut actors: Query<
-        (Entity, &mut Actor, &mut TextureAtlasSprite, &mut Transform),
+        (Entity, &mut Actor, &mut TextureAtlas, &mut Transform),
         Without<Player>,
     >,
     mut player: Query<
-        (Entity, &mut Actor, &mut TextureAtlasSprite, &mut Transform),
+        (Entity, &mut Actor, &mut TextureAtlas, &mut Transform),
         With<Player>,
     >,
 ) {
@@ -303,7 +303,7 @@ fn animate_movement_for_actor<T: TopDownScene>(
     tilemap: &mut TileMap<T>,
     entity: Entity,
     actor: &mut Actor,
-    mut sprite: Mut<TextureAtlasSprite>,
+    mut sprite: Mut<TextureAtlas>,
     mut transform: Mut<Transform>,
 ) {
     use GridDirection::*;
@@ -554,7 +554,10 @@ impl CharacterBundleBuilder {
     /// [`animate_movement`] system, where the actor's tiles are recalculated
     /// when they stand still or when they do their first step.
     #[must_use]
-    pub fn build<T: TopDownScene>(self) -> impl Bundle {
+    pub fn build<T: TopDownScene>(
+        self,
+        asset_server: &AssetServer,
+    ) -> impl Bundle {
         let CharacterBundleBuilder {
             character,
             initial_position,
@@ -564,6 +567,12 @@ impl CharacterBundleBuilder {
             color,
             is_player,
         } = self;
+
+        // for the time being, player is always winnie, so let's squash any bugs
+        // during development until this needs to change
+        debug_assert!(
+            !is_player || (is_player && character == Character::Winnie)
+        );
 
         let step_time = step_time.unwrap_or(character.default_step_time());
 
@@ -582,10 +591,14 @@ impl CharacterBundleBuilder {
                 is_player,
             },
             SpriteSheetBundle {
-                texture_atlas: character.sprite_atlas_handle(),
-                sprite: TextureAtlasSprite {
-                    anchor: bevy::sprite::Anchor::BottomCenter,
+                texture: asset_server
+                    .load(character.sprite_atlas_texture_path()),
+                atlas: TextureAtlas {
+                    layout: character.sprite_atlas_layout_handle(),
                     index: 0,
+                },
+                sprite: Sprite {
+                    anchor: bevy::sprite::Anchor::BottomCenter,
                     color: color.unwrap_or_default(),
                     ..default()
                 },
@@ -933,6 +946,7 @@ mod tests {
         w.insert_resource(Time::<()>::default());
 
         // both actors start at the same square
+
         let winnie = w
             .spawn(Actor {
                 character: Character::Winnie,
@@ -944,7 +958,10 @@ mod tests {
                 is_player: false,
             })
             .insert(SpatialBundle::default())
-            .insert(TextureAtlasSprite::new(0))
+            .insert(TextureAtlas {
+                index: 0,
+                layout: Character::Winnie.sprite_atlas_layout_handle(),
+            })
             .id();
         let marie = w
             .spawn(Actor {
@@ -957,7 +974,10 @@ mod tests {
                 is_player: false,
             })
             .insert(SpatialBundle::default())
-            .insert(TextureAtlasSprite::new(0))
+            .insert(TextureAtlas {
+                index: 0,
+                layout: Character::Winnie.sprite_atlas_layout_handle(),
+            })
             .id();
 
         let system_id = w.register_system(animate_movement::<TestScene>);

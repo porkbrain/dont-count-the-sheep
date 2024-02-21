@@ -1,11 +1,11 @@
-use bevy::render::view::RenderLayers;
+use bevy::{asset, render::view::RenderLayers};
 use common_visuals::camera::render_layer;
 use main_game_lib::common_top_down::actor::CharacterExt;
 
 use super::CharacterEntity;
 use crate::{prelude::*, DevPlayground};
 
-pub(super) fn spawn(mut cmd: Commands) {
+pub(super) fn spawn(mut cmd: Commands, asset_server: Res<asset::AssetServer>) {
     cmd.spawn((
         Player,
         CharacterEntity,
@@ -15,6 +15,6 @@ pub(super) fn spawn(mut cmd: Commands) {
         common_story::Character::Winnie
             .bundle_builder()
             .is_player(true)
-            .build::<DevPlayground>(),
+            .build::<DevPlayground>(&asset_server),
     );
 }

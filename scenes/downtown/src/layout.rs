@@ -13,10 +13,6 @@ lazy_static! {
     };
 }
 
-pub(crate) mod zones {
-    //
-}
-
 #[derive(Component)]
 struct LayoutEntity;
 

@@ -41,7 +41,11 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-fn spawn(mut cmd: Commands, store: Res<GlobalStore>) {
+fn spawn(
+    mut cmd: Commands,
+    store: Res<GlobalStore>,
+    asset_server: Res<AssetServer>,
+) {
     use common_store::DowntownStore;
 
     let initial_position = store
@@ -71,7 +75,8 @@ fn spawn(mut cmd: Commands, store: Res<GlobalStore>) {
             .with_initial_position(initial_position)
             .with_walking_to(walking_to)
             .with_initial_step_time(step_time)
-            .build::<Downtown>(),
+            .is_player(true)
+            .build::<Downtown>(&asset_server),
     );
 }
 

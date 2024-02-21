@@ -35,7 +35,6 @@ impl bevy::app::Plugin for Plugin {
         app.add_event::<BeginInterpolationEvent>()
             .register_type::<TranslationInterpolation>()
             .register_type::<ColorInterpolation>()
-            .register_type::<AtlasAnimation>()
             .register_type::<BeginAtlasAnimationAtRandom>()
             .register_type::<Flicker>();
 

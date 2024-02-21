@@ -77,7 +77,7 @@ pub fn register<T: TopDownScene, S: States>(
         app.add_systems(
             Update,
             map_maker::export_map::<T>
-                .run_if(input_just_pressed(KeyCode::Return))
+                .run_if(input_just_pressed(KeyCode::Enter))
                 .run_if(in_state(running)),
         );
     }
@@ -90,6 +90,7 @@ fn start_loading_map<T: TopDownScene>(
     mut cmd: Commands,
     assets: Res<AssetServer>,
 ) {
+    debug!("Loading map {} from {}", T::type_path(), T::asset_path());
     let handle: Handle<TileMap<T>> = assets.load(T::asset_path());
     cmd.spawn(handle);
 }

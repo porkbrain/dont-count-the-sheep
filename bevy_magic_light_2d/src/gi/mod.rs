@@ -5,7 +5,8 @@ use bevy::{
     prelude::*,
     render::{
         extract_resource::ExtractResourcePlugin,
-        render_graph::{self, RenderGraph},
+        graph::CameraDriverLabel,
+        render_graph::{self, RenderGraph, RenderLabel},
         render_resource::*,
         renderer::RenderContext,
         Render, RenderApp, RenderSet,
@@ -45,6 +46,9 @@ pub mod util;
 
 const WORKGROUP_SIZE: u32 = 8;
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
+pub struct LightPassRenderLabel(pub &'static str);
+
 /// You can despawn the light scene by despawning all entities that have this
 /// component.
 /// It won't remove the resources from the render world, but it will remove
@@ -61,8 +65,8 @@ pub trait LightScene:
 
     fn render_layer_index() -> u8;
 
-    fn light_pass() -> String {
-        format!("light_pass_{}", Self::type_path())
+    fn light_pass() -> LightPassRenderLabel {
+        LightPassRenderLabel(Self::type_path())
     }
 
     /// Call this every time you want to add the light camera.
@@ -107,10 +111,7 @@ pub trait LightScene:
         let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
         render_graph
             .add_node(Self::light_pass(), LightPass2DNode::<Self>::default());
-        render_graph.add_node_edge(
-            Self::light_pass(),
-            bevy::render::main_graph::node::CAMERA_DRIVER,
-        );
+        render_graph.add_node_edge(Self::light_pass(), CameraDriverLabel);
     }
 
     fn finish(app: &mut App) {
@@ -233,10 +234,10 @@ pub fn handle_window_resize<T: LightScene>(
 
         assets_mesh.insert(
             T::post_processing_quad(),
-            Mesh::from(shape::Quad::new(Vec2::new(
+            Mesh::from(bevy::math::primitives::Rectangle::new(
                 res_target_sizes.primary_target_size.x,
                 res_target_sizes.primary_target_size.y,
-            ))),
+            )),
         );
 
         assets_material.insert(
@@ -307,7 +308,8 @@ impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
 
             let mut pass = render_context.command_encoder().begin_compute_pass(
                 &ComputePassDescriptor {
-                    label: Some(&T::light_pass()),
+                    label: Some(&T::light_pass().0),
+                    ..default()
                 },
             );
 

@@ -110,7 +110,7 @@ pub enum ApartmentTileKind {
 fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     tilemap: Option<ResMut<TileMap<Apartment>>>,
 
     entities: Query<Entity, With<LayoutEntity>>,
@@ -272,17 +272,17 @@ fn spawn(
                 TimerMode::Repeating,
             ),
             SpriteSheetBundle {
-                texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                    asset_server.load(assets::CLOUD_ATLAS),
-                    vec2(CLOUD_WIDTH, CLOUD_HEIGHT),
-                    CLOUD_FRAMES,
-                    1,
-                    Some(vec2(CLOUD_PADDING, 0.0)),
-                    None,
-                )),
-                sprite: TextureAtlasSprite::new(
-                    thread_rng().gen_range(0..CLOUD_FRAMES),
-                ),
+                texture: asset_server.load(assets::CLOUD_ATLAS),
+                atlas: TextureAtlas {
+                    index: thread_rng().gen_range(0..CLOUD_FRAMES),
+                    layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                        vec2(CLOUD_WIDTH, CLOUD_HEIGHT),
+                        CLOUD_FRAMES,
+                        1,
+                        Some(vec2(CLOUD_PADDING, 0.0)),
+                        None,
+                    )),
+                },
                 transform: Transform::from_translation(
                     position.extend(zindex::CLOUD_ATLAS),
                 ),
@@ -315,15 +315,18 @@ fn spawn(
         LayoutEntity,
         RenderLayers::layer(render_layer::BG),
         SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load(assets::BEDROOM_MAIN_DOOR),
-                vec2(27.0, 53.0),
-                2,
-                1,
-                Some(vec2(1.0, 0.0)),
-                None,
-            )),
-            sprite: TextureAtlasSprite {
+            texture: asset_server.load(assets::BEDROOM_MAIN_DOOR),
+            atlas: TextureAtlas {
+                index: 0,
+                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                    vec2(27.0, 53.0),
+                    2,
+                    1,
+                    Some(vec2(1.0, 0.0)),
+                    None,
+                )),
+            },
+            sprite: Sprite {
                 anchor: Anchor::BottomCenter,
                 ..default()
             },
@@ -351,16 +354,18 @@ fn spawn(
             ..default()
         },
         SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load(assets::ELEVATOR_ATLAS),
-                vec2(51.0, 50.0),
-                8,
-                1,
-                Some(vec2(4.0, 0.0)),
-                None,
-            )),
-            sprite: TextureAtlasSprite {
+            texture: asset_server.load(assets::ELEVATOR_ATLAS),
+            atlas: TextureAtlas {
                 index: 0,
+                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                    vec2(51.0, 50.0),
+                    8,
+                    1,
+                    Some(vec2(4.0, 0.0)),
+                    None,
+                )),
+            },
+            sprite: Sprite {
                 color: PRIMARY_COLOR,
                 ..default()
             },
@@ -377,16 +382,18 @@ fn spawn(
         HallwayEntity,
         RenderLayers::layer(render_layer::BG),
         SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load(assets::VENDING_MACHINE_ATLAS),
-                vec2(30.0, 55.0),
-                4,
-                1,
-                Some(vec2(1.0, 0.0)),
-                None,
-            )),
-            sprite: TextureAtlasSprite {
+            texture: asset_server.load(assets::VENDING_MACHINE_ATLAS),
+            atlas: TextureAtlas {
                 index: 0,
+                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                    vec2(30.0, 55.0),
+                    4,
+                    1,
+                    Some(vec2(1.0, 0.0)),
+                    None,
+                )),
+            },
+            sprite: Sprite {
                 color: PRIMARY_COLOR,
                 ..default()
             },
@@ -445,7 +452,7 @@ fn watch_entry_to_hallway(
                 zone: TileKind::Local(ApartmentTileKind::PlayerDoorZone),
             } => {
                 trace!("Player entered hallway");
-                hallway_entities.for_each(|entity| {
+                hallway_entities.iter().for_each(|entity| {
                     lerp_event.send(
                         BeginInterpolationEvent::of_color(
                             entity,
@@ -465,7 +472,7 @@ fn watch_entry_to_hallway(
                 zone: TileKind::Local(ApartmentTileKind::HallwayZone),
             } => {
                 trace!("Player left hallway");
-                hallway_entities.for_each(|entity| {
+                hallway_entities.iter().for_each(|entity| {
                     lerp_event.send(
                         BeginInterpolationEvent::of_color(
                             entity,
@@ -494,7 +501,7 @@ fn watch_entry_to_hallway(
             {
                 // b)
                 trace!("Player left the door zone into the apartment");
-                hallway_entities.for_each(|entity| {
+                hallway_entities.iter().for_each(|entity| {
                     lerp_event.send(
                         BeginInterpolationEvent::of_color(
                             entity,

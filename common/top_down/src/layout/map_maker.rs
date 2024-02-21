@@ -90,10 +90,10 @@ pub(super) fn visualize_map<T: TopDownScene>(
 }
 
 pub(super) fn change_square_kind<T: TopDownScene>(
-    mouse: Res<Input<MouseButton>>,
+    mouse: Res<ButtonInput<MouseButton>>,
     mut map: ResMut<TileMap<T>>,
     mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
-    keyboard: Res<Input<KeyCode>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
 
     windows: Query<&Window, With<PrimaryWindow>>,
     cameras: Query<(&Camera, &GlobalTransform, Option<&RenderLayers>)>,

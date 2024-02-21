@@ -39,7 +39,7 @@ impl bevy::app::Plugin for Plugin {
 fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     cmd.spawn((
         BackgroundEntity,
@@ -88,7 +88,7 @@ fn spawn_twinkles(cmd: &mut Commands, asset_server: &Res<AssetServer>) {
 fn spawn_shooting_star(
     cmd: &mut Commands,
     asset_server: &Res<AssetServer>,
-    texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+    texture_atlases: &mut ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let animation = AtlasAnimation {
         // we schedule it at random
@@ -105,15 +105,17 @@ fn spawn_shooting_star(
             ..default()
         },
         SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load(assets::SHOOTING_STAR_ATLAS),
-                vec2(SHOOTING_STAR_WIDTH, SHOOTING_STAR_HEIGHT),
-                SHOOTING_STAR_FRAMES,
-                1,
-                None,
-                None,
-            )),
-            sprite: TextureAtlasSprite::new(animation.first),
+            texture: asset_server.load(assets::SHOOTING_STAR_ATLAS),
+            atlas: TextureAtlas {
+                index: animation.first,
+                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                    vec2(SHOOTING_STAR_WIDTH, SHOOTING_STAR_HEIGHT),
+                    SHOOTING_STAR_FRAMES,
+                    1,
+                    None,
+                    None,
+                )),
+            },
             visibility: Visibility::Hidden,
             transform: Transform::from_translation(
                 SHOOTING_STAR_POSITION.extend(zindex::SHOOTING_STARS),

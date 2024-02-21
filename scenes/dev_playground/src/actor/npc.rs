@@ -15,7 +15,7 @@ use main_game_lib::{
 use super::CharacterEntity;
 use crate::{prelude::*, DevPlayground};
 
-pub(super) fn spawn(mut cmd: Commands) {
+pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
     cmd.spawn((
         CharacterEntity,
         RenderLayers::layer(render_layer::OBJ),
@@ -25,7 +25,7 @@ pub(super) fn spawn(mut cmd: Commands) {
         common_story::Character::Marie
             .bundle_builder()
             .with_initial_position(vec2(-80.0, -100.0))
-            .build::<DevPlayground>(),
+            .build::<DevPlayground>(&asset_server),
     )
     .insert(BehaviorTree::new(ExampleBehavior));
 
@@ -38,7 +38,7 @@ pub(super) fn spawn(mut cmd: Commands) {
         common_story::Character::Unnamed
             .bundle_builder()
             .with_initial_position(vec2(-150.0, -100.0))
-            .build::<DevPlayground>(),
+            .build::<DevPlayground>(&asset_server),
     )
     .insert(BehaviorTree::new(ExampleBehavior2));
 }

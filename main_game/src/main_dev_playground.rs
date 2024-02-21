@@ -1,6 +1,6 @@
 //! See the dev playground scene
 
-use bevy::{core_pipeline::clear_color::ClearColor, render::color::Color};
+use bevy::render::{camera::ClearColor, color::Color};
 
 fn main() {
     let mut app = main_game_lib::windowed_app();

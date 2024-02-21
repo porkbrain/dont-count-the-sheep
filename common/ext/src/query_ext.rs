@@ -1,12 +1,12 @@
 //! Useful extension on [`Query`].
 
 use bevy::ecs::{
-    query::{ROQueryItem, ReadOnlyWorldQuery, WorldQuery},
+    query::{QueryData, QueryFilter, ROQueryItem},
     system::Query,
 };
 
 /// Useful extension on [`Query`].
-pub trait QueryExt<Q: WorldQuery> {
+pub trait QueryExt<Q: QueryData> {
     /// Panics if there is more than one entity.
     fn get_single_or_none(&self) -> Option<ROQueryItem<'_, Q>>;
 
@@ -14,7 +14,7 @@ pub trait QueryExt<Q: WorldQuery> {
     fn get_single_mut_or_none(&mut self) -> Option<Q::Item<'_>>;
 }
 
-impl<Q: WorldQuery, F: ReadOnlyWorldQuery> QueryExt<Q> for Query<'_, '_, Q, F> {
+impl<Q: QueryData, F: QueryFilter> QueryExt<Q> for Query<'_, '_, Q, F> {
     fn get_single_or_none(&self) -> Option<ROQueryItem<'_, Q>> {
         match self.get_single() {
             Ok(item) => Some(item),

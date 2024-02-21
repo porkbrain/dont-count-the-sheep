@@ -15,7 +15,7 @@ use main_game_lib::{
 use super::CharacterEntity;
 use crate::{layout::HallwayEntity, prelude::*, Apartment};
 
-pub(super) fn spawn(mut cmd: Commands) {
+pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
     cmd.spawn((
         CharacterEntity,
         HallwayEntity,
@@ -26,7 +26,7 @@ pub(super) fn spawn(mut cmd: Commands) {
         common_story::Character::Marie
             .bundle_builder()
             .with_initial_position(vec2(-80.0, -100.0))
-            .build::<Apartment>(),
+            .build::<Apartment>(&asset_server),
     )
     .insert(BehaviorTree::new(ExampleBehavior));
 
@@ -40,7 +40,7 @@ pub(super) fn spawn(mut cmd: Commands) {
         common_story::Character::Unnamed
             .bundle_builder()
             .with_initial_position(vec2(-150.0, -100.0))
-            .build::<Apartment>(),
+            .build::<Apartment>(&asset_server),
     )
     .insert(BehaviorTree::new(ExampleBehavior2));
 }

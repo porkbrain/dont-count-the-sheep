@@ -50,13 +50,11 @@ pub fn add(app: &mut App) {
 
     debug!("Adding map layout");
 
-    // TODO: https://github.com/bevyengine/bevy/pull/10153
-    // common_layout::register::<Downtown, _>(
-    //     app,
-    //     GlobalGameState::DowntownLoading,
-    //     #[cfg(feature = "dev")]
-    //     GlobalGameState::AtDowntown,
-    // );
+    common_top_down::layout::register::<Downtown, _>(
+        app,
+        GlobalGameState::DowntownLoading,
+        GlobalGameState::AtDowntown,
+    );
 
     debug!("Adding game loop");
 

@@ -78,7 +78,7 @@ impl bevy::app::Plugin for Plugin {
 fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     debug!("Spawning Hoshi entities");
 
@@ -110,17 +110,16 @@ fn spawn(
             HoshiBody,
             RenderLayers::layer(render_layer::OBJ),
             SpriteSheetBundle {
-                texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                    asset_server.load(assets::BODY_ATLAS),
-                    vec2(BODY_WIDTH, BODY_HEIGHT),
-                    BODY_ATLAS_COLS,
-                    BODY_ATLAS_ROWS,
-                    Some(BODY_ATLAS_PADDING),
-                    None,
-                )),
-                sprite: TextureAtlasSprite {
+                texture: asset_server.load(assets::BODY_ATLAS),
+                atlas: TextureAtlas {
                     index: sprite::BodyKind::default().index(),
-                    ..default()
+                    layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                        vec2(BODY_WIDTH, BODY_HEIGHT),
+                        BODY_ATLAS_COLS,
+                        BODY_ATLAS_ROWS,
+                        Some(BODY_ATLAS_PADDING),
+                        None,
+                    )),
                 },
                 ..default()
             },
@@ -135,17 +134,16 @@ fn spawn(
             HoshiFace,
             RenderLayers::layer(render_layer::OBJ),
             SpriteSheetBundle {
-                texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                    asset_server.load(assets::FACE_ATLAS),
-                    vec2(FACE_SPRITE_WIDTH, FACE_SPRITE_HEIGHT),
-                    FACE_ATLAS_COLS,
-                    FACE_ATLAS_ROWS,
-                    Some(FACE_ATLAS_PADDING),
-                    None,
-                )),
-                sprite: TextureAtlasSprite {
+                texture: asset_server.load(assets::FACE_ATLAS),
+                atlas: TextureAtlas {
                     index: sprite::FaceKind::default().index(),
-                    ..default()
+                    layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                        vec2(FACE_SPRITE_WIDTH, FACE_SPRITE_HEIGHT),
+                        FACE_ATLAS_COLS,
+                        FACE_ATLAS_ROWS,
+                        Some(FACE_ATLAS_PADDING),
+                        None,
+                    )),
                 },
                 ..default()
             },
@@ -177,15 +175,17 @@ fn spawn(
             ..default()
         },
         SpriteSheetBundle {
-            texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                asset_server.load(assets::SPARK_ATLAS),
-                Vec2::splat(SPARK_SIDE),
-                SPARK_FRAMES,
-                1,
-                None,
-                None,
-            )),
-            sprite: TextureAtlasSprite::new(0),
+            texture: asset_server.load(assets::SPARK_ATLAS),
+            atlas: TextureAtlas {
+                index: 0,
+                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                    Vec2::splat(SPARK_SIDE),
+                    SPARK_FRAMES,
+                    1,
+                    None,
+                    None,
+                )),
+            },
             visibility: Visibility::Hidden,
             ..default()
         },

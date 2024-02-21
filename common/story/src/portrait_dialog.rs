@@ -51,7 +51,7 @@ pub fn not_in_portrait_dialog(
     move |dialog| dialog.is_none()
 }
 
-/// If inserted, then the game is in the dialog UI.
+/// If inserted, then the game is in the dialog UI. TODO
 #[derive(Resource, Reflect, InspectorOptions)]
 #[reflect(Resource, InspectorOptions)]
 pub struct PortraitDialog {
@@ -549,7 +549,7 @@ fn spawn_choices(
                                 color,
                             },
                         )
-                        .with_alignment(TextAlignment::Left),
+                        .with_justify(JustifyText::Left),
                         ..default()
                     },
                 ));

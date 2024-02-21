@@ -30,7 +30,7 @@ pub(super) fn try_spawn_next(
     mut spawner: ResMut<Spawner>,
     mut webp: ResMut<WebpAnimator>,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     time: Res<Time>,
 ) {
     spawner.last_spawned_at.tick(time.delta());
@@ -68,15 +68,17 @@ pub(super) fn try_spawn_next(
         .insert((
             RenderLayers::layer(render_layer::OBJ),
             SpriteSheetBundle {
-                texture_atlas: texture_atlases.add(TextureAtlas::from_grid(
-                    asset_server.load(assets::CRACK_ATLAS),
-                    vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
-                    MAX_CRACKS,
-                    1,
-                    None,
-                    None,
-                )),
-                sprite: TextureAtlasSprite::new(0),
+                texture: asset_server.load(assets::CRACK_ATLAS),
+                atlas: TextureAtlas {
+                    index: 0,
+                    layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                        vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
+                        MAX_CRACKS,
+                        1,
+                        None,
+                        None,
+                    )),
+                },
                 transform: Transform::from_translation(translation),
                 ..default()
             },
@@ -98,19 +100,19 @@ pub(super) fn try_spawn_next(
             parent.spawn((
                 RenderLayers::layer(render_layer::OBJ),
                 SpriteSheetBundle {
-                    texture_atlas: texture_atlases.add(
-                        TextureAtlas::from_grid(
-                            asset_server.load(assets::TENTACLE_ATLAS),
-                            vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
-                            TENTACLE_ATLAS_COLS,
-                            1,
-                            None,
-                            None,
+                    texture: asset_server.load(assets::TENTACLE_ATLAS),
+                    atlas: TextureAtlas {
+                        index: random::<usize>() % TENTACLE_ATLAS_COLS,
+                        layout: texture_atlases.add(
+                            TextureAtlasLayout::from_grid(
+                                vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
+                                TENTACLE_ATLAS_COLS,
+                                1,
+                                None,
+                                None,
+                            ),
                         ),
-                    ),
-                    sprite: TextureAtlasSprite::new(
-                        random::<usize>() % TENTACLE_ATLAS_COLS,
-                    ),
+                    },
                     transform: Transform::from_translation(Vec3::new(
                         0.0,
                         0.0,

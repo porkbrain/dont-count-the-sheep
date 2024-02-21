@@ -86,8 +86,8 @@ pub struct ComputedTargetSizes {
 impl ComputedTargetSizes {
     pub fn from_window(window: &Window, params: &TargetScalingParams) -> Self {
         let primary_size = Vec2::new(
-            (window.physical_width() as f64 / window.scale_factor()) as f32,
-            (window.physical_height() as f64 / window.scale_factor()) as f32,
+            window.physical_width() as f32 / window.scale_factor(),
+            window.physical_height() as f32 / window.scale_factor(),
         );
 
         let mut sizes = Self::default();

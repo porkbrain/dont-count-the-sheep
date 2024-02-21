@@ -25,7 +25,7 @@ members = [
 
 
 [workspace.dependencies.bevy]
-version = "0.12.1" # ready for 0.13
+version = "0.13.0"
 default-features = false
 features = [
     "bevy_asset",
@@ -47,10 +47,10 @@ features = [
 ]
 
 [workspace.dependencies]
-bevy_pixel_camera = "0.12"                                           # waiting for 0.13 support
-bevy_webp_anim = "0.2"                                               # ready for 0.13
-bevy-inspector-egui = { version = "0.22", default-features = false } # waiting for 0.13 support
-leafwing-input-manager = "0.12"                                      # waiting for 0.13 support
+bevy_pixel_camera = "0.13"
+bevy_webp_anim = "0.3"
+bevy-inspector-egui = { version = "0.23", default-features = false }
+leafwing-input-manager = "0.13"
 
 scene_apartment = { path = "scenes/apartment" }
 scene_dev_playground = { path = "scenes/dev_playground" }

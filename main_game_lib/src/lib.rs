@@ -26,12 +26,6 @@ pub use state::*;
 pub fn windowed_app() -> App {
     let mut app = App::new();
 
-    app.add_state::<GlobalGameState>()
-        .register_type::<GlobalGameState>()
-        .insert_resource(ClearColor(PRIMARY_COLOR))
-        .insert_resource(GlobalGameStateTransitionStack::default())
-        .register_type::<GlobalGameStateTransitionStack>();
-
     app.add_plugins(
         DefaultPlugins
             .set(bevy::log::LogPlugin {
@@ -39,22 +33,26 @@ pub fn windowed_app() -> App {
                 filter: "\
                 warn,\
                 apartment=trace,\
+                bevy_magic_light_2d=trace,\
                 common_action=trace,\
                 common_assets=trace,\
-                common_top_down=trace,\
-                common_top_down::actor::npc=debug,\
-                common_top_down::cameras=debug,\
                 common_loading_screen=trace,\
                 common_physics=trace,\
                 common_store=trace,\
                 common_story=trace,\
+                common_top_down=trace,\
+                common_top_down::actor::npc=debug,\
+                common_top_down::cameras=debug,\
                 common_visuals=trace,\
+                dev_playground=trace,\
                 downtown=trace,\
+                game=trace,\
                 main_game_lib=trace,\
                 meditation=trace,\
                 meditation::hoshi::sprite=debug,\
                 "
                 .to_string(),
+                ..default()
             })
             .set(ImagePlugin::default_nearest())
             .set(WindowPlugin {
@@ -66,7 +64,15 @@ pub fn windowed_app() -> App {
             }),
     );
 
-    // dev only
+    info!("Initializing Don't Count The Sheep");
+
+    app.init_state::<GlobalGameState>()
+        .register_type::<GlobalGameState>()
+        .insert_resource(ClearColor(PRIMARY_COLOR))
+        .insert_resource(GlobalGameStateTransitionStack::default())
+        .register_type::<GlobalGameStateTransitionStack>();
+
+    // TODO: dev only
     app.add_plugins((
         WorldInspectorPlugin::new(),
         StateInspectorPlugin::<GlobalGameState>::default(),
@@ -84,6 +90,8 @@ pub fn windowed_app() -> App {
         PixelCameraPlugin,
     ));
 
+    info!("Plugins added");
+
     app.add_systems(
         Startup,
         (
@@ -100,15 +108,13 @@ pub fn windowed_app() -> App {
 
 /// All assets that should be kept in memory throughout the game.
 fn begin_loading_static_assets_on_startup(
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    common_story::Character::load_all_sprite_atlases(
-        &asset_server,
+    common_story::Character::load_all_sprite_atlas_layouts(
         &mut texture_atlases,
     );
 }
 
 fn exit(mut exit: EventWriter<AppExit>) {
-    exit.send(AppExit)
+    exit.send(AppExit);
 }

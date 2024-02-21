@@ -8,10 +8,9 @@ use crate::EASE_IN_OUT;
 
 /// Describes how to drive an animation.
 /// The animation specifically integrates with texture atlas sprites.
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default)]
 pub struct AtlasAnimation {
     /// What should happen when the last frame is reached?
-    #[reflect(ignore)]
     pub on_last_frame: AtlasAnimationEnd,
     /// The index of the first frame.
     /// Typically 0.
@@ -45,7 +44,7 @@ pub enum AtlasAnimationEnd {
                     Entity,
                     &AtlasAnimation,
                     &mut AtlasAnimationTimer,
-                    &mut TextureAtlasSprite,
+                    &mut TextureAtlas,
                     &mut Visibility,
                     &mut Commands,
                     &Time,
@@ -356,7 +355,7 @@ impl AtlasAnimationTimer {
 
 impl AtlasAnimation {
     /// Takes into account whether the animation is reversed or not.
-    pub fn is_on_last_frame(&self, sprite: &TextureAtlasSprite) -> bool {
+    pub fn is_on_last_frame(&self, sprite: &TextureAtlas) -> bool {
         if self.reversed {
             self.first == sprite.index
         } else {
