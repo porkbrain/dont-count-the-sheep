@@ -12,7 +12,8 @@ use bevy::{
     utils::HashSet,
 };
 use bevy_grid_squared::{sq, GridDirection, Square};
-use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
+// use bevy_inspector_egui::{prelude::ReflectInspectorOptions,
+// InspectorOptions};
 use common_ext::QueryExt;
 use common_story::Character;
 use itertools::Itertools;

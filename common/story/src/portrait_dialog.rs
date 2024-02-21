@@ -23,7 +23,8 @@ use bevy::{
     text::{Text2dBounds, TextLayoutInfo},
     utils::Instant,
 };
-use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
+// use bevy_inspector_egui::{prelude::ReflectInspectorOptions,
+// InspectorOptions};
 use common_action::{ActionState, GlobalAction};
 use common_store::{DialogStore, GlobalStore};
 use common_visuals::camera::render_layer;

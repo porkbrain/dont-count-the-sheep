@@ -8,7 +8,8 @@ pub mod state;
 pub mod vec2_ext;
 
 use bevy::{app::AppExit, prelude::*};
-use bevy_inspector_egui::quick::{StateInspectorPlugin, WorldInspectorPlugin};
+// use bevy_inspector_egui::quick::{StateInspectorPlugin,
+// WorldInspectorPlugin};
 use bevy_pixel_camera::PixelCameraPlugin;
 pub use common_action;
 pub use common_assets;
@@ -26,12 +27,6 @@ pub use state::*;
 pub fn windowed_app() -> App {
     let mut app = App::new();
 
-    app.init_state::<GlobalGameState>()
-        .register_type::<GlobalGameState>()
-        .insert_resource(ClearColor(PRIMARY_COLOR))
-        .insert_resource(GlobalGameStateTransitionStack::default())
-        .register_type::<GlobalGameStateTransitionStack>();
-
     app.add_plugins(
         DefaultPlugins
             .set(bevy::log::LogPlugin {
@@ -41,16 +36,18 @@ pub fn windowed_app() -> App {
                 apartment=trace,\
                 common_action=trace,\
                 common_assets=trace,\
-                common_top_down=trace,\
-                common_top_down::actor::npc=debug,\
-                common_top_down::cameras=debug,\
                 common_loading_screen=trace,\
                 common_physics=trace,\
                 common_store=trace,\
                 common_story=trace,\
+                common_top_down=trace,\
+                common_top_down::actor::npc=debug,\
+                common_top_down::cameras=debug,\
                 common_visuals=trace,\
+                dev_playground=trace,\
                 downtown=trace,\
                 main_game_lib=trace,\
+                game=trace,\
                 meditation=trace,\
                 meditation::hoshi::sprite=debug,\
                 "
@@ -66,6 +63,14 @@ pub fn windowed_app() -> App {
                 ..default()
             }),
     );
+
+    info!("Initializing Don't Count The Sheep");
+
+    app.init_state::<GlobalGameState>()
+        .register_type::<GlobalGameState>()
+        .insert_resource(ClearColor(PRIMARY_COLOR))
+        .insert_resource(GlobalGameStateTransitionStack::default())
+        .register_type::<GlobalGameStateTransitionStack>();
 
     // dev only TODO
     // app.add_plugins((
@@ -84,6 +89,8 @@ pub fn windowed_app() -> App {
         cutscene::Plugin,
         PixelCameraPlugin,
     ));
+
+    info!("Plugins added");
 
     app.add_systems(
         Startup,

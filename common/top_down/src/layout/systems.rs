@@ -53,7 +53,7 @@ pub fn register<T: TopDownScene, S: States>(
     #[cfg(feature = "dev")]
     {
         use bevy::input::common_conditions::input_just_pressed;
-        use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+        // use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
         // we insert the toolbar along with the map
         // TODO:

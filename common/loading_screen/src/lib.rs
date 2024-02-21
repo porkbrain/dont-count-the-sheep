@@ -243,6 +243,7 @@ fn spawn_loading_screen(
         ));
     }
 
+    trace!("Loading screen spawned, entering next state");
     next_state.set(LoadingScreenState::FadeInQuadWhileBgLoading);
 }
 

@@ -12,7 +12,8 @@ use std::{marker::PhantomData, ops::RangeInclusive};
 
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 use bevy_grid_squared::{sq, Square, SquareLayout};
-use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
+// use bevy_inspector_egui::{prelude::ReflectInspectorOptions,
+// InspectorOptions};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use smallvec::SmallVec;
 pub use systems::*;

@@ -1,9 +1,9 @@
 use bevy::prelude::*;
-#[cfg(feature = "egui")]
-use bevy_inspector_egui::prelude::ReflectInspectorOptions;
-#[cfg(feature = "egui")]
-use bevy_inspector_egui::InspectorOptions;
 
+// #[cfg(feature = "egui")]
+// use bevy_inspector_egui::prelude::ReflectInspectorOptions;
+// #[cfg(feature = "egui")]
+// use bevy_inspector_egui::InspectorOptions;
 use crate::gi::{constants::GI_SCREEN_PROBE_SIZE, util};
 
 #[derive(Copy, Clone, Reflect)]
