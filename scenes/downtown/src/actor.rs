@@ -75,6 +75,7 @@ fn spawn(
             .with_initial_position(initial_position)
             .with_walking_to(walking_to)
             .with_initial_step_time(step_time)
+            .is_player(true)
             .build::<Downtown>(&asset_server),
     );
 }

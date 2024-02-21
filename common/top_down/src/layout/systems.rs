@@ -91,6 +91,7 @@ fn start_loading_map<T: TopDownScene>(
     mut cmd: Commands,
     assets: Res<AssetServer>,
 ) {
+    debug!("Loading map {} from {}", T::type_path(), T::asset_path());
     let handle: Handle<TileMap<T>> = assets.load(T::asset_path());
     cmd.spawn(handle);
 }

@@ -3340,6 +3340,7 @@ dependencies = [
  "bevy",
  "bevy_grid_squared",
  "bevy_pixel_camera",
+ "common_top_down",
  "lazy_static",
  "main_game_lib",
 ]
