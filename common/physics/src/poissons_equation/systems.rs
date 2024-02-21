@@ -48,6 +48,7 @@ pub(crate) fn spawn_visualization<
             default(),
             false,
             default(),
+            default(),
         )
         .expect("Cannot load vector arrow image"),
     );

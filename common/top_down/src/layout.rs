@@ -211,6 +211,8 @@ pub enum TileKind<L> {
     /// Getting rid of 4 bytes per tile would mean we'd fetch 12 less bytes on
     /// each square access.
     /// The entity array access should be cheap.
+    /// UPDATE: With bevy 0.13 the entity alignment has been changed,
+    /// storing entity in an enum is more expensive than before.
     Actor(Entity),
     /// Specific for a given map.
     Local(L),
@@ -991,13 +993,14 @@ mod tests {
         assert_eq!(tilemap.set_tile_kind(sq(100, 0), 0, TileKind::Wall), None);
     }
 
+    /// Useful to track to prevent regressions.
     #[test]
-    fn it_has_small_size_of_tilekind() {
-        assert_eq!(std::mem::size_of::<TileKind<TestTileKind>>(), 12);
+    fn it_has_const_size_of_tilekind() {
+        assert_eq!(std::mem::size_of::<TileKind<TestTileKind>>(), 16);
 
         let square: SmallVec<[TileKind<TestTileKind>; 3]> =
             smallvec![default(), default(), default(), default(), default()];
-        assert_eq!(std::mem::size_of_val(&square), 48);
+        assert_eq!(std::mem::size_of_val(&square), 56);
     }
 
     #[derive(Default, Reflect)]

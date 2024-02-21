@@ -280,7 +280,7 @@ impl BeginInterpolationEvent {
 
 /// What should be interpolated?
 pub enum InterpolationOf {
-    /// Interpolate the color of [`TextureAtlasSprite`] and [`Sprite`].
+    /// Interpolate the color of [`TextureAtlas`] and [`Sprite`].
     Color {
         /// The color to interpolate from.
         /// If not provided, the latest color is used.

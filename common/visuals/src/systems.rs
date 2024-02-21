@@ -12,7 +12,7 @@ use crate::{
 
 /// Advances the animation by one frame.
 /// This requires that the [`AtlasAnimationTimer`] component is present along
-/// with [`TextureAtlasSprite`] and [`AtlasAnimation`].
+/// with [`TextureAtlas`] and [`AtlasAnimation`].
 pub fn advance_atlas_animation(
     mut cmd: Commands,
     time: Res<Time>,

@@ -570,9 +570,7 @@ impl CharacterBundleBuilder {
 
         // for the time being, player is always winnie, so let's squash any bugs
         // during development until this needs to change
-        debug_assert!(
-            !is_player || (is_player && character == Character::Winnie)
-        );
+        debug_assert!(!is_player || character == Character::Winnie);
 
         let step_time = step_time.unwrap_or(character.default_step_time());
 

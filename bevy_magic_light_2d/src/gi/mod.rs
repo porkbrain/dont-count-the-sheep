@@ -308,7 +308,7 @@ impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
 
             let mut pass = render_context.command_encoder().begin_compute_pass(
                 &ComputePassDescriptor {
-                    label: Some(&T::light_pass().0),
+                    label: Some(T::light_pass().0),
                     ..default()
                 },
             );
