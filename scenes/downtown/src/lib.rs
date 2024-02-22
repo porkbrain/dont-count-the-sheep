@@ -34,6 +34,7 @@ pub fn add(app: &mut App) {
     common_top_down::dev_default_setup_for_scene::<Downtown, _>(
         app,
         GlobalGameState::AtDowntown,
+        GlobalGameState::DowntownQuitting,
     );
 
     debug!("Adding plugins");

@@ -3,6 +3,8 @@ use bevy_grid_squared::SquareLayout;
 use common_visuals::camera::render_layer;
 use lazy_static::lazy_static;
 use main_game_lib::{common_top_down::TopDownScene, vec2_ext::Vec2Ext};
+use serde::{Deserialize, Serialize};
+use strum::{EnumIter, IntoEnumIterator};
 
 use crate::{prelude::*, Downtown};
 
@@ -11,6 +13,31 @@ lazy_static! {
         square_size: 6.0,
         origin: vec2(356.0, 175.0).as_top_left_into_centered(),
     };
+}
+
+/// We arbitrarily derive the [`Default`] to allow reflection.
+/// It does not have a meaningful default value.
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    Deserialize,
+    EnumIter,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+    Reflect,
+    Serialize,
+    strum::Display,
+)]
+#[reflect(Default)]
+#[allow(clippy::enum_variant_names)]
+pub enum DowntownTileKind {
+    #[default]
+    PlayerHouseEntrance,
 }
 
 #[derive(Component)]
@@ -51,8 +78,27 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
     }
 }
 
+impl common_top_down::layout::Tile for DowntownTileKind {
+    #[inline]
+    fn is_walkable(&self, _: Entity) -> bool {
+        true
+    }
+
+    #[inline]
+    fn is_zone(&self) -> bool {
+        match self {
+            Self::PlayerHouseEntrance => true,
+        }
+    }
+
+    #[inline]
+    fn zones_iter() -> impl Iterator<Item = Self> {
+        Self::iter().filter(|kind| kind.is_zone())
+    }
+}
+
 impl TopDownScene for Downtown {
-    type LocalTileKind = ();
+    type LocalTileKind = DowntownTileKind;
 
     fn name() -> &'static str {
         "downtown"

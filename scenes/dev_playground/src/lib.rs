@@ -29,6 +29,7 @@ pub fn add(app: &mut App) {
     common_top_down::dev_default_setup_for_scene::<DevPlayground, _>(
         app,
         GlobalGameState::InDevPlayground,
+        GlobalGameState::Exit,
     );
 
     debug!("Adding plugins");

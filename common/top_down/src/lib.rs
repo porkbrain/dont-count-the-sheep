@@ -99,22 +99,22 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
 
     debug!("Adding story for {}", T::type_path());
 
-    app.add_systems(OnEnter(loading.clone()), common_story::spawn_camera);
-    app.add_systems(
-        Update,
-        common_story::portrait_dialog::change_selection
-            .run_if(in_state(running.clone()))
-            .run_if(common_story::portrait_dialog::in_portrait_dialog())
-            .run_if(common_action::move_action_just_pressed()),
-    );
-    app.add_systems(
-        Last,
-        common_story::portrait_dialog::advance
-            .run_if(in_state(running.clone()))
-            .run_if(common_story::portrait_dialog::in_portrait_dialog())
-            .run_if(common_action::interaction_just_pressed()),
-    );
-    app.add_systems(OnEnter(quitting.clone()), common_story::despawn_camera);
+    app.add_systems(OnEnter(loading.clone()), common_story::spawn_camera)
+        .add_systems(
+            Update,
+            common_story::portrait_dialog::change_selection
+                .run_if(in_state(running.clone()))
+                .run_if(common_story::portrait_dialog::in_portrait_dialog())
+                .run_if(common_action::move_action_just_pressed()),
+        )
+        .add_systems(
+            Last,
+            common_story::portrait_dialog::advance
+                .run_if(in_state(running.clone()))
+                .run_if(common_story::portrait_dialog::in_portrait_dialog())
+                .run_if(common_action::interaction_just_pressed()),
+        )
+        .add_systems(OnEnter(quitting.clone()), common_story::despawn_camera);
 }
 
 #[cfg(feature = "dev")]
@@ -129,6 +129,7 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
 pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
     app: &mut App,
     running: S,
+    quitting: S,
 ) where
     T::LocalTileKind: Ord,
 {
@@ -144,8 +145,8 @@ pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
     app.add_systems(
         OnEnter(running.clone()),
         layout::map_maker::visualize_map::<T>,
-    );
-    app.add_systems(
+    )
+    .add_systems(
         Update,
         (
             layout::map_maker::change_square_kind::<T>,
@@ -153,11 +154,15 @@ pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
         )
             .run_if(in_state(running.clone()))
             .chain(),
-    );
-    app.add_systems(
+    )
+    .add_systems(
         Update,
         layout::map_maker::export_map::<T>
             .run_if(input_just_pressed(KeyCode::Enter))
-            .run_if(in_state(running)),
+            .run_if(in_state(running.clone())),
+    )
+    .add_systems(
+        OnExit(quitting.clone()),
+        layout::map_maker::destroy_map::<T>,
     );
 }

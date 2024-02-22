@@ -3553,6 +3553,8 @@ dependencies = [
  "common_top_down",
  "lazy_static",
  "main_game_lib",
+ "serde",
+ "strum",
 ]
 
 [[package]]

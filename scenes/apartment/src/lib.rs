@@ -40,6 +40,7 @@ pub fn add(app: &mut App) {
     common_top_down::dev_default_setup_for_scene::<Apartment, _>(
         app,
         GlobalGameState::InApartment,
+        GlobalGameState::ApartmentQuitting,
     );
 
     debug!("Adding plugins");

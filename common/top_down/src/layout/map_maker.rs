@@ -48,6 +48,9 @@ pub(crate) struct TileMapMakerToolbar<L: Tile> {
     copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
 }
 
+#[derive(Component)]
+pub(crate) struct DebugLayoutGrid;
+
 pub(crate) fn visualize_map<T: TopDownScene>(
     mut cmd: Commands,
     map: Res<TileMap<T>>,
@@ -55,6 +58,7 @@ pub(crate) fn visualize_map<T: TopDownScene>(
     let root = cmd
         .spawn((
             Name::new("Debug Layout Grid"),
+            DebugLayoutGrid,
             SpatialBundle {
                 transform: Transform::from_translation(Vec2::ZERO.extend(10.0)),
                 ..default()
@@ -87,6 +91,15 @@ pub(crate) fn visualize_map<T: TopDownScene>(
             .id();
         cmd.entity(root).add_child(child);
     }
+}
+
+pub(crate) fn destroy_map<T: TopDownScene>(
+    mut cmd: Commands,
+
+    grid: Query<Entity, With<DebugLayoutGrid>>,
+) {
+    cmd.entity(grid.single()).despawn_recursive();
+    cmd.remove_resource::<TileMapMakerToolbar<T::LocalTileKind>>();
 }
 
 pub(crate) fn change_square_kind<T: TopDownScene>(
