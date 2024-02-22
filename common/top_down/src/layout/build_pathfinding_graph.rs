@@ -274,7 +274,7 @@ where
             .collect();
         // add nodes straight away - some might not be in any relationship, and
         // we want them in the graph
-        for (_, node) in &nodes {
+        for node in nodes.values() {
             g.add_stmt(node.clone().into());
         }
 
@@ -479,9 +479,9 @@ impl<L: Tile + Ord> GraphComputeStep<L> {
                     &from_subsets,
                     &from_overlaps,
                 ),
-                from_supersets: from_supersets,
-                from_subsets: from_subsets,
-                from_overlaps: from_overlaps,
+                from_supersets,
+                from_subsets,
+                from_overlaps,
             },
             Self::Sizes {
                 from_supersets,
@@ -691,7 +691,7 @@ mod autogen {
             )
             .replace("%L%", crate_type_path::<L>().as_str());
 
-        output.push_str("\n");
+        output.push('\n');
         output
     }
 
@@ -781,7 +781,7 @@ mod autogen {
             .replace("%L%", crate_type_path::<L>().as_str())
             .replace("%ZONE_GROUPS%", &zone_successors_str);
 
-        output.push_str("\n");
+        output.push('\n');
         output
     }
 

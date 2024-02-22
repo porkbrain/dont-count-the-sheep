@@ -11,11 +11,7 @@ mod zindex;
 
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::LoadingScreenState;
-use common_story::{portrait_dialog::in_portrait_dialog, DialogAssets};
-use main_game_lib::{
-    common_action::{interaction_just_pressed, move_action_just_pressed},
-    GlobalGameStateTransitionStack,
-};
+use main_game_lib::GlobalGameStateTransitionStack;
 use prelude::*;
 
 /// Important scene struct.
@@ -27,6 +23,19 @@ pub(crate) struct Downtown;
 pub fn add(app: &mut App) {
     info!("Adding downtown to app");
 
+    common_top_down::default_setup_for_scene::<Downtown, _>(
+        app,
+        GlobalGameState::DowntownLoading,
+        GlobalGameState::AtDowntown,
+        GlobalGameState::DowntownQuitting,
+    );
+
+    #[cfg(feature = "dev")]
+    common_top_down::dev_default_setup_for_scene::<Downtown, _>(
+        app,
+        GlobalGameState::AtDowntown,
+    );
+
     debug!("Adding plugins");
 
     app.add_plugins((cameras::Plugin, layout::Plugin, actor::Plugin));
@@ -35,25 +44,11 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         OnEnter(GlobalGameState::DowntownLoading),
-        (
-            common_assets::store::insert_as_resource::<Downtown>,
-            common_assets::store::insert_as_resource::<DialogAssets>,
-        ),
+        common_assets::store::insert_as_resource::<Downtown>,
     );
     app.add_systems(
         OnExit(GlobalGameState::DowntownQuitting),
-        (
-            common_assets::store::remove_as_resource::<Downtown>,
-            common_assets::store::remove_as_resource::<DialogAssets>,
-        ),
-    );
-
-    debug!("Adding map layout");
-
-    common_top_down::layout::register::<Downtown, _>(
-        app,
-        GlobalGameState::DowntownLoading,
-        GlobalGameState::AtDowntown,
+        common_assets::store::remove_as_resource::<Downtown>,
     );
 
     debug!("Adding game loop");
@@ -82,39 +77,6 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Update,
         exit.run_if(in_state(GlobalGameState::DowntownQuitting)),
-    );
-
-    debug!("Adding visuals");
-
-    app.add_systems(
-        FixedUpdate,
-        common_visuals::systems::advance_atlas_animation
-            .run_if(in_state(GlobalGameState::AtDowntown)),
-    );
-
-    debug!("Adding story");
-
-    app.add_systems(
-        OnEnter(GlobalGameState::DowntownLoading),
-        common_story::spawn_camera,
-    );
-    app.add_systems(
-        Update,
-        common_story::portrait_dialog::change_selection
-            .run_if(in_state(GlobalGameState::AtDowntown))
-            .run_if(in_portrait_dialog())
-            .run_if(move_action_just_pressed()),
-    );
-    app.add_systems(
-        Last,
-        common_story::portrait_dialog::advance
-            .run_if(in_state(GlobalGameState::AtDowntown))
-            .run_if(in_portrait_dialog())
-            .run_if(interaction_just_pressed()),
-    );
-    app.add_systems(
-        OnEnter(GlobalGameState::DowntownQuitting),
-        common_story::despawn_camera,
     );
 
     info!("Added downtown to app");

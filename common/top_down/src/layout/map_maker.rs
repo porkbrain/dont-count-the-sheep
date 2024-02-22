@@ -7,11 +7,11 @@ use ron::ser::PrettyConfig;
 use super::*;
 
 #[derive(Component)]
-pub(super) struct SquareSprite(Square);
+pub(crate) struct SquareSprite(Square);
 
 #[derive(Resource, Reflect, InspectorOptions, Default)]
 #[reflect(Resource, InspectorOptions)]
-pub(super) struct TileMapMakerToolbar<L: Tile> {
+pub(crate) struct TileMapMakerToolbar<L: Tile> {
     // these are configurable
     // ~
     // ~
@@ -48,7 +48,7 @@ pub(super) struct TileMapMakerToolbar<L: Tile> {
     copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
 }
 
-pub(super) fn visualize_map<T: TopDownScene>(
+pub(crate) fn visualize_map<T: TopDownScene>(
     mut cmd: Commands,
     map: Res<TileMap<T>>,
 ) {
@@ -89,7 +89,7 @@ pub(super) fn visualize_map<T: TopDownScene>(
     }
 }
 
-pub(super) fn change_square_kind<T: TopDownScene>(
+pub(crate) fn change_square_kind<T: TopDownScene>(
     mouse: Res<ButtonInput<MouseButton>>,
     mut map: ResMut<TileMap<T>>,
     mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
@@ -165,7 +165,7 @@ fn try_paint<T: TopDownScene>(
     copy_entry[toolbar.layer] = toolbar.paint;
 }
 
-pub(super) fn recolor_squares<T: TopDownScene>(
+pub(crate) fn recolor_squares<T: TopDownScene>(
     map: ResMut<TileMap<T>>,
     toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
 
@@ -205,7 +205,7 @@ pub(super) fn recolor_squares<T: TopDownScene>(
     }
 }
 
-pub(super) fn export_map<T: TopDownScene>(
+pub(crate) fn export_map<T: TopDownScene>(
     mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
 ) where
     T::LocalTileKind: Ord,
@@ -331,13 +331,10 @@ fn cursor_to_square(
 ) -> Option<Square> {
     let cursor_pos = windows.single().cursor_position()?;
 
-    let (camera, camera_transform, _) = cameras
-        .iter()
-        .filter(|(_, _, l)| {
-            l.map(|l| l.intersects(&RenderLayers::layer(0)))
-                .unwrap_or(true)
-        })
-        .next()?;
+    let (camera, camera_transform, _) = cameras.iter().find(|(_, _, l)| {
+        l.map(|l| l.intersects(&RenderLayers::layer(0)))
+            .unwrap_or(true)
+    })?;
     let world_pos =
         camera.viewport_to_world_2d(camera_transform, cursor_pos)?;
 
@@ -357,7 +354,7 @@ fn go_back_in_dir_tree_until_path_found(mut path: String) -> String {
 }
 
 impl<L: Tile> TileMapMakerToolbar<L> {
-    pub(super) fn new(
+    pub(crate) fn new(
         copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
     ) -> Self {
         Self {

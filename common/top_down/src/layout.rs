@@ -3,10 +3,10 @@
 //! objects?
 
 #[cfg(feature = "dev")]
-pub mod build_pathfinding_graph;
+mod build_pathfinding_graph;
 #[cfg(feature = "dev")]
-mod map_maker;
-mod systems;
+pub(crate) mod map_maker;
+pub(crate) mod systems;
 
 use std::{marker::PhantomData, ops::RangeInclusive};
 
@@ -15,7 +15,6 @@ use bevy_grid_squared::{sq, Square, SquareLayout};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use smallvec::SmallVec;
-pub use systems::*;
 
 /// A tile is uniquely identified by (`x`, `y`) of the square and a layer index.
 pub type TileIndex = (Square, usize);
