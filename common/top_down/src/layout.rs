@@ -43,6 +43,7 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     fn asset_path() -> &'static str;
 
     /// Given a position on the map, add a z coordinate.
+    /// Will return a z-coordinate in the range of -0.1 to 1.1.
     #[inline]
     fn extend_z(Vec2 { x, y }: Vec2) -> Vec3 {
         let (min, max) = Self::y_range().into_inner();
