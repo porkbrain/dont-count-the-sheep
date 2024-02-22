@@ -33,31 +33,15 @@ fn spawn(mut cmd: Commands) {
         CameraEntity,
         PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
-        RenderLayers::from_layers(&[render_layer::BG, render_layer::OBJ]),
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true,
-                order: order::DEFAULT,
-                ..default()
-            },
-            ..default()
-        },
-    ));
-
-    #[cfg(feature = "dev")]
-    cmd.spawn((
-        Name::from("Downtown debug camera"),
-        CameraEntity,
-        PixelZoom::Fixed(PIXEL_ZOOM),
-        PixelViewport,
         RenderLayers::from_layers(&[
             0, // for FPS and other debug tools
+            render_layer::BG,
+            render_layer::OBJ,
         ]),
         Camera2dBundle {
             camera: Camera {
                 hdr: true,
-                order: order::DEV,
-                clear_color: ClearColorConfig::None,
+                order: order::DEFAULT,
                 ..default()
             },
             ..default()
