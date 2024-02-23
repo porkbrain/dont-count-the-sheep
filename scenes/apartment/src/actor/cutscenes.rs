@@ -1,14 +1,13 @@
 use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::LoadingScreenSettings;
-use common_store::GlobalStore;
+use common_store::{DialogStore, GlobalStore};
+use common_story::portrait_dialog::{
+    apartment_elevator::TakeTheElevatorToGroundFloor, DialogRoot,
+};
+use common_visuals::EASE_IN_OUT;
 use main_game_lib::{
-    common_store::DialogStore,
-    common_story::portrait_dialog::{
-        apartment_elevator::TakeTheElevatorToGroundFloor, DialogRoot,
-    },
-    common_visuals::EASE_IN_OUT,
     cutscene::{self, CutsceneStep, IntoCutscene},
-    GlobalGameStateTransition as Ggst,
+    state::GlobalGameStateTransition as Ggst,
 };
 
 use crate::{consts::*, prelude::*};

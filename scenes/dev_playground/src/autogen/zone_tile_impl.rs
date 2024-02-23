@@ -5,6 +5,7 @@ impl common_top_down::layout::ZoneTile
     #[inline]
     fn zone_group(&self) -> Option<common_top_down::layout::ZoneGroup> {
         use common_top_down::layout::ZoneGroup;
+        #[allow(clippy::match_single_binding)]
         match self {
             Self::ZoneA => Some(ZoneGroup(0)),
             Self::ZoneB => Some(ZoneGroup(0)),
@@ -23,6 +24,7 @@ impl common_top_down::layout::ZoneTile
     }
     #[inline]
     fn zone_size(&self) -> Option<usize> {
+        #[allow(clippy::match_single_binding)]
         match self {
             Self::ZoneA => Some(360),
             Self::ZoneB => Some(308),
@@ -42,6 +44,7 @@ impl common_top_down::layout::ZoneTile
     type Successors = Self;
     #[inline]
     fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
+        #[allow(clippy::match_single_binding)]
         match self {
             Self::ZoneA => Some(&[
                 Self::ZoneB,

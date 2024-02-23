@@ -10,7 +10,7 @@ pub mod interactable;
 pub mod layout;
 
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
-use bevy::prelude::*;
+use bevy::{ecs::event::event_update_condition, prelude::*};
 pub use layout::{TileKind, TileMap, TopDownScene};
 
 /// Does not add any systems, only registers generic-less types.
@@ -32,28 +32,35 @@ impl bevy::app::Plugin for Plugin {
 /// including from other packages:
 /// - [`common_assets::store::insert_as_resource`]
 /// - [`common_assets::store::remove_as_resource`]
-/// - [`actor::emit_movement_events`]
+/// - [`common_story::despawn_camera`]
+/// - [`common_story::portrait_dialog::advance`]
+/// - [`common_story::portrait_dialog::change_selection`]
+/// - [`common_story::spawn_camera`]
+/// - [`crate::actor::animate_movement`]
+/// - [`crate::actor::emit_movement_events`]
+/// - [`crate::actor::npc::drive_behavior`]
+/// - [`crate::actor::npc::plan_path`]
+/// - [`crate::actor::npc::run_path`]
+/// - [`crate::actor::player::move_around`]
 /// - [`common_visuals::systems::advance_atlas_animation`]
 /// - [`common_visuals::systems::interpolate`]
-/// - [`common_story::spawn_camera`]
-/// - [`common_story::portrait_dialog::change_selection`]
-/// - [`common_story::portrait_dialog::advance`]
-/// - [`common_story::despawn_camera`]
 pub fn default_setup_for_scene<T: TopDownScene, S: States>(
     app: &mut App,
     loading: S,
     running: S,
     quitting: S,
-) {
+) where
+    T::LocalTileKind: layout::ZoneTile<Successors = T::LocalTileKind>,
+{
     debug!("Adding assets for {}", T::type_path());
 
     app.add_systems(
         OnEnter(loading.clone()),
-        common_assets::store::insert_as_resource::<common_story::DialogAssets>,
+        common_assets::store::insert_as_resource::<common_story::StoryAssets>,
     )
     .add_systems(
         OnExit(quitting.clone()),
-        common_assets::store::remove_as_resource::<common_story::DialogAssets>,
+        common_assets::store::remove_as_resource::<common_story::StoryAssets>,
     );
 
     debug!("Adding map layout for {}", T::type_path());
@@ -75,11 +82,33 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
             .run_if(in_state(loading.clone())),
     )
     .add_systems(
+        FixedUpdate,
+        actor::animate_movement::<T>.run_if(in_state(running.clone())),
+    )
+    .add_systems(
         Update,
         actor::emit_movement_events::<T>
             .run_if(in_state(running.clone()))
             // so that we can emit this event on current frame
             .after(actor::player::move_around::<T>),
+    )
+    .add_systems(
+        Update,
+        actor::player::move_around::<T>
+            .run_if(in_state(running.clone()))
+            .run_if(common_action::move_action_pressed())
+            .run_if(common_story::portrait_dialog::not_in_portrait_dialog()),
+    )
+    .add_systems(
+        Update,
+        (
+            actor::npc::drive_behavior,
+            actor::npc::plan_path::<T>
+                .run_if(event_update_condition::<actor::npc::PlanPathEvent>),
+            actor::npc::run_path::<T>,
+        )
+            .chain()
+            .run_if(in_state(running.clone())),
     )
     .add_systems(
         OnExit(running.clone()),

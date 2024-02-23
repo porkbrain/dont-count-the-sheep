@@ -289,17 +289,17 @@ pub(crate) fn export_map<T: TopDownScene>(
     let scene_path =
         go_back_in_dir_tree_until_path_found(format!("scenes/{}", T::name()));
 
-    let dot_g = g.as_dotgraph(T::name());
-    info!("Graphviz dot graph: \n{}", dot_g.as_dot());
-    let svg = dot_g.into_svg().unwrap();
-    fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg).unwrap();
-
     let zone_tile_impl_rs = g.generate_zone_tile_impl_rs();
     fs::write(
         format!("{scene_path}/src/autogen/zone_tile_impl.rs"),
         zone_tile_impl_rs,
     )
     .unwrap();
+
+    let dot_g = g.as_dotgraph(T::name());
+    info!("Graphviz dot graph: \n{}", dot_g.as_dot());
+    let svg = dot_g.into_svg().unwrap();
+    fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg).unwrap();
 }
 
 impl<L: Eq> TileKind<L> {

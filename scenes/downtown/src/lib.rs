@@ -3,6 +3,7 @@
 #![allow(clippy::type_complexity)]
 
 mod actor;
+mod autogen;
 mod cameras;
 mod consts;
 mod layout;
@@ -11,7 +12,6 @@ mod zindex;
 
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::LoadingScreenState;
-use main_game_lib::GlobalGameStateTransitionStack;
 use prelude::*;
 
 /// Important scene struct.

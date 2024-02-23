@@ -21,7 +21,7 @@ use strum::{
 /// Used in conjunction with [`common_assets::AssetStore`] to keep loaded assets
 /// in memory. Thanks to implementation of [`AssetList`] you can now use the
 /// common systems to load and unload assets.
-pub struct DialogAssets;
+pub struct StoryAssets;
 
 /// List of all the NPCs and player characters.
 #[derive(
@@ -104,9 +104,10 @@ pub fn despawn_camera(
     }
 }
 
-impl AssetList for DialogAssets {
+impl AssetList for StoryAssets {
     fn folders() -> &'static [&'static str] {
         &[
+            common_assets::character_atlases::FOLDER,
             common_assets::dialog::FOLDER,
             common_assets::portraits::FOLDER,
         ]

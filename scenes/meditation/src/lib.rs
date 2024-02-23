@@ -21,7 +21,6 @@ use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_physics::PoissonsEquation;
 use gravity::Gravity;
-use main_game_lib::GlobalGameStateTransitionStack;
 use prelude::*;
 
 /// Important scene struct.

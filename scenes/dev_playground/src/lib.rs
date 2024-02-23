@@ -7,7 +7,7 @@ mod layout;
 mod prelude;
 
 use common_assets::{store::AssetList, AssetStore};
-use main_game_lib::common_top_down::TopDownScene;
+use common_top_down::TopDownScene;
 use prelude::*;
 
 /// Important scene struct.

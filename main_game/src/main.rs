@@ -1,9 +1,6 @@
 use bevy::prelude::*;
-use main_game_lib::{
-    common_loading_screen::{LoadingScreenSettings, LoadingScreenState},
-    prelude::from_millis,
-    GlobalGameState,
-};
+use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
+use main_game_lib::prelude::*;
 
 fn main() {
     let mut app = main_game_lib::windowed_app();
@@ -24,13 +21,14 @@ fn main() {
         // > Unstyled child in a UI entity hierarchy. You are using an entity
         // > without UI components as a child of an entity with UI components,
         // > results may be unexpected.
-        cmd.spawn(Camera2dBundle {
-            camera: Camera {
-                is_active: false,
+        cmd.spawn(Name::new("Inactive camera (see github issue #55)"))
+            .insert(Camera2dBundle {
+                camera: Camera {
+                    is_active: false,
+                    ..default()
+                },
                 ..default()
-            },
-            ..default()
-        });
+            });
 
         // just a quick loading screen, no bg
         cmd.insert_resource(LoadingScreenSettings {
@@ -39,8 +37,7 @@ fn main() {
             bg_image_asset: None,
             ..default()
         });
-        next_loading_state
-            .set(main_game_lib::common_loading_screen::start_state());
+        next_loading_state.set(common_loading_screen::start_state());
 
         next_state.set(GlobalGameState::ApartmentLoading);
     }
@@ -49,7 +46,7 @@ fn main() {
     info!("Adding scenes");
 
     scene_apartment::add(&mut app);
-    scene_meditation::add(&mut app);
+    // scene_meditation::add(&mut app);
     scene_downtown::add(&mut app);
 
     info!("Starting Don't Count The Sheep");

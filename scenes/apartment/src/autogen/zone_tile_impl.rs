@@ -3,6 +3,7 @@ impl common_top_down::layout::ZoneTile for crate::layout::ApartmentTileKind {
     #[inline]
     fn zone_group(&self) -> Option<common_top_down::layout::ZoneGroup> {
         use common_top_down::layout::ZoneGroup;
+        #[allow(clippy::match_single_binding)]
         match self {
             Self::HallwayZone => Some(ZoneGroup(0)),
             Self::PlayerApartmentZone => Some(ZoneGroup(0)),
@@ -17,6 +18,7 @@ impl common_top_down::layout::ZoneTile for crate::layout::ApartmentTileKind {
     }
     #[inline]
     fn zone_size(&self) -> Option<usize> {
+        #[allow(clippy::match_single_binding)]
         match self {
             Self::HallwayZone => Some(1266),
             Self::PlayerApartmentZone => Some(2725),
@@ -32,6 +34,7 @@ impl common_top_down::layout::ZoneTile for crate::layout::ApartmentTileKind {
     type Successors = Self;
     #[inline]
     fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
+        #[allow(clippy::match_single_binding)]
         match self {
             Self::HallwayZone => Some(&[
                 Self::PlayerApartmentZone,

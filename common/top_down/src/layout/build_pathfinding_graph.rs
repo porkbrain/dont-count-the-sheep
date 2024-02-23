@@ -700,6 +700,7 @@ mod autogen {
             #[inline]
             fn zone_group(&self) -> Option<common_top_down::layout::ZoneGroup> {
                 use common_top_down::layout::ZoneGroup;
+                #[allow(clippy::match_single_binding)]
                 match self {
                     %ZONE_GROUPS%
                     #[allow(unreachable_patterns)]
@@ -728,6 +729,7 @@ mod autogen {
         let autogen = stringify!(
             #[inline]
             fn zone_size(&self) -> Option<usize> {
+                #[allow(clippy::match_single_binding)]
                 match self {
                     %ZONE_GROUPS%
                     #[allow(unreachable_patterns)]
@@ -754,6 +756,7 @@ mod autogen {
 
             #[inline]
             fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
+                #[allow(clippy::match_single_binding)]
                 match self {
                     %ZONE_GROUPS%
                     #[allow(unreachable_patterns)]

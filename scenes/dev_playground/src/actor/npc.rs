@@ -1,16 +1,14 @@
 use bevy::render::view::RenderLayers;
-use main_game_lib::{
-    common_top_down::{
-        actor::CharacterExt,
-        npc::{
-            behaviors::IdlyWaiting, BehaviorLeaf, BehaviorNode, BehaviorTree,
-            NpcInTheMap,
-        },
-        TopDownScene,
+use common_top_down::{
+    actor::CharacterExt,
+    npc::{
+        behaviors::IdlyWaiting, BehaviorLeaf, BehaviorNode, BehaviorTree,
+        NpcInTheMap,
     },
-    common_visuals::camera::render_layer,
-    vec2_ext::Vec2Ext,
+    TopDownScene,
 };
+use common_visuals::camera::render_layer;
+use main_game_lib::vec2_ext::Vec2Ext;
 
 use super::CharacterEntity;
 use crate::{prelude::*, DevPlayground};

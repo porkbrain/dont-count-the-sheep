@@ -1,7 +1,6 @@
 use bevy::render::view::RenderLayers;
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
-use common_visuals::camera::{order, render_layer, PIXEL_ZOOM};
-use main_game_lib::common_visuals::camera::MainCamera;
+use common_visuals::camera::{order, render_layer, MainCamera, PIXEL_ZOOM};
 
 use crate::{prelude::*, Downtown};
 
