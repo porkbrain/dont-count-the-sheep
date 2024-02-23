@@ -2,12 +2,8 @@
 
 use bevy::render::view::RenderLayers;
 use common_store::GlobalStore;
-use common_story::portrait_dialog::not_in_portrait_dialog;
+use common_top_down::{actor::CharacterExt, ActorTarget, TopDownScene};
 use common_visuals::camera::render_layer;
-use main_game_lib::{
-    common_action::move_action_pressed,
-    common_top_down::{actor::CharacterExt, ActorTarget, TopDownScene},
-};
 
 use crate::{prelude::*, Downtown};
 
@@ -24,20 +20,6 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GlobalGameState::DowntownLoading), spawn)
             .add_systems(OnExit(GlobalGameState::DowntownQuitting), despawn);
-
-        app.add_systems(
-            Update,
-            (common_top_down::actor::player::move_around::<Downtown>
-                .run_if(move_action_pressed()),)
-                .run_if(in_state(GlobalGameState::AtDowntown))
-                .run_if(not_in_portrait_dialog()),
-        );
-
-        app.add_systems(
-            FixedUpdate,
-            common_top_down::actor::animate_movement::<Downtown>
-                .run_if(in_state(GlobalGameState::AtDowntown)),
-        );
     }
 }
 

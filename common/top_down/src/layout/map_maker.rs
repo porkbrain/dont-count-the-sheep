@@ -7,11 +7,11 @@ use ron::ser::PrettyConfig;
 use super::*;
 
 #[derive(Component)]
-pub(super) struct SquareSprite(Square);
+pub(crate) struct SquareSprite(Square);
 
 #[derive(Resource, Reflect, InspectorOptions, Default)]
 #[reflect(Resource, InspectorOptions)]
-pub(super) struct TileMapMakerToolbar<L: Tile> {
+pub(crate) struct TileMapMakerToolbar<L: Tile> {
     // these are configurable
     // ~
     // ~
@@ -48,13 +48,17 @@ pub(super) struct TileMapMakerToolbar<L: Tile> {
     copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
 }
 
-pub(super) fn visualize_map<T: TopDownScene>(
+#[derive(Component)]
+pub(crate) struct DebugLayoutGrid;
+
+pub(crate) fn visualize_map<T: TopDownScene>(
     mut cmd: Commands,
     map: Res<TileMap<T>>,
 ) {
     let root = cmd
         .spawn((
             Name::new("Debug Layout Grid"),
+            DebugLayoutGrid,
             SpatialBundle {
                 transform: Transform::from_translation(Vec2::ZERO.extend(10.0)),
                 ..default()
@@ -89,7 +93,16 @@ pub(super) fn visualize_map<T: TopDownScene>(
     }
 }
 
-pub(super) fn change_square_kind<T: TopDownScene>(
+pub(crate) fn destroy_map<T: TopDownScene>(
+    mut cmd: Commands,
+
+    grid: Query<Entity, With<DebugLayoutGrid>>,
+) {
+    cmd.entity(grid.single()).despawn_recursive();
+    cmd.remove_resource::<TileMapMakerToolbar<T::LocalTileKind>>();
+}
+
+pub(crate) fn change_square_kind<T: TopDownScene>(
     mouse: Res<ButtonInput<MouseButton>>,
     mut map: ResMut<TileMap<T>>,
     mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
@@ -165,7 +178,7 @@ fn try_paint<T: TopDownScene>(
     copy_entry[toolbar.layer] = toolbar.paint;
 }
 
-pub(super) fn recolor_squares<T: TopDownScene>(
+pub(crate) fn recolor_squares<T: TopDownScene>(
     map: ResMut<TileMap<T>>,
     toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
 
@@ -205,7 +218,7 @@ pub(super) fn recolor_squares<T: TopDownScene>(
     }
 }
 
-pub(super) fn export_map<T: TopDownScene>(
+pub(crate) fn export_map<T: TopDownScene>(
     mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
 ) where
     T::LocalTileKind: Ord,
@@ -276,17 +289,17 @@ pub(super) fn export_map<T: TopDownScene>(
     let scene_path =
         go_back_in_dir_tree_until_path_found(format!("scenes/{}", T::name()));
 
-    let dot_g = g.as_dotgraph(T::name());
-    info!("Graphviz dot graph: \n{}", dot_g.as_dot());
-    let svg = dot_g.into_svg().unwrap();
-    fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg).unwrap();
-
     let zone_tile_impl_rs = g.generate_zone_tile_impl_rs();
     fs::write(
         format!("{scene_path}/src/autogen/zone_tile_impl.rs"),
         zone_tile_impl_rs,
     )
     .unwrap();
+
+    let dot_g = g.as_dotgraph(T::name());
+    info!("Graphviz dot graph: \n{}", dot_g.as_dot());
+    let svg = dot_g.into_svg().unwrap();
+    fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg).unwrap();
 }
 
 impl<L: Eq> TileKind<L> {
@@ -331,13 +344,10 @@ fn cursor_to_square(
 ) -> Option<Square> {
     let cursor_pos = windows.single().cursor_position()?;
 
-    let (camera, camera_transform, _) = cameras
-        .iter()
-        .filter(|(_, _, l)| {
-            l.map(|l| l.intersects(&RenderLayers::layer(0)))
-                .unwrap_or(true)
-        })
-        .next()?;
+    let (camera, camera_transform, _) = cameras.iter().find(|(_, _, l)| {
+        l.map(|l| l.intersects(&RenderLayers::layer(0)))
+            .unwrap_or(true)
+    })?;
     let world_pos =
         camera.viewport_to_world_2d(camera_transform, cursor_pos)?;
 
@@ -357,7 +367,7 @@ fn go_back_in_dir_tree_until_path_found(mut path: String) -> String {
 }
 
 impl<L: Tile> TileMapMakerToolbar<L> {
-    pub(super) fn new(
+    pub(crate) fn new(
         copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
     ) -> Self {
         Self {

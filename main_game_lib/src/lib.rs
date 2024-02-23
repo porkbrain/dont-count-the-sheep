@@ -10,15 +10,9 @@ pub mod vec2_ext;
 use bevy::{app::AppExit, prelude::*};
 use bevy_inspector_egui::quick::{StateInspectorPlugin, WorldInspectorPlugin};
 use bevy_pixel_camera::PixelCameraPlugin;
-pub use common_action;
-pub use common_assets;
 pub use common_ext;
-pub use common_loading_screen;
-pub use common_store;
-pub use common_story;
-pub use common_top_down;
-pub use common_visuals::{self, PRIMARY_COLOR};
-pub use state::*;
+
+use crate::prelude::*;
 
 /// Constructs a new app with all the necessary plugins and systems.
 ///

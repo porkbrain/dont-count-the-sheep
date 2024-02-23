@@ -1,6 +1,6 @@
 use bevy::{asset, render::view::RenderLayers};
+use common_top_down::actor::CharacterExt;
 use common_visuals::camera::render_layer;
-use main_game_lib::common_top_down::actor::CharacterExt;
 
 use super::CharacterEntity;
 use crate::{prelude::*, DevPlayground};

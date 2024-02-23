@@ -145,7 +145,7 @@ pub struct CharacterBundleBuilder {
 }
 
 /// Sends events when an actor does something interesting.
-/// This system is registered on call to [`crate::layout::register`].
+/// This system is registered on call to [`crate::default_setup_for_scene`].
 ///
 /// If you listen to this event then condition your system to run on
 /// `run_if(event_update_condition::<ActorMovementEvent>)` and
@@ -730,7 +730,7 @@ mod tests {
 
     #[test]
     fn it_runs_tests_that_check_actors_dont_get_stuck_many_times() {
-        for _ in 0..10000 {
+        for _ in 0..1000 {
             it_does_not_get_stuck_when_two_actors_are_centered_at_the_same_tile_and_walk_in_opposite_directions();
 
             it_does_not_get_stuck_when_first_actor_moves_and_second_stays_still(

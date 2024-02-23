@@ -60,6 +60,8 @@ impl<T: LightScene> GiTargets<T> {
         images: &mut Assets<Image>,
         sizes: &ComputedTargetSizes,
     ) -> Self {
+        trace!("Creating GiTargets for {}", T::type_path());
+
         let sdf_tex = create_texture_2d(
             sizes.sdf_target_usize.into(),
             SDF_TARGET_FORMAT,
@@ -98,7 +100,6 @@ impl<T: LightScene> GiTargets<T> {
         let ss_filter_target = T::ss_filter_target();
         let ss_pose_target = T::ss_pose_target();
 
-        info!("Inserting sdf_text");
         images.insert(sdf_target.clone(), sdf_tex);
         images.insert(ss_probe_target.clone(), ss_probe_tex);
         images.insert(ss_bounce_target.clone(), ss_bounce_tex);

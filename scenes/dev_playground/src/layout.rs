@@ -1,6 +1,5 @@
 use bevy_grid_squared::SquareLayout;
 use lazy_static::lazy_static;
-use main_game_lib::{common_top_down, common_top_down::TopDownScene};
 use serde::{Deserialize, Serialize};
 use strum::{EnumIter, IntoEnumIterator};
 

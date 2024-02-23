@@ -1,16 +1,12 @@
 use bevy::render::view::RenderLayers;
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{ApartmentStore, GlobalStore};
-use common_visuals::camera::render_layer;
-use main_game_lib::{
-    common_ext::QueryExt,
-    common_top_down::{
-        actor::CharacterExt, Actor, ActorMovementEvent, ActorTarget, TileKind,
-        TopDownScene,
-    },
-    cutscene::IntoCutscene,
-    GlobalGameStateTransition, GlobalGameStateTransitionStack,
+use common_top_down::{
+    actor::CharacterExt, Actor, ActorMovementEvent, ActorTarget, TileKind,
+    TopDownScene,
 };
+use common_visuals::camera::render_layer;
+use main_game_lib::{common_ext::QueryExt, cutscene::IntoCutscene};
 
 use super::{cutscenes, CharacterEntity};
 use crate::{

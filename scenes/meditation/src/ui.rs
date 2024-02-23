@@ -38,8 +38,8 @@ mod consts {
         Val::Px(5.0 * PIXEL_ZOOM as f32);
 }
 
+use common_action::move_action_pressed;
 use leafwing_input_manager::common_conditions::action_just_pressed;
-use main_game_lib::common_action::move_action_pressed;
 pub(crate) use score::Score;
 
 use crate::prelude::*;

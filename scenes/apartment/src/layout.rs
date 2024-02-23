@@ -1,35 +1,23 @@
 use bevy::{render::view::RenderLayers, sprite::Anchor};
-use bevy_grid_squared::{sq, SquareLayout};
+use bevy_grid_squared::sq;
+use common_top_down::{
+    actor::{self, movement_event_emitted, Who},
+    interactable::{
+        self,
+        door::{DoorBuilder, DoorOpenCriteria, DoorState},
+    },
+    Actor, ActorMovementEvent, TileKind, TileMap, TopDownScene,
+};
 use common_visuals::{
     camera::render_layer, AtlasAnimation, AtlasAnimationEnd,
-    AtlasAnimationTimer, PRIMARY_COLOR,
+    AtlasAnimationTimer, BeginInterpolationEvent, PRIMARY_COLOR,
 };
-use lazy_static::lazy_static;
-use main_game_lib::{
-    common_ext::QueryExt,
-    common_top_down::{
-        actor::{self, movement_event_emitted, Who},
-        interactable::{
-            self,
-            door::{DoorBuilder, DoorOpenCriteria, DoorState},
-        },
-        Actor, ActorMovementEvent, TileKind, TileMap, TopDownScene,
-    },
-    common_visuals::BeginInterpolationEvent,
-    vec2_ext::Vec2Ext,
-};
+use main_game_lib::common_ext::QueryExt;
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use strum::{EnumIter, IntoEnumIterator};
 
 use crate::{consts::*, prelude::*, Apartment};
-
-lazy_static! {
-    static ref LAYOUT: SquareLayout = SquareLayout {
-        square_size: 4.0,
-        origin: vec2(356.0, 175.0).as_top_left_into_centered(),
-    };
-}
 
 /// How long does it take to give hallway its full color.
 const HALLWAY_FADE_IN_TRANSITION_DURATION: Duration = from_millis(500);
@@ -615,9 +603,5 @@ impl TopDownScene for Apartment {
 
     fn asset_path() -> &'static str {
         assets::MAP
-    }
-
-    fn layout() -> &'static SquareLayout {
-        &LAYOUT
     }
 }

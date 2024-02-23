@@ -14,13 +14,8 @@ mod zindex;
 use bevy::utils::Instant;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_story::{portrait_dialog::in_portrait_dialog, DialogAssets};
+use common_top_down::TopDownScene;
 use consts::START_LOADING_SCREEN_AFTER;
-use main_game_lib::{
-    common_action::{interaction_just_pressed, move_action_just_pressed},
-    common_top_down::TopDownScene,
-    GlobalGameStateTransitionStack,
-};
 use prelude::*;
 
 /// Important scene struct.
@@ -32,6 +27,20 @@ pub struct Apartment;
 pub fn add(app: &mut App) {
     info!("Adding apartment to app");
 
+    common_top_down::default_setup_for_scene::<Apartment, _>(
+        app,
+        GlobalGameState::ApartmentLoading,
+        GlobalGameState::InApartment,
+        GlobalGameState::ApartmentQuitting,
+    );
+
+    #[cfg(feature = "dev")]
+    common_top_down::dev_default_setup_for_scene::<Apartment, _>(
+        app,
+        GlobalGameState::InApartment,
+        GlobalGameState::ApartmentQuitting,
+    );
+
     debug!("Adding plugins");
 
     app.add_plugins((cameras::Plugin, layout::Plugin, actor::Plugin));
@@ -40,25 +49,11 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         OnEnter(GlobalGameState::ApartmentLoading),
-        (
-            common_assets::store::insert_as_resource::<Apartment>,
-            common_assets::store::insert_as_resource::<DialogAssets>,
-        ),
+        common_assets::store::insert_as_resource::<Apartment>,
     );
     app.add_systems(
         OnExit(GlobalGameState::ApartmentQuitting),
-        (
-            common_assets::store::remove_as_resource::<Apartment>,
-            common_assets::store::remove_as_resource::<DialogAssets>,
-        ),
-    );
-
-    debug!("Adding map layout");
-
-    common_top_down::layout::register::<Apartment, _>(
-        app,
-        GlobalGameState::ApartmentLoading,
-        GlobalGameState::InApartment,
+        common_assets::store::remove_as_resource::<Apartment>,
     );
 
     debug!("Adding game loop");
@@ -87,42 +82,6 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Update,
         smooth_exit.run_if(in_state(GlobalGameState::ApartmentQuitting)),
-    );
-
-    debug!("Adding visuals");
-
-    app.add_systems(
-        FixedUpdate,
-        (
-            common_visuals::systems::advance_atlas_animation,
-            common_visuals::systems::interpolate,
-        )
-            .run_if(in_state(GlobalGameState::InApartment)),
-    );
-
-    debug!("Adding story");
-
-    app.add_systems(
-        OnEnter(GlobalGameState::ApartmentLoading),
-        common_story::spawn_camera,
-    );
-    app.add_systems(
-        Update,
-        common_story::portrait_dialog::change_selection
-            .run_if(in_state(GlobalGameState::InApartment))
-            .run_if(in_portrait_dialog())
-            .run_if(move_action_just_pressed()),
-    );
-    app.add_systems(
-        Last,
-        common_story::portrait_dialog::advance
-            .run_if(in_state(GlobalGameState::InApartment))
-            .run_if(in_portrait_dialog())
-            .run_if(interaction_just_pressed()),
-    );
-    app.add_systems(
-        OnEnter(GlobalGameState::ApartmentQuitting),
-        common_story::despawn_camera,
     );
 
     info!("Added apartment to app");

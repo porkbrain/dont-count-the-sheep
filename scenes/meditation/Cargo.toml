@@ -9,6 +9,7 @@ bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true
 bevy_webp_anim.workspace = true
 bevy.workspace = true
+common_action.workspace = true
 common_assets.workspace = true
 common_loading_screen.workspace = true
 common_physics.workspace = true

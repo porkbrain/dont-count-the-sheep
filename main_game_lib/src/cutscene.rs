@@ -31,8 +31,7 @@ use common_visuals::{
 };
 
 use crate::{
-    prelude::from_millis, GlobalGameState, GlobalGameStateTransition,
-    GlobalGameStateTransitionStack,
+    prelude::*, GlobalGameStateTransition, GlobalGameStateTransitionStack,
 };
 
 const LETTERBOXING_FADE_IN_DURATION: Duration = from_millis(500);
@@ -379,36 +378,40 @@ fn schedule_current_step(
 impl Cutscene {
     fn schedule_next_step_or_despawn(&mut self, cmd: &mut Commands) {
         if self.sequence_index >= self.sequence.len() - 1 {
-            cmd.remove_resource::<Cutscene>();
-
-            if let Some(entities) = self.letterboxing_entities.take() {
-                // smoothly animate quads out and when down, despawn everything
-
-                BeginInterpolationEvent::of_translation(
-                    entities[2],
-                    Some(LETTERBOXING_BOTTOM_QUAD_TARGET_POS),
-                    LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
-                )
-                .over(LETTERBOXING_FADE_OUT_DURATION)
-                .insert(cmd);
-
-                BeginInterpolationEvent::of_translation(
-                    entities[1],
-                    Some(LETTERBOXING_TOP_QUAD_TARGET_POS),
-                    LETTERBOXING_TOP_QUAD_INITIAL_POS,
-                )
-                .over(LETTERBOXING_FADE_OUT_DURATION)
-                .when_finished_do(move |cmd: &mut Commands| {
-                    cmd.entity(entities[0]).despawn();
-                    cmd.entity(entities[1]).despawn();
-                    cmd.entity(entities[2]).despawn();
-                })
-                .insert(cmd);
-            }
+            self.force_despawn(cmd);
         } else {
             self.stopwatch.reset();
             self.sequence_index += 1;
             self.schedule_current_step(cmd);
+        }
+    }
+
+    /// Despawns cutscene regardless of whether it finished.
+    fn force_despawn(&mut self, cmd: &mut Commands) {
+        cmd.remove_resource::<Cutscene>();
+        if let Some(entities) = self.letterboxing_entities.take() {
+            // smoothly animate quads out and when down, despawn everything
+
+            BeginInterpolationEvent::of_translation(
+                entities[2],
+                Some(LETTERBOXING_BOTTOM_QUAD_TARGET_POS),
+                LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
+            )
+            .over(LETTERBOXING_FADE_OUT_DURATION)
+            .insert(cmd);
+
+            BeginInterpolationEvent::of_translation(
+                entities[1],
+                Some(LETTERBOXING_TOP_QUAD_TARGET_POS),
+                LETTERBOXING_TOP_QUAD_INITIAL_POS,
+            )
+            .over(LETTERBOXING_FADE_OUT_DURATION)
+            .when_finished_do(move |cmd: &mut Commands| {
+                cmd.entity(entities[0]).despawn();
+                cmd.entity(entities[1]).despawn();
+                cmd.entity(entities[2]).despawn();
+            })
+            .insert(cmd);
         }
     }
 

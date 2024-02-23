@@ -3,19 +3,18 @@
 //! objects?
 
 #[cfg(feature = "dev")]
-pub mod build_pathfinding_graph;
+mod build_pathfinding_graph;
 #[cfg(feature = "dev")]
-mod map_maker;
-mod systems;
+pub(crate) mod map_maker;
+pub(crate) mod systems;
 
 use std::{marker::PhantomData, ops::RangeInclusive};
 
-use bevy::{prelude::*, utils::hashbrown::HashMap};
+use bevy::{math::vec2, prelude::*, utils::hashbrown::HashMap};
 use bevy_grid_squared::{sq, Square, SquareLayout};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use smallvec::SmallVec;
-pub use systems::*;
 
 /// A tile is uniquely identified by (`x`, `y`) of the square and a layer index.
 pub type TileIndex = (Square, usize);
@@ -36,14 +35,22 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     /// `[left, right, bottom, top]`
     fn bounds() -> [i32; 4];
 
-    /// How large is a tile and how do we translate between world coordinates
-    /// and tile coordinates?
-    fn layout() -> &'static SquareLayout;
-
     /// Path to the map .ron asset relative to the assets directory.
     fn asset_path() -> &'static str;
 
+    /// How large is a tile and how do we translate between world coordinates
+    /// and tile coordinates?
+    fn layout() -> &'static SquareLayout {
+        const LAYOUT: SquareLayout = SquareLayout {
+            square_size: 4.0,
+            origin: vec2(36.0, 4.0),
+        };
+
+        &LAYOUT
+    }
+
     /// Given a position on the map, add a z coordinate.
+    /// Will return a z-coordinate in the range of -0.1 to 1.1.
     #[inline]
     fn extend_z(Vec2 { x, y }: Vec2) -> Vec3 {
         let (min, max) = Self::y_range().into_inner();
