@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use bevy::{
     asset::load_internal_asset,
+    ecs::event::event_update_condition,
     prelude::*,
     render::{
         extract_resource::ExtractResourcePlugin,
@@ -46,9 +47,6 @@ pub mod util;
 
 const WORKGROUP_SIZE: u32 = 8;
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
-pub struct LightPassRenderLabel(pub &'static str);
-
 /// You can despawn the light scene by despawning all entities that have this
 /// component.
 /// It won't remove the resources from the render world, but it will remove
@@ -64,10 +62,6 @@ pub trait LightScene:
     const HANDLE_START: u128;
 
     fn render_layer_index() -> u8;
-
-    fn light_pass() -> LightPassRenderLabel {
-        LightPassRenderLabel(Self::type_path())
-    }
 
     /// Call this every time you want to add the light camera.
     /// You can them remove it by despawning all entities that have the
@@ -91,7 +85,12 @@ pub trait LightScene:
             Material2dPlugin::<PostProcessingMaterial<Self>>::default(),
         ));
 
-        app.add_systems(PreUpdate, handle_window_resize::<Self>);
+        app.add_systems(
+            PreUpdate,
+            handle_window_resize::<Self>
+                .run_if(event_update_condition::<WindowResized>)
+                .after(detect_target_sizes),
+        );
 
         let render_app = app.sub_app_mut(RenderApp);
         render_app
@@ -109,9 +108,14 @@ pub trait LightScene:
             );
 
         let mut render_graph = render_app.world.resource_mut::<RenderGraph>();
-        render_graph
-            .add_node(Self::light_pass(), LightPass2DNode::<Self>::default());
-        render_graph.add_node_edge(Self::light_pass(), CameraDriverLabel);
+        render_graph.add_node(
+            LightPassRenderLabel::new::<Self>(),
+            LightPass2DNode::<Self>::default(),
+        );
+        render_graph.add_node_edge(
+            LightPassRenderLabel::new::<Self>(),
+            CameraDriverLabel,
+        );
     }
 
     fn finish(app: &mut App) {
@@ -156,7 +160,12 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<BevyMagicLight2DSettings>()
             .init_resource::<ComputedTargetSizes>()
-            .add_systems(PreStartup, detect_target_sizes);
+            .add_systems(PreStartup, detect_target_sizes) // TODO: Ideally run only when needed
+            .add_systems(
+                PreUpdate,
+                detect_target_sizes
+                    .run_if(event_update_condition::<WindowResized>),
+            );
 
         load_internal_asset!(
             app,
@@ -203,72 +212,79 @@ impl bevy::app::Plugin for Plugin {
 }
 
 #[derive(Default)]
-struct LightPass2DNode<T> {
-    phantom: PhantomData<T>,
+struct LightPass2DNode<T>(PhantomData<T>);
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
+struct LightPassRenderLabel(&'static str);
+
+/// Global system, not specific to any light scene.
+///
+/// Run this system when light is being drawn, condition it to run on an event:
+/// ```rust,ignore
+/// app.add_systems(
+///     PreUpdate,
+///     detect_target_sizes
+///         .run_if(event_update_condition::<WindowResized>),
+/// );
+/// ```
+pub fn detect_target_sizes(
+    res_plugin_config: Res<BevyMagicLight2DSettings>,
+    mut res_target_sizes: ResMut<ComputedTargetSizes>,
+
+    query_window: Query<&Window, With<PrimaryWindow>>,
+) {
+    let window = query_window
+        .get_single()
+        .expect("Expected exactly one primary window");
+    *res_target_sizes = ComputedTargetSizes::from_window(
+        window,
+        &res_plugin_config.target_scaling_params,
+    );
 }
 
-#[allow(clippy::too_many_arguments)]
+/// Run this system when light is being drawn, condition it to run on an event
+/// [`WindowResized`].
+/// _Must_ be ran after [`detect_target_sizes`].
+///
+/// ```rust,ignore
+/// app.add_systems(
+///     PreUpdate,
+///     handle_window_resize::<YourLightScene>
+///         .run_if(event_update_condition::<WindowResized>)
+///         .after(detect_target_sizes),
+/// );
+/// ```
+///
+/// Quite expensive as it recomputes resources.
 pub fn handle_window_resize<T: LightScene>(
     mut assets_mesh: ResMut<Assets<Mesh>>,
     mut assets_material: ResMut<Assets<PostProcessingMaterial<T>>>,
     mut assets_image: ResMut<Assets<Image>>,
-
-    query_window: Query<&Window, With<PrimaryWindow>>,
-
-    res_plugin_config: Res<BevyMagicLight2DSettings>,
-    mut res_target_sizes: ResMut<ComputedTargetSizes>,
+    res_target_sizes: ResMut<ComputedTargetSizes>,
     mut res_gi_targets_wrapper: ResMut<GiTargetsWrapper<T>>,
     mut res_camera_targets: ResMut<CameraTargets<T>>,
-
-    mut window_resized_evr: EventReader<WindowResized>,
 ) {
-    for _ in window_resized_evr.read() {
-        let window = query_window
-            .get_single()
-            .expect("Expected exactly one primary window");
+    assets_mesh.insert(
+        T::post_processing_quad(),
+        Mesh::from(bevy::math::primitives::Rectangle::new(
+            res_target_sizes.primary_target_size.x,
+            res_target_sizes.primary_target_size.y,
+        )),
+    );
 
-        *res_target_sizes = ComputedTargetSizes::from_window(
-            window,
-            &res_plugin_config.target_scaling_params,
-        );
+    assets_material.insert(
+        T::post_processing_material(),
+        PostProcessingMaterial::create(
+            &res_camera_targets,
+            &res_gi_targets_wrapper,
+        ),
+    );
 
-        assets_mesh.insert(
-            T::post_processing_quad(),
-            Mesh::from(bevy::math::primitives::Rectangle::new(
-                res_target_sizes.primary_target_size.x,
-                res_target_sizes.primary_target_size.y,
-            )),
-        );
-
-        assets_material.insert(
-            T::post_processing_material(),
-            PostProcessingMaterial::create(
-                &res_camera_targets,
-                &res_gi_targets_wrapper,
-            ),
-        );
-
-        *res_gi_targets_wrapper = GiTargetsWrapper {
-            targets: Some(GiTargets::create(
-                &mut assets_image,
-                &res_target_sizes,
-            )),
-        };
-        *res_camera_targets =
-            CameraTargets::create(&mut assets_image, &res_target_sizes);
-    }
-}
-
-#[rustfmt::skip]
-pub fn detect_target_sizes(
-        query_window:      Query<&Window, With<PrimaryWindow>>,
-
-        res_plugin_config: Res<BevyMagicLight2DSettings>,
-    mut res_target_sizes:  ResMut<ComputedTargetSizes>,
-)
-{
-    let window = query_window.get_single().expect("Expected exactly one primary window");
-    *res_target_sizes = ComputedTargetSizes::from_window(window, &res_plugin_config.target_scaling_params);
+    *res_gi_targets_wrapper = GiTargetsWrapper {
+        targets: Some(GiTargets::create(&mut assets_image, &res_target_sizes)),
+    };
+    *res_camera_targets =
+        CameraTargets::create(&mut assets_image, &res_target_sizes);
 }
 
 impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
@@ -290,7 +306,7 @@ impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
         let pipeline = world.resource::<LightPassPipeline<T>>();
         let target_sizes = world.resource::<ComputedTargetSizes>();
 
-        if let (
+        let (
             Some(sdf_pipeline),
             Some(ss_probe_pipeline),
             Some(ss_bounce_pipeline),
@@ -302,82 +318,93 @@ impl<T: LightScene> render_graph::Node for LightPass2DNode<T> {
             pipeline_cache.get_compute_pipeline(pipeline.ss_bounce_pipeline),
             pipeline_cache.get_compute_pipeline(pipeline.ss_blend_pipeline),
             pipeline_cache.get_compute_pipeline(pipeline.ss_filter_pipeline),
-        ) {
-            let sdf_w = target_sizes.sdf_target_usize.x;
-            let sdf_h = target_sizes.sdf_target_usize.y;
+        )
+        else {
+            return Ok(());
+        };
 
-            let mut pass = render_context.command_encoder().begin_compute_pass(
-                &ComputePassDescriptor {
-                    label: Some(T::light_pass().0),
-                    ..default()
-                },
+        let sdf_w = target_sizes.sdf_target_usize.x;
+        let sdf_h = target_sizes.sdf_target_usize.y;
+
+        let mut pass = render_context.command_encoder().begin_compute_pass(
+            &ComputePassDescriptor {
+                label: Some(LightPassRenderLabel::new::<T>().into()),
+                ..default()
+            },
+        );
+
+        {
+            let grid_w = sdf_w / WORKGROUP_SIZE;
+            let grid_h = sdf_h / WORKGROUP_SIZE;
+            pass.set_bind_group(0, &pipeline_bind_groups.sdf_bind_group, &[]);
+            pass.set_pipeline(sdf_pipeline);
+            pass.dispatch_workgroups(grid_w, grid_h, 1);
+        }
+
+        {
+            let grid_w = target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
+            let grid_h = target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
+            pass.set_bind_group(
+                0,
+                &pipeline_bind_groups.ss_probe_bind_group,
+                &[],
             );
+            pass.set_pipeline(ss_probe_pipeline);
+            pass.dispatch_workgroups(grid_w, grid_h, 1);
+        }
 
-            {
-                let grid_w = sdf_w / WORKGROUP_SIZE;
-                let grid_h = sdf_h / WORKGROUP_SIZE;
-                pass.set_bind_group(
-                    0,
-                    &pipeline_bind_groups.sdf_bind_group,
-                    &[],
-                );
-                pass.set_pipeline(sdf_pipeline);
-                pass.dispatch_workgroups(grid_w, grid_h, 1);
-            }
+        {
+            let grid_w = target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
+            let grid_h = target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
+            pass.set_bind_group(
+                0,
+                &pipeline_bind_groups.ss_bounce_bind_group,
+                &[],
+            );
+            pass.set_pipeline(ss_bounce_pipeline);
+            pass.dispatch_workgroups(grid_w, grid_h, 1);
+        }
 
-            {
-                let grid_w = target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
-                let grid_h = target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
-                pass.set_bind_group(
-                    0,
-                    &pipeline_bind_groups.ss_probe_bind_group,
-                    &[],
-                );
-                pass.set_pipeline(ss_probe_pipeline);
-                pass.dispatch_workgroups(grid_w, grid_h, 1);
-            }
+        {
+            let grid_w = target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
+            let grid_h = target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
+            pass.set_bind_group(
+                0,
+                &pipeline_bind_groups.ss_blend_bind_group,
+                &[],
+            );
+            pass.set_pipeline(ss_blend_pipeline);
+            pass.dispatch_workgroups(grid_w, grid_h, 1);
+        }
 
-            {
-                let grid_w = target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
-                let grid_h = target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
-                pass.set_bind_group(
-                    0,
-                    &pipeline_bind_groups.ss_bounce_bind_group,
-                    &[],
-                );
-                pass.set_pipeline(ss_bounce_pipeline);
-                pass.dispatch_workgroups(grid_w, grid_h, 1);
-            }
-
-            {
-                let grid_w = target_sizes.probe_grid_usize.x / WORKGROUP_SIZE;
-                let grid_h = target_sizes.probe_grid_usize.y / WORKGROUP_SIZE;
-                pass.set_bind_group(
-                    0,
-                    &pipeline_bind_groups.ss_blend_bind_group,
-                    &[],
-                );
-                pass.set_pipeline(ss_blend_pipeline);
-                pass.dispatch_workgroups(grid_w, grid_h, 1);
-            }
-
-            {
-                let aligned = util::align_to_work_group_grid(
-                    target_sizes.primary_target_isize,
-                )
-                .as_uvec2();
-                let grid_w = aligned.x / WORKGROUP_SIZE;
-                let grid_h = aligned.y / WORKGROUP_SIZE;
-                pass.set_bind_group(
-                    0,
-                    &pipeline_bind_groups.ss_filter_bind_group,
-                    &[],
-                );
-                pass.set_pipeline(ss_filter_pipeline);
-                pass.dispatch_workgroups(grid_w, grid_h, 1);
-            }
+        {
+            let aligned = util::align_to_work_group_grid(
+                target_sizes.primary_target_isize,
+            )
+            .as_uvec2();
+            let grid_w = aligned.x / WORKGROUP_SIZE;
+            let grid_h = aligned.y / WORKGROUP_SIZE;
+            pass.set_bind_group(
+                0,
+                &pipeline_bind_groups.ss_filter_bind_group,
+                &[],
+            );
+            pass.set_pipeline(ss_filter_pipeline);
+            pass.dispatch_workgroups(grid_w, grid_h, 1);
         }
 
         Ok(())
+    }
+}
+
+impl LightPassRenderLabel {
+    fn new<T: LightScene>() -> Self {
+        Self(T::type_path())
+    }
+}
+
+impl From<LightPassRenderLabel> for &'static str {
+    fn from(LightPassRenderLabel(type_path): LightPassRenderLabel) -> Self {
+        type_path
     }
 }
