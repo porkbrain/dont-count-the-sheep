@@ -539,9 +539,6 @@ where
 
     /// Path finding algorithm that returns partial path to the target.
     ///
-    /// TODO: limit the number of iterations of the A* algorithm to prevent FPS
-    /// drops.
-    ///
     /// It's good when both squares are in some zone group as we can find
     /// minimum spanning tree between zones in the same group.
     pub fn find_partial_path(
@@ -553,6 +550,8 @@ where
         if from == to {
             return Some(vec![]);
         }
+
+        trace!("find_partial_path {from} -> {to}");
 
         // 3 possible situations:
         //
@@ -649,13 +648,23 @@ where
     }
 
     /// The default success cond is max iterations or reaching the target.
-    // TODO: cap *A iterations
     fn partial_astar(
         &self,
         who: Entity,
         from: Square,
         to: Square,
     ) -> Option<Vec<Square>> {
+        /// Every time the search explores successors of a square, it increments
+        /// an iteration counter.
+        /// If the counter grows over this limit, the next square with better
+        /// distance to the target than found so far is returned.
+        const MAX_PARTIAL_ASTAR_EXPLORED_SQUARES: usize = 100;
+
+        // see MAX_PARTIAL_ASTAR_EXPLORED_SQUARES
+        let mut explored_squares = 0;
+        // the best distance found so far with Manhattan distance
+        let mut shortest_distance = i32::MAX;
+
         pathfinding::prelude::astar(
             &from,
             // successors
@@ -668,7 +677,17 @@ where
             // heuristic
             |square: &Square| square.manhattan_distance(to),
             // success
-            |square| square == &to,
+            |square| {
+                if explored_squares < MAX_PARTIAL_ASTAR_EXPLORED_SQUARES {
+                    explored_squares += 1;
+                    shortest_distance =
+                        shortest_distance.min(square.manhattan_distance(to));
+
+                    square == &to
+                } else {
+                    square.manhattan_distance(to) <= shortest_distance
+                }
+            },
         )
         .map(|(path, _)| path)
     }
