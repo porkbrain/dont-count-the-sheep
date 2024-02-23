@@ -46,7 +46,7 @@ fn main() {
     info!("Adding scenes");
 
     scene_apartment::add(&mut app);
-    // scene_meditation::add(&mut app);
+    scene_meditation::add(&mut app);
     scene_downtown::add(&mut app);
 
     info!("Starting Don't Count The Sheep");

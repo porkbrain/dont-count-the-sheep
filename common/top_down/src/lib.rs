@@ -146,15 +146,11 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
         .add_systems(OnEnter(quitting.clone()), common_story::despawn_camera);
 }
 
-#[cfg(feature = "dev")]
 /// You can press `Enter` to export the map.
 /// This will overwrite the RON file.
 /// We draw an overlay with tiles that you can edit with left and right mouse
 /// buttons.
-///
-/// The `Ord` bound is required for the map maker export.
-/// If needed, this function can be reorganized to avoid the bound in
-/// production.
+#[cfg(feature = "dev")]
 pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
     app: &mut App,
     running: S,
