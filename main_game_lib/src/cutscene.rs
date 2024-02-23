@@ -351,13 +351,6 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
     cmd.insert_resource(cutscene);
 }
 
-// /// A system that despawns the cutscene.
-// /// Useful to run for example when cutscene changes state to quitting, but
-// the /// quitting state doesn't
-// pub fn despawn_cutscene() {
-
-// }
-
 /// Ticks the stopwatch and schedules the system for the current step of the
 /// cutscene.
 /// This must run only if there's a cutscene resource.
