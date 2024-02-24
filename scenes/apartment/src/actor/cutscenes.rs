@@ -34,9 +34,9 @@ impl IntoCutscene for EnterTheElevator {
             camera,
         } = self;
 
-        // we don't need to remove player entity because we remove all systems
-        // that shouldn't run on cutscene
         vec![
+            // take away player control
+            RemovePlayerComponent(player),
             // move camera to the player
             BeginMovingEntity {
                 who: camera,
@@ -101,6 +101,7 @@ impl IntoCutscene for EnterTheElevator {
                         over: from_millis(1000),
                         animation_curve: Some(EASE_IN_OUT.clone()),
                     },
+                    AddPlayerComponent(player),
                 ]),
             ),
         ]
