@@ -6,8 +6,8 @@ use common_ext::ColorExt;
 use crate::{
     AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer,
     BeginAtlasAnimationAtRandom, BeginInterpolationEvent, ColorInterpolation,
-    Flicker, InterpolationOf, OnInterpolationFinished,
-    TranslationInterpolation,
+    Flicker, OnInterpolationFinished, TranslationInterpolation,
+    UiStyleHeightInterpolation,
 };
 
 /// Advances the animation by one frame.
@@ -140,37 +140,8 @@ pub(crate) fn recv_begin_interpolation_events(
     mut cmd: Commands,
     mut events: EventReader<BeginInterpolationEvent>,
 ) {
-    for BeginInterpolationEvent {
-        entity,
-        of,
-        over,
-        animation_curve: curve,
-        when_finished,
-    } in events.read()
-    {
-        let mut entity_cmd = cmd.entity(*entity);
-        match of {
-            InterpolationOf::Color { from, to } => {
-                entity_cmd.insert(ColorInterpolation {
-                    from: *from,
-                    to: *to,
-                    over: *over,
-                    started_at: Default::default(),
-                    animation_curve: curve.clone(),
-                    when_finished: when_finished.clone(),
-                })
-            }
-            InterpolationOf::Translation { from, to } => {
-                entity_cmd.insert(TranslationInterpolation {
-                    from: *from,
-                    to: *to,
-                    over: *over,
-                    started_at: Default::default(),
-                    animation_curve: curve.clone(),
-                    when_finished: when_finished.clone(),
-                })
-            }
-        };
+    for event in events.read().cloned() {
+        event.insert(&mut cmd);
     }
 }
 
@@ -190,6 +161,9 @@ pub fn interpolate(
         &mut Transform,
         &mut TranslationInterpolation,
     )>,
+
+    // Ui style height interpolation
+    mut styles: Query<(Entity, &mut Style, &mut UiStyleHeightInterpolation)>,
 ) {
     let dt = time.delta();
 
@@ -255,6 +229,64 @@ pub fn interpolate(
             transform.translation = from
                 .lerp(interpolation.to, lerp_factor)
                 .extend(transform.translation.z);
+        }
+    }
+
+    // Ui style height interpolation
+
+    for (entity, mut style, mut interpolation) in styles.iter_mut() {
+        interpolation.started_at.tick(dt);
+
+        let elapsed_fraction = interpolation.started_at.elapsed_secs()
+            / interpolation.over.as_secs_f32();
+
+        if elapsed_fraction >= 1.0 {
+            style.height = interpolation.to;
+            cmd.entity(entity).remove::<UiStyleHeightInterpolation>();
+
+            match &interpolation.when_finished {
+                Some(OnInterpolationFinished::Custom(fun)) => {
+                    fun(&mut cmd);
+                }
+                None => {}
+            }
+        } else {
+            let lerp_factor = interpolation
+                .animation_curve
+                .as_ref()
+                .map(|curve| curve.ease(elapsed_fraction))
+                .unwrap_or(elapsed_fraction);
+
+            let to = interpolation.to;
+            let from = interpolation.from.get_or_insert(style.height);
+            style.height = match (from, to) {
+                (Val::Percent(from), Val::Percent(to)) => {
+                    Val::Percent(from.lerp(to, lerp_factor))
+                }
+                (Val::Px(from), Val::Px(to)) => {
+                    Val::Px(from.lerp(to, lerp_factor))
+                }
+                (Val::Vw(from), Val::Vw(to)) => {
+                    Val::Vw(from.lerp(to, lerp_factor))
+                }
+                (Val::Vh(from), Val::Vh(to)) => {
+                    Val::Vh(from.lerp(to, lerp_factor))
+                }
+                (Val::VMin(from), Val::VMin(to)) => {
+                    Val::VMin(from.lerp(to, lerp_factor))
+                }
+                (Val::VMax(from), Val::VMax(to)) => {
+                    Val::VMax(from.lerp(to, lerp_factor))
+                }
+                _ => {
+                    debug_assert!(
+                        false,
+                        "Cannot interpolate between different units"
+                    );
+                    error!("Cannot interpolate between different units");
+                    continue;
+                }
+            };
         }
     }
 }

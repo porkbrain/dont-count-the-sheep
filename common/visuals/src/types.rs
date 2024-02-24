@@ -90,7 +90,7 @@ pub struct Flicker {
 /// remove the component that was just inserted.
 ///
 /// Event system helps us serialize the order of the ops.
-#[derive(Event)]
+#[derive(Event, Clone)]
 pub struct BeginInterpolationEvent {
     /// The interpolation target.
     /// See the enum for info about properties of which components are
@@ -187,6 +187,16 @@ impl BeginInterpolationEvent {
                     started_at: Default::default(),
                 })
             }
+            InterpolationOf::UiStyleHeight { from, to } => {
+                entity_cmd.insert(UiStyleHeightInterpolation {
+                    from,
+                    to,
+                    over,
+                    animation_curve,
+                    when_finished,
+                    started_at: Default::default(),
+                })
+            }
         };
     }
 
@@ -224,6 +234,36 @@ impl BeginInterpolationEvent {
             entity,
             over: Duration::from_secs(1),
             of: InterpolationOf::Translation { from, to },
+            animation_curve: None,
+            when_finished: None,
+        }
+    }
+
+    /// Interpolates the height of a UI element.
+    /// If variants of [`Val`] don't match, the interpolation will fail.
+    pub fn of_ui_style_height(
+        entity: Entity,
+        from: Option<Val>,
+        to: Val,
+    ) -> Self {
+        if let Some(from) = from {
+            // must be same units
+            debug_assert!(matches!(
+                (from, to),
+                (Val::Auto, Val::Auto)
+                    | (Val::Px(_), Val::Px(_))
+                    | (Val::Percent(_), Val::Percent(_))
+                    | (Val::Vw(_), Val::Vw(_))
+                    | (Val::Vh(_), Val::Vh(_))
+                    | (Val::VMin(_), Val::VMin(_))
+                    | (Val::VMax(_), Val::VMax(_))
+            ));
+        }
+
+        Self {
+            entity,
+            over: Duration::from_secs(1),
+            of: InterpolationOf::UiStyleHeight { from, to },
             animation_curve: None,
             when_finished: None,
         }
@@ -279,6 +319,7 @@ impl BeginInterpolationEvent {
 }
 
 /// What should be interpolated?
+#[derive(Clone)]
 pub enum InterpolationOf {
     /// Interpolate the color of [`TextureAtlas`] and [`Sprite`].
     Color {
@@ -295,6 +336,16 @@ pub enum InterpolationOf {
         from: Option<Vec2>,
         /// Where should the object end up?
         to: Vec2,
+    },
+    /// Interpolate the height of a UI element.
+    ///
+    /// If variants of [`Val`] don't match, the interpolation will fail.
+    UiStyleHeight {
+        /// The initial height set to this.
+        /// It must match the variant of [`Val`] used with `to`.
+        from: Option<Val>,
+        /// The height to interpolate to.
+        to: Val,
     },
 }
 
@@ -320,6 +371,19 @@ pub struct TranslationInterpolation {
     /// entity.
     pub(crate) from: Option<Vec2>,
     pub(crate) to: Vec2,
+    pub(crate) started_at: Stopwatch,
+    pub(crate) over: Duration,
+    #[reflect(ignore)]
+    pub(crate) animation_curve: Option<CubicSegment<Vec2>>,
+    #[reflect(ignore)]
+    pub(crate) when_finished: Option<OnInterpolationFinished>,
+}
+
+/// Interpolates the height of a UI element.
+#[derive(Component, Reflect)]
+pub struct UiStyleHeightInterpolation {
+    pub(crate) from: Option<Val>,
+    pub(crate) to: Val,
     pub(crate) started_at: Stopwatch,
     pub(crate) over: Duration,
     #[reflect(ignore)]

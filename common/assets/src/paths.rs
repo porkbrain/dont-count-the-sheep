@@ -100,6 +100,8 @@ pub mod dialog {
 }
 
 pub mod portraits {
+    use bevy::math::Vec2;
+
     pub const FOLDER: &str = "characters/portraits";
 
     pub const WINNIE: &str = "characters/portraits/winnie1.png";
@@ -114,6 +116,9 @@ pub mod portraits {
     pub const REDHEAD: &str = "characters/portraits/redhead1.png";
     pub const UNNAMED: &str = "characters/portraits/unnamed1.png";
     pub const OTTER: &str = "characters/portraits/otter1.png";
+
+    /// All portraits are the same size.
+    pub const SIZE_PX: Vec2 = Vec2::splat(384.0);
 }
 
 pub mod character_atlases {

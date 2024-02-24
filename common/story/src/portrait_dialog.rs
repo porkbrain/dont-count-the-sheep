@@ -17,10 +17,7 @@ use std::{collections::BTreeMap, time::Duration};
 pub use aaatargets::DialogRoot;
 use aaatargets::{DialogTargetChoice, DialogTargetGoto};
 use bevy::{
-    math::vec2,
-    prelude::*,
-    render::view::RenderLayers,
-    text::{Text2dBounds, TextLayoutInfo},
+    math::vec2, prelude::*, render::view::RenderLayers, text::TextLayoutInfo,
     utils::Instant,
 };
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
@@ -31,13 +28,12 @@ use itertools::Itertools;
 
 use crate::Character;
 
+const DIALOG_LEFT: Val = Val::Vw(10.0);
 const FONT_SIZE: f32 = 21.0;
 const CHOICE_FONT_SIZE: f32 = 17.0;
 const FONT: &str = common_assets::fonts::PENCIL1;
-const PUSH_BUBBLE_TOP: f32 = 290.0;
-const ROOT_POS: Vec2 = vec2(-640.0, -360.0);
 const TEXT_BOUNDS: Vec2 = vec2(250.0, 120.0);
-const OPTION_TEXT_BOUNDS: Vec2 = vec2(250.0, 80.0);
+const CHOICE_TEXT_BOUNDS: Vec2 = vec2(250.0, 50.0);
 const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 
 /// Will be true if in a dialog that takes away player control.
@@ -209,7 +205,7 @@ pub fn change_selection(
     controls: Res<ActionState<GlobalAction>>,
     asset_server: Res<AssetServer>,
 
-    mut choices: Query<(&Children, &mut DialogChoice, &mut Handle<Image>)>,
+    mut choices: Query<(&Children, &mut DialogChoice, &mut UiImage)>,
     mut texts: Query<&mut Text>,
 ) {
     if choices.is_empty() {
@@ -265,7 +261,7 @@ pub fn change_selection(
     {
         new_choice.is_selected = true;
 
-        **image =
+        image.texture =
             asset_server.load(common_assets::dialog::DIALOG_CHOICE_HIGHLIGHTED);
 
         debug_assert_eq!(1, children.len());
@@ -285,7 +281,7 @@ pub fn change_selection(
     {
         old_choice.is_selected = false;
 
-        **image = asset_server.load(common_assets::dialog::DIALOG_CHOICE);
+        image.texture = asset_server.load(common_assets::dialog::DIALOG_CHOICE);
 
         debug_assert_eq!(1, children.len());
         if let Ok(mut text) = texts.get_mut(children[0]) {
@@ -319,8 +315,13 @@ fn spawn(
         .spawn((
             Name::new("Dialog root"),
             DialogUiRoot,
-            SpatialBundle {
-                transform: Transform::from_translation(ROOT_POS.extend(0.0)),
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    left: DIALOG_LEFT,
+                    ..default()
+                },
                 ..default()
             },
         ))
@@ -347,50 +348,71 @@ fn spawn(
 
     cmd.insert_resource(dialog);
     cmd.entity(root).with_children(|parent| {
-        parent.spawn((
-            Name::new("Dialog bubble"),
-            RenderLayers::layer(render_layer::DIALOG),
-            SpriteBundle {
-                transform: Transform::from_translation(Vec3::new(
-                    0.0,
-                    PUSH_BUBBLE_TOP,
-                    -1.0,
-                )),
-                texture: asset_server
-                    .load(common_assets::dialog::DIALOG_BUBBLE),
-                ..default()
-            },
-        ));
+        parent
+            .spawn((
+                Name::new("Dialog bubble"),
+                RenderLayers::layer(render_layer::DIALOG),
+                UiImage::new(
+                    asset_server.load(common_assets::dialog::DIALOG_BUBBLE),
+                ),
+                NodeBundle {
+                    style: Style {
+                        position_type: PositionType::Absolute,
+                        width: Val::Px(400.0),
+                        height: Val::Px(414.0),
+                        bottom: Val::Px(290.0),
+                        justify_content: JustifyContent::Center,
+                        justify_items: JustifyItems::Center,
+                        align_content: AlignContent::Center,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    // a `NodeBundle` is transparent by default, so to see the
+                    // image we have to its color to `WHITE`
+                    background_color: Color::WHITE.into(),
+                    ..default()
+                },
+            ))
+            .with_children(|parent| {
+                parent.spawn((
+                    DialogText,
+                    Name::new("Dialog text"),
+                    RenderLayers::layer(render_layer::DIALOG),
+                    TextBundle {
+                        text,
+                        style: Style {
+                            width: Val::Px(TEXT_BOUNDS.x),
+                            height: Val::Px(TEXT_BOUNDS.y),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                ));
+            });
 
-        parent.spawn((
+        let mut portrait_cmd = parent.spawn((
             DialogPortrait,
             Name::new("Dialog portrait"),
             RenderLayers::layer(render_layer::DIALOG),
-            SpriteBundle {
-                texture: if let Some(speaker) = initial_speaker {
-                    asset_server.load(speaker.portrait_asset_path())
-                } else {
-                    default()
+            NodeBundle {
+                style: Style {
+                    width: Val::Px(common_assets::portraits::SIZE_PX.x),
+                    height: Val::Px(common_assets::portraits::SIZE_PX.y),
+                    position_type: PositionType::Absolute,
+                    bottom: Val::Px(0.0),
+                    ..default()
                 },
+                // a `NodeBundle` is transparent by default, so to see the image
+                // we have to its color to `WHITE`
+                background_color: Color::WHITE.into(),
                 ..default()
             },
         ));
-
-        parent.spawn((
-            DialogText,
-            Name::new("Dialog text"),
-            RenderLayers::layer(render_layer::DIALOG),
-            Text2dBundle {
-                text,
-                transform: Transform::from_translation(Vec3::new(
-                    0.0,
-                    PUSH_BUBBLE_TOP - 10.0,
-                    1.0,
-                )),
-                text_2d_bounds: Text2dBounds { size: TEXT_BOUNDS },
-                ..default()
-            },
-        ));
+        if let Some(speaker) = initial_speaker {
+            portrait_cmd.insert(UiImage::new(
+                asset_server.load(speaker.portrait_asset_path()),
+            ));
+        }
     });
 }
 
@@ -477,7 +499,7 @@ fn advance_sequence(
                         .speaker
                         .map(|c| c.choice_transform_manager(total))
                         .unwrap_or_else(|| {
-                            ChoiceTransformManager::no_portrait(total)
+                            ChoicePositionManager::no_portrait(total)
                         });
 
                     let children = spawn_choices(
@@ -500,7 +522,7 @@ fn advance_sequence(
 fn spawn_choices(
     cmd: &mut Commands,
     asset_server: &AssetServer,
-    transform_manager: ChoiceTransformManager,
+    transform_manager: ChoicePositionManager,
     between: &[DialogTargetChoice],
 ) -> Vec<Entity> {
     between
@@ -521,26 +543,36 @@ fn spawn_choices(
                 order: i,
                 is_selected: i == 0,
             };
-            let sprite = SpriteBundle {
-                transform: transform_manager.get(i),
-                texture: asset_server.load(asset),
-                ..default()
-            };
+
+            let Vec2 { x: left, y: bottom } = transform_manager.get(i);
 
             cmd.spawn((
                 Name::new(format!("Dialog choice {i}: {of:?}")),
                 RenderLayers::layer(render_layer::DIALOG),
                 choice,
-                sprite,
+                UiImage::new(asset_server.load(asset)),
+                NodeBundle {
+                    z_index: ZIndex::Local(1 + i as i32),
+                    style: Style {
+                        width: Val::Px(350.0),
+                        height: Val::Px(92.0),
+                        position_type: PositionType::Absolute,
+                        left: Val::Px(left),
+                        bottom: Val::Px(bottom),
+                        justify_content: JustifyContent::Center,
+                        ..default()
+                    },
+                    // a `NodeBundle` is transparent by default, so to see the
+                    // image we have to its color to `WHITE`
+                    background_color: Color::WHITE.into(),
+                    ..default()
+                },
             ))
             .with_children(|parent| {
                 parent.spawn((
                     Name::new("Dialog choice text"),
                     RenderLayers::layer(render_layer::DIALOG),
-                    Text2dBundle {
-                        text_2d_bounds: Text2dBounds {
-                            size: OPTION_TEXT_BOUNDS,
-                        },
+                    TextBundle {
                         text: Text::from_section(
                             of.choice(),
                             TextStyle {
@@ -548,8 +580,13 @@ fn spawn_choices(
                                 font_size: CHOICE_FONT_SIZE,
                                 color,
                             },
-                        )
-                        .with_justify(JustifyText::Left),
+                        ),
+                        style: Style {
+                            width: Val::Px(CHOICE_TEXT_BOUNDS.x),
+                            height: Val::Px(CHOICE_TEXT_BOUNDS.y),
+                            align_self: AlignSelf::Center,
+                            ..default()
+                        },
                         ..default()
                     },
                 ));
@@ -570,28 +607,28 @@ impl PortraitDialog {
     }
 }
 
-pub(super) struct ChoiceTransformManager {
+pub(super) struct ChoicePositionManager {
     positions: Vec<Vec2>,
 }
 
-impl ChoiceTransformManager {
+impl ChoicePositionManager {
     pub(super) fn no_portrait(total_choices: usize) -> Self {
         Self {
             positions: match total_choices {
-                1 => vec![vec2(0.0, -75.0)],
-                2 => vec![vec2(0.0, -75.0), vec2(0.0, -140.0)],
-                3 => vec![vec2(0.0, -5.0), vec2(0.0, -75.0), vec2(0.0, -145.0)],
+                1 => vec![vec2(0.0, 75.0)],
+                2 => vec![vec2(0.0, 140.0), vec2(0.0, 75.0)],
+                3 => vec![vec2(0.0, 145.0), vec2(0.0, 75.0), vec2(0.0, 5.0)],
                 total => todo!("Cannot handle {total} choices"),
             },
         }
     }
 
-    fn get(&self, index: usize) -> Transform {
+    fn get(&self, index: usize) -> Vec2 {
         debug_assert!(
             index < self.positions.len(),
             "Cannot get position index for index {index}"
         );
-        Transform::from_translation(self.positions[index].extend(index as f32))
+        self.positions[index]
     }
 }
 
@@ -599,27 +636,27 @@ impl Character {
     fn choice_transform_manager(
         self,
         total_choices: usize,
-    ) -> ChoiceTransformManager {
+    ) -> ChoicePositionManager {
         #[allow(clippy::match_single_binding)]
         let positions = match total_choices {
             1 => match self {
-                _ => vec![vec2(240.0, -75.0)],
+                _ => vec![vec2(240.0, 75.0)],
             },
             2 => match self {
-                _ => vec![vec2(240.0, -75.0), vec2(260.0, -140.0)],
+                _ => vec![vec2(240.0, 140.0), vec2(260.0, 75.0)],
             },
             3 => match self {
                 _ => vec![
-                    vec2(227.0, -5.0),
-                    vec2(240.0, -75.0),
-                    vec2(260.0, -145.0),
+                    vec2(227.0, 145.0),
+                    vec2(240.0, 75.0),
+                    vec2(260.0, 5.0),
                 ],
             },
             total => todo!("Cannot handle {total} choices"),
         };
         debug_assert_eq!(total_choices, positions.len());
 
-        ChoiceTransformManager { positions }
+        ChoicePositionManager { positions }
     }
 }
 

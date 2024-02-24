@@ -13,7 +13,7 @@
 use std::{sync::OnceLock, time::Duration};
 
 use bevy::{
-    ecs::system::SystemId, math::vec2, prelude::*, render::view::RenderLayers,
+    ecs::system::SystemId, prelude::*, render::view::RenderLayers,
     time::Stopwatch,
 };
 use bevy_grid_squared::{GridDirection, Square};
@@ -23,10 +23,7 @@ use common_store::GlobalStore;
 use common_story::portrait_dialog::{DialogRoot, PortraitDialog};
 use common_top_down::{Actor, ActorTarget, Player};
 use common_visuals::{
-    camera::{
-        order, render_layer, PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH,
-        PIXEL_ZOOM,
-    },
+    camera::{order, render_layer, PIXEL_ZOOM},
     AtlasAnimation, AtlasAnimationTimer, BeginInterpolationEvent,
 };
 
@@ -36,23 +33,7 @@ use crate::{
 
 const LETTERBOXING_FADE_IN_DURATION: Duration = from_millis(500);
 const LETTERBOXING_FADE_OUT_DURATION: Duration = from_millis(250);
-const LETTERBOXING_QUAD_HEIGHT: f32 = 50.0;
-const LETTERBOXING_TOP_QUAD_INITIAL_POS: Vec2 = vec2(
-    0.,
-    PIXEL_VISIBLE_HEIGHT / 2.0 + LETTERBOXING_QUAD_HEIGHT / 2.0,
-);
-const LETTERBOXING_TOP_QUAD_TARGET_POS: Vec2 = vec2(
-    0.0,
-    PIXEL_VISIBLE_HEIGHT / 2.0 - LETTERBOXING_QUAD_HEIGHT / 2.0,
-);
-const LETTERBOXING_BOTTOM_QUAD_INITIAL_POS: Vec2 = vec2(
-    0.,
-    -PIXEL_VISIBLE_HEIGHT / 2.0 - LETTERBOXING_QUAD_HEIGHT / 2.0,
-);
-const LETTERBOXING_BOTTOM_QUAD_TARGET_POS: Vec2 = vec2(
-    0.0,
-    -PIXEL_VISIBLE_HEIGHT / 2.0 + LETTERBOXING_QUAD_HEIGHT / 2.0,
-);
+const LETTERBOXING_QUAD_FADE_IN_HEIGHT: Val = Val::Percent(15.0);
 
 /// Will be true if there's a cutscene playing.
 pub fn in_cutscene() -> impl FnMut(Option<Res<Cutscene>>) -> bool {
@@ -272,36 +253,28 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
             ))
             .id();
 
-        const TOP_QUAD_INITIAL_POS: Vec2 = vec2(0., PIXEL_VISIBLE_HEIGHT / 2.0);
-        const TOP_QUAD_TARGET_POS: Vec2 = vec2(
-            0.0,
-            PIXEL_VISIBLE_HEIGHT / 2.0 - LETTERBOXING_QUAD_HEIGHT / 2.0,
-        );
-
         let mut top_entities = cmd.spawn((
             Name::new("Letterboxing: top quad"),
             RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
             LetterboxingTopQuad,
-            SpriteBundle {
-                sprite: Sprite {
-                    color: Color::BLACK,
-                    custom_size: Some(Vec2::new(
-                        PIXEL_VISIBLE_WIDTH,
-                        LETTERBOXING_QUAD_HEIGHT,
-                    )),
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(0.0),
+                    position_type: PositionType::Absolute,
+                    left: Val::Percent(0.0),
+                    top: Val::Percent(0.0),
                     ..default()
                 },
-                transform: Transform::from_translation(
-                    TOP_QUAD_INITIAL_POS.extend(0.0),
-                ),
+                background_color: Color::BLACK.into(),
                 ..default()
             },
         ));
         let top = top_entities.id();
-        BeginInterpolationEvent::of_translation(
+        BeginInterpolationEvent::of_ui_style_height(
             top,
-            Some(TOP_QUAD_INITIAL_POS),
-            TOP_QUAD_TARGET_POS,
+            None,
+            LETTERBOXING_QUAD_FADE_IN_HEIGHT,
         )
         .over(LETTERBOXING_FADE_IN_DURATION)
         .insert_to(&mut top_entities);
@@ -310,26 +283,24 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
             Name::new("Letterboxing: bottom quad"),
             LetterboxingBottomQuad,
             RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
-            SpriteBundle {
-                sprite: Sprite {
-                    color: Color::BLACK,
-                    custom_size: Some(Vec2::new(
-                        PIXEL_VISIBLE_WIDTH,
-                        LETTERBOXING_QUAD_HEIGHT,
-                    )),
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(0.0),
+                    position_type: PositionType::Absolute,
+                    left: Val::Percent(0.0),
+                    bottom: Val::Percent(0.0),
                     ..default()
                 },
-                transform: Transform::from_translation(
-                    LETTERBOXING_BOTTOM_QUAD_INITIAL_POS.extend(0.0),
-                ),
+                background_color: Color::BLACK.into(),
                 ..default()
             },
         ));
         let bottom = bottom_entities.id();
-        BeginInterpolationEvent::of_translation(
+        BeginInterpolationEvent::of_ui_style_height(
             top,
-            Some(LETTERBOXING_BOTTOM_QUAD_INITIAL_POS),
-            LETTERBOXING_BOTTOM_QUAD_TARGET_POS,
+            None,
+            LETTERBOXING_QUAD_FADE_IN_HEIGHT,
         )
         .over(LETTERBOXING_FADE_IN_DURATION)
         .insert_to(&mut bottom_entities);
@@ -392,18 +363,18 @@ impl Cutscene {
         if let Some(entities) = self.letterboxing_entities.take() {
             // smoothly animate quads out and when down, despawn everything
 
-            BeginInterpolationEvent::of_translation(
+            BeginInterpolationEvent::of_ui_style_height(
                 entities[2],
-                Some(LETTERBOXING_BOTTOM_QUAD_TARGET_POS),
-                LETTERBOXING_BOTTOM_QUAD_INITIAL_POS,
+                None,
+                Val::Percent(0.0),
             )
             .over(LETTERBOXING_FADE_OUT_DURATION)
             .insert(cmd);
 
-            BeginInterpolationEvent::of_translation(
+            BeginInterpolationEvent::of_ui_style_height(
                 entities[1],
-                Some(LETTERBOXING_TOP_QUAD_TARGET_POS),
-                LETTERBOXING_TOP_QUAD_INITIAL_POS,
+                None,
+                Val::Percent(0.0),
             )
             .over(LETTERBOXING_FADE_OUT_DURATION)
             .when_finished_do(move |cmd: &mut Commands| {
