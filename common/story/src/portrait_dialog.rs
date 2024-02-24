@@ -28,6 +28,7 @@ use itertools::Itertools;
 
 use crate::Character;
 
+const DIALOG_LEFT: Val = Val::Vw(10.0);
 const FONT_SIZE: f32 = 21.0;
 const CHOICE_FONT_SIZE: f32 = 17.0;
 const FONT: &str = common_assets::fonts::PENCIL1;
@@ -310,7 +311,6 @@ fn spawn(
         },
     );
 
-    const DIALOG_LEFT: Val = Val::Vw(10.0);
     let root = cmd
         .spawn((
             Name::new("Dialog root"),
@@ -396,8 +396,8 @@ fn spawn(
             RenderLayers::layer(render_layer::DIALOG),
             NodeBundle {
                 style: Style {
-                    width: Val::Px(384.0),  // TODO
-                    height: Val::Px(384.0), // TODO
+                    width: Val::Px(common_assets::portraits::SIZE_PX.x),
+                    height: Val::Px(common_assets::portraits::SIZE_PX.y),
                     position_type: PositionType::Absolute,
                     bottom: Val::Px(0.0),
                     ..default()
