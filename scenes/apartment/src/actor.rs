@@ -4,7 +4,7 @@ mod cutscenes;
 mod npc;
 mod player;
 
-use common_action::interaction_pressed;
+use bevy::ecs::event::event_update_condition;
 use common_story::portrait_dialog::not_in_portrait_dialog;
 use common_top_down::actor::{self, movement_event_emitted};
 use main_game_lib::cutscene::not_in_cutscene;
@@ -14,6 +14,12 @@ use crate::{prelude::*, Apartment};
 /// Useful for despawning entities when leaving the apartment.
 #[derive(Component, Reflect)]
 struct CharacterEntity;
+
+#[derive(Event, Reflect)]
+pub enum ApartmentAction {
+    EnterElevator,
+    StartMeditation,
+}
 
 pub(crate) struct Plugin;
 
@@ -31,7 +37,7 @@ impl bevy::app::Plugin for Plugin {
                 player::start_meditation_minigame_if_near_chair,
                 player::enter_the_elevator,
             )
-                .run_if(interaction_pressed())
+                .run_if(event_update_condition::<ApartmentAction>)
                 .run_if(in_state(GlobalGameState::InApartment))
                 .run_if(not_in_portrait_dialog())
                 .run_if(not_in_cutscene()),

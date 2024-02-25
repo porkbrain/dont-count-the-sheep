@@ -1465,6 +1465,7 @@ dependencies = [
  "common_action",
  "common_assets",
  "common_ext",
+ "common_store",
  "common_story",
  "common_visuals",
  "graphviz-rust",

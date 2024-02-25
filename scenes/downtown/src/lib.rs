@@ -10,8 +10,10 @@ mod layout;
 mod prelude;
 mod zindex;
 
+use actor::DowntownAction;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::LoadingScreenState;
+use layout::DowntownTileKind;
 use prelude::*;
 
 /// Important scene struct.
@@ -123,6 +125,24 @@ fn exit(
         None => {
             unreachable!("There's nowhere to transition from DowntownQuitting");
         }
+    }
+}
+
+impl TopDownScene for Downtown {
+    type LocalTileKind = DowntownTileKind;
+
+    type LocalActionEvent = DowntownAction;
+
+    fn name() -> &'static str {
+        "downtown"
+    }
+
+    fn bounds() -> [i32; 4] {
+        [-80, 60, -20, 160]
+    }
+
+    fn asset_path() -> &'static str {
+        assets::MAP
     }
 }
 

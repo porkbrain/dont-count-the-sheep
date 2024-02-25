@@ -6,7 +6,8 @@ use common_top_down::{
         self,
         door::{DoorBuilder, DoorOpenCriteria, DoorState},
     },
-    Actor, ActorMovementEvent, TileKind, TileMap, TopDownScene,
+    Actor, ActorMovementEvent, InspectLabelCategory, TileKind, TileMap,
+    TopDownScene,
 };
 use common_visuals::{
     camera::render_layer, AtlasAnimation, AtlasAnimationEnd,
@@ -17,7 +18,7 @@ use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use strum::{EnumIter, IntoEnumIterator};
 
-use crate::{consts::*, prelude::*, Apartment};
+use crate::{actor::ApartmentAction, consts::*, prelude::*, Apartment};
 
 /// How long does it take to give hallway its full color.
 const HALLWAY_FADE_IN_TRANSITION_DURATION: Duration = from_millis(500);
@@ -334,6 +335,9 @@ fn spawn(
         LayoutEntity,
         HallwayEntity,
         RenderLayers::layer(render_layer::BG),
+        InspectLabelCategory::Default
+            .into_label("Elevator")
+            .emit_event_on_interacted(ApartmentAction::EnterElevator),
         // this animation is important for elevator cutscene
         AtlasAnimation {
             on_last_frame: AtlasAnimationEnd::RemoveTimer,
@@ -587,21 +591,5 @@ impl common_top_down::layout::Tile for ApartmentTileKind {
     #[inline]
     fn zones_iter() -> impl Iterator<Item = Self> {
         Self::iter().filter(|kind| kind.is_zone())
-    }
-}
-
-impl TopDownScene for Apartment {
-    type LocalTileKind = ApartmentTileKind;
-
-    fn name() -> &'static str {
-        "apartment"
-    }
-
-    fn bounds() -> [i32; 4] {
-        [-80, 40, -30, 20]
-    }
-
-    fn asset_path() -> &'static str {
-        assets::MAP
     }
 }

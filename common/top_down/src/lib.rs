@@ -6,11 +6,13 @@
 
 pub mod actor;
 pub mod cameras;
+pub mod inspect_ability;
 pub mod interactable;
 pub mod layout;
 
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::{ecs::event::event_update_condition, prelude::*};
+pub use inspect_ability::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, TopDownScene};
 
 /// Does not add any systems, only registers generic-less types.
@@ -18,9 +20,10 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<Actor>().register_type::<ActorTarget>();
-
         app.add_event::<npc::PlanPathEvent>()
+            .register_type::<Actor>()
+            .register_type::<ActorTarget>()
+            .register_type::<InspectLabelCategory>()
             .register_type::<npc::NpcInTheMap>()
             .register_type::<npc::PlanPathEvent>()
             .register_type::<npc::BehaviorLeaf>()
@@ -44,7 +47,7 @@ impl bevy::app::Plugin for Plugin {
 /// - [`crate::actor::player::move_around`]
 /// - [`common_visuals::systems::advance_atlas_animation`]
 /// - [`common_visuals::systems::interpolate`]
-pub fn default_setup_for_scene<T: TopDownScene, S: States>(
+pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
     app: &mut App,
     loading: S,
     running: S,
@@ -55,11 +58,11 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
     debug!("Adding assets for {}", T::type_path());
 
     app.add_systems(
-        OnEnter(loading.clone()),
+        OnEnter(loading),
         common_assets::store::insert_as_resource::<common_story::StoryAssets>,
     )
     .add_systems(
-        OnExit(quitting.clone()),
+        OnExit(quitting),
         common_assets::store::remove_as_resource::<common_story::StoryAssets>,
     );
 
@@ -73,29 +76,29 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
         .register_type::<ActorMovementEvent<T::LocalTileKind>>();
 
     app.add_systems(
-        OnEnter(loading.clone()),
+        OnEnter(loading),
         layout::systems::start_loading_map::<T>,
     )
     .add_systems(
         First,
         layout::systems::try_insert_map_as_resource::<T>
-            .run_if(in_state(loading.clone())),
+            .run_if(in_state(loading)),
     )
     .add_systems(
         FixedUpdate,
-        actor::animate_movement::<T>.run_if(in_state(running.clone())),
+        actor::animate_movement::<T>.run_if(in_state(running)),
     )
     .add_systems(
         Update,
         actor::emit_movement_events::<T>
-            .run_if(in_state(running.clone()))
+            .run_if(in_state(running))
             // so that we can emit this event on current frame
             .after(actor::player::move_around::<T>),
     )
     .add_systems(
         Update,
         actor::player::move_around::<T>
-            .run_if(in_state(running.clone()))
+            .run_if(in_state(running))
             .run_if(common_action::move_action_pressed())
             .run_if(common_story::portrait_dialog::not_in_portrait_dialog()),
     )
@@ -108,10 +111,10 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
             actor::npc::run_path::<T>,
         )
             .chain()
-            .run_if(in_state(running.clone())),
+            .run_if(in_state(running)),
     )
     .add_systems(
-        OnExit(running.clone()),
+        OnExit(running),
         layout::systems::remove_resources::<T>,
     );
 
@@ -123,27 +126,44 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
             common_visuals::systems::advance_atlas_animation,
             common_visuals::systems::interpolate,
         )
-            .run_if(in_state(running.clone())),
+            .run_if(in_state(running)),
     );
 
     debug!("Adding story for {}", T::type_path());
 
-    app.add_systems(OnEnter(loading.clone()), common_story::spawn_camera)
+    app.add_systems(OnEnter(loading), common_story::spawn_camera)
         .add_systems(
             Update,
             common_story::portrait_dialog::change_selection
-                .run_if(in_state(running.clone()))
+                .run_if(in_state(running))
                 .run_if(common_story::portrait_dialog::in_portrait_dialog())
                 .run_if(common_action::move_action_just_pressed()),
         )
         .add_systems(
             Last,
             common_story::portrait_dialog::advance
-                .run_if(in_state(running.clone()))
+                .run_if(in_state(running))
                 .run_if(common_story::portrait_dialog::in_portrait_dialog())
                 .run_if(common_action::interaction_just_pressed()),
         )
-        .add_systems(OnEnter(quitting.clone()), common_story::despawn_camera);
+        .add_systems(OnEnter(quitting), common_story::despawn_camera);
+
+    debug!("Adding inspect ability for {}", T::type_path());
+
+    app.add_event::<T::LocalActionEvent>()
+        .register_type::<InspectLabel<T::LocalActionEvent>>()
+        .add_systems(
+            Update,
+            inspect_ability::show_all_in_vicinity::<T::LocalActionEvent>
+                .run_if(in_state(running))
+                .run_if(common_action::inspect_just_pressed()),
+        )
+        .add_systems(
+            Update,
+            inspect_ability::hide_all
+                .run_if(in_state(running))
+                .run_if(common_action::inspect_just_released()),
+        );
 }
 
 /// You can press `Enter` to export the map.

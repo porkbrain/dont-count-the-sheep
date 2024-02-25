@@ -11,11 +11,13 @@ mod layout;
 mod prelude;
 mod zindex;
 
+use actor::ApartmentAction;
 use bevy::utils::Instant;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_top_down::TopDownScene;
 use consts::START_LOADING_SCREEN_AFTER;
+use layout::ApartmentTileKind;
 use prelude::*;
 
 /// Important scene struct.
@@ -163,6 +165,23 @@ fn smooth_exit(
                 );
             }
         }
+    }
+}
+
+impl TopDownScene for Apartment {
+    type LocalTileKind = ApartmentTileKind;
+    type LocalActionEvent = ApartmentAction;
+
+    fn name() -> &'static str {
+        "apartment"
+    }
+
+    fn bounds() -> [i32; 4] {
+        [-80, 40, -30, 20]
+    }
+
+    fn asset_path() -> &'static str {
+        assets::MAP
     }
 }
 

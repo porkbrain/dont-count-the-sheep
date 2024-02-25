@@ -6,8 +6,10 @@ mod cameras;
 mod layout;
 mod prelude;
 
+use actor::DevPlaygroundAction;
 use common_assets::{store::AssetList, AssetStore};
 use common_top_down::TopDownScene;
+use layout::DevPlaygroundTileKind;
 use prelude::*;
 
 /// Important scene struct.
@@ -71,6 +73,24 @@ fn finish_when_everything_loaded(
 
     debug!("All assets loaded");
     next_state.set(GlobalGameState::InDevPlayground);
+}
+
+impl TopDownScene for DevPlayground {
+    type LocalTileKind = DevPlaygroundTileKind;
+
+    type LocalActionEvent = DevPlaygroundAction;
+
+    fn name() -> &'static str {
+        "dev_playground"
+    }
+
+    fn bounds() -> [i32; 4] {
+        [-100, 100, -100, 100]
+    }
+
+    fn asset_path() -> &'static str {
+        "../../scenes/dev_playground/assets/map.ron"
+    }
 }
 
 impl AssetList for DevPlayground {}

@@ -28,6 +28,15 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     /// Otherwise, set to unit type.
     type LocalTileKind: Tile;
 
+    /// TODO
+    type LocalActionEvent: Event
+        + Send
+        + Sync
+        + 'static
+        + Reflect
+        + TypePath
+        + FromReflect;
+
     /// Alphabetical only name of the map.
     fn name() -> &'static str;
 
@@ -847,6 +856,9 @@ mod tests {
     #[derive(Default, Reflect)]
     struct TestScene;
 
+    #[derive(Event, Reflect)]
+    struct TestActionEvent;
+
     #[derive(
         Default,
         Reflect,
@@ -880,6 +892,7 @@ mod tests {
 
     impl TopDownScene for TestScene {
         type LocalTileKind = TestTileKind;
+        type LocalActionEvent = TestActionEvent;
 
         fn bounds() -> [i32; 4] {
             [0, 10, 0, 10]
@@ -1064,6 +1077,7 @@ mod tests {
 
     impl TopDownScene for DevMapTestScene {
         type LocalTileKind = DevMapTestTileKind;
+        type LocalActionEvent = TestActionEvent;
 
         fn bounds() -> [i32; 4] {
             [-11, 0, 15, 28]

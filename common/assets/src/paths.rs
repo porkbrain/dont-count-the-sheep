@@ -5,6 +5,7 @@ pub mod fonts {
 
     pub const PIXEL1: &str = "fonts/shaperka.ttf";
     pub const PENCIL1: &str = "fonts/pencil.ttf";
+    pub const TINY_PIXEL1: &str = "fonts/tiny_pixel.ttf";
 }
 
 pub mod apartment {

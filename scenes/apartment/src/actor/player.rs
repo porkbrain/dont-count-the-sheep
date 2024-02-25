@@ -43,20 +43,20 @@ pub(super) fn spawn(
     let step_time = store.step_time_onload().get();
     store.step_time_onload().remove();
 
-    cmd.spawn((
-        Player,
-        CharacterEntity,
-        RenderLayers::layer(render_layer::OBJ),
-    ))
-    .insert(
-        common_story::Character::Winnie
-            .bundle_builder()
-            .is_player(true)
-            .with_initial_position(initial_position)
-            .with_walking_to(walking_to)
-            .with_initial_step_time(step_time)
-            .build::<Apartment>(&asset_server),
-    );
+    common_story::Character::Winnie
+        .bundle_builder()
+        .is_player(true)
+        .with_initial_position(initial_position)
+        .with_walking_to(walking_to)
+        .with_initial_step_time(step_time)
+        .spawn::<Apartment>(
+            &asset_server,
+            &mut cmd.spawn((
+                Player,
+                CharacterEntity,
+                RenderLayers::layer(render_layer::OBJ),
+            )),
+        );
 
     cmd.spawn((
         Name::from("Transparent overlay"),

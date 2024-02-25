@@ -8,6 +8,9 @@ use crate::prelude::*;
 #[derive(Component, Reflect)]
 struct CharacterEntity;
 
+#[derive(Event, Reflect)]
+pub enum DevPlaygroundAction {}
+
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {

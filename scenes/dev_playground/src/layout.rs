@@ -1,16 +1,7 @@
-use bevy_grid_squared::SquareLayout;
-use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use strum::{EnumIter, IntoEnumIterator};
 
-use crate::{prelude::*, DevPlayground};
-
-lazy_static! {
-    static ref LAYOUT: SquareLayout = SquareLayout {
-        square_size: 4.0,
-        origin: vec2(0.0, 0.0),
-    };
-}
+use crate::prelude::*;
 
 pub(crate) struct Plugin;
 
@@ -81,25 +72,5 @@ impl common_top_down::layout::Tile for DevPlaygroundTileKind {
     #[inline]
     fn zones_iter() -> impl Iterator<Item = Self> {
         Self::iter().filter(|kind| kind.is_zone())
-    }
-}
-
-impl TopDownScene for DevPlayground {
-    type LocalTileKind = DevPlaygroundTileKind;
-
-    fn name() -> &'static str {
-        "dev_playground"
-    }
-
-    fn bounds() -> [i32; 4] {
-        [-100, 100, -100, 100]
-    }
-
-    fn asset_path() -> &'static str {
-        "../../scenes/dev_playground/assets/map.ron"
-    }
-
-    fn layout() -> &'static SquareLayout {
-        &LAYOUT
     }
 }

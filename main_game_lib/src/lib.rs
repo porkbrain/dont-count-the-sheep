@@ -50,9 +50,14 @@ pub fn windowed_app() -> App {
             })
             .set(ImagePlugin::default_nearest())
             .set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Don't Count The Sheep".into(),
-                    ..default()
+                primary_window: Some({
+                    let mut w = Window {
+                        title: "Don't Count The Sheep".into(),
+                        ..default()
+                    };
+
+                    w.set_maximized(true);
+                    w
                 }),
                 ..default()
             }),

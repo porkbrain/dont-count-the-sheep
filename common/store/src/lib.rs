@@ -102,6 +102,53 @@ impl<'a, T> Entry<'a, T> {
     }
 }
 
+pub use inspect_ability::InspectAbilityStore;
+mod inspect_ability {
+    use super::*;
+
+    /// Store anything that's related to inspect ability.
+    pub trait InspectAbilityStore {
+        /// Whether a given inspect label has been seen before by the player.
+        fn has_been_seen_before(&self, label: &str) -> bool;
+
+        /// Mark a given inspect label as seen by the player.
+        /// Next time the [`InspectAbilityStore::has_been_seen_before`] will
+        /// return `true`.
+        ///
+        /// Idempotent.
+        fn mark_as_seen(&self, label: &str);
+    }
+
+    impl InspectAbilityStore for GlobalStore {
+        fn has_been_seen_before(&self, label: &str) -> bool {
+            let conn = self.conn.lock().unwrap();
+
+            let count: usize = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM discovered_with_inspect_ability WHERE label = ?",
+                    [label],
+                    |row| row.get(0),
+                )
+                .expect("Cannot query SQLite");
+
+            count > 0
+        }
+
+        fn mark_as_seen(&self, label: &str) {
+            let conn = self.conn.lock().unwrap();
+            conn.execute(
+                "INSERT INTO
+                discovered_with_inspect_ability (label) VALUES (:label)
+                ON CONFLICT DO NOTHING",
+                named_params! {
+                    ":label": label,
+                },
+            )
+            .expect("Cannot insert into SQLite");
+        }
+    }
+}
+
 pub use apartment::ApartmentStore;
 mod apartment {
     use std::time::Duration;
@@ -273,6 +320,11 @@ fn migrate(conn: &mut rusqlite::Connection) {
             );",
         ),
         M::up("CREATE INDEX idx_type_path ON dialogs (type_path);"),
+        M::up(
+            "CREATE TABLE discovered_with_inspect_ability (
+                label TEXT PRIMARY KEY
+            );",
+        ),
     ]);
 
     migrations.to_latest(conn).unwrap();

@@ -6,7 +6,10 @@ pub mod player;
 use std::{iter, time::Duration};
 
 use bevy::{
-    ecs::{entity::EntityHashMap, event::event_update_condition},
+    ecs::{
+        entity::EntityHashMap, event::event_update_condition,
+        system::EntityCommands,
+    },
     prelude::*,
     time::Stopwatch,
     utils::HashSet,
@@ -22,7 +25,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     layout::{Tile, TileIndex, TopDownScene},
-    Player, TileKind, TileMap,
+    npc::NpcInTheMap,
+    InspectLabelCategory, Player, TileKind, TileMap,
 };
 
 /// Use with [`IntoSystemConfigs::run_if`] to run a system only when an actor
@@ -143,6 +147,10 @@ pub struct CharacterBundleBuilder {
     color: Option<Color>,
     is_player: bool,
 }
+
+/// TODO
+#[derive(Event, Reflect)]
+pub struct BeginDialogEvent(Entity);
 
 /// Sends events when an actor does something interesting.
 /// This system is registered on call to [`crate::default_setup_for_scene`].
@@ -553,11 +561,13 @@ impl CharacterBundleBuilder {
     /// tilemap. This will be immediately remedied in the
     /// [`animate_movement`] system, where the actor's tiles are recalculated
     /// when they stand still or when they do their first step.
-    #[must_use]
-    pub fn build<T: TopDownScene>(
+    pub fn spawn<T: TopDownScene>(
         self,
         asset_server: &AssetServer,
-    ) -> impl Bundle {
+        cmd: &mut EntityCommands,
+    ) {
+        let id = cmd.id();
+
         let CharacterBundleBuilder {
             character,
             initial_position,
@@ -568,24 +578,29 @@ impl CharacterBundleBuilder {
             is_player,
         } = self;
 
-        // for the time being, player is always winnie, so let's squash any bugs
-        // during development until this needs to change
-        debug_assert!(!is_player || character == Character::Winnie);
-
         let step_time = step_time.unwrap_or(character.default_step_time());
 
-        // see the method docs
-        let occupies = default();
+        if !is_player {
+            // for the time being, player is always winnie, so let's squash any
+            // bugs during development until this needs to change
+            debug_assert_ne!(character, Character::Winnie);
 
-        (
+            cmd.insert(NpcInTheMap::default());
+        }
+
+        cmd.insert((
             Name::from(character.name()),
+            InspectLabelCategory::Npc
+                .into_label(character.name())
+                .emit_event_on_interacted(BeginDialogEvent(id)),
             Actor {
                 character,
                 step_time,
                 direction: initial_direction,
                 walking_from: T::layout().world_pos_to_square(initial_position),
                 walking_to,
-                occupies,
+                // see the method docs
+                occupies: default(),
                 is_player,
             },
             SpriteSheetBundle {
@@ -605,7 +620,7 @@ impl CharacterBundleBuilder {
                 )),
                 ..default()
             },
-        )
+        ));
     }
 }
 
@@ -912,8 +927,12 @@ mod tests {
     #[derive(Default, Reflect, Clone, Debug)]
     struct TestScene;
 
+    #[derive(Event, Reflect)]
+    struct TestActionEvent;
+
     impl TopDownScene for TestScene {
         type LocalTileKind = ();
+        type LocalActionEvent = TestActionEvent;
 
         fn bounds() -> [i32; 4] {
             [-1000, 1000, -1000, 1000]
