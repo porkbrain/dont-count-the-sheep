@@ -4,12 +4,17 @@
 
 pub mod behaviors;
 
-use std::ops::{AddAssign, Not};
+use std::{
+    ops::{AddAssign, Not},
+    time::{Duration, Instant},
+};
 
 use bevy::prelude::*;
 use bevy_grid_squared::Square;
 
 use crate::{layout::ZoneTile, Actor, ActorTarget, TileMap, TopDownScene};
+
+const MIN_WAIT_BETWEEN_PATHFINDING_RETRY: Duration = Duration::from_millis(250);
 
 /// Describes state of an NPC that's positioned in the current map.
 /// As opposed to just an abstract simulation, this NPC is actively moving and
@@ -86,7 +91,23 @@ pub enum BehaviorLeaf {
     Idle,
     /// Drives the pathfinding algorithm to find a path to the given square and
     /// the NPC to move along it.
-    FindPathToPosition(Square),
+    FindPath {
+        /// The square to find a path to.
+        to: Square,
+        /// When did we last try to find a path.
+        /// Prevents spamming the pathfinding algorithm too often.
+        last_attempt: Option<Instant>,
+    },
+}
+
+impl BehaviorLeaf {
+    /// Creates a new find path leaf node.
+    pub fn find_path_to(square: Square) -> Self {
+        Self::FindPath {
+            to: square,
+            last_attempt: None,
+        }
+    }
 }
 
 /// An NPC with this component will not further execute its behavior tree.
@@ -103,7 +124,7 @@ pub fn drive_behavior(
     actors: Query<(&Actor, &NpcInTheMap)>,
 ) {
     for (tree_entity, mut tree) in trees.iter_mut() {
-        let Some(leaf) = tree.unfold_into_leaf(&time) else {
+        let Some((_visit, leaf)) = tree.unfold_into_leaf(&time) else {
             cmd.entity(tree_entity).remove::<BehaviorTree>();
             continue;
         };
@@ -111,7 +132,15 @@ pub fn drive_behavior(
         use BehaviorLeaf::*;
         match leaf {
             Idle => {}
-            FindPathToPosition(target_square) => {
+            FindPath { to, last_attempt } => {
+                if let Some(last_attempt) = last_attempt {
+                    if last_attempt.elapsed()
+                        < MIN_WAIT_BETWEEN_PATHFINDING_RETRY
+                    {
+                        continue;
+                    }
+                }
+
                 let Ok((actor, npc_in_the_map)) = actors.get(tree_entity)
                 else {
                     // NPC is only virtual or does not exist,
@@ -122,9 +151,9 @@ pub fn drive_behavior(
 
                 let current_square = actor.current_square();
 
-                if current_square == target_square {
+                if current_square == *to {
                     trace!(
-                        "NPC {:?} reached target square {target_square:?}",
+                        "NPC {:?} reached target square {to:?}",
                         actor.character
                     );
                     tree.leaf_finished(BehaviorResult::Ok);
@@ -135,7 +164,8 @@ pub fn drive_behavior(
                 if npc_in_the_map.planned_path.is_empty()
                     && actor.walking_to.is_none()
                 {
-                    plan_path.send(PlanPathEvent(tree_entity, target_square));
+                    plan_path.send(PlanPathEvent(tree_entity, *to));
+                    *last_attempt = Some(Instant::now());
                 }
             }
         }
@@ -162,7 +192,6 @@ pub fn plan_path<T: TopDownScene>(
         };
 
         trace!("Searching for path to {target_square:?}");
-        // TODO: limit how often this can be done per second for a given NPC
         npc_in_the_map.planned_path_index = 0;
         npc_in_the_map.planned_path = map
             .find_partial_path(
@@ -250,7 +279,14 @@ impl BehaviorTree {
         self.last_result = Some(res);
     }
 
-    fn unfold_into_leaf(&mut self, time: &Time) -> Option<BehaviorLeaf> {
+    /// Returns the visit number (first visit is 0) and the leaf node that can
+    /// be mutated.
+    /// Note that if this leaf is exited, but some node above wants to retry it,
+    /// a new state will be created.
+    fn unfold_into_leaf(
+        &mut self,
+        time: &Time,
+    ) -> Option<(usize, &mut BehaviorLeaf)> {
         while let Some((visits, last_node)) = self.visiting_stack.last_mut() {
             let this_visit = *visits;
             let is_first_visit = this_visit == 0;
@@ -294,11 +330,14 @@ impl BehaviorTree {
                     self.visiting_stack.push((0, node_to_invert));
                 }
 
-                BehaviorNode::Leaf(leaf) => {
+                // ~
+                // we found a leaf, it's time to do some actual work
+                // ~
+                BehaviorNode::Leaf(_) => {
                     visits.add_assign(1);
-                    return Some(leaf.clone());
+                    break;
                 }
-                BehaviorNode::LeafWithTimeout(leaf, timer) => {
+                BehaviorNode::LeafWithTimeout(_, timer) => {
                     timer.tick(time.delta());
 
                     if timer.finished() {
@@ -307,12 +346,22 @@ impl BehaviorTree {
                     }
 
                     visits.add_assign(1);
-                    return Some(leaf.clone());
+                    break;
                 }
             }
         }
 
-        None
+        match self.visiting_stack.last_mut() {
+            Some((
+                visit_number,
+                BehaviorNode::Leaf(leaf)
+                | BehaviorNode::LeafWithTimeout(leaf, _),
+            )) => {
+                // -1 because we already incremented
+                Some((*visit_number - 1, leaf))
+            }
+            _ => None,
+        }
     }
 }
 

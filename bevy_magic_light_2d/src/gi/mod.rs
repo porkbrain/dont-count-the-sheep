@@ -160,7 +160,7 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<BevyMagicLight2DSettings>()
             .init_resource::<ComputedTargetSizes>()
-            .add_systems(PreStartup, detect_target_sizes) // TODO: Ideally run only when needed
+            .add_systems(PreStartup, detect_target_sizes)
             .add_systems(
                 PreUpdate,
                 detect_target_sizes

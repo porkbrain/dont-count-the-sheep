@@ -82,30 +82,11 @@ impl<T: AssetList> AssetStore<T> {
         &self,
         asset_server: &bevy::asset::AssetServer,
     ) -> bool {
-        // TODO: this can be done in new bevy version
-        // self.assets.iter().all(|h| {
-        //     asset_server.is_loaded_with_dependencies(UntypedHandle::Strong(
-        //         Arc::clone(h),
-        //     ))
-        // });
-
-        for folder in T::folders() {
-            let h = asset_server.load_folder(*folder);
-
-            if !asset_server.is_loaded_with_dependencies(h) {
-                return false;
-            }
-        }
-
-        for file in T::files() {
-            let h = asset_server.load_untyped(*file);
-
-            if !asset_server.is_loaded_with_dependencies(h) {
-                return false;
-            }
-        }
-
-        true
+        self.assets.iter().all(|h| {
+            asset_server.is_loaded_with_dependencies(
+                bevy::asset::UntypedHandle::Strong(Arc::clone(h)),
+            )
+        })
     }
 }
 

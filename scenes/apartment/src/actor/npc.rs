@@ -56,9 +56,9 @@ impl From<ExampleBehavior> for BehaviorNode {
 
         BehaviorNode::Repeat(
             BehaviorNode::Sequence(vec![
-                BehaviorNode::Leaf(BehaviorLeaf::FindPathToPosition(from)),
+                BehaviorNode::Leaf(BehaviorLeaf::find_path_to(from)),
                 IdlyWaiting(Duration::from_secs(1)).into(),
-                BehaviorNode::Leaf(BehaviorLeaf::FindPathToPosition(to)),
+                BehaviorNode::Leaf(BehaviorLeaf::find_path_to(to)),
                 IdlyWaiting(Duration::from_secs(1)).into(),
             ])
             .into_boxed(),
@@ -78,9 +78,9 @@ impl From<ExampleBehavior2> for BehaviorNode {
 
         BehaviorNode::Repeat(
             BehaviorNode::Sequence(vec![
-                BehaviorNode::Leaf(BehaviorLeaf::FindPathToPosition(from)),
+                BehaviorNode::Leaf(BehaviorLeaf::find_path_to(from)),
                 IdlyWaiting(Duration::from_secs(1)).into(),
-                BehaviorNode::Leaf(BehaviorLeaf::FindPathToPosition(to)),
+                BehaviorNode::Leaf(BehaviorLeaf::find_path_to(to)),
                 IdlyWaiting(Duration::from_secs(1)).into(),
             ])
             .into_boxed(),
