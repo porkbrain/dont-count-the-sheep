@@ -22,8 +22,10 @@ pub struct InspectLabel<E> {
     emit_event_on_interacted: Option<E>,
 }
 
-/// TODO
-pub struct Xd;
+/// Entities with [`InspectLabel`] and this component are considered when the
+/// player hits the interact button.
+#[derive(Component)]
+pub struct ReadyForInteraction;
 
 /// Different categories can have different radius of visibility based on the
 /// player's experience.
