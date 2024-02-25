@@ -346,7 +346,7 @@ fn spawn(
             atlas: TextureAtlas {
                 index: 0,
                 layout: texture_atlases.add(TextureAtlasLayout::from_grid(
-                    vec2(51.0, 50.0),
+                    vec2(51.0, 57.0),
                     8,
                     1,
                     Some(vec2(4.0, 0.0)),
@@ -358,7 +358,7 @@ fn spawn(
                 ..default()
             },
             transform: Transform::from_translation(
-                vec2(-201.5, -53.0).extend(zindex::ELEVATOR),
+                vec2(-201.5, -49.0).extend(zindex::ELEVATOR),
             ),
             ..default()
         },
