@@ -151,10 +151,10 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
     debug!("Adding inspect ability for {}", T::type_path());
 
     app.add_event::<T::LocalActionEvent>()
-        .register_type::<InspectLabel<T::LocalActionEvent>>()
+        .register_type::<InspectLabel>()
         .add_systems(
             Update,
-            inspect_ability::show_all_in_vicinity::<T::LocalActionEvent>
+            inspect_ability::show_all_in_vicinity
                 .run_if(in_state(running))
                 .run_if(common_action::inspect_just_pressed()),
         )
