@@ -189,6 +189,9 @@ pub enum CutsceneStep {
         /// By default linear interpolation is used.
         animation_curve: Option<CubicSegment<Vec2>>,
     },
+    /// Sets the [`Actor::direction`] property to the given value.
+    /// This will be overwritten if the actor starts walking.
+    SetActorFacingDirection(Entity, GridDirection),
 }
 
 /// Marks a destination.
@@ -411,6 +414,7 @@ struct CutsceneSystems {
     reverse_atlas_animation: SystemId,
     wait_until_atlas_animation_ends: SystemId,
     begin_moving_entity: SystemId,
+    set_actor_facing_direction: SystemId,
 }
 
 impl CutsceneSystems {
@@ -433,6 +437,8 @@ impl CutsceneSystems {
             wait_until_atlas_animation_ends: w
                 .register_system(wait_until_atlas_animation_ends),
             begin_moving_entity: w.register_system(begin_moving_entity),
+            set_actor_facing_direction: w
+                .register_system(set_actor_facing_direction),
         }
     }
 }
@@ -460,6 +466,7 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         ReverseAtlasAnimation(_) => s.reverse_atlas_animation,
         WaitUntilAtlasAnimationEnds(_) => s.wait_until_atlas_animation_ends,
         BeginMovingEntity { .. } => s.begin_moving_entity,
+        SetActorFacingDirection(_, _) => s.set_actor_facing_direction,
     }
 }
 
@@ -721,6 +728,24 @@ fn begin_moving_entity(
             .over(*over)
             .with_animation_opt_curve(animation_curve.clone())
             .insert(&mut cmd);
+    }
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn set_actor_facing_direction(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+
+    mut actors: Query<&mut Actor>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::SetActorFacingDirection(entity, direction) = &step else {
+        panic!("Expected SetActorFacingDirection step, got {step}");
+    };
+
+    if let Ok(mut actor) = actors.get_mut(*entity) {
+        actor.direction = *direction;
     }
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
