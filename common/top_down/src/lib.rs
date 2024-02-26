@@ -156,13 +156,19 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
             Update,
             inspect_ability::show_all_in_vicinity
                 .run_if(in_state(running))
-                .run_if(common_action::inspect_just_pressed()),
+                .run_if(common_action::inspect_pressed()),
         )
         .add_systems(
             Update,
-            inspect_ability::hide_all
+            inspect_ability::schedule_hide_all
                 .run_if(in_state(running))
                 .run_if(common_action::inspect_just_released()),
+        )
+        .add_systems(
+            Update,
+            inspect_ability::cancel_hide_all
+                .run_if(in_state(running))
+                .run_if(common_action::inspect_just_pressed()),
         );
 }
 

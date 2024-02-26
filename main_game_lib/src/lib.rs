@@ -37,6 +37,7 @@ pub fn windowed_app() -> App {
                 common_top_down=trace,\
                 common_top_down::actor::npc=debug,\
                 common_top_down::cameras=debug,\
+                common_top_down::layout=debug,\
                 common_visuals=trace,\
                 dev_playground=trace,\
                 downtown=trace,\

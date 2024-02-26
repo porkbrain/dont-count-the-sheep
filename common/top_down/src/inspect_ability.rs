@@ -10,8 +10,16 @@ use std::borrow::Cow;
 use bevy::prelude::*;
 use common_ext::QueryExt;
 use common_store::{GlobalStore, InspectAbilityStore};
+use common_visuals::{
+    camera::PIXEL_ZOOM, BeginInterpolationEvent, ColorInterpolation,
+};
 
 use crate::Player;
+
+/// The label's bg is a rect with a half transparent color.
+const HALF_TRANSPARENT: Color = Color::rgba(0.0, 0.0, 0.0, 0.5);
+/// The font size of the label text that shows up when inspecting.
+const FONT_SIZE: f32 = 20.0;
 
 /// We don't want to use a generic with [`InspectLabel`] because we need to
 /// browse all labels at once.
@@ -57,63 +65,173 @@ pub enum InspectLabelCategory {
     Npc,
 }
 
+/// The text of the label.
 #[derive(Component, Reflect)]
 pub(crate) struct InspectLabelText;
+/// The half transparent background of the label.
+#[derive(Component, Reflect)]
+pub(crate) struct InspectLabelBg;
 
-/// Run this when action [`GlobalAction::Inspect`] was just pressed.
+/// Run this when action [`GlobalAction::Inspect`] is pressed.
+/// It updates labels that come into the vicinity of the player.
 pub(crate) fn show_all_in_vicinity(
     mut cmd: Commands,
     store: Res<GlobalStore>,
     asset_server: Res<AssetServer>,
 
     player: Query<&GlobalTransform, With<Player>>,
-    inspectable_object: Query<(Entity, &InspectLabel, &GlobalTransform)>,
+    inspectable_objects: Query<(
+        Entity,
+        &InspectLabel,
+        &GlobalTransform,
+        Option<&Children>,
+    )>,
 ) {
-    trace!("Showing objects in vicinity of the player");
-
     let Some(player) = player.get_single_or_none() else {
         return;
     };
     let player = player.translation().truncate();
 
-    for (entity, label, position) in inspectable_object.iter() {
+    for (entity, label, position, children) in inspectable_objects.iter() {
         store.mark_as_seen(&label.display);
 
         let distance = player.distance(position.translation().truncate());
+        let should_be_shown = distance <= label.category.max_distance();
+
+        match (should_be_shown, children) {
+            // should not be shown and it's not, do nothing
+            (false, None) => {}
+
+            // should be shown and is, we don't have to do anything here because
+            // `cancel_hide_all` got us covered
+            (true, Some(_)) => {}
+
+            // should not be shown and it is, hide it
+            (false, Some(children)) => {
+                trace!("Label {} going out of the view", label.display);
+
+                cmd.entity(entity).remove::<Children>();
+                for child in children {
+                    cmd.entity(*child).despawn();
+                }
+            }
+
+            // should be shown and it's not, show it
+            (true, None) => {
+                trace!("Displaying label {}", label.display);
+
+                // bit of padding and then a few pixels per character
+                // this is easier than waiting for the text to be rendered and
+                // then using the logical size, and the impression doesn't
+                // matter for such a short text
+                let bg_box_width =
+                    15.0 + FONT_SIZE / 7.0 * label.display.len() as f32;
+                let bg = cmd
+                    .spawn(InspectLabelBg)
+                    .insert(SpriteBundle {
+                        transform: Transform::from_translation(Vec3::Z),
+                        sprite: Sprite {
+                            color: HALF_TRANSPARENT,
+                            custom_size: Some(Vec2::new(bg_box_width, 10.0)),
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .id();
+
+                // make it stand above others with zindex
+                let txt = cmd
+                    .spawn(InspectLabelText)
+                    .insert(Text2dBundle {
+                        // We invert the pixel camera zoom, otherwise we'd end
+                        // up with pixelated text.
+                        // We end up using larger font size instead.
+                        transform: Transform::from_translation(Vec3::Z * 2.0)
+                            .with_scale(Vec3::splat(1.0 / PIXEL_ZOOM as f32)),
+                        text: Text {
+                            sections: vec![TextSection::new(
+                                label.display.clone(),
+                                TextStyle {
+                                    font: asset_server.load(
+                                        common_assets::fonts::TINY_PIXEL1,
+                                    ),
+                                    font_size: FONT_SIZE,
+                                    color: label.category.color(),
+                                },
+                            )],
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .id();
+
+                cmd.entity(entity).insert_children(0, &[bg, txt]);
+            }
+        }
+
         if distance >= label.category.max_distance() {
             continue;
         }
+    }
+}
 
-        cmd.entity(entity).with_children(|parent| {
-            parent.spawn(InspectLabelText).insert(Text2dBundle {
-                // make it stand above others
-                transform: Transform::from_translation(Vec3::Z),
-                text: Text {
-                    sections: vec![TextSection::new(
-                        label.display.clone(),
-                        TextStyle {
-                            font: asset_server
-                                .load(common_assets::fonts::TINY_PIXEL1),
-                            font_size: 22.0, // TODO: buggy camera zoom
-                            color: label.category.color(),
-                        },
-                    )],
-                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    ..default()
-                },
-                ..default()
-            });
-        });
+/// Run this when action [`GlobalAction::Inspect`] is just pressed.
+/// It cancels eventual [`schedule_hide_all`] call that scheduled the fade out
+/// and removal of the box.
+pub(crate) fn cancel_hide_all(
+    mut cmd: Commands,
+
+    inspectable_objects: Query<&InspectLabel>,
+    mut text: Query<(Entity, &Parent, &mut Text), With<InspectLabelText>>,
+    mut bg: Query<(Entity, &mut Sprite), With<InspectLabelBg>>,
+) {
+    for (entity, parent, mut text) in text.iter_mut() {
+        let parent = parent.get();
+        let color = inspectable_objects.get(parent).unwrap().category.color();
+        text.sections[0].style.color = color;
+
+        cmd.entity(entity).remove::<ColorInterpolation>();
+    }
+
+    for (entity, mut sprite) in bg.iter_mut() {
+        sprite.color = HALF_TRANSPARENT;
+        cmd.entity(entity).remove::<ColorInterpolation>();
     }
 }
 
 /// Run this when action [`GlobalAction::Inspect`] was just released.
-pub(crate) fn hide_all(
-    mut cmd: Commands,
-    text: Query<Entity, With<InspectLabelText>>,
+/// It schedules removal of all labels by interpolating their color to none.
+pub(crate) fn schedule_hide_all(
+    mut begin_interpolation: EventWriter<BeginInterpolationEvent>,
+
+    inspectable_objects: Query<&InspectLabel>,
+    text: Query<(Entity, &Parent), With<InspectLabelText>>,
+    bg: Query<Entity, With<InspectLabelBg>>,
 ) {
-    for entity in text.iter() {
-        cmd.entity(entity).despawn_recursive();
+    for (entity, parent) in text.iter() {
+        let parent = parent.get();
+        let to_color = {
+            let mut c =
+                inspectable_objects.get(parent).unwrap().category.color();
+            c.set_a(0.0);
+            c
+        };
+
+        begin_interpolation.send(
+            BeginInterpolationEvent::of_color(entity, None, to_color)
+                .when_finished_do(move |cmd| {
+                    cmd.entity(parent).remove::<Children>();
+                    cmd.entity(entity).despawn();
+                }),
+        );
+    }
+
+    for entity in bg.iter() {
+        begin_interpolation.send(
+            BeginInterpolationEvent::of_color(entity, None, Color::NONE)
+                .when_finished_despawn_itself(),
+        );
     }
 }
 

@@ -585,14 +585,16 @@ impl CharacterBundleBuilder {
             // bugs during development until this needs to change
             debug_assert_ne!(character, Character::Winnie);
 
-            cmd.insert(NpcInTheMap::default());
+            cmd.insert((
+                NpcInTheMap::default(),
+                InspectLabelCategory::Npc
+                    .into_label(character.name())
+                    .emit_event_on_interacted(BeginDialogEvent(id)),
+            ));
         }
 
         cmd.insert((
             Name::from(character.name()),
-            InspectLabelCategory::Npc
-                .into_label(character.name())
-                .emit_event_on_interacted(BeginDialogEvent(id)),
             Actor {
                 character,
                 step_time,

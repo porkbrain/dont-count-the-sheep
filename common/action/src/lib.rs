@@ -74,6 +74,13 @@ pub fn inspect_just_pressed(
     }
 }
 
+/// Runs a system if inspect action is being held.
+pub fn inspect_pressed() -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
+    move |action_state: Res<ActionState<GlobalAction>>| {
+        action_state.pressed(&GlobalAction::Inspect)
+    }
+}
+
 /// Runs a system if inspect action was just released.
 pub fn inspect_just_released(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
@@ -129,6 +136,30 @@ pub fn move_action_just_pressed(
 }
 
 impl GlobalAction {
+    /// Whether the action is a directional input for movement.
+    /// That's one of
+    /// - [`Self::MoveUp`]
+    /// - [`Self::MoveDown`]
+    /// - [`Self::MoveLeft`]
+    /// - [`Self::MoveRight`]
+    /// - [`Self::MoveUpLeft`]
+    /// - [`Self::MoveUpRight`]
+    /// - [`Self::MoveDownLeft`]
+    /// - [`Self::MoveDownRight`]
+    pub fn is_directional(self) -> bool {
+        matches!(
+            self,
+            Self::MoveUp
+                | Self::MoveDown
+                | Self::MoveLeft
+                | Self::MoveRight
+                | Self::MoveUpLeft
+                | Self::MoveUpRight
+                | Self::MoveDownLeft
+                | Self::MoveDownRight
+        )
+    }
+
     fn input_map() -> InputMap<Self> {
         let mut input_map = InputMap::default();
 
