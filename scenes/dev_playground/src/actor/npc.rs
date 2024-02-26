@@ -17,7 +17,7 @@ pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
     common_story::Character::Marie
         .bundle_builder()
         .with_initial_position(vec2(-80.0, -100.0))
-        .spawn::<DevPlayground>(
+        .insert::<DevPlayground>(
             &asset_server,
             &mut cmd.spawn((
                 CharacterEntity,
@@ -30,7 +30,7 @@ pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
     common_story::Character::Unnamed
         .bundle_builder()
         .with_initial_position(vec2(-150.0, -100.0))
-        .spawn::<DevPlayground>(
+        .insert::<DevPlayground>(
             &asset_server,
             &mut cmd.spawn((
                 CharacterEntity,

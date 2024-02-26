@@ -5,7 +5,7 @@
 //!
 //! TODO: explain the indirection with events
 
-use std::borrow::Cow;
+use std::{borrow::Cow, time::Duration};
 
 use bevy::prelude::*;
 use common_ext::QueryExt;
@@ -20,6 +20,9 @@ use crate::Player;
 const HALF_TRANSPARENT: Color = Color::rgba(0.0, 0.0, 0.0, 0.5);
 /// The font size of the label text that shows up when inspecting.
 const FONT_SIZE: f32 = 20.0;
+/// When the player releases the inspect button, the labels fade out in this
+/// duration.
+const FADE_OUT_IN: Duration = Duration::from_millis(5000);
 
 /// We don't want to use a generic with [`InspectLabel`] because we need to
 /// browse all labels at once.
@@ -209,6 +212,12 @@ pub(crate) fn schedule_hide_all(
     text: Query<(Entity, &Parent), With<InspectLabelText>>,
     bg: Query<Entity, With<InspectLabelBg>>,
 ) {
+    // looks better when the text fades out faster than the bg
+    let text_animation_curve =
+        CubicSegment::new_bezier((0.9, 0.05), (0.9, 1.0));
+    let bg_animation_curve =
+        CubicSegment::new_bezier((0.95, 0.01), (0.95, 1.0));
+
     for (entity, parent) in text.iter() {
         let parent = parent.get();
         let to_color = {
@@ -220,6 +229,8 @@ pub(crate) fn schedule_hide_all(
 
         begin_interpolation.send(
             BeginInterpolationEvent::of_color(entity, None, to_color)
+                .over(FADE_OUT_IN)
+                .with_animation_curve(text_animation_curve.clone())
                 .when_finished_do(move |cmd| {
                     cmd.entity(parent).remove::<Children>();
                     cmd.entity(entity).despawn();
@@ -230,6 +241,8 @@ pub(crate) fn schedule_hide_all(
     for entity in bg.iter() {
         begin_interpolation.send(
             BeginInterpolationEvent::of_color(entity, None, Color::NONE)
+                .over(FADE_OUT_IN)
+                .with_animation_curve(bg_animation_curve.clone())
                 .when_finished_despawn_itself(),
         );
     }

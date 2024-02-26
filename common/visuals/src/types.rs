@@ -300,7 +300,7 @@ impl BeginInterpolationEvent {
     }
 
     /// Sets the animation curve to be the ubiquitous "ease-in-out".
-    pub fn with_ease_in_out(self) -> Self {
+    pub fn with_animation_ease_in_out(self) -> Self {
         self.with_animation_curve(EASE_IN_OUT.clone())
     }
 

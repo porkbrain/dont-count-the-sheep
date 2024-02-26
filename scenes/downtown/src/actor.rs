@@ -55,7 +55,7 @@ fn spawn(
         .with_walking_to(walking_to)
         .with_initial_step_time(step_time)
         .is_player(true)
-        .spawn::<Downtown>(
+        .insert::<Downtown>(
             &asset_server,
             &mut cmd.spawn((
                 Player,

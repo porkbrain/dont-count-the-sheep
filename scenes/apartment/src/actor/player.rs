@@ -49,7 +49,7 @@ pub(super) fn spawn(
         .with_initial_position(initial_position)
         .with_walking_to(walking_to)
         .with_initial_step_time(step_time)
-        .spawn::<Apartment>(
+        .insert::<Apartment>(
             &asset_server,
             &mut cmd.spawn((
                 Player,

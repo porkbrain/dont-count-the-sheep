@@ -9,7 +9,7 @@ pub(super) fn spawn(mut cmd: Commands, asset_server: Res<asset::AssetServer>) {
     common_story::Character::Winnie
         .bundle_builder()
         .is_player(true)
-        .spawn::<DevPlayground>(
+        .insert::<DevPlayground>(
             &asset_server,
             &mut cmd.spawn((
                 Player,

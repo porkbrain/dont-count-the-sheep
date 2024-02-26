@@ -502,8 +502,8 @@ impl CharacterBundleBuilder {
     /// Where to spawn the character.
     /// Converted into the square by [`TopDownScene::layout`] (see
     /// the `common_layout` crate).
-    /// The specific layout is provided in the [`CharacterBundleBuilder::build`]
-    /// method's `T`.
+    /// The specific layout is provided in the
+    /// [`CharacterBundleBuilder::insert`] method's `T`.
     #[must_use]
     pub fn with_initial_position(mut self, initial_position: Vec2) -> Self {
         self.initial_position = initial_position;
@@ -561,14 +561,14 @@ impl CharacterBundleBuilder {
     /// tilemap. This will be immediately remedied in the
     /// [`animate_movement`] system, where the actor's tiles are recalculated
     /// when they stand still or when they do their first step.
-    pub fn spawn<T: TopDownScene>(
+    pub fn insert<T: TopDownScene>(
         self,
         asset_server: &AssetServer,
         cmd: &mut EntityCommands,
     ) {
         let id = cmd.id();
 
-        let CharacterBundleBuilder {
+        let Self {
             character,
             initial_position,
             initial_direction,
