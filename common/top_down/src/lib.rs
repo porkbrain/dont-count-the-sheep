@@ -6,8 +6,8 @@
 
 pub mod actor;
 pub mod cameras;
+pub mod environmental_objects;
 pub mod inspect_ability;
-pub mod interactable;
 pub mod layout;
 
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};

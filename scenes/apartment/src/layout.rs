@@ -2,7 +2,7 @@ use bevy::{render::view::RenderLayers, sprite::Anchor};
 use bevy_grid_squared::sq;
 use common_top_down::{
     actor::{self, movement_event_emitted, Who},
-    interactable::{
+    environmental_objects::{
         self,
         door::{DoorBuilder, DoorOpenCriteria, DoorState},
     },
@@ -40,7 +40,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             (
                 watch_entry_to_hallway,
-                interactable::door::toggle::<Apartment>,
+                environmental_objects::door::toggle::<Apartment>,
             )
                 .run_if(in_state(GlobalGameState::InApartment))
                 .run_if(movement_event_emitted::<Apartment>())
