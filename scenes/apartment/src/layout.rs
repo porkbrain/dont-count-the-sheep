@@ -440,7 +440,7 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
     }
 
     cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <Apartment as TopDownScene>::LocalActionEvent,
+        <Apartment as TopDownScene>::LocalTileKind,
     >>();
 }
 

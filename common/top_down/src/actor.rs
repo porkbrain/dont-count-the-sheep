@@ -934,7 +934,6 @@ mod tests {
 
     impl TopDownScene for TestScene {
         type LocalTileKind = ();
-        type LocalActionEvent = TestActionEvent;
 
         fn bounds() -> [i32; 4] {
             [-1000, 1000, -1000, 1000]

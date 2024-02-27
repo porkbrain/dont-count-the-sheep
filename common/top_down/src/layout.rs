@@ -28,12 +28,6 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     /// Otherwise, set to unit type.
     type LocalTileKind: Tile;
 
-    /// Actions that can be performed on the map.
-    ///
-    /// See [`crate::inspect_ability`] module that relies on this associated
-    /// type.
-    type LocalActionEvent: Event;
-
     /// Alphabetical only name of the map.
     fn name() -> &'static str;
 
@@ -889,7 +883,6 @@ mod tests {
 
     impl TopDownScene for TestScene {
         type LocalTileKind = TestTileKind;
-        type LocalActionEvent = TestActionEvent;
 
         fn bounds() -> [i32; 4] {
             [0, 10, 0, 10]
@@ -1074,7 +1067,6 @@ mod tests {
 
     impl TopDownScene for DevMapTestScene {
         type LocalTileKind = DevMapTestTileKind;
-        type LocalActionEvent = TestActionEvent;
 
         fn bounds() -> [i32; 4] {
             [-11, 0, 15, 28]

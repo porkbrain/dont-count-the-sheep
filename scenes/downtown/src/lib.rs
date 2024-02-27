@@ -10,7 +10,6 @@ mod layout;
 mod prelude;
 mod zindex;
 
-use actor::DowntownAction;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::LoadingScreenState;
 use layout::DowntownTileKind;
@@ -130,8 +129,6 @@ fn exit(
 
 impl TopDownScene for Downtown {
     type LocalTileKind = DowntownTileKind;
-
-    type LocalActionEvent = DowntownAction;
 
     fn name() -> &'static str {
         "downtown"

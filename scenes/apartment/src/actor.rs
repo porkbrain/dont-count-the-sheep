@@ -29,7 +29,7 @@ impl bevy::app::Plugin for Plugin {
         )
         .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn);
 
-        app.add_systems(
+        app.add_event::<ApartmentAction>().add_systems(
             Update,
             (
                 player::start_meditation_minigame_if_near_chair,

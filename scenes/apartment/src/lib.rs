@@ -12,7 +12,6 @@ mod layout;
 mod prelude;
 mod zindex;
 
-use actor::ApartmentAction;
 use bevy::utils::Instant;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
@@ -171,7 +170,6 @@ fn smooth_exit(
 
 impl TopDownScene for Apartment {
     type LocalTileKind = ApartmentTileKind;
-    type LocalActionEvent = ApartmentAction;
 
     fn name() -> &'static str {
         "apartment"

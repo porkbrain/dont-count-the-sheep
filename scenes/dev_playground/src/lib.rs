@@ -6,7 +6,6 @@ mod cameras;
 mod layout;
 mod prelude;
 
-use actor::DevPlaygroundAction;
 use common_assets::{store::AssetList, AssetStore};
 use common_top_down::TopDownScene;
 use layout::DevPlaygroundTileKind;
@@ -77,8 +76,6 @@ fn finish_when_everything_loaded(
 
 impl TopDownScene for DevPlayground {
     type LocalTileKind = DevPlaygroundTileKind;
-
-    type LocalActionEvent = DevPlaygroundAction;
 
     fn name() -> &'static str {
         "dev_playground"
