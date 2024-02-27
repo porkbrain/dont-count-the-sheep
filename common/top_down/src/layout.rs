@@ -847,9 +847,6 @@ mod tests {
     #[derive(Default, Reflect)]
     struct TestScene;
 
-    #[derive(Event, Reflect)]
-    struct TestActionEvent;
-
     #[derive(
         Default,
         Reflect,

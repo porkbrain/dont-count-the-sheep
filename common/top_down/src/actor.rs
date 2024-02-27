@@ -929,9 +929,6 @@ mod tests {
     #[derive(Default, Reflect, Clone, Debug)]
     struct TestScene;
 
-    #[derive(Event, Reflect)]
-    struct TestActionEvent;
-
     impl TopDownScene for TestScene {
         type LocalTileKind = ();
 
