@@ -28,14 +28,11 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     /// Otherwise, set to unit type.
     type LocalTileKind: Tile;
 
-    /// TODO
-    type LocalActionEvent: Event
-        + Send
-        + Sync
-        + 'static
-        + Reflect
-        + TypePath
-        + FromReflect;
+    /// Actions that can be performed on the map.
+    ///
+    /// See [`crate::inspect_ability`] module that relies on this associated
+    /// type.
+    type LocalActionEvent: Event;
 
     /// Alphabetical only name of the map.
     fn name() -> &'static str;

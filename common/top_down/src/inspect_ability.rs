@@ -7,14 +7,14 @@
 
 use std::{borrow::Cow, time::Duration};
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use common_ext::QueryExt;
 use common_store::{GlobalStore, InspectAbilityStore};
 use common_visuals::{
     camera::PIXEL_ZOOM, BeginInterpolationEvent, ColorInterpolation,
 };
 
-use crate::Player;
+use crate::{ActorMovementEvent, Player, TileKind, TopDownScene};
 
 /// The label's bg is a rect with a half transparent color.
 const HALF_TRANSPARENT: Color = Color::rgba(0.0, 0.0, 0.0, 0.5);
@@ -29,10 +29,31 @@ const FADE_OUT_IN: Duration = Duration::from_millis(5000);
 /// That specific event they actually emit is not important for any logic here.
 ///
 /// To avoid the need for a generic, we use a trait object.
-pub trait ActionEvent: Event + Send + Sync + 'static {}
+///
+/// You should not need to implement this manually as long as your type
+/// implements [`Event`] and [`Clone`].
+pub trait ActionEvent: Event {
+    /// To keep the trait object safe, we cannot use a generic here.
+    /// The solution to type erasure is to use commands.
+    /// One disadvantage is that the event is scheduled to be sent in the next
+    /// frame by default
+    /// However, when using [`IntoSystemConfigs::after`] and other ordering
+    /// methods, the deferrence happens automatically.
+    ///
+    /// Systems that consume this event should always be explicitly ordered
+    /// _after_ the [`interact`] system.
+    fn send_deferred(&self, cmd: &mut Commands);
+}
 
 /// Implement this for all events.
-impl<T: Event + Send + Sync + 'static> ActionEvent for T {}
+impl<T: Event + Clone> ActionEvent for T {
+    fn send_deferred(&self, cmd: &mut Commands) {
+        let cloned = self.clone();
+        cmd.add(move |w: &mut World| {
+            w.send_event(cloned);
+        });
+    }
+}
 
 /// When the inspect mode is active and the player is in a vicinity of an object
 /// this label is shown on the object.
@@ -59,7 +80,7 @@ pub struct ReadyForInteraction;
 
 /// Different categories can have different radius of visibility based on the
 /// player's experience.
-#[derive(Default, Reflect, Clone, Copy)]
+#[derive(Default, Reflect, Clone, Copy, Debug)]
 pub enum InspectLabelCategory {
     /// Default category, nothing special
     #[default]
@@ -74,6 +95,83 @@ pub(crate) struct InspectLabelText;
 /// The half transparent background of the label.
 #[derive(Component, Reflect)]
 pub(crate) struct InspectLabelBg;
+
+/// TODO
+#[derive(Resource, Reflect, Default)]
+pub struct ZoneToInspectLabelEntity<L> {
+    /// TODO
+    pub map: HashMap<L, Entity>,
+}
+
+pub(crate) fn match_interact_label_with_action_event<T: TopDownScene>(
+    mut cmd: Commands,
+    mut events: EventReader<ActorMovementEvent<T::LocalTileKind>>,
+    zone_to_inspect_label_entity: Res<
+        ZoneToInspectLabelEntity<T::LocalTileKind>,
+    >,
+) {
+    for event in events.read().filter(|event| event.is_player()) {
+        match event {
+            ActorMovementEvent::ZoneEntered {
+                zone: TileKind::Local(local_zone),
+                ..
+            } => {
+                zone_to_inspect_label_entity.map.get(local_zone).inspect(
+                    |entity| {
+                        cmd.entity(**entity).insert(ReadyForInteraction);
+                    },
+                );
+            }
+            ActorMovementEvent::ZoneLeft {
+                zone: TileKind::Local(local_zone),
+                ..
+            } => {
+                zone_to_inspect_label_entity.map.get(local_zone).inspect(
+                    |entity| {
+                        cmd.entity(**entity).remove::<ReadyForInteraction>();
+                    },
+                );
+            }
+            _ => {}
+        };
+    }
+}
+
+/// This is registered in [`crate::default_setup_for_scene`].
+///
+/// Any logic that listens to [`ActionEvent`]s should be ordered _after_ this.
+pub fn interact(
+    mut cmd: Commands,
+
+    player: Query<&GlobalTransform, With<Player>>,
+    inspectable_objects: Query<
+        (&InspectLabel, &GlobalTransform),
+        With<ReadyForInteraction>,
+    >,
+) {
+    let Some(player) = player.get_single_or_none() else {
+        return;
+    };
+    let player = player.translation().truncate();
+
+    let closest = inspectable_objects
+        .iter()
+        .filter(|(label, _)| label.emit_event_on_interacted.is_some()) // !
+        .map(|(label, transform)| {
+            let distance = transform.translation().truncate().distance(player);
+            (label, distance)
+        })
+        .min_by(|(_, a), (_, b)| {
+            a.partial_cmp(b).expect("distance is always a number")
+        })
+        .map(|(label, _)| label);
+
+    if let Some(closest) = closest {
+        let event = closest.emit_event_on_interacted.as_ref().unwrap(); // !
+
+        event.send_deferred(&mut cmd);
+    }
+}
 
 /// Run this when action [`GlobalAction::Inspect`] is pressed.
 /// It updates labels that come into the vicinity of the player.

@@ -6,6 +6,7 @@ use common_top_down::{
         self,
         door::{DoorBuilder, DoorOpenCriteria, DoorState},
     },
+    inspect_ability::ZoneToInspectLabelEntity,
     Actor, ActorMovementEvent, InspectLabelCategory, TileKind, TileMap,
     TopDownScene,
 };
@@ -112,6 +113,8 @@ fn spawn(
         return; // already spawned
     }
 
+    let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
+
     #[derive(Default)]
     struct ToSpawn {
         name: &'static str,
@@ -121,8 +124,10 @@ fn spawn(
         position: Vec2,
         color: Option<Color>,
         is_hallway_entity: bool,
-        anchor: Option<Anchor>,
+        anchor: Anchor,
         anchor_y_offset: f32,
+        assign_as_inspect_label_for_zone:
+            Option<(&'static str, ApartmentAction, ApartmentTileKind)>,
     }
 
     for ToSpawn {
@@ -134,6 +139,7 @@ fn spawn(
         position,
         anchor,
         anchor_y_offset,
+        assign_as_inspect_label_for_zone,
     } in [
         ToSpawn {
             name: "Bedroom, bathroom and kitchen background",
@@ -151,14 +157,14 @@ fn spawn(
             name: "Bathroom toilet",
             asset: assets::TOILET,
             position: vec2(-143.0, -10.0),
-            anchor: Some(Anchor::BottomCenter),
+            anchor: Anchor::BottomCenter,
             ..default()
         },
         ToSpawn {
             name: "Bedroom cupboard",
             asset: assets::CUPBOARD,
             position: vec2(-95.0, -25.0),
-            anchor: Some(Anchor::BottomCenter),
+            anchor: Anchor::BottomCenter,
             anchor_y_offset: 2.5,
             ..default()
         },
@@ -166,7 +172,7 @@ fn spawn(
             name: "Bedroom laundry basket",
             asset: assets::LAUNDRY_BASKET,
             position: vec2(-51.0, -25.0),
-            anchor: Some(Anchor::BottomCenter),
+            anchor: Anchor::BottomCenter,
             anchor_y_offset: 5.0,
             ..default()
         },
@@ -174,21 +180,21 @@ fn spawn(
             name: "Bedroom shoe rack",
             asset: assets::SHOERACK,
             position: vec2(-63.0, -77.0),
-            anchor: Some(Anchor::BottomCenter),
+            anchor: Anchor::BottomCenter,
             ..default()
         },
         ToSpawn {
             name: "Kitchen fridge",
             asset: assets::FRIDGE,
             position: vec2(79.0, 37.0),
-            anchor: Some(Anchor::BottomCenter),
+            anchor: Anchor::BottomCenter,
             ..default()
         },
         ToSpawn {
             name: "Kitchen table",
             asset: assets::KITCHEN_TABLE,
             position: vec2(151.0, 11.0),
-            anchor: Some(Anchor::BottomCenter),
+            anchor: Anchor::BottomCenter,
             ..default()
         },
         ToSpawn {
@@ -205,7 +211,7 @@ fn spawn(
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
             position: vec2(-204.0, -121.0),
-            anchor: Some(Anchor::BottomCenter),
+            anchor: Anchor::BottomCenter,
             ..default()
         },
         ToSpawn {
@@ -214,7 +220,19 @@ fn spawn(
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
             position: vec2(19.0, -121.0),
-            anchor: Some(Anchor::BottomCenter),
+            anchor: Anchor::BottomCenter,
+            ..default()
+        },
+        ToSpawn {
+            name: "Bedroom meditation chair",
+            asset: assets::MEDITATION_CHAIR,
+            position: vec2(38.0, 69.0),
+            anchor: Anchor::BottomCenter,
+            assign_as_inspect_label_for_zone: Some((
+                "Meditate",
+                ApartmentAction::StartMeditation,
+                ApartmentTileKind::MeditationZone,
+            )),
             ..default()
         },
     ] {
@@ -232,7 +250,7 @@ fn spawn(
                 transform: Transform::from_translation(translate),
                 sprite: Sprite {
                     color: color.unwrap_or_default(),
-                    anchor: anchor.unwrap_or_default(),
+                    anchor,
                     ..default()
                 },
                 ..default()
@@ -241,6 +259,16 @@ fn spawn(
 
         if is_hallway_entity {
             entity.insert(HallwayEntity);
+        }
+
+        if let Some((label, action, zone)) = assign_as_inspect_label_for_zone {
+            zone_to_inspect_label_entity.map.insert(zone, entity.id());
+
+            entity.insert(
+                InspectLabelCategory::Default
+                    .into_label(label)
+                    .emit_event_on_interacted(action),
+            );
         }
     }
 
@@ -329,44 +357,49 @@ fn spawn(
     ));
 
     // the elevator takes the player to the next location
-    cmd.spawn((
-        Name::from("Elevator"),
-        Elevator,
-        LayoutEntity,
-        HallwayEntity,
-        RenderLayers::layer(render_layer::BG),
-        InspectLabelCategory::Default
-            .into_label("Elevator")
-            .emit_event_on_interacted(ApartmentAction::EnterElevator),
-        // this animation is important for elevator cutscene
-        AtlasAnimation {
-            on_last_frame: AtlasAnimationEnd::RemoveTimer,
-            first: 0,
-            last: 7,
-            ..default()
-        },
-        SpriteSheetBundle {
-            texture: asset_server.load(assets::ELEVATOR_ATLAS),
-            atlas: TextureAtlas {
-                index: 0,
-                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
-                    vec2(51.0, 57.0),
-                    8,
-                    1,
-                    Some(vec2(4.0, 0.0)),
-                    None,
-                )),
-            },
-            sprite: Sprite {
-                color: PRIMARY_COLOR,
+    let elevator = cmd
+        .spawn((
+            Name::from("Elevator"),
+            Elevator,
+            LayoutEntity,
+            HallwayEntity,
+            RenderLayers::layer(render_layer::BG),
+            InspectLabelCategory::Default
+                .into_label("Elevator")
+                .emit_event_on_interacted(ApartmentAction::EnterElevator),
+            // this animation is important for elevator cutscene
+            AtlasAnimation {
+                on_last_frame: AtlasAnimationEnd::RemoveTimer,
+                first: 0,
+                last: 7,
                 ..default()
             },
-            transform: Transform::from_translation(
-                vec2(-201.5, -49.0).extend(zindex::ELEVATOR),
-            ),
-            ..default()
-        },
-    ));
+            SpriteSheetBundle {
+                texture: asset_server.load(assets::ELEVATOR_ATLAS),
+                atlas: TextureAtlas {
+                    index: 0,
+                    layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                        vec2(51.0, 57.0),
+                        8,
+                        1,
+                        Some(vec2(4.0, 0.0)),
+                        None,
+                    )),
+                },
+                sprite: Sprite {
+                    color: PRIMARY_COLOR,
+                    ..default()
+                },
+                transform: Transform::from_translation(
+                    vec2(-201.5, -49.0).extend(zindex::ELEVATOR),
+                ),
+                ..default()
+            },
+        ))
+        .id();
+    zone_to_inspect_label_entity
+        .map
+        .insert(ApartmentTileKind::ElevatorZone, elevator);
 
     cmd.spawn((
         Name::from("Vending machine"),
@@ -395,6 +428,8 @@ fn spawn(
             ..default()
         },
     ));
+
+    cmd.insert_resource(zone_to_inspect_label_entity);
 }
 
 fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
@@ -403,6 +438,10 @@ fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
     for entity in query.iter() {
         cmd.entity(entity).despawn_recursive();
     }
+
+    cmd.remove_resource::<ZoneToInspectLabelEntity<
+        <Apartment as TopDownScene>::LocalActionEvent,
+    >>();
 }
 
 /// Listens to events about entering the hallway (or just coming to the doors.)

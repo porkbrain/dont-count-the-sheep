@@ -47,7 +47,7 @@ pub fn not_in_portrait_dialog(
     move |dialog| dialog.is_none()
 }
 
-/// If inserted, then the game is in the dialog UI. TODO
+/// If inserted, then the game is in the dialog UI.
 #[derive(Resource, Reflect, InspectorOptions)]
 #[reflect(Resource, InspectorOptions)]
 pub struct PortraitDialog {

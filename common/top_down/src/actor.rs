@@ -149,7 +149,7 @@ pub struct CharacterBundleBuilder {
 }
 
 /// TODO
-#[derive(Event, Reflect)]
+#[derive(Event, Reflect, Clone)]
 pub struct BeginDialogEvent(Entity);
 
 /// Sends events when an actor does something interesting.

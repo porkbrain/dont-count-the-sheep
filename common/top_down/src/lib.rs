@@ -14,6 +14,9 @@ pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::{ecs::event::event_update_condition, prelude::*};
 pub use inspect_ability::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, TopDownScene};
+use leafwing_input_manager::plugin::InputManagerSystem;
+
+use crate::actor::emit_movement_events;
 
 /// Does not add any systems, only registers generic-less types.
 pub struct Plugin;
@@ -170,6 +173,22 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
                 .run_if(in_state(running))
                 .run_if(common_action::inspect_just_pressed()),
         );
+
+    debug!("Adding interaction systems for {}", T::type_path());
+
+    app.add_systems(
+        PreUpdate,
+        inspect_ability::interact
+            .run_if(in_state(running))
+            .run_if(common_action::interaction_just_pressed())
+            .after(InputManagerSystem::Update),
+    )
+    .add_systems(
+        Update,
+        inspect_ability::match_interact_label_with_action_event::<T>
+            .run_if(in_state(running))
+            .after(emit_movement_events::<T>),
+    );
 }
 
 /// You can press `Enter` to export the map.

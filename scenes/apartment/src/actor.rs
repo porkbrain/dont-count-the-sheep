@@ -5,9 +5,7 @@ mod npc;
 mod player;
 
 use bevy::ecs::event::event_update_condition;
-use common_story::portrait_dialog::not_in_portrait_dialog;
 use common_top_down::actor::{self, movement_event_emitted};
-use main_game_lib::cutscene::not_in_cutscene;
 
 use crate::{prelude::*, Apartment};
 
@@ -15,7 +13,7 @@ use crate::{prelude::*, Apartment};
 #[derive(Component, Reflect)]
 struct CharacterEntity;
 
-#[derive(Event, Reflect)]
+#[derive(Event, Reflect, Clone)]
 pub enum ApartmentAction {
     EnterElevator,
     StartMeditation,
@@ -38,9 +36,7 @@ impl bevy::app::Plugin for Plugin {
                 player::enter_the_elevator,
             )
                 .run_if(event_update_condition::<ApartmentAction>)
-                .run_if(in_state(GlobalGameState::InApartment))
-                .run_if(not_in_portrait_dialog())
-                .run_if(not_in_cutscene()),
+                .run_if(in_state(GlobalGameState::InApartment)),
         );
 
         app.add_systems(
