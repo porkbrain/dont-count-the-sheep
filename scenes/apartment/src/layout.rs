@@ -209,7 +209,7 @@ fn spawn(
             asset: assets::HALLWAY_DOOR,
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
-            position: vec2(-204.0, -121.0),
+            position: vec2(-204.0, -130.0),
             anchor: Anchor::BottomCenter,
             ..default()
         },
@@ -218,7 +218,7 @@ fn spawn(
             asset: assets::HALLWAY_DOOR,
             color: Some(PRIMARY_COLOR),
             is_hallway_entity: true,
-            position: vec2(19.0, -121.0),
+            position: vec2(19.0, -130.0),
             anchor: Anchor::BottomCenter,
             ..default()
         },
