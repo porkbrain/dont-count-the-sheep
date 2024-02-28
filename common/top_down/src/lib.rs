@@ -6,21 +6,29 @@
 
 pub mod actor;
 pub mod cameras;
-pub mod interactable;
+pub mod environmental_objects;
+pub mod inspect_and_interact;
 pub mod layout;
 
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::{ecs::event::event_update_condition, prelude::*};
+use common_story::portrait_dialog::in_portrait_dialog;
+pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, TopDownScene};
+use leafwing_input_manager::plugin::InputManagerSystem;
+
+use crate::actor::{emit_movement_events, BeginDialogEvent};
 
 /// Does not add any systems, only registers generic-less types.
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<Actor>().register_type::<ActorTarget>();
-
         app.add_event::<npc::PlanPathEvent>()
+            .add_event::<BeginDialogEvent>()
+            .register_type::<Actor>()
+            .register_type::<ActorTarget>()
+            .register_type::<InspectLabelCategory>()
             .register_type::<npc::NpcInTheMap>()
             .register_type::<npc::PlanPathEvent>()
             .register_type::<npc::BehaviorLeaf>()
@@ -44,7 +52,7 @@ impl bevy::app::Plugin for Plugin {
 /// - [`crate::actor::player::move_around`]
 /// - [`common_visuals::systems::advance_atlas_animation`]
 /// - [`common_visuals::systems::interpolate`]
-pub fn default_setup_for_scene<T: TopDownScene, S: States>(
+pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
     app: &mut App,
     loading: S,
     running: S,
@@ -55,11 +63,11 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
     debug!("Adding assets for {}", T::type_path());
 
     app.add_systems(
-        OnEnter(loading.clone()),
+        OnEnter(loading),
         common_assets::store::insert_as_resource::<common_story::StoryAssets>,
     )
     .add_systems(
-        OnExit(quitting.clone()),
+        OnExit(quitting),
         common_assets::store::remove_as_resource::<common_story::StoryAssets>,
     );
 
@@ -72,48 +80,45 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
         .register_type::<TileMap<T>>()
         .register_type::<ActorMovementEvent<T::LocalTileKind>>();
 
-    app.add_systems(
-        OnEnter(loading.clone()),
-        layout::systems::start_loading_map::<T>,
-    )
-    .add_systems(
-        First,
-        layout::systems::try_insert_map_as_resource::<T>
-            .run_if(in_state(loading.clone())),
-    )
-    .add_systems(
-        FixedUpdate,
-        actor::animate_movement::<T>.run_if(in_state(running.clone())),
-    )
-    .add_systems(
-        Update,
-        actor::emit_movement_events::<T>
-            .run_if(in_state(running.clone()))
-            // so that we can emit this event on current frame
-            .after(actor::player::move_around::<T>),
-    )
-    .add_systems(
-        Update,
-        actor::player::move_around::<T>
-            .run_if(in_state(running.clone()))
-            .run_if(common_action::move_action_pressed())
-            .run_if(common_story::portrait_dialog::not_in_portrait_dialog()),
-    )
-    .add_systems(
-        Update,
-        (
-            actor::npc::drive_behavior,
-            actor::npc::plan_path::<T>
-                .run_if(event_update_condition::<actor::npc::PlanPathEvent>),
-            actor::npc::run_path::<T>,
+    app.add_systems(OnEnter(loading), layout::systems::start_loading_map::<T>)
+        .add_systems(
+            First,
+            layout::systems::try_insert_map_as_resource::<T>
+                .run_if(in_state(loading)),
         )
-            .chain()
-            .run_if(in_state(running.clone())),
-    )
-    .add_systems(
-        OnExit(running.clone()),
-        layout::systems::remove_resources::<T>,
-    );
+        .add_systems(
+            FixedUpdate,
+            actor::animate_movement::<T>.run_if(in_state(running)),
+        )
+        .add_systems(
+            Update,
+            actor::emit_movement_events::<T>
+                .run_if(in_state(running))
+                // so that we can emit this event on current frame
+                .after(actor::player::move_around::<T>),
+        )
+        .add_systems(
+            Update,
+            actor::player::move_around::<T>
+                .run_if(in_state(running))
+                .run_if(common_action::move_action_pressed())
+                .run_if(not(
+                    common_story::portrait_dialog::in_portrait_dialog(),
+                )),
+        )
+        .add_systems(
+            Update,
+            (
+                actor::npc::drive_behavior,
+                actor::npc::plan_path::<T>.run_if(
+                    event_update_condition::<actor::npc::PlanPathEvent>,
+                ),
+                actor::npc::run_path::<T>,
+            )
+                .chain()
+                .run_if(in_state(running)),
+        )
+        .add_systems(OnExit(running), layout::systems::remove_resources::<T>);
 
     debug!("Adding visuals for {}", T::type_path());
 
@@ -123,27 +128,89 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States>(
             common_visuals::systems::advance_atlas_animation,
             common_visuals::systems::interpolate,
         )
-            .run_if(in_state(running.clone())),
+            .run_if(in_state(running)),
     );
 
     debug!("Adding story for {}", T::type_path());
 
-    app.add_systems(OnEnter(loading.clone()), common_story::spawn_camera)
+    app.add_systems(OnEnter(loading), common_story::spawn_camera)
         .add_systems(
             Update,
             common_story::portrait_dialog::change_selection
-                .run_if(in_state(running.clone()))
+                .run_if(in_state(running))
                 .run_if(common_story::portrait_dialog::in_portrait_dialog())
                 .run_if(common_action::move_action_just_pressed()),
         )
         .add_systems(
             Last,
             common_story::portrait_dialog::advance
-                .run_if(in_state(running.clone()))
+                .run_if(in_state(running))
                 .run_if(common_story::portrait_dialog::in_portrait_dialog())
                 .run_if(common_action::interaction_just_pressed()),
         )
-        .add_systems(OnEnter(quitting.clone()), common_story::despawn_camera);
+        .add_systems(OnEnter(quitting), common_story::despawn_camera);
+
+    debug!("Adding inspect ability for {}", T::type_path());
+
+    app.register_type::<InspectLabel>()
+        .add_systems(
+            Update,
+            inspect_and_interact::show_all_in_vicinity
+                .run_if(in_state(running))
+                .run_if(common_action::inspect_pressed()),
+        )
+        .add_systems(
+            Update,
+            inspect_and_interact::schedule_hide_all
+                .run_if(in_state(running))
+                .run_if(common_action::inspect_just_released()),
+        )
+        .add_systems(
+            Update,
+            inspect_and_interact::cancel_hide_all
+                .run_if(in_state(running))
+                .run_if(common_action::inspect_just_pressed()),
+        );
+
+    debug!("Adding interaction systems for {}", T::type_path());
+
+    app.add_systems(
+        PreUpdate,
+        inspect_and_interact::interact
+            .run_if(in_state(running))
+            .run_if(common_action::interaction_just_pressed())
+            // Without this condition, the dialog will start when the player
+            // exists the previous one because:
+            // 1. The interact system runs, interact is just pressed, and so
+            //    emits the event.
+            // 2. Player finishes the dialog by pressing interaction. This
+            //    consumes the interact action.
+            // 3. Consuming the action did fuck all because the event was
+            //    already emitted earlier. Since the commands to remove the
+            //    dialog resource were applied, the condition to not run the
+            //    begin_dialog system will not prevent rerun
+            .run_if(not(in_portrait_dialog()))
+            .after(InputManagerSystem::Update),
+    )
+    .add_systems(
+        Update,
+        (
+            actor::npc::mark_nearby_as_ready_for_interaction,
+            actor::npc::begin_dialog
+                .run_if(event_update_condition::<BeginDialogEvent>)
+                .run_if(not(in_portrait_dialog())),
+        )
+            .run_if(in_state(running)),
+    )
+    .add_systems(
+        Update,
+        inspect_and_interact::match_interact_label_with_action_event::<T>
+            .run_if(in_state(running))
+            .run_if(
+                event_update_condition::<ActorMovementEvent<T::LocalTileKind>>,
+            )
+            .after(emit_movement_events::<T>),
+    );
 }
 
 /// You can press `Enter` to export the map.

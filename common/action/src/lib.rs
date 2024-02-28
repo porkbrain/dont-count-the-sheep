@@ -32,7 +32,13 @@ impl bevy::app::Plugin for Plugin {
 #[derive(
     Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect, EnumIter,
 )]
+#[non_exhaustive]
 pub enum GlobalAction {
+    /// Ubiquitous action, used for interacting with the world.
+    Interact,
+    /// Go to menu etc.
+    Cancel,
+
     /// Going only up.
     MoveUp,
     /// Going only down.
@@ -54,10 +60,33 @@ pub enum GlobalAction {
     /// Overwrites `MoveDown` and `MoveRight`.
     MoveDownRight,
 
-    /// Ubiquitous action, used for interacting with the world.
-    Interact,
-    /// Go to menu etc.
-    Cancel,
+    /// When held, the player is in an inspect mode.
+    /// This is mainly relevant for actions of gathering information about the
+    /// world.
+    Inspect,
+}
+
+/// Runs a system if inspect action is being held.
+pub fn inspect_just_pressed(
+) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
+    move |action_state: Res<ActionState<GlobalAction>>| {
+        action_state.just_pressed(&GlobalAction::Inspect)
+    }
+}
+
+/// Runs a system if inspect action is being held.
+pub fn inspect_pressed() -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
+    move |action_state: Res<ActionState<GlobalAction>>| {
+        action_state.pressed(&GlobalAction::Inspect)
+    }
+}
+
+/// Runs a system if inspect action was just released.
+pub fn inspect_just_released(
+) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
+    move |action_state: Res<ActionState<GlobalAction>>| {
+        action_state.just_released(&GlobalAction::Inspect)
+    }
 }
 
 /// Runs a system if interaction with the world is being held.
@@ -107,6 +136,30 @@ pub fn move_action_just_pressed(
 }
 
 impl GlobalAction {
+    /// Whether the action is a directional input for movement.
+    /// That's one of
+    /// - [`Self::MoveUp`]
+    /// - [`Self::MoveDown`]
+    /// - [`Self::MoveLeft`]
+    /// - [`Self::MoveRight`]
+    /// - [`Self::MoveUpLeft`]
+    /// - [`Self::MoveUpRight`]
+    /// - [`Self::MoveDownLeft`]
+    /// - [`Self::MoveDownRight`]
+    pub fn is_directional(self) -> bool {
+        matches!(
+            self,
+            Self::MoveUp
+                | Self::MoveDown
+                | Self::MoveLeft
+                | Self::MoveRight
+                | Self::MoveUpLeft
+                | Self::MoveUpRight
+                | Self::MoveDownLeft
+                | Self::MoveDownRight
+        )
+    }
+
     fn input_map() -> InputMap<Self> {
         let mut input_map = InputMap::default();
 
@@ -125,6 +178,12 @@ impl GlobalAction {
         use UserInput::{Chord, Single};
 
         match action {
+            Self::Interact => {
+                vec![Single(Kbd(Space)), Single(Kbd(Enter))]
+            }
+            Self::Cancel => {
+                vec![Single(Kbd(Escape))]
+            }
             Self::MoveDown => {
                 vec![Single(Kbd(KeyS)), Single(Kbd(ArrowDown))]
             }
@@ -153,12 +212,7 @@ impl GlobalAction {
                 Chord(vec![Kbd(KeyW), Kbd(KeyD)]),
                 Chord(vec![Kbd(ArrowUp), Kbd(ArrowRight)]),
             ],
-            Self::Interact => {
-                vec![Single(Kbd(Space)), Single(Kbd(Enter))]
-            }
-            Self::Cancel => {
-                vec![Single(Kbd(Escape))]
-            }
+            Self::Inspect => vec![Single(Kbd(AltLeft))],
         }
     }
 }

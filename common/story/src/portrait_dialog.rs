@@ -1,6 +1,8 @@
 //! When a dialog is spawned, it's already loaded as it should look and does not
 //! require any additional actions.
 //!
+//! To start a dialog, call [`DialogRoot::spawn`].
+//!
 //! # Systems
 //! - [`crate::portrait_dialog::advance`] that advances the dialog one step
 //!   further, presumably fire it when the player presses the interact key
@@ -9,6 +11,7 @@
 //!   the player pressed some movement key
 
 pub mod apartment_elevator;
+pub mod marie;
 
 mod aaatargets;
 
@@ -36,18 +39,15 @@ const TEXT_BOUNDS: Vec2 = vec2(250.0, 120.0);
 const CHOICE_TEXT_BOUNDS: Vec2 = vec2(250.0, 50.0);
 const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 
+/// Can be used on components and resources to schedule commands.
+pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
+
 /// Will be true if in a dialog that takes away player control.
 pub fn in_portrait_dialog() -> impl FnMut(Option<Res<PortraitDialog>>) -> bool {
     move |dialog| dialog.is_some()
 }
 
-/// Will be false if in a dialog that takes away player control.
-pub fn not_in_portrait_dialog(
-) -> impl FnMut(Option<Res<PortraitDialog>>) -> bool {
-    move |dialog| dialog.is_none()
-}
-
-/// If inserted, then the game is in the dialog UI. TODO
+/// If inserted, then the game is in the dialog UI.
 #[derive(Resource, Reflect, InspectorOptions)]
 #[reflect(Resource, InspectorOptions)]
 pub struct PortraitDialog {
@@ -63,6 +63,9 @@ pub struct PortraitDialog {
     sequence_index: usize,
     /// Determines the portrait used
     speaker: Option<Character>,
+    /// When dialog is finished, run these commands.
+    #[reflect(ignore)]
+    when_finished: Option<CmdFn>,
 }
 
 /// The root entity of the dialog UI.
@@ -91,6 +94,7 @@ pub struct DialogChoice {
 }
 
 /// Next step in the dialog can take various forms.
+#[derive(Debug)]
 enum Step {
     Text {
         speaker: Character,
@@ -126,7 +130,7 @@ pub fn advance(
 
     root: Query<Entity, With<DialogUiRoot>>,
     mut text: Query<(&mut Text, &TextLayoutInfo), With<DialogText>>,
-    mut portrait: Query<&mut Handle<Image>, With<DialogPortrait>>,
+    mut portrait: Query<&mut UiImage, With<DialogPortrait>>,
     choices: Query<(Entity, &DialogChoice)>,
 ) {
     if dialog.last_frame_shown_at.elapsed() < MIN_TEXT_FRAME_TIME {
@@ -163,6 +167,8 @@ pub fn advance(
                 // the text component value and wait for the player to continue
                 text.sections[0].value = remaining_text.to_string();
                 dialog.last_frame_shown_at = Instant::now();
+
+                trace!("Rendering remaining text");
                 return;
             }
         }
@@ -183,13 +189,17 @@ pub fn advance(
         root,
         &choices,
         |speaker| {
-            *portrait.single_mut() =
+            portrait.single_mut().texture =
                 asset_server.load(speaker.portrait_asset_path());
         },
     );
 
     if let SequenceFinished::Yes = outcome {
         trace!("Despawning dialog");
+
+        if let Some(f) = dialog.when_finished.take() {
+            f(&mut cmd)
+        }
 
         cmd.remove_resource::<PortraitDialog>();
         cmd.entity(root).despawn_recursive();
@@ -294,14 +304,24 @@ pub fn change_selection(
     }
 }
 
+/// Some optional settings for the dialog.
+#[derive(Default)]
+pub struct DialogSettings {
+    /// When dialog is finished, run these commands.
+    pub when_finished: Option<CmdFn>,
+}
+
 /// Spawns [`PortraitDialog`] resource and all the necessary UI components.
 fn spawn(
     cmd: &mut Commands,
     asset_server: &AssetServer,
     global_store: &GlobalStore,
     sequence: Vec<Step>,
+    settings: DialogSettings,
 ) {
     let mut dialog = PortraitDialog::new(sequence);
+    dialog.when_finished = settings.when_finished;
+
     let mut text = Text::from_section(
         "",
         TextStyle {
@@ -440,13 +460,17 @@ fn advance_sequence(
     loop {
         let current_index = dialog.sequence_index;
         if current_index >= dialog.sequence.len() {
+            trace!("Dialog sequence finished");
             break SequenceFinished::Yes;
         }
 
         debug_assert!(!dialog.sequence.is_empty());
 
+        trace!("Advancing sequence {:?}", dialog.sequence[current_index]);
+
         match &dialog.sequence[current_index] {
             Step::Text { speaker, content } => {
+                trace!("Text sequence by {speaker}");
                 text.sections[0].value = content.to_string();
 
                 if dialog.speaker != Some(*speaker) {
@@ -460,6 +484,7 @@ fn advance_sequence(
             }
             Step::GoTo { story_point } => {
                 // next sequence
+                trace!("Go to sequence {story_point:?}");
 
                 global_store.insert_dialog_type_path(story_point.type_path());
                 dialog.sequence = story_point.sequence();
@@ -474,6 +499,7 @@ fn advance_sequence(
                     choices.iter().find(|(_, c)| c.is_selected)
                 {
                     // choice made, next sequence
+                    trace!("Made choice {:?}", choice.of);
 
                     global_store.insert_dialog_type_path(choice.of.type_path());
 
@@ -484,6 +510,10 @@ fn advance_sequence(
                     dialog.sequence = choice.of.sequence();
                     dialog.sequence_index = 0;
                 } else {
+                    trace!(
+                        "Displaying choice sequence by {speaker}: {between:?}"
+                    );
+
                     text.sections[0].value = content.to_string();
                     if dialog.speaker != Some(*speaker) {
                         set_portrait_image(*speaker);
@@ -603,6 +633,7 @@ impl PortraitDialog {
             sequence_index: 0,
             speaker: None,
             last_frame_shown_at: Instant::now(),
+            when_finished: None,
         }
     }
 }
@@ -676,6 +707,7 @@ impl Default for PortraitDialog {
             sequence: vec![],
             sequence_index: 0,
             speaker: None,
+            when_finished: None,
         }
     }
 }

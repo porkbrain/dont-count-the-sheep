@@ -14,31 +14,31 @@ use super::CharacterEntity;
 use crate::{prelude::*, DevPlayground};
 
 pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
-    cmd.spawn((
-        CharacterEntity,
-        RenderLayers::layer(render_layer::OBJ),
-        NpcInTheMap::default(),
-    ))
-    .insert(
-        common_story::Character::Marie
-            .bundle_builder()
-            .with_initial_position(vec2(-80.0, -100.0))
-            .build::<DevPlayground>(&asset_server),
-    )
-    .insert(BehaviorTree::new(ExampleBehavior));
+    common_story::Character::Marie
+        .bundle_builder()
+        .with_initial_position(vec2(-80.0, -100.0))
+        .insert::<DevPlayground>(
+            &asset_server,
+            &mut cmd.spawn((
+                CharacterEntity,
+                RenderLayers::layer(render_layer::OBJ),
+                NpcInTheMap::default(),
+                BehaviorTree::new(ExampleBehavior),
+            )),
+        );
 
-    cmd.spawn((
-        CharacterEntity,
-        RenderLayers::layer(render_layer::OBJ),
-        NpcInTheMap::default(),
-    ))
-    .insert(
-        common_story::Character::Unnamed
-            .bundle_builder()
-            .with_initial_position(vec2(-150.0, -100.0))
-            .build::<DevPlayground>(&asset_server),
-    )
-    .insert(BehaviorTree::new(ExampleBehavior2));
+    common_story::Character::Unnamed
+        .bundle_builder()
+        .with_initial_position(vec2(-150.0, -100.0))
+        .insert::<DevPlayground>(
+            &asset_server,
+            &mut cmd.spawn((
+                CharacterEntity,
+                RenderLayers::layer(render_layer::OBJ),
+                NpcInTheMap::default(),
+                BehaviorTree::new(ExampleBehavior2),
+            )),
+        );
 }
 
 struct ExampleBehavior;

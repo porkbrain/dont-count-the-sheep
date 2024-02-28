@@ -14,6 +14,9 @@ const DEFAULT_INITIAL_POSITION: Vec2 = vec2(-15.0, 15.0);
 #[derive(Component, Reflect)]
 struct CharacterEntity;
 
+#[derive(Event, Reflect)]
+pub enum DowntownAction {}
+
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -46,20 +49,20 @@ fn spawn(
     let step_time = store.step_time_onload().get();
     store.step_time_onload().remove();
 
-    cmd.spawn((
-        Player,
-        CharacterEntity,
-        RenderLayers::layer(render_layer::OBJ),
-    ))
-    .insert(
-        common_story::Character::Winnie
-            .bundle_builder()
-            .with_initial_position(initial_position)
-            .with_walking_to(walking_to)
-            .with_initial_step_time(step_time)
-            .is_player(true)
-            .build::<Downtown>(&asset_server),
-    );
+    common_story::Character::Winnie
+        .bundle_builder()
+        .with_initial_position(initial_position)
+        .with_walking_to(walking_to)
+        .with_initial_step_time(step_time)
+        .is_player(true)
+        .insert::<Downtown>(
+            &asset_server,
+            &mut cmd.spawn((
+                Player,
+                CharacterEntity,
+                RenderLayers::layer(render_layer::OBJ),
+            )),
+        );
 }
 
 fn despawn(

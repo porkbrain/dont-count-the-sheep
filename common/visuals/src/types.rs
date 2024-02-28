@@ -113,6 +113,8 @@ pub struct BeginInterpolationEvent {
 /// What should happen when the interpolation is done?
 #[derive(Clone)]
 pub(crate) enum OnInterpolationFinished {
+    /// Despawn the entity.
+    DespawnItself,
     /// Can schedule commands.
     Custom(Arc<dyn Fn(&mut Commands) + Send + Sync>),
 }
@@ -203,11 +205,15 @@ impl BeginInterpolationEvent {
     /// Equivalent to [`Self::insert_to`] but just takes the [`EntityCommands`]
     /// directly.
     pub fn insert(self, cmd: &mut Commands) {
-        let mut entity_cmd = cmd.entity(self.entity);
-        self.insert_to(&mut entity_cmd);
+        if let Some(mut entity_cmd) = cmd.get_entity(self.entity) {
+            self.insert_to(&mut entity_cmd);
+        } else {
+            warn!("EntityCommands not found for entity {:?}", self.entity);
+        }
     }
 
-    /// Interpolates the color of a sprite.
+    /// Interpolates the color of [`Sprite`] or [`Text`] (entity cannot have
+    /// both).
     ///
     /// Defaults to 1 second and lerps from the latest color to the new color
     /// unless the initial color is provided.
@@ -294,7 +300,7 @@ impl BeginInterpolationEvent {
     }
 
     /// Sets the animation curve to be the ubiquitous "ease-in-out".
-    pub fn with_ease_in_out(self) -> Self {
+    pub fn with_animation_ease_in_out(self) -> Self {
         self.with_animation_curve(EASE_IN_OUT.clone())
     }
 
@@ -306,6 +312,11 @@ impl BeginInterpolationEvent {
         self.when_finished(OnInterpolationFinished::Custom(Arc::new(
             when_finished,
         )))
+    }
+
+    /// Despawn the entity when interpolation is done.
+    pub fn when_finished_despawn_itself(self) -> Self {
+        self.when_finished(OnInterpolationFinished::DespawnItself)
     }
 
     /// Any extra logic when interpolation is done?
@@ -321,7 +332,11 @@ impl BeginInterpolationEvent {
 /// What should be interpolated?
 #[derive(Clone)]
 pub enum InterpolationOf {
-    /// Interpolate the color of [`TextureAtlas`] and [`Sprite`].
+    /// Interpolate the color of
+    /// - [`Text`]
+    /// - [`Sprite`]
+    ///
+    /// Entity cannot have both.
     Color {
         /// The color to interpolate from.
         /// If not provided, the latest color is used.

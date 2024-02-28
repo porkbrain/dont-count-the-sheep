@@ -36,7 +36,10 @@ pub fn windowed_app() -> App {
                 common_story=trace,\
                 common_top_down=trace,\
                 common_top_down::actor::npc=debug,\
+                common_top_down::actor=debug,\
+                common_top_down::environmental_objects::door=debug,\
                 common_top_down::cameras=debug,\
+                common_top_down::layout=debug,\
                 common_visuals=trace,\
                 dev_playground=trace,\
                 downtown=trace,\
@@ -50,9 +53,14 @@ pub fn windowed_app() -> App {
             })
             .set(ImagePlugin::default_nearest())
             .set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Don't Count The Sheep".into(),
-                    ..default()
+                primary_window: Some({
+                    let mut w = Window {
+                        title: "Don't Count The Sheep".into(),
+                        ..default()
+                    };
+
+                    w.set_maximized(true);
+                    w
                 }),
                 ..default()
             }),

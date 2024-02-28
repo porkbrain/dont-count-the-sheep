@@ -50,7 +50,7 @@ features = [
 bevy_pixel_camera = "0.13"
 bevy_webp_anim = "0.3"
 bevy-inspector-egui = { version = "0.23", default-features = false }
-leafwing-input-manager = "0.13"
+leafwing-input-manager = { version = "0.13", features = ["egui"] }
 
 scene_apartment = { path = "scenes/apartment" }
 scene_dev_playground = { path = "scenes/dev_playground" }

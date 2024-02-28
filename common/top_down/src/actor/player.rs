@@ -27,7 +27,13 @@ pub fn move_around<T: TopDownScene>(
     mut player: Query<(Entity, &mut Actor), With<Player>>,
 ) {
     // there must be some user action
-    let Some(action) = controls.get_pressed().last().copied() else {
+    let Some(action) = controls
+        .get_pressed()
+        .iter()
+        .rev() // we care about the last one pressed
+        .find(|c| c.is_directional())
+        .copied()
+    else {
         return;
     };
     // that leads to a movement command

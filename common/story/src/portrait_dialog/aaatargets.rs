@@ -8,7 +8,8 @@ use super::{
         EnteredTheElevator, LeaveTheElevatorToStayOnCurrentFloor,
         TakeTheElevatorToFirstFloor, TakeTheElevatorToGroundFloor,
     },
-    AsChoice, AsSequence, Step,
+    marie::{IamSorryForYourLoss, MarieBlabbering, WhatHappenedToYourHusband},
+    AsChoice, AsSequence, DialogSettings, Step,
 };
 
 /// These are the root dialogs that can be spawned from the game.
@@ -17,15 +18,18 @@ use super::{
 pub enum DialogRoot {
     /// Enters the elevator at the apartment...
     EnteredTheElevator,
+    /// Begins the dialog with Marie without anything to discuss...
+    MarieBlabbering,
 }
 
 /// These dialogs can be used in other dialogs as either choices or transitions.
-#[allow(clippy::enum_variant_names)] // this can be deleted with more dialog
 #[derive(Clone, Copy, Debug)]
 pub(super) enum DialogTargetChoice {
     TakeTheElevatorToGroundFloor,
     TakeTheElevatorToFirstFloor,
     LeaveTheElevatorToStayOnCurrentFloor,
+    IamSorryForYourLoss,
+    WhatHappenedToYourHusband,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -43,11 +47,21 @@ impl DialogRoot {
         cmd: &mut Commands,
         asset_server: &AssetServer,
         global_store: &GlobalStore,
+        settings: DialogSettings,
     ) {
         match self {
-            Self::EnteredTheElevator => {
-                EnteredTheElevator::spawn(cmd, asset_server, global_store)
-            }
+            Self::EnteredTheElevator => EnteredTheElevator::spawn(
+                cmd,
+                asset_server,
+                global_store,
+                settings,
+            ),
+            Self::MarieBlabbering => MarieBlabbering::spawn(
+                cmd,
+                asset_server,
+                global_store,
+                settings,
+            ),
         }
     }
 }
@@ -64,6 +78,10 @@ impl DialogTargetChoice {
             Self::LeaveTheElevatorToStayOnCurrentFloor => {
                 LeaveTheElevatorToStayOnCurrentFloor::sequence()
             }
+            Self::IamSorryForYourLoss => IamSorryForYourLoss::sequence(),
+            Self::WhatHappenedToYourHusband => {
+                WhatHappenedToYourHusband::sequence()
+            }
         }
     }
 
@@ -78,6 +96,10 @@ impl DialogTargetChoice {
             Self::LeaveTheElevatorToStayOnCurrentFloor => {
                 LeaveTheElevatorToStayOnCurrentFloor::choice()
             }
+            Self::IamSorryForYourLoss => IamSorryForYourLoss::choice(),
+            Self::WhatHappenedToYourHusband => {
+                WhatHappenedToYourHusband::choice()
+            }
         }
     }
 
@@ -91,6 +113,12 @@ impl DialogTargetChoice {
             }
             Self::LeaveTheElevatorToStayOnCurrentFloor => {
                 LeaveTheElevatorToStayOnCurrentFloor.reflect_type_path()
+            }
+            Self::IamSorryForYourLoss => {
+                IamSorryForYourLoss.reflect_type_path()
+            }
+            Self::WhatHappenedToYourHusband => {
+                WhatHappenedToYourHusband.reflect_type_path()
             }
         }
     }

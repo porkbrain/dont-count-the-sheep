@@ -76,7 +76,10 @@ pub fn track_player_with_main_camera(
     time: Res<Time>,
     events: EventWriter<BeginInterpolationEvent>,
 
-    player: Query<(&Actor, &Transform), (Without<MainCamera>, With<Player>)>,
+    player: Query<
+        (&Actor, &GlobalTransform),
+        (Without<MainCamera>, With<Player>),
+    >,
     camera: Query<
         (Entity, &mut Transform, Option<&mut CameraState>),
         (With<MainCamera>, Without<Player>),
@@ -91,7 +94,7 @@ fn track_player<C: Component>(
     time: Res<Time>,
     mut events: EventWriter<BeginInterpolationEvent>,
 
-    player: Query<(&Actor, &Transform), (Without<C>, With<Player>)>,
+    player: Query<(&Actor, &GlobalTransform), (Without<C>, With<Player>)>,
     mut camera: Query<
         (Entity, &mut Transform, Option<&mut CameraState>),
         (With<C>, Without<Player>),
@@ -121,7 +124,7 @@ fn track_player<C: Component>(
                 *BOUNDING_BOX_SIZE,
             );
 
-            if !bounding_box.contains(player_pos.translation.truncate()) {
+            if !bounding_box.contains(player_pos.translation().truncate()) {
                 trace!("Player left the bounding box, camera follows her");
                 cmd.entity(camera_entity)
                     .insert(CameraState::SyncWithPlayer {
@@ -152,7 +155,7 @@ fn track_player<C: Component>(
                 }
             } else {
                 let new_translation = initial_position
-                    .lerp(player_pos.translation.truncate(), lerp_factor)
+                    .lerp(player_pos.translation().truncate(), lerp_factor)
                     .extend(camera.translation.z);
                 camera.translation = new_translation;
             }
@@ -160,7 +163,7 @@ fn track_player<C: Component>(
         // keep on player until they stop moving
         Some(CameraState::StickToPlayer) if any_movement() => {
             let z = camera.translation.z;
-            camera.translation = player_pos.translation.truncate().extend(z);
+            camera.translation = player_pos.translation().truncate().extend(z);
         }
         Some(CameraState::StickToPlayer) => {
             trace!("Player stopped moving, camera stops following her");

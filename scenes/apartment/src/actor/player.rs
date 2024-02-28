@@ -2,13 +2,13 @@ use bevy::render::view::RenderLayers;
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{ApartmentStore, GlobalStore};
 use common_top_down::{
-    actor::CharacterExt, Actor, ActorMovementEvent, ActorTarget, TileKind,
+    actor::CharacterExt, ActorMovementEvent, ActorTarget, TileKind,
     TopDownScene,
 };
 use common_visuals::camera::render_layer;
 use main_game_lib::{common_ext::QueryExt, cutscene::IntoCutscene};
 
-use super::{cutscenes, CharacterEntity};
+use super::{cutscenes, ApartmentAction, CharacterEntity};
 use crate::{
     cameras::CameraEntity,
     consts::*,
@@ -43,20 +43,20 @@ pub(super) fn spawn(
     let step_time = store.step_time_onload().get();
     store.step_time_onload().remove();
 
-    cmd.spawn((
-        Player,
-        CharacterEntity,
-        RenderLayers::layer(render_layer::OBJ),
-    ))
-    .insert(
-        common_story::Character::Winnie
-            .bundle_builder()
-            .is_player(true)
-            .with_initial_position(initial_position)
-            .with_walking_to(walking_to)
-            .with_initial_step_time(step_time)
-            .build::<Apartment>(&asset_server),
-    );
+    common_story::Character::Winnie
+        .bundle_builder()
+        .is_player(true)
+        .with_initial_position(initial_position)
+        .with_walking_to(walking_to)
+        .with_initial_step_time(step_time)
+        .insert::<Apartment>(
+            &asset_server,
+            &mut cmd.spawn((
+                Player,
+                CharacterEntity,
+                RenderLayers::layer(render_layer::OBJ),
+            )),
+        );
 
     cmd.spawn((
         Name::from("Transparent overlay"),
@@ -65,11 +65,7 @@ pub(super) fn spawn(
         RenderLayers::layer(render_layer::OBJ),
         SpriteBundle {
             texture: asset_server.load(assets::WINNIE_MEDITATING),
-            transform: Transform::from_translation(Vec3::new(
-                0.0,
-                0.0,
-                zindex::BACKWALL_FURNITURE + 0.1,
-            )),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
             visibility: Visibility::Hidden,
             sprite: Sprite {
                 color: Color::WHITE.with_a(0.5),
@@ -83,71 +79,67 @@ pub(super) fn spawn(
 /// Will change the game state to meditation minigame.
 pub(super) fn start_meditation_minigame_if_near_chair(
     mut cmd: Commands,
+    mut action_events: EventReader<ApartmentAction>,
     mut stack: ResMut<GlobalGameStateTransitionStack>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     store: Res<GlobalStore>,
-    map: Res<common_top_down::TileMap<Apartment>>,
 
-    player: Query<(Entity, &Actor), With<Player>>,
+    player: Query<Entity, With<Player>>,
     mut overlay: Query<&mut Sprite, With<TransparentOverlay>>,
 ) {
-    let Some((entity, player)) = player.get_single_or_none() else {
-        return;
-    };
+    let is_triggered = action_events
+        .read()
+        .any(|action| matches!(action, ApartmentAction::StartMeditation));
 
-    let square = player.current_square();
-    if !map.is_on(square, ApartmentTileKind::MeditationZone) {
-        return;
+    if is_triggered && let Some(entity) = player.get_single_or_none() {
+        // when we come back, we want to be next to the chair
+        store
+            .position_on_load()
+            .set(POSITION_ON_LOAD_FROM_MEDITATION);
+        store.walk_to_onload().set(WALK_TO_ONLOAD_FROM_MEDITATION);
+        store
+            .step_time_onload()
+            .set(STEP_TIME_ONLOAD_FROM_MEDITATION);
+
+        cmd.entity(entity).despawn_recursive();
+        overlay.single_mut().color.set_a(1.0);
+
+        cmd.insert_resource(LoadingScreenSettings {
+            bg_image_asset: Some(common_assets::meditation::LOADING_SCREEN),
+            stare_at_loading_screen_for_at_least: Some(
+                WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
+            ),
+            ..default()
+        });
+
+        stack.push(
+            GlobalGameStateTransition::ApartmentQuittingToMeditationLoading,
+        );
+        next_state.set(GlobalGameState::ApartmentQuitting);
     }
-
-    // when we come back, we want to be next to the chair
-    store
-        .position_on_load()
-        .set(POSITION_ON_LOAD_FROM_MEDITATION);
-    store.walk_to_onload().set(WALK_TO_ONLOAD_FROM_MEDITATION);
-    store
-        .step_time_onload()
-        .set(STEP_TIME_ONLOAD_FROM_MEDITATION);
-
-    cmd.entity(entity).despawn_recursive();
-    overlay.single_mut().color.set_a(1.0);
-
-    cmd.insert_resource(LoadingScreenSettings {
-        bg_image_asset: Some(common_assets::meditation::LOADING_SCREEN),
-        stare_at_loading_screen_for_at_least: Some(
-            WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
-        ),
-        ..default()
-    });
-
-    stack.push(GlobalGameStateTransition::ApartmentQuittingToMeditationLoading);
-    next_state.set(GlobalGameState::ApartmentQuitting);
 }
 
 /// By entering the elevator, the player can this scene.
 pub(super) fn enter_the_elevator(
     mut cmd: Commands,
-    map: Res<common_top_down::TileMap<Apartment>>,
+    mut action_events: EventReader<ApartmentAction>,
 
-    player: Query<(Entity, &Actor), With<Player>>,
+    player: Query<Entity, With<Player>>,
     elevator: Query<Entity, With<Elevator>>,
     camera: Query<Entity, With<CameraEntity>>,
 ) {
-    let Some((entity, player)) = player.get_single_or_none() else {
-        return;
-    };
+    let is_triggered = action_events
+        .read()
+        .any(|action| matches!(action, ApartmentAction::EnterElevator));
 
-    let square = player.current_square();
-    if !map.is_on(square, ApartmentTileKind::ElevatorZone) {
-        return;
+    if is_triggered && let Some(entity) = player.get_single_or_none() {
+        cutscenes::EnterTheElevator {
+            player: entity,
+            elevator: elevator.single(),
+            camera: camera.single(),
+        }
+        .spawn(&mut cmd);
     }
-
-    cutscenes::EnterTheElevator {
-        player: entity,
-        elevator: elevator.single(),
-        camera: camera.single(),
-    }
-    .spawn(&mut cmd);
 }
 
 /// Zone overlay is a half transparent image that shows up when the character

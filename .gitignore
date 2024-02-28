@@ -1,3 +1,4 @@
 target
 .vscode
 bevy_behaviour_tree
+rustc-ice-*.txt

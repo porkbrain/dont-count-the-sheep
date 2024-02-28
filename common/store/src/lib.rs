@@ -102,6 +102,41 @@ impl<'a, T> Entry<'a, T> {
     }
 }
 
+pub use inspect_ability::InspectAbilityStore;
+mod inspect_ability {
+    use super::*;
+
+    /// Store anything that's related to inspect ability.
+    pub trait InspectAbilityStore {
+        /// Mark a given inspect label as seen by the player.
+        ///
+        /// Idempotent.
+        fn mark_as_seen(&self, label: &str);
+    }
+
+    impl InspectAbilityStore for GlobalStore {
+        fn mark_as_seen(&self, label: &str) {
+            let now = Instant::now();
+
+            let conn = self.conn.lock().unwrap();
+            conn.execute(
+                "INSERT INTO
+                discovered_with_inspect_ability (label) VALUES (:label)
+                ON CONFLICT DO NOTHING",
+                named_params! {
+                    ":label": label,
+                },
+            )
+            .expect("Cannot insert into SQLite");
+
+            let ms = now.elapsed().as_millis();
+            if ms > 1 {
+                warn!("mark_as_seen took {ms}ms");
+            }
+        }
+    }
+}
+
 pub use apartment::ApartmentStore;
 mod apartment {
     use std::time::Duration;
@@ -273,6 +308,11 @@ fn migrate(conn: &mut rusqlite::Connection) {
             );",
         ),
         M::up("CREATE INDEX idx_type_path ON dialogs (type_path);"),
+        M::up(
+            "CREATE TABLE discovered_with_inspect_ability (
+                label TEXT PRIMARY KEY
+            );",
+        ),
     ]);
 
     migrations.to_latest(conn).unwrap();
