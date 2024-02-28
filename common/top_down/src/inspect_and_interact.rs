@@ -3,7 +3,19 @@
 //!
 //! Search the wiki for inspect ability.
 //!
-//! TODO: explain the indirection with events
+//! # Event system for interaction
+//! Possible interactions in the world announce themselves to the [`interact`]
+//! system.
+//! They do that by inserting [`ReadyForInteraction`] component to their
+//! relevant [`InspectLabel`] entity.
+//! There is a property on the [`InspectLabel`] component that defines what
+//! event should be emitted from the [`interact`] system when the player
+//! decides to interact with that label.
+//!
+//! There is a common pattern: player enters a zone, hence they can interact
+//! with something in that zone.
+//! The zone is represented by a tile kind.
+//! See the [`ZoneToInspectLabelEntity`] resource that simplifies this pattern.
 
 use std::{borrow::Cow, time::Duration};
 
@@ -55,6 +67,8 @@ impl<T: Event + Clone> ActionEvent for T {
 /// this label is shown on the object.
 ///
 /// Use [`InspectLabelCategory::into_label`] to create a new label.
+///
+/// This works only if the entity has also [`Transform`] component.
 #[derive(Component, Reflect)]
 pub struct InspectLabel {
     display: Cow<'static, str>,
@@ -92,10 +106,15 @@ pub(crate) struct InspectLabelText;
 #[derive(Component, Reflect)]
 pub(crate) struct InspectLabelBg;
 
-/// TODO
+/// A helper resource that maps local tile kinds to entities that have
+/// [`InspectLabel`] component.
+///
+/// When entities are mapped this way, they are assigned the
+/// [`ReadyForInteraction`] component when the player enters the given zone.
 #[derive(Resource, Reflect, Default)]
 pub struct ZoneToInspectLabelEntity<L> {
-    /// TODO
+    /// The key is the local tile kind, the value is some entity that has
+    /// [`InspectLabel`] component.
     pub map: HashMap<L, Entity>,
 }
 

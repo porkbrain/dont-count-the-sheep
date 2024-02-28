@@ -148,7 +148,7 @@ pub struct CharacterBundleBuilder {
     is_player: bool,
 }
 
-/// TODO
+/// Event that's emitted when the player clicks interaction near an NPC.
 #[derive(Event, Reflect, Clone)]
 pub(crate) struct BeginDialogEvent(Entity);
 

@@ -6,7 +6,7 @@ use common_top_down::{
         self,
         door::{DoorBuilder, DoorOpenCriteria, DoorState},
     },
-    inspect_ability::ZoneToInspectLabelEntity,
+    inspect_and_interact::ZoneToInspectLabelEntity,
     Actor, ActorMovementEvent, InspectLabelCategory, TileKind, TileMap,
     TopDownScene,
 };

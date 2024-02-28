@@ -39,6 +39,9 @@ const TEXT_BOUNDS: Vec2 = vec2(250.0, 120.0);
 const CHOICE_TEXT_BOUNDS: Vec2 = vec2(250.0, 50.0);
 const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 
+/// Can be used on components and resources to schedule commands.
+pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
+
 /// Will be true if in a dialog that takes away player control.
 pub fn in_portrait_dialog() -> impl FnMut(Option<Res<PortraitDialog>>) -> bool {
     move |dialog| dialog.is_some()
@@ -62,8 +65,7 @@ pub struct PortraitDialog {
     speaker: Option<Character>,
     /// When dialog is finished, run these commands.
     #[reflect(ignore)]
-    when_finished:
-        Option<Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>>,
+    when_finished: Option<CmdFn>,
 }
 
 /// The root entity of the dialog UI.
@@ -195,7 +197,9 @@ pub fn advance(
     if let SequenceFinished::Yes = outcome {
         trace!("Despawning dialog");
 
-        dialog.when_finished.take().map(|f| f(&mut cmd));
+        if let Some(f) = dialog.when_finished.take() {
+            f(&mut cmd)
+        }
 
         cmd.remove_resource::<PortraitDialog>();
         cmd.entity(root).despawn_recursive();
@@ -304,8 +308,7 @@ pub fn change_selection(
 #[derive(Default)]
 pub struct DialogSettings {
     /// When dialog is finished, run these commands.
-    pub when_finished:
-        Option<Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>>,
+    pub when_finished: Option<CmdFn>,
 }
 
 /// Spawns [`PortraitDialog`] resource and all the necessary UI components.

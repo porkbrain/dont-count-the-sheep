@@ -91,8 +91,6 @@ pub(super) fn start_meditation_minigame_if_near_chair(
         .read()
         .any(|action| matches!(action, ApartmentAction::StartMeditation));
 
-    trace!("start_meditation_minigame_if_near_chair {is_triggered}");
-
     if is_triggered && let Some(entity) = player.get_single_or_none() {
         // when we come back, we want to be next to the chair
         store
@@ -133,8 +131,6 @@ pub(super) fn enter_the_elevator(
     let is_triggered = action_events
         .read()
         .any(|action| matches!(action, ApartmentAction::EnterElevator));
-
-    trace!("enter_the_elevator {is_triggered}");
 
     if is_triggered && let Some(entity) = player.get_single_or_none() {
         cutscenes::EnterTheElevator {

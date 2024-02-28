@@ -20,8 +20,8 @@ use common_story::{
 
 use super::BeginDialogEvent;
 use crate::{
-    inspect_ability::ReadyForInteraction, layout::ZoneTile, Actor, ActorTarget,
-    Player, TileMap, TopDownScene,
+    inspect_and_interact::ReadyForInteraction, layout::ZoneTile, Actor,
+    ActorTarget, Player, TileMap, TopDownScene,
 };
 
 const MIN_WAIT_BETWEEN_PATHFINDING_RETRY: Duration = Duration::from_millis(250);

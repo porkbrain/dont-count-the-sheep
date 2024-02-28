@@ -109,8 +109,6 @@ mod inspect_ability {
     /// Store anything that's related to inspect ability.
     pub trait InspectAbilityStore {
         /// Mark a given inspect label as seen by the player.
-        /// Next time the [`InspectAbilityStore::has_been_seen_before`] will
-        /// return `true`.
         ///
         /// Idempotent.
         fn mark_as_seen(&self, label: &str);

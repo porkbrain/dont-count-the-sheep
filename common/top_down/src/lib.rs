@@ -7,13 +7,13 @@
 pub mod actor;
 pub mod cameras;
 pub mod environmental_objects;
-pub mod inspect_ability;
+pub mod inspect_and_interact;
 pub mod layout;
 
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::{ecs::event::event_update_condition, prelude::*};
 use common_story::portrait_dialog::in_portrait_dialog;
-pub use inspect_ability::{InspectLabel, InspectLabelCategory};
+pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, TopDownScene};
 use leafwing_input_manager::plugin::InputManagerSystem;
 
@@ -155,19 +155,19 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
     app.register_type::<InspectLabel>()
         .add_systems(
             Update,
-            inspect_ability::show_all_in_vicinity
+            inspect_and_interact::show_all_in_vicinity
                 .run_if(in_state(running))
                 .run_if(common_action::inspect_pressed()),
         )
         .add_systems(
             Update,
-            inspect_ability::schedule_hide_all
+            inspect_and_interact::schedule_hide_all
                 .run_if(in_state(running))
                 .run_if(common_action::inspect_just_released()),
         )
         .add_systems(
             Update,
-            inspect_ability::cancel_hide_all
+            inspect_and_interact::cancel_hide_all
                 .run_if(in_state(running))
                 .run_if(common_action::inspect_just_pressed()),
         );
@@ -176,7 +176,7 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
 
     app.add_systems(
         PreUpdate,
-        inspect_ability::interact
+        inspect_and_interact::interact
             .run_if(in_state(running))
             .run_if(common_action::interaction_just_pressed())
             // Without this condition, the dialog will start when the player
@@ -204,7 +204,7 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
     )
     .add_systems(
         Update,
-        inspect_ability::match_interact_label_with_action_event::<T>
+        inspect_and_interact::match_interact_label_with_action_event::<T>
             .run_if(in_state(running))
             .run_if(
                 event_update_condition::<ActorMovementEvent<T::LocalTileKind>>,
