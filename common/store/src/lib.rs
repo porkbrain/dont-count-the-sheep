@@ -108,9 +108,6 @@ mod inspect_ability {
 
     /// Store anything that's related to inspect ability.
     pub trait InspectAbilityStore {
-        /// Whether a given inspect label has been seen before by the player.
-        fn has_been_seen_before(&self, label: &str) -> bool;
-
         /// Mark a given inspect label as seen by the player.
         /// Next time the [`InspectAbilityStore::has_been_seen_before`] will
         /// return `true`.
@@ -120,21 +117,9 @@ mod inspect_ability {
     }
 
     impl InspectAbilityStore for GlobalStore {
-        fn has_been_seen_before(&self, label: &str) -> bool {
-            let conn = self.conn.lock().unwrap();
-
-            let count: usize = conn
-                .query_row(
-                    "SELECT COUNT(*) FROM discovered_with_inspect_ability WHERE label = ?",
-                    [label],
-                    |row| row.get(0),
-                )
-                .expect("Cannot query SQLite");
-
-            count > 0
-        }
-
         fn mark_as_seen(&self, label: &str) {
+            let now = Instant::now();
+
             let conn = self.conn.lock().unwrap();
             conn.execute(
                 "INSERT INTO
@@ -145,6 +130,11 @@ mod inspect_ability {
                 },
             )
             .expect("Cannot insert into SQLite");
+
+            let ms = now.elapsed().as_millis();
+            if ms > 1 {
+                warn!("mark_as_seen took {ms}ms");
+            }
         }
     }
 }
