@@ -179,6 +179,17 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
         inspect_ability::interact
             .run_if(in_state(running))
             .run_if(common_action::interaction_just_pressed())
+            // Without this condition, the dialog will start when the player
+            // exists the previous one because:
+            // 1. The interact system runs, interact is just pressed, and so
+            //    emits the event.
+            // 2. Player finishes the dialog by pressing interaction. This
+            //    consumes the interact action.
+            // 3. Consuming the action did fuck all because the event was
+            //    already emitted earlier. Since the commands to remove the
+            //    dialog resource were applied, the condition to not run the
+            //    begin_dialog system will not prevent rerun
+            .run_if(not(in_portrait_dialog()))
             .after(InputManagerSystem::Update),
     )
     .add_systems(
