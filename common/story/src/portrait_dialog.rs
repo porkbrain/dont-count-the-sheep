@@ -1,6 +1,8 @@
 //! When a dialog is spawned, it's already loaded as it should look and does not
 //! require any additional actions.
 //!
+//! To start a dialog, call [`DialogRoot::spawn`].
+//!
 //! # Systems
 //! - [`crate::portrait_dialog::advance`] that advances the dialog one step
 //!   further, presumably fire it when the player presses the interact key
@@ -9,6 +11,7 @@
 //!   the player pressed some movement key
 
 pub mod apartment_elevator;
+pub mod marie;
 
 mod aaatargets;
 
@@ -39,12 +42,6 @@ const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 /// Will be true if in a dialog that takes away player control.
 pub fn in_portrait_dialog() -> impl FnMut(Option<Res<PortraitDialog>>) -> bool {
     move |dialog| dialog.is_some()
-}
-
-/// Will be false if in a dialog that takes away player control.
-pub fn not_in_portrait_dialog(
-) -> impl FnMut(Option<Res<PortraitDialog>>) -> bool {
-    move |dialog| dialog.is_none()
 }
 
 /// If inserted, then the game is in the dialog UI.
@@ -91,6 +88,7 @@ pub struct DialogChoice {
 }
 
 /// Next step in the dialog can take various forms.
+#[derive(Debug)]
 enum Step {
     Text {
         speaker: Character,
@@ -126,7 +124,7 @@ pub fn advance(
 
     root: Query<Entity, With<DialogUiRoot>>,
     mut text: Query<(&mut Text, &TextLayoutInfo), With<DialogText>>,
-    mut portrait: Query<&mut Handle<Image>, With<DialogPortrait>>,
+    mut portrait: Query<&mut UiImage, With<DialogPortrait>>,
     choices: Query<(Entity, &DialogChoice)>,
 ) {
     if dialog.last_frame_shown_at.elapsed() < MIN_TEXT_FRAME_TIME {
@@ -163,6 +161,8 @@ pub fn advance(
                 // the text component value and wait for the player to continue
                 text.sections[0].value = remaining_text.to_string();
                 dialog.last_frame_shown_at = Instant::now();
+
+                trace!("Rendering remaining text");
                 return;
             }
         }
@@ -183,7 +183,7 @@ pub fn advance(
         root,
         &choices,
         |speaker| {
-            *portrait.single_mut() =
+            portrait.single_mut().texture =
                 asset_server.load(speaker.portrait_asset_path());
         },
     );
@@ -440,13 +440,17 @@ fn advance_sequence(
     loop {
         let current_index = dialog.sequence_index;
         if current_index >= dialog.sequence.len() {
+            trace!("Dialog sequence finished");
             break SequenceFinished::Yes;
         }
 
         debug_assert!(!dialog.sequence.is_empty());
 
+        trace!("Advancing sequence {:?}", dialog.sequence[current_index]);
+
         match &dialog.sequence[current_index] {
             Step::Text { speaker, content } => {
+                trace!("Text sequence by {speaker}");
                 text.sections[0].value = content.to_string();
 
                 if dialog.speaker != Some(*speaker) {
@@ -460,6 +464,7 @@ fn advance_sequence(
             }
             Step::GoTo { story_point } => {
                 // next sequence
+                trace!("Go to sequence {story_point:?}");
 
                 global_store.insert_dialog_type_path(story_point.type_path());
                 dialog.sequence = story_point.sequence();
@@ -474,6 +479,7 @@ fn advance_sequence(
                     choices.iter().find(|(_, c)| c.is_selected)
                 {
                     // choice made, next sequence
+                    trace!("Made choice {:?}", choice.of);
 
                     global_store.insert_dialog_type_path(choice.of.type_path());
 
@@ -484,6 +490,10 @@ fn advance_sequence(
                     dialog.sequence = choice.of.sequence();
                     dialog.sequence_index = 0;
                 } else {
+                    trace!(
+                        "Displaying choice sequence by {speaker}: {between:?}"
+                    );
+
                     text.sections[0].value = content.to_string();
                     if dialog.speaker != Some(*speaker) {
                         set_portrait_image(*speaker);

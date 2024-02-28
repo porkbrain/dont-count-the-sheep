@@ -35,13 +35,9 @@ const FADE_OUT_IN: Duration = Duration::from_millis(5000);
 pub trait ActionEvent: Event {
     /// To keep the trait object safe, we cannot use a generic here.
     /// The solution to type erasure is to use commands.
-    /// One disadvantage is that the event is scheduled to be sent in the next
-    /// frame by default
-    /// However, when using [`IntoSystemConfigs::after`] and other ordering
-    /// methods, the deferrence happens automatically.
     ///
-    /// Systems that consume this event should always be explicitly ordered
-    /// _after_ the [`interact`] system.
+    /// Take sure that the systems that listen to this event are running in at
+    /// least the [`Update`] schedule or later.
     fn send_deferred(&self, cmd: &mut Commands);
 }
 

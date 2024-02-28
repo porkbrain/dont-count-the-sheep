@@ -12,11 +12,12 @@ pub mod layout;
 
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::{ecs::event::event_update_condition, prelude::*};
+use common_story::portrait_dialog::in_portrait_dialog;
 pub use inspect_ability::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, TopDownScene};
 use leafwing_input_manager::plugin::InputManagerSystem;
 
-use crate::actor::emit_movement_events;
+use crate::actor::{emit_movement_events, BeginDialogEvent};
 
 /// Does not add any systems, only registers generic-less types.
 pub struct Plugin;
@@ -24,6 +25,7 @@ pub struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<npc::PlanPathEvent>()
+            .add_event::<BeginDialogEvent>()
             .register_type::<Actor>()
             .register_type::<ActorTarget>()
             .register_type::<InspectLabelCategory>()
@@ -78,48 +80,45 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
         .register_type::<TileMap<T>>()
         .register_type::<ActorMovementEvent<T::LocalTileKind>>();
 
-    app.add_systems(
-        OnEnter(loading),
-        layout::systems::start_loading_map::<T>,
-    )
-    .add_systems(
-        First,
-        layout::systems::try_insert_map_as_resource::<T>
-            .run_if(in_state(loading)),
-    )
-    .add_systems(
-        FixedUpdate,
-        actor::animate_movement::<T>.run_if(in_state(running)),
-    )
-    .add_systems(
-        Update,
-        actor::emit_movement_events::<T>
-            .run_if(in_state(running))
-            // so that we can emit this event on current frame
-            .after(actor::player::move_around::<T>),
-    )
-    .add_systems(
-        Update,
-        actor::player::move_around::<T>
-            .run_if(in_state(running))
-            .run_if(common_action::move_action_pressed())
-            .run_if(common_story::portrait_dialog::not_in_portrait_dialog()),
-    )
-    .add_systems(
-        Update,
-        (
-            actor::npc::drive_behavior,
-            actor::npc::plan_path::<T>
-                .run_if(event_update_condition::<actor::npc::PlanPathEvent>),
-            actor::npc::run_path::<T>,
+    app.add_systems(OnEnter(loading), layout::systems::start_loading_map::<T>)
+        .add_systems(
+            First,
+            layout::systems::try_insert_map_as_resource::<T>
+                .run_if(in_state(loading)),
         )
-            .chain()
-            .run_if(in_state(running)),
-    )
-    .add_systems(
-        OnExit(running),
-        layout::systems::remove_resources::<T>,
-    );
+        .add_systems(
+            FixedUpdate,
+            actor::animate_movement::<T>.run_if(in_state(running)),
+        )
+        .add_systems(
+            Update,
+            actor::emit_movement_events::<T>
+                .run_if(in_state(running))
+                // so that we can emit this event on current frame
+                .after(actor::player::move_around::<T>),
+        )
+        .add_systems(
+            Update,
+            actor::player::move_around::<T>
+                .run_if(in_state(running))
+                .run_if(common_action::move_action_pressed())
+                .run_if(not(
+                    common_story::portrait_dialog::in_portrait_dialog(),
+                )),
+        )
+        .add_systems(
+            Update,
+            (
+                actor::npc::drive_behavior,
+                actor::npc::plan_path::<T>.run_if(
+                    event_update_condition::<actor::npc::PlanPathEvent>,
+                ),
+                actor::npc::run_path::<T>,
+            )
+                .chain()
+                .run_if(in_state(running)),
+        )
+        .add_systems(OnExit(running), layout::systems::remove_resources::<T>);
 
     debug!("Adding visuals for {}", T::type_path());
 
@@ -184,8 +183,21 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
     )
     .add_systems(
         Update,
+        (
+            actor::npc::mark_nearby_as_ready_for_interaction,
+            actor::npc::begin_dialog
+                .run_if(event_update_condition::<BeginDialogEvent>)
+                .run_if(not(in_portrait_dialog())),
+        )
+            .run_if(in_state(running)),
+    )
+    .add_systems(
+        Update,
         inspect_ability::match_interact_label_with_action_event::<T>
             .run_if(in_state(running))
+            .run_if(
+                event_update_condition::<ActorMovementEvent<T::LocalTileKind>>,
+            )
             .after(emit_movement_events::<T>),
     );
 }

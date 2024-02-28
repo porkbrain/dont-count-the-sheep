@@ -11,8 +11,15 @@ use std::{
 
 use bevy::prelude::*;
 use bevy_grid_squared::Square;
+use common_ext::QueryExt;
+use common_store::GlobalStore;
+use common_story::{portrait_dialog::DialogRoot, Character};
 
-use crate::{layout::ZoneTile, Actor, ActorTarget, TileMap, TopDownScene};
+use super::BeginDialogEvent;
+use crate::{
+    inspect_ability::ReadyForInteraction, layout::ZoneTile, Actor, ActorTarget,
+    Player, TileMap, TopDownScene,
+};
 
 const MIN_WAIT_BETWEEN_PATHFINDING_RETRY: Duration = Duration::from_millis(250);
 
@@ -111,6 +118,8 @@ impl BehaviorLeaf {
 }
 
 /// An NPC with this component will not further execute its behavior tree.
+///
+/// This is for example inserted when the NPC enters a dialog.
 #[derive(Component, Reflect)]
 pub struct BehaviorPaused;
 
@@ -261,6 +270,84 @@ pub fn run_path<T: TopDownScene>(
     }
 }
 
+/// NPCs close to the player are marked as ready for interaction.
+///
+/// This allows the player to [`begin_dialog`] as an interaction with the NPC
+/// will emit the [`BeginDialogEvent`].
+pub(crate) fn mark_nearby_as_ready_for_interaction(
+    mut cmd: Commands,
+
+    player: Query<&GlobalTransform, With<Player>>,
+    actors: Query<(Entity, &GlobalTransform), (With<Actor>, Without<Player>)>,
+) {
+    let Some(player) = player.get_single_or_none() else {
+        return;
+    };
+    let player = player.translation().truncate();
+
+    for (entity, transform) in actors.iter() {
+        let distance = transform.translation().truncate().distance(player);
+
+        if distance < 30.0 {
+            cmd.entity(entity).insert(ReadyForInteraction);
+        } else {
+            cmd.entity(entity).remove::<ReadyForInteraction>();
+        }
+    }
+}
+
+pub(crate) fn begin_dialog(
+    mut cmd: Commands,
+    mut events: EventReader<BeginDialogEvent>,
+    asset_server: Res<AssetServer>,
+    global_store: Res<GlobalStore>,
+
+    player: Query<&Actor, With<Player>>,
+    mut actors: Query<(&mut Actor, &mut NpcInTheMap), Without<Player>>,
+) {
+    let Some(BeginDialogEvent(entity)) = events.read().last() else {
+        return;
+    };
+
+    let Ok((mut actor, mut npc_in_the_map)) = actors.get_mut(*entity) else {
+        // might've just despawned - e.g. walked away
+        return;
+    };
+
+    let Some(player) = player.get_single_or_none() else {
+        warn!("No player to begin dialog for");
+        return;
+    };
+
+    let character = actor.character;
+
+    let mut stop_npc = || {
+        cmd.entity(*entity).insert(BehaviorPaused);
+
+        npc_in_the_map.reset_path();
+        actor.remove_planned_step();
+        actor.direction = actor
+            .current_square()
+            .direction_to(player.current_square())
+            .unwrap_or(actor.direction);
+    };
+
+    match character {
+        Character::Marie => {
+            stop_npc();
+
+            DialogRoot::MarieBlabbering.spawn(
+                &mut cmd,
+                &asset_server,
+                &global_store,
+            );
+        }
+        _ => {
+            // nothing just yet
+        }
+    }
+}
+
 impl BehaviorTree {
     /// Given root node, creates a new behavior tree.
     pub fn new(root: impl Into<BehaviorNode>) -> Self {
@@ -383,8 +470,9 @@ impl NpcInTheMap {
         Some(next_square)
     }
 
+    /// Removes the planned path.
     #[inline]
-    fn reset_path(&mut self) {
+    pub fn reset_path(&mut self) {
         self.planned_path_index = 0;
         self.planned_path.clear();
     }

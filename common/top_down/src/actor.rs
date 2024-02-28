@@ -150,7 +150,7 @@ pub struct CharacterBundleBuilder {
 
 /// TODO
 #[derive(Event, Reflect, Clone)]
-pub struct BeginDialogEvent(Entity);
+pub(crate) struct BeginDialogEvent(Entity);
 
 /// Sends events when an actor does something interesting.
 /// This system is registered on call to [`crate::default_setup_for_scene`].
@@ -444,6 +444,14 @@ impl Actor {
     /// This information is duplicated by the [`Player`] component.
     pub fn is_player(&self) -> bool {
         self.is_player
+    }
+
+    /// Lets actor finish walking to the current target, but doesn't let them
+    /// take the next planned step.
+    fn remove_planned_step(&mut self) {
+        if let Some(target) = &mut self.walking_to {
+            target.planned = None;
+        }
     }
 }
 
