@@ -13,7 +13,10 @@ use bevy::prelude::*;
 use bevy_grid_squared::Square;
 use common_ext::QueryExt;
 use common_store::GlobalStore;
-use common_story::{portrait_dialog::DialogRoot, Character};
+use common_story::{
+    portrait_dialog::{DialogRoot, DialogSettings},
+    Character,
+};
 
 use super::BeginDialogEvent;
 use crate::{
@@ -214,10 +217,16 @@ pub fn plan_path<T: TopDownScene>(
 }
 
 /// Takes tiles from the planned path and sets it as the actor's goal path.
+///
+/// We only do this if the behavior tree is not paused.
+/// E.g. when the NPC enters a dialog, we don't want it to move.
 pub fn run_path<T: TopDownScene>(
     map: Res<TileMap<T>>,
 
-    mut actors: Query<(Entity, &mut Actor, &mut NpcInTheMap)>,
+    mut actors: Query<
+        (Entity, &mut Actor, &mut NpcInTheMap),
+        Without<BehaviorPaused>,
+    >,
 ) {
     for (actor_entity, mut actor, mut npc_in_the_map) in actors.iter_mut() {
         if npc_in_the_map.planned_path.is_empty() {
@@ -296,40 +305,60 @@ pub(crate) fn mark_nearby_as_ready_for_interaction(
     }
 }
 
+/// When we start a dialog with an NPC, we insert [`BehaviorPaused`] to prevent
+/// the NPC from further executing its behavior tree.
+/// This also stops any movement scheduled in [`NpcInTheMap`].
+///
+/// This is preferable to clearing the path because:
+/// 1. If we clear the path, we would need unambiguous ordering between this
+///    system and the [`drive_behavior`] system. Otherwise the latter might see
+///    an empty path but commands would not be applied yet, and a new path is
+///    planned.
+/// 2. We won't have to recompute when the dialog finishes.
 pub(crate) fn begin_dialog(
     mut cmd: Commands,
     mut events: EventReader<BeginDialogEvent>,
     asset_server: Res<AssetServer>,
     global_store: Res<GlobalStore>,
 
-    player: Query<&Actor, With<Player>>,
-    mut actors: Query<(&mut Actor, &mut NpcInTheMap), Without<Player>>,
+    mut player: Query<&mut Actor, With<Player>>,
+    mut actors: Query<&mut Actor, Without<Player>>,
 ) {
     let Some(BeginDialogEvent(entity)) = events.read().last() else {
         return;
     };
+    let entity = *entity;
 
-    let Ok((mut actor, mut npc_in_the_map)) = actors.get_mut(*entity) else {
+    let Ok(mut actor) = actors.get_mut(entity) else {
         // might've just despawned - e.g. walked away
         return;
     };
 
-    let Some(player) = player.get_single_or_none() else {
-        warn!("No player to begin dialog for");
+    let Some(mut player) = player.get_single_mut_or_none() else {
+        warn!("Cannot begin dialog without a player");
         return;
     };
 
     let character = actor.character;
 
     let mut stop_npc = || {
-        cmd.entity(*entity).insert(BehaviorPaused);
+        cmd.entity(entity).insert(BehaviorPaused);
 
-        npc_in_the_map.reset_path();
         actor.remove_planned_step();
         actor.direction = actor
             .current_square()
             .direction_to(player.current_square())
             .unwrap_or(actor.direction);
+
+        player.remove_planned_step();
+        player.direction = actor.direction.opposite();
+    };
+
+    let settings = DialogSettings {
+        when_finished: Some(Box::new(move |cmd| {
+            trace!("Removing BehaviorPaused from {character}");
+            cmd.entity(entity).remove::<BehaviorPaused>();
+        })),
     };
 
     match character {
@@ -340,6 +369,7 @@ pub(crate) fn begin_dialog(
                 &mut cmd,
                 &asset_server,
                 &global_store,
+                settings,
             );
         }
         _ => {

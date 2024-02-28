@@ -60,6 +60,10 @@ pub struct PortraitDialog {
     sequence_index: usize,
     /// Determines the portrait used
     speaker: Option<Character>,
+    /// When dialog is finished, run these commands.
+    #[reflect(ignore)]
+    when_finished:
+        Option<Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>>,
 }
 
 /// The root entity of the dialog UI.
@@ -191,6 +195,8 @@ pub fn advance(
     if let SequenceFinished::Yes = outcome {
         trace!("Despawning dialog");
 
+        dialog.when_finished.take().map(|f| f(&mut cmd));
+
         cmd.remove_resource::<PortraitDialog>();
         cmd.entity(root).despawn_recursive();
 
@@ -294,14 +300,25 @@ pub fn change_selection(
     }
 }
 
+/// Some optional settings for the dialog.
+#[derive(Default)]
+pub struct DialogSettings {
+    /// When dialog is finished, run these commands.
+    pub when_finished:
+        Option<Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>>,
+}
+
 /// Spawns [`PortraitDialog`] resource and all the necessary UI components.
 fn spawn(
     cmd: &mut Commands,
     asset_server: &AssetServer,
     global_store: &GlobalStore,
     sequence: Vec<Step>,
+    settings: DialogSettings,
 ) {
     let mut dialog = PortraitDialog::new(sequence);
+    dialog.when_finished = settings.when_finished;
+
     let mut text = Text::from_section(
         "",
         TextStyle {
@@ -613,6 +630,7 @@ impl PortraitDialog {
             sequence_index: 0,
             speaker: None,
             last_frame_shown_at: Instant::now(),
+            when_finished: None,
         }
     }
 }
@@ -686,6 +704,7 @@ impl Default for PortraitDialog {
             sequence: vec![],
             sequence_index: 0,
             speaker: None,
+            when_finished: None,
         }
     }
 }

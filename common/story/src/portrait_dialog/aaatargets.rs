@@ -9,7 +9,7 @@ use super::{
         TakeTheElevatorToFirstFloor, TakeTheElevatorToGroundFloor,
     },
     marie::{IamSorryForYourLoss, MarieBlabbering, WhatHappenedToYourHusband},
-    AsChoice, AsSequence, Step,
+    AsChoice, AsSequence, DialogSettings, Step,
 };
 
 /// These are the root dialogs that can be spawned from the game.
@@ -47,14 +47,21 @@ impl DialogRoot {
         cmd: &mut Commands,
         asset_server: &AssetServer,
         global_store: &GlobalStore,
+        settings: DialogSettings,
     ) {
         match self {
-            Self::EnteredTheElevator => {
-                EnteredTheElevator::spawn(cmd, asset_server, global_store)
-            }
-            Self::MarieBlabbering => {
-                MarieBlabbering::spawn(cmd, asset_server, global_store)
-            }
+            Self::EnteredTheElevator => EnteredTheElevator::spawn(
+                cmd,
+                asset_server,
+                global_store,
+                settings,
+            ),
+            Self::MarieBlabbering => MarieBlabbering::spawn(
+                cmd,
+                asset_server,
+                global_store,
+                settings,
+            ),
         }
     }
 }

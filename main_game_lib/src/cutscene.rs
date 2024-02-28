@@ -616,7 +616,7 @@ fn begin_portrait_dialog(
         panic!("Expected BeginDialog step, got {step}");
     };
 
-    dialog.spawn(&mut cmd, &asset_server, &global_store);
+    dialog.spawn(&mut cmd, &asset_server, &global_store, default());
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }
