@@ -2,7 +2,7 @@
 
 use bevy::render::view::RenderLayers;
 use common_store::GlobalStore;
-use common_top_down::{actor::CharacterExt, ActorTarget, TopDownScene};
+use common_top_down::{actor::CharacterExt, ActorTarget};
 use common_visuals::camera::render_layer;
 
 use crate::{prelude::*, Downtown};

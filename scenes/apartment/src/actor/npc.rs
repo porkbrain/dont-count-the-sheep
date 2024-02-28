@@ -2,7 +2,6 @@ use bevy::render::view::RenderLayers;
 use common_top_down::{
     actor::CharacterExt,
     npc::{behaviors::IdlyWaiting, BehaviorLeaf, BehaviorNode, BehaviorTree},
-    TopDownScene,
 };
 use common_visuals::camera::render_layer;
 use main_game_lib::vec2_ext::Vec2Ext;

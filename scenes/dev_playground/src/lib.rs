@@ -7,7 +7,6 @@ mod layout;
 mod prelude;
 
 use common_assets::{store::AssetList, AssetStore};
-use common_top_down::TopDownScene;
 use layout::DevPlaygroundTileKind;
 use prelude::*;
 

@@ -8,11 +8,10 @@ use common_top_down::{
     },
     inspect_and_interact::ZoneToInspectLabelEntity,
     Actor, ActorMovementEvent, InspectLabelCategory, TileKind, TileMap,
-    TopDownScene,
 };
 use common_visuals::{
     camera::render_layer, AtlasAnimation, AtlasAnimationEnd,
-    AtlasAnimationTimer, BeginInterpolationEvent, PRIMARY_COLOR,
+    AtlasAnimationTimer, BeginInterpolationEvent,
 };
 use main_game_lib::common_ext::QueryExt;
 use rand::{thread_rng, Rng};

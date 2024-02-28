@@ -4,7 +4,7 @@ mod react;
 mod spawner;
 mod videos;
 
-use bevy::{ecs::event::event_update_condition, time::Stopwatch};
+use bevy::ecs::event::event_update_condition;
 use common_physics::PoissonsEquationUpdateEvent;
 use rand::random;
 use videos::Video;
