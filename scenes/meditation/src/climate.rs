@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::{
     ecs::event::event_update_condition, render::view::RenderLayers,
-    time::Stopwatch, utils::Instant,
+    utils::Instant,
 };
 use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
 use common_visuals::camera::render_layer;

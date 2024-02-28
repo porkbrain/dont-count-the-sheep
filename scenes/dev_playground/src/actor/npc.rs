@@ -5,7 +5,6 @@ use common_top_down::{
         behaviors::IdlyWaiting, BehaviorLeaf, BehaviorNode, BehaviorTree,
         NpcInTheMap,
     },
-    TopDownScene,
 };
 use common_visuals::camera::render_layer;
 use main_game_lib::vec2_ext::Vec2Ext;

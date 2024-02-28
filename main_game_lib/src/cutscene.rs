@@ -10,12 +10,9 @@
 //! another.
 //! Specifically, those systems that don't wait for anything.
 
-use std::{sync::OnceLock, time::Duration};
+use std::sync::OnceLock;
 
-use bevy::{
-    ecs::system::SystemId, prelude::*, render::view::RenderLayers,
-    time::Stopwatch,
-};
+use bevy::{ecs::system::SystemId, prelude::*, render::view::RenderLayers};
 use bevy_grid_squared::{GridDirection, Square};
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
@@ -29,9 +26,7 @@ use common_visuals::{
     AtlasAnimation, AtlasAnimationTimer, BeginInterpolationEvent,
 };
 
-use crate::{
-    prelude::*, GlobalGameStateTransition, GlobalGameStateTransitionStack,
-};
+use crate::prelude::*;
 
 const LETTERBOXING_FADE_IN_DURATION: Duration = from_millis(500);
 const LETTERBOXING_FADE_OUT_DURATION: Duration = from_millis(250);

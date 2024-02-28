@@ -3,7 +3,6 @@ use std::{
     ops::AddAssign,
 };
 
-use bevy::time::Stopwatch;
 use main_game_lib::common_ext::QueryExt;
 
 use super::consts::*;

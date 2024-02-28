@@ -15,7 +15,6 @@ mod zindex;
 use bevy::utils::Instant;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_top_down::TopDownScene;
 use consts::START_LOADING_SCREEN_AFTER;
 use layout::ApartmentTileKind;
 use prelude::*;
