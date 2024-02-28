@@ -61,10 +61,6 @@ pub struct Actor {
     occupies: Vec<TileIndex>,
     /// This information is duplicated.
     /// We also have a player component that's assigned to the player entity.
-    ///
-    /// However, we do sometimes remove the [`Player`] component to take away
-    /// control from the player.
-    /// On the other hand, we never change this flag.
     is_player: bool,
 }
 

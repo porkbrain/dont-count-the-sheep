@@ -35,8 +35,7 @@ impl IntoCutscene for EnterTheElevator {
         } = self;
 
         vec![
-            // take away player control
-            RemovePlayerComponent(player),
+            TakeAwayPlayerControl(player),
             SetActorFacingDirection(player, GridDirection::Top),
             // move camera to the player
             BeginMovingEntity {
@@ -102,7 +101,7 @@ impl IntoCutscene for EnterTheElevator {
                         over: from_millis(1000),
                         animation_curve: Some(EASE_IN_OUT.clone()),
                     },
-                    AddPlayerComponent(player),
+                    ReturnPlayerControl(player),
                 ]),
             ),
         ]

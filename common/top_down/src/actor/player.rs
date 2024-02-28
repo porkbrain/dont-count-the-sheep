@@ -14,17 +14,23 @@ use crate::layout::{TileMap, TopDownScene};
 ///
 /// This information is duplicated.
 /// It's also stored on the [`Actor`] component as a flag.
-/// However, since we sometimes remove the [`Player`] component to disable
-/// player control, using the flag is more reliable.
 #[derive(Component, Reflect)]
 pub struct Player;
+
+/// If the [`Player`] has this component, the player cannot perform movement
+/// actions.
+#[derive(Component, Reflect)]
+pub struct TakeAwayPlayerControl;
 
 /// Use keyboard to move around the player.
 pub fn move_around<T: TopDownScene>(
     map: Res<TileMap<T>>,
     controls: Res<ActionState<GlobalAction>>,
 
-    mut player: Query<(Entity, &mut Actor), With<Player>>,
+    mut player: Query<
+        (Entity, &mut Actor),
+        (With<Player>, Without<TakeAwayPlayerControl>),
+    >,
 ) {
     // there must be some user action
     let Some(action) = controls
