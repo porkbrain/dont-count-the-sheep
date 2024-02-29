@@ -4,6 +4,8 @@
 
 A top down pixelart game created with [Bevy](https://bevyengine.org/).
 
+Run `$ ./bin/wiki` to open the game's [wiki](wiki/README.md) locally in your browser.
+
 # Repo organization
 
 There are crates in the [`common`](common/) directory that help with [animation](common/visuals/), [input handling](common/action/), [loading screen](common/loading_screen/), [map layout, npc and player control](common/top_down/) and more.

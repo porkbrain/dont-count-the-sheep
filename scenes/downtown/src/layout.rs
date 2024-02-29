@@ -1,10 +1,9 @@
 use bevy::render::view::RenderLayers;
-use common_top_down::TopDownScene;
 use common_visuals::camera::render_layer;
 use serde::{Deserialize, Serialize};
 use strum::{EnumIter, IntoEnumIterator};
 
-use crate::{prelude::*, Downtown};
+use crate::prelude::*;
 
 /// We arbitrarily derive the [`Default`] to allow reflection.
 /// It does not have a meaningful default value.
@@ -85,21 +84,5 @@ impl common_top_down::layout::Tile for DowntownTileKind {
     #[inline]
     fn zones_iter() -> impl Iterator<Item = Self> {
         Self::iter().filter(|kind| kind.is_zone())
-    }
-}
-
-impl TopDownScene for Downtown {
-    type LocalTileKind = DowntownTileKind;
-
-    fn name() -> &'static str {
-        "downtown"
-    }
-
-    fn bounds() -> [i32; 4] {
-        [-80, 60, -20, 160]
-    }
-
-    fn asset_path() -> &'static str {
-        assets::MAP
     }
 }

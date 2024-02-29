@@ -1,6 +1,5 @@
 use std::f32::consts::PI;
 
-use bevy::time::Stopwatch;
 use common_physics::PoissonsEquation;
 use main_game_lib::common_ext::QueryExt;
 

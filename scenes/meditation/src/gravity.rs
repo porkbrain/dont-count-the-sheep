@@ -86,7 +86,6 @@ impl common_physics::WorldDimensions for ChangeOfBasis {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::consts::{GRAVITY_STAGE_HEIGHT, GRAVITY_STAGE_WIDTH};
 
     #[test]
     fn it_translates_from_canvas_to_grid() {

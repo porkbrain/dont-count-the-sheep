@@ -3,7 +3,7 @@ use std::{
     f32::consts::{E, PI},
 };
 
-use bevy::{core_pipeline::bloom::BloomSettings, time::Stopwatch};
+use bevy::core_pipeline::bloom::BloomSettings;
 use common_visuals::camera::{PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH};
 use main_game_lib::common_ext::QueryExt;
 

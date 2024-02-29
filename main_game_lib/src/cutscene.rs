@@ -10,26 +10,23 @@
 //! another.
 //! Specifically, those systems that don't wait for anything.
 
-use std::{sync::OnceLock, time::Duration};
+use std::sync::OnceLock;
 
-use bevy::{
-    ecs::system::SystemId, prelude::*, render::view::RenderLayers,
-    time::Stopwatch,
-};
+use bevy::{ecs::system::SystemId, prelude::*, render::view::RenderLayers};
 use bevy_grid_squared::{GridDirection, Square};
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_store::GlobalStore;
 use common_story::portrait_dialog::{DialogRoot, PortraitDialog};
-use common_top_down::{Actor, ActorTarget, Player};
+use common_top_down::{
+    actor::player::TakeAwayPlayerControl, Actor, ActorTarget,
+};
 use common_visuals::{
     camera::{order, render_layer, PIXEL_ZOOM},
     AtlasAnimation, AtlasAnimationTimer, BeginInterpolationEvent,
 };
 
-use crate::{
-    prelude::*, GlobalGameStateTransition, GlobalGameStateTransitionStack,
-};
+use crate::prelude::*;
 
 const LETTERBOXING_FADE_IN_DURATION: Duration = from_millis(500);
 const LETTERBOXING_FADE_OUT_DURATION: Duration = from_millis(250);
@@ -108,13 +105,13 @@ pub enum CutsceneStep {
 
     /// Simple await until this duration passes.
     Sleep(Duration),
-    /// Removes the [`Player`] component from the player entity.
+    /// Inserts the [`TakeAwayPlayerControl`] component to the player entity.
     /// Ideal for the first step of the cutscene.
-    RemovePlayerComponent(Entity),
-    /// Inserts the [`Player`] component to the player entity.
+    TakeAwayPlayerControl(Entity),
+    /// Removes the [`TakeAwayPlayerControl`] component from the player entity.
     /// This gives the player back control, ideal for the last step of the
     /// cutscene.
-    AddPlayerComponent(Entity),
+    ReturnPlayerControl(Entity),
     /// Inserts [`AtlasAnimationTimer`] component to the given entity.
     /// This typically is used to start an animation when the entity has
     /// [`AtlasAnimation`] component.
@@ -402,8 +399,8 @@ static CUTSCENE_SYSTEMS: OnceLock<CutsceneSystems> = OnceLock::new();
 
 struct CutsceneSystems {
     if_true_this_else_that: SystemId,
-    remove_player_component: SystemId,
-    add_player_component: SystemId,
+    take_away_player_control: SystemId,
+    return_player_control: SystemId,
     sleep: SystemId,
     insert_atlas_animation_timer_to: SystemId,
     change_global_state: SystemId,
@@ -421,8 +418,9 @@ impl CutsceneSystems {
     fn register_systems(w: &mut World) -> Self {
         Self {
             if_true_this_else_that: w.register_system(if_true_this_else_that),
-            remove_player_component: w.register_system(remove_player_component),
-            add_player_component: w.register_system(add_player_component),
+            take_away_player_control: w
+                .register_system(take_away_player_control),
+            return_player_control: w.register_system(return_player_control),
             sleep: w.register_system(sleep),
             insert_atlas_animation_timer_to: w
                 .register_system(insert_atlas_animation_timer_to),
@@ -454,8 +452,8 @@ fn system_id(step: &CutsceneStep) -> SystemId {
     let s = CUTSCENE_SYSTEMS.get().unwrap();
     match step {
         IfTrueThisElseThat(_, _, _) => s.if_true_this_else_that,
-        RemovePlayerComponent(_) => s.remove_player_component,
-        AddPlayerComponent(_) => s.add_player_component,
+        TakeAwayPlayerControl(_) => s.take_away_player_control,
+        ReturnPlayerControl(_) => s.return_player_control,
         Sleep(_) => s.sleep,
         InsertAtlasAnimationTimerTo { .. } => s.insert_atlas_animation_timer_to,
         ChangeGlobalState { .. } => s.change_global_state,
@@ -470,24 +468,24 @@ fn system_id(step: &CutsceneStep) -> SystemId {
     }
 }
 
-fn remove_player_component(mut cmd: Commands, mut cutscene: ResMut<Cutscene>) {
+fn take_away_player_control(mut cmd: Commands, mut cutscene: ResMut<Cutscene>) {
     let step = &cutscene.sequence[cutscene.sequence_index];
-    let CutsceneStep::RemovePlayerComponent(entity) = &step else {
-        panic!("Expected RemovePlayerComponent step, got {step}");
+    let CutsceneStep::TakeAwayPlayerControl(entity) = &step else {
+        panic!("Expected TakeAwayPlayerControl step, got {step}");
     };
 
-    cmd.entity(*entity).remove::<Player>();
+    cmd.entity(*entity).insert(TakeAwayPlayerControl);
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }
 
-fn add_player_component(mut cmd: Commands, mut cutscene: ResMut<Cutscene>) {
+fn return_player_control(mut cmd: Commands, mut cutscene: ResMut<Cutscene>) {
     let step = &cutscene.sequence[cutscene.sequence_index];
-    let CutsceneStep::AddPlayerComponent(entity) = &step else {
-        panic!("Expected AddPlayerComponent step, got {step}");
+    let CutsceneStep::ReturnPlayerControl(entity) = &step else {
+        panic!("Expected ReturnPlayerControl step, got {step}");
     };
 
-    cmd.entity(*entity).insert(Player);
+    cmd.entity(*entity).remove::<TakeAwayPlayerControl>();
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }
@@ -616,7 +614,7 @@ fn begin_portrait_dialog(
         panic!("Expected BeginDialog step, got {step}");
     };
 
-    dialog.spawn(&mut cmd, &asset_server, &global_store);
+    dialog.spawn(&mut cmd, &asset_server, &global_store, default());
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }

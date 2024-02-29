@@ -2,6 +2,7 @@
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::type_complexity)]
 #![feature(trivial_bounds)]
+#![feature(let_chains)]
 
 mod actor;
 mod autogen;
@@ -14,8 +15,8 @@ mod zindex;
 use bevy::utils::Instant;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_top_down::TopDownScene;
 use consts::START_LOADING_SCREEN_AFTER;
+use layout::ApartmentTileKind;
 use prelude::*;
 
 /// Important scene struct.
@@ -163,6 +164,22 @@ fn smooth_exit(
                 );
             }
         }
+    }
+}
+
+impl TopDownScene for Apartment {
+    type LocalTileKind = ApartmentTileKind;
+
+    fn name() -> &'static str {
+        "apartment"
+    }
+
+    fn bounds() -> [i32; 4] {
+        [-80, 40, -30, 20]
+    }
+
+    fn asset_path() -> &'static str {
+        assets::MAP
     }
 }
 

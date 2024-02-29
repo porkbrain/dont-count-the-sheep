@@ -2,7 +2,7 @@
 
 use bevy::{math::vec3, render::view::RenderLayers};
 use bevy_magic_light_2d::gi::types::OmniLightSource2D;
-use common_visuals::{camera::render_layer, PRIMARY_COLOR};
+use common_visuals::camera::render_layer;
 
 use crate::{cameras::BackgroundLightScene, prelude::*};
 

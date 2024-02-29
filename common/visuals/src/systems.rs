@@ -153,7 +153,14 @@ pub fn interpolate(
     time: Res<Time>,
 
     // color interpolation
-    mut sprites: Query<(Entity, &mut Sprite, &mut ColorInterpolation)>,
+    mut sprites: Query<
+        (Entity, &mut Sprite, &mut ColorInterpolation),
+        Without<Text>,
+    >,
+    mut text: Query<
+        (Entity, &mut Text, &mut ColorInterpolation),
+        Without<Sprite>,
+    >,
 
     // translation interpolation
     mut translations: Query<(
@@ -169,31 +176,50 @@ pub fn interpolate(
 
     // color interpolation
 
-    for (entity, mut sprite, mut interpolation) in sprites.iter_mut() {
-        interpolation.started_at.tick(dt);
+    let mut color_interpolation =
+        |entity, color: &mut Color, interpolation: &mut ColorInterpolation| {
+            interpolation.started_at.tick(dt);
 
-        let elapsed_fraction = interpolation.started_at.elapsed_secs()
-            / interpolation.over.as_secs_f32();
+            let elapsed_fraction = interpolation.started_at.elapsed_secs()
+                / interpolation.over.as_secs_f32();
 
-        if elapsed_fraction >= 1.0 {
-            sprite.color = interpolation.to;
-            cmd.entity(entity).remove::<ColorInterpolation>();
+            if elapsed_fraction >= 1.0 {
+                *color = interpolation.to;
+                cmd.entity(entity).remove::<ColorInterpolation>();
 
-            match &interpolation.when_finished {
-                Some(OnInterpolationFinished::Custom(fun)) => {
-                    fun(&mut cmd);
+                match &interpolation.when_finished {
+                    Some(OnInterpolationFinished::Custom(fun)) => {
+                        fun(&mut cmd);
+                    }
+                    Some(OnInterpolationFinished::DespawnItself) => {
+                        cmd.entity(entity).despawn();
+                    }
+                    None => {}
                 }
-                None => {}
-            }
-        } else {
-            let lerp_factor = interpolation
-                .animation_curve
-                .as_ref()
-                .map(|curve| curve.ease(elapsed_fraction))
-                .unwrap_or(elapsed_fraction);
+            } else {
+                let lerp_factor = interpolation
+                    .animation_curve
+                    .as_ref()
+                    .map(|curve| curve.ease(elapsed_fraction))
+                    .unwrap_or(elapsed_fraction);
 
-            let from = interpolation.from.get_or_insert(sprite.color);
-            sprite.color = from.lerp(interpolation.to, lerp_factor);
+                let from = interpolation.from.get_or_insert(*color);
+                *color = from.lerp(interpolation.to, lerp_factor);
+            }
+        };
+
+    for (entity, mut sprite, mut interpolation) in sprites.iter_mut() {
+        color_interpolation(entity, &mut sprite.color, &mut interpolation);
+    }
+    for (entity, mut text, mut interpolation) in text.iter_mut() {
+        // Color interpolation is currently supported only for one text section
+        debug_assert_eq!(1, text.sections.len());
+        if let Some(section) = &mut text.sections.first_mut() {
+            color_interpolation(
+                entity,
+                &mut section.style.color,
+                &mut interpolation,
+            );
         }
     }
 
@@ -213,6 +239,9 @@ pub fn interpolate(
             match &interpolation.when_finished {
                 Some(OnInterpolationFinished::Custom(fun)) => {
                     fun(&mut cmd);
+                }
+                Some(OnInterpolationFinished::DespawnItself) => {
+                    cmd.entity(entity).despawn();
                 }
                 None => {}
             }
@@ -247,6 +276,9 @@ pub fn interpolate(
             match &interpolation.when_finished {
                 Some(OnInterpolationFinished::Custom(fun)) => {
                     fun(&mut cmd);
+                }
+                Some(OnInterpolationFinished::DespawnItself) => {
+                    cmd.entity(entity).despawn();
                 }
                 None => {}
             }

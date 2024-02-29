@@ -1,9 +1,6 @@
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::PIXEL_ZOOM;
-use main_game_lib::{
-    common_ext::QueryExt,
-    state::{GlobalGameStateTransition, GlobalGameStateTransitionStack},
-};
+use main_game_lib::common_ext::QueryExt;
 
 use super::consts::*;
 use crate::{consts::*, prelude::*};

@@ -31,6 +31,24 @@ pub enum GridDirection {
     BottomRight,
 }
 
+impl GridDirection {
+    /// Returns the opposite direction.
+    pub fn opposite(self) -> Self {
+        use GridDirection::*;
+
+        match self {
+            Top => Bottom,
+            Bottom => Top,
+            Left => Right,
+            Right => Left,
+            TopLeft => BottomRight,
+            TopRight => BottomLeft,
+            BottomLeft => TopRight,
+            BottomRight => TopLeft,
+        }
+    }
+}
+
 impl Square {
     #[inline]
     pub const fn neighbor(self, direction: GridDirection) -> Self {

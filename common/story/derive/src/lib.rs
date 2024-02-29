@@ -19,12 +19,14 @@ pub fn derive_portrait(
                 cmd: &mut bevy::prelude::Commands,
                 asset_server: &bevy::prelude::AssetServer,
                 global_store: &common_store::GlobalStore,
+                settings: crate::portrait_dialog::DialogSettings,
             ) {
                 crate::portrait_dialog::spawn(
                     cmd,
                     asset_server,
                     global_store,
                     Self::sequence(),
+                    settings
                 );
             }
         }

@@ -5,6 +5,7 @@ pub mod fonts {
 
     pub const PIXEL1: &str = "fonts/shaperka.ttf";
     pub const PENCIL1: &str = "fonts/pencil.ttf";
+    pub const TINY_PIXEL1: &str = "fonts/tiny_pixel.ttf";
 }
 
 pub mod apartment {
@@ -27,6 +28,7 @@ pub mod apartment {
     pub const ELEVATOR_ATLAS: &str = "apartment/elevator_atlas.png";
     pub const VENDING_MACHINE_ATLAS: &str =
         "apartment/vending_machine_atlas.png";
+    pub const MEDITATION_CHAIR: &str = "apartment/meditation_chair.png";
 
     pub const WINNIE_SLEEPING: &str = "apartment/sleeping.png";
     pub const WINNIE_MEDITATING: &str = "apartment/meditating.png";

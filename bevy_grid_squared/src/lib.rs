@@ -1,3 +1,5 @@
+//! Types that help you work with a square grid.
+
 #![feature(const_fn_floating_point_arithmetic)]
 #![feature(const_trait_impl)]
 #![feature(effects)]
@@ -10,6 +12,8 @@ use std::ops::{Add, Sub};
 use bevy::prelude::*;
 pub use direction::GridDirection;
 
+/// Defines where in the world is this a grid and how big are the squares.
+/// This is with respect to your game coordinates.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Reflect)]
 #[reflect(Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
