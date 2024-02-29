@@ -31,7 +31,7 @@ use crate::{ActorMovementEvent, Player, TileKind, TopDownScene};
 /// The label's bg is a rect with a half transparent color.
 const HALF_TRANSPARENT: Color = Color::rgba(0.0, 0.0, 0.0, 0.5);
 /// The font size of the label text that shows up when inspecting.
-const FONT_SIZE: f32 = 20.0;
+const FONT_SIZE: f32 = 12.0;
 /// When the player releases the inspect button, the labels fade out in this
 /// duration.
 const FADE_OUT_IN: Duration = Duration::from_millis(5000);
