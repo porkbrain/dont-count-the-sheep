@@ -14,7 +14,6 @@ use std::sync::OnceLock;
 
 use bevy::{ecs::system::SystemId, prelude::*, render::view::RenderLayers};
 use bevy_grid_squared::{GridDirection, Square};
-use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_store::GlobalStore;
 use common_story::portrait_dialog::{DialogRoot, PortraitDialog};
@@ -22,7 +21,7 @@ use common_top_down::{
     actor::player::TakeAwayPlayerControl, Actor, ActorTarget,
 };
 use common_visuals::{
-    camera::{order, render_layer, PIXEL_ZOOM},
+    camera::{order, render_layer},
     AtlasAnimation, AtlasAnimationTimer, BeginInterpolationEvent,
 };
 
@@ -35,11 +34,6 @@ const LETTERBOXING_QUAD_FADE_IN_HEIGHT: Val = Val::Percent(15.0);
 /// Will be true if there's a cutscene playing.
 pub fn in_cutscene() -> impl FnMut(Option<Res<Cutscene>>) -> bool {
     move |cutscene| cutscene.is_some()
-}
-
-/// Will be true if there's no cutscene playing.
-pub fn not_in_cutscene() -> impl FnMut(Option<Res<Cutscene>>) -> bool {
-    move |cutscene| cutscene.is_none()
 }
 
 /// A trait for creating cutscenes.
@@ -62,6 +56,9 @@ pub trait IntoCutscene {
 
     /// Helper function that spawns the cutscene.
     /// You don't need to do anything beyond this.
+    ///
+    /// It's the caller's responsibility to ensure that another scene is not
+    /// already running.
     fn spawn(self, cmd: &mut Commands)
     where
         Self: Sized,
@@ -74,9 +71,11 @@ pub trait IntoCutscene {
 /// Cutscene can be connected with a dialog though.
 #[derive(Resource, Reflect)]
 pub struct Cutscene {
-    /// Whether the cutscene is loaded.
-    /// This is set to true on the first frame that the cutscene is a resource.
-    is_loaded: bool,
+    /// Cutscene is over and will be despawned soon.
+    /// Sometimes, we want to have some outro animation playing, e.g. for
+    /// letterboxing, and so we keep the [`Cutscene`] resource alive for a bit
+    /// but this flag disables all logic.
+    is_over: bool,
     /// The sequence of steps that the cutscene will execute.
     /// Current step is tracked by `sequence_index`.
     sequence: Vec<CutsceneStep>,
@@ -223,6 +222,9 @@ impl bevy::app::Plugin for Plugin {
 }
 
 /// Spawns the given cutscene.
+///
+/// It's the caller's responsibility to ensure that another scene is not already
+/// running.
 pub fn spawn_cutscene<Scene: IntoCutscene>(
     cmd: &mut Commands,
     cutscene: Scene,
@@ -232,15 +234,14 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
     let has_letterboxing = Scene::has_letterboxing();
 
     let letterboxing_entities = if has_letterboxing {
-        // Render layers will be inserted once the cutscene is loaded.
+        // RenderLayers will be inserted once the cutscene is loaded.
         // This is to prevent a flicker when the quads are rendered but the
         // pixel zoom is not yet set.
         let camera = cmd
             .spawn((
-                Name::new("Letterboxing: camera"),
+                Name::new("Cutscene camera"),
                 LetterboxingCamera,
-                PixelZoom::Fixed(PIXEL_ZOOM),
-                PixelViewport,
+                RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
                 Camera2dBundle {
                     camera: Camera {
                         hdr: true,
@@ -311,11 +312,11 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
     };
 
     let cutscene = Cutscene {
+        is_over: false,
         sequence,
         sequence_index: 0,
         stopwatch: Stopwatch::new(),
         letterboxing_entities,
-        is_loaded: false, // will be on next frame
     };
 
     // this will be picked up by `schedule_current_step` system
@@ -329,25 +330,19 @@ fn schedule_current_step(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
     time: Res<Time>,
-
-    camera: Query<Entity, With<LetterboxingCamera>>,
 ) {
-    if !cutscene.is_loaded {
-        cutscene.is_loaded = true;
-
-        if cutscene.letterboxing_entities.is_some() {
-            cmd.entity(camera.single()).insert(RenderLayers::layer(
-                render_layer::CUTSCENE_LETTERBOXING,
-            ));
-        }
+    if !cutscene.is_over {
+        cutscene.stopwatch.tick(time.delta());
+        cutscene.schedule_current_step(&mut cmd);
     }
-
-    cutscene.stopwatch.tick(time.delta());
-    cutscene.schedule_current_step(&mut cmd);
 }
 
 impl Cutscene {
     fn schedule_next_step_or_despawn(&mut self, cmd: &mut Commands) {
+        if self.is_over {
+            return;
+        }
+
         if self.sequence_index >= self.sequence.len() - 1 {
             self.force_despawn(cmd);
         } else {
@@ -359,7 +354,8 @@ impl Cutscene {
 
     /// Despawns cutscene regardless of whether it finished.
     fn force_despawn(&mut self, cmd: &mut Commands) {
-        cmd.remove_resource::<Cutscene>();
+        self.is_over = true;
+
         if let Some(entities) = self.letterboxing_entities.take() {
             // smoothly animate quads out and when down, despawn everything
 
@@ -378,11 +374,16 @@ impl Cutscene {
             )
             .over(LETTERBOXING_FADE_OUT_DURATION)
             .when_finished_do(move |cmd: &mut Commands| {
+                trace!("Despawning cutscene");
+                cmd.remove_resource::<Cutscene>();
+
                 cmd.entity(entities[0]).despawn();
                 cmd.entity(entities[1]).despawn();
                 cmd.entity(entities[2]).despawn();
             })
             .insert(cmd);
+        } else {
+            cmd.remove_resource::<Cutscene>();
         }
     }
 
