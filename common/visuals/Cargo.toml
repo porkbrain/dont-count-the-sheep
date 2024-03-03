@@ -10,6 +10,4 @@ lazy_static.workspace = true
 rand.workspace = true
 
 [features]
-default = ["fps"]
-
-fps = ["bevy/default_font"]
+devtools = ["bevy/default_font"]

@@ -31,7 +31,7 @@ pub fn add(app: &mut App) {
         GlobalGameState::DowntownQuitting,
     );
 
-    #[cfg(feature = "dev")]
+    #[cfg(feature = "devtools")]
     common_top_down::dev_default_setup_for_scene::<Downtown, _>(
         app,
         GlobalGameState::AtDowntown,

@@ -22,5 +22,5 @@ rand.workspace = true
 
 
 [features]
-dev = ["bevy/glam_assert"]
-dev-poisson = ["common_physics/poissons-eq-visualization"]
+devtools = []
+devtools-poisson = ["common_physics/poissons-eq-visualization"]

@@ -23,7 +23,6 @@ use bevy::{
     math::vec2, prelude::*, render::view::RenderLayers, text::TextLayoutInfo,
     utils::Instant,
 };
-use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_action::{ActionState, GlobalAction};
 use common_store::{DialogStore, GlobalStore};
 use common_visuals::camera::render_layer;
@@ -48,8 +47,8 @@ pub fn in_portrait_dialog() -> impl FnMut(Option<Res<PortraitDialog>>) -> bool {
 }
 
 /// If inserted, then the game is in the dialog UI.
-#[derive(Resource, Reflect, InspectorOptions)]
-#[reflect(Resource, InspectorOptions)]
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct PortraitDialog {
     /// We force a small delay between frames to prevent the player from
     /// skipping through the dialog way too fast.

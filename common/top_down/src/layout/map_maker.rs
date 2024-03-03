@@ -2,6 +2,7 @@ use std::{collections::BTreeMap, fs};
 
 use bevy::{utils::HashSet, window::PrimaryWindow};
 use bevy_egui::EguiContexts;
+use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_visuals::camera::MainCamera;
 use map_maker::build_pathfinding_graph::{GraphExt, LocalTileKindGraph};
 use ron::ser::PrettyConfig;

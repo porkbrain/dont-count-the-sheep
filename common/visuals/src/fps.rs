@@ -1,5 +1,3 @@
-//! Toggle with F12
-//!
 //! <https://bevy-cheatbook.github.io/cookbook/print-framerate.html>
 
 use bevy::{
@@ -117,19 +115,5 @@ pub(crate) fn update(
             text.sections[1].value = " N/A".into();
             text.sections[1].style.color = Color::WHITE;
         }
-    }
-}
-
-/// Toggle the FPS counter when pressing F12
-pub(crate) fn toggle(
-    mut q: Query<&mut Visibility, With<FpsRoot>>,
-    kbd: Res<ButtonInput<KeyCode>>,
-) {
-    if kbd.just_pressed(KeyCode::F12) {
-        let mut vis = q.single_mut();
-        *vis = match *vis {
-            Visibility::Hidden => Visibility::Visible,
-            _ => Visibility::Hidden,
-        };
     }
 }

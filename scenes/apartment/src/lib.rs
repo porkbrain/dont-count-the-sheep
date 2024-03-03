@@ -35,7 +35,7 @@ pub fn add(app: &mut App) {
         GlobalGameState::ApartmentQuitting,
     );
 
-    #[cfg(feature = "dev")]
+    #[cfg(feature = "devtools")]
     common_top_down::dev_default_setup_for_scene::<Apartment, _>(
         app,
         GlobalGameState::InApartment,

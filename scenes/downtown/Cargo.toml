@@ -19,5 +19,6 @@ main_game_lib.workspace = true
 serde.workspace = true
 strum.workspace = true
 
+
 [features]
-dev = ["bevy/glam_assert"]
+devtools = ["common_top_down/devtools"]

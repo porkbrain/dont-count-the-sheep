@@ -25,6 +25,11 @@ scene_meditation.workspace = true
 
 
 [features]
-dev = ["scene_meditation/dev", "scene_downtown/dev", "scene_apartment/dev"]
+devtools = [
+    "main_game_lib/devtools",
+    "scene_meditation/devtools",
+    "scene_downtown/devtools",
+    "scene_apartment/devtools",
+]
 # see the dev playground scene
-dev_playground = ["scene_dev_playground", "bevy/glam_assert"]
+dev_playground = ["main_game_lib/devtools", "scene_dev_playground"]

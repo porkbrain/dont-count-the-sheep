@@ -3,14 +3,13 @@
 #![feature(trivial_bounds)]
 
 pub mod camera;
-#[cfg(feature = "fps")]
+#[cfg(feature = "devtools")]
 mod fps;
 pub mod systems;
 mod types;
 
 use bevy::{
-    app::{App, Last, Startup, Update},
-    diagnostic::FrameTimeDiagnosticsPlugin,
+    app::{App, Last},
     math::{cubic_splines::CubicSegment, Vec2},
     render::color::Color,
 };
@@ -40,9 +39,15 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(Last, systems::recv_begin_interpolation_events);
 
-        #[cfg(feature = "fps")]
-        app.add_plugins(FrameTimeDiagnosticsPlugin)
-            .add_systems(Startup, fps::spawn)
-            .add_systems(Update, (fps::update, fps::toggle));
+        #[cfg(feature = "devtools")]
+        {
+            use bevy::{
+                app::{Startup, Update},
+                diagnostic::FrameTimeDiagnosticsPlugin,
+            };
+            app.add_plugins(FrameTimeDiagnosticsPlugin)
+                .add_systems(Startup, fps::spawn)
+                .add_systems(Update, fps::update);
+        }
     }
 }
