@@ -30,7 +30,7 @@ With every extra dependency that also depends on Bevy it potentially takes longe
 - [`bevy-inspector-egui`][bevy-inspector-egui]
 - [`leafwing-input-manager`][leafwing-input-manager] is maintained by a core Bevy contributor
 - [`bevy_magic_light`](bevy_magic_light/) is a fork of [this][original-bevy_magic_light] we maintain but ideally we'd like to remove it in favor of Bevy's official 2D lighting solution
-- [`bevy_egui`][bevy_egui] is a dependency of `bevy-inspector-egui` and `leafwing-input-manager`
+- [`bevy_egui`][bevy_egui]
 
 [bevy_pixel_camera]: https://github.com/drakmaniso/bevy_pixel_camera
 [bevy_webp_anim]: https://github.com/bausano/bevy-webp-anim

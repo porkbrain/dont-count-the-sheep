@@ -5,6 +5,7 @@ version.workspace = true
 
 
 [dependencies]
+bevy_egui.workspace = true             # TODO: dev
 bevy_grid_squared.workspace = true
 bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true

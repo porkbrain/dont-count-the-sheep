@@ -5,9 +5,10 @@ edition.workspace = true
 
 
 [dependencies]
+bevy_egui = { workspace = true, optional = true }
 bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true
-bevy-inspector-egui.workspace = true
+bevy-inspector-egui.workspace = true                  # TODO: dev only
 bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
@@ -28,8 +29,9 @@ strum.workspace = true
 
 
 [dev-dependencies]
+rand.workspace = true
 ron.workspace = true
 
 
 [features]
-dev = ["ron", "graphviz-rust"]
+dev = ["ron", "graphviz-rust", "bevy_egui"]

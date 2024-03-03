@@ -23,7 +23,7 @@ impl common_top_down::layout::ZoneTile for crate::layout::ApartmentTileKind {
             Self::HallwayZone => Some(1266),
             Self::PlayerApartmentZone => Some(2725),
             Self::BedZone => Some(30),
-            Self::ElevatorZone => Some(34),
+            Self::ElevatorZone => Some(46),
             Self::PlayerDoorZone => Some(64),
             Self::MeditationZone => Some(78),
             Self::TeaZone => Some(21),

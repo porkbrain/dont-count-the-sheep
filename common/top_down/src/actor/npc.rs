@@ -110,16 +110,6 @@ pub enum BehaviorLeaf {
     },
 }
 
-impl BehaviorLeaf {
-    /// Creates a new find path leaf node.
-    pub fn find_path_to(square: Square) -> Self {
-        Self::FindPath {
-            to: square,
-            last_attempt: None,
-        }
-    }
-}
-
 /// An NPC with this component will not further execute its behavior tree.
 ///
 /// This is for example inserted when the NPC enters a dialog.
@@ -374,6 +364,16 @@ pub(crate) fn begin_dialog(
         }
         _ => {
             // nothing just yet
+        }
+    }
+}
+
+impl BehaviorLeaf {
+    /// Creates a new find path leaf node.
+    pub fn find_path_to(square: Square) -> Self {
+        Self::FindPath {
+            to: square,
+            last_attempt: None,
         }
     }
 }
