@@ -1,6 +1,8 @@
 use std::{collections::BTreeMap, fs};
 
-use bevy::{render::view::RenderLayers, utils::HashSet, window::PrimaryWindow};
+use bevy::{utils::HashSet, window::PrimaryWindow};
+use bevy_egui::EguiContexts;
+use common_visuals::camera::MainCamera;
 use map_maker::build_pathfinding_graph::{GraphExt, LocalTileKindGraph};
 use ron::ser::PrettyConfig;
 
@@ -46,10 +48,40 @@ pub(crate) struct TileMapMakerToolbar<L: Tile> {
     /// being laid out in the same layers.
     #[reflect(ignore)]
     copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
+    /// If set to true, will display a grid on the map.
+    /// If set to false, will not display a grid on the map.
+    #[reflect(ignore)]
+    display_grid: bool,
 }
 
 #[derive(Component)]
 pub(crate) struct DebugLayoutGrid;
+
+pub(crate) fn update_ui<T: TopDownScene>(
+    mut contexts: EguiContexts,
+    mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
+
+    mut grid_root: Query<&mut Visibility, With<DebugLayoutGrid>>,
+) {
+    let ctx = contexts.ctx_mut();
+    bevy_egui::egui::Window::new("Map maker")
+        .vscroll(true)
+        .show(ctx, |ui| {
+            if ui.button("Toggle square grid").clicked() {
+                let mut visibility = grid_root.single_mut();
+                *visibility = match *visibility {
+                    Visibility::Visible | Visibility::Inherited => {
+                        toolbar.display_grid = false;
+                        Visibility::Hidden
+                    }
+                    Visibility::Hidden => {
+                        toolbar.display_grid = true;
+                        Visibility::Visible
+                    }
+                };
+            }
+        });
+}
 
 pub(crate) fn visualize_map<T: TopDownScene>(
     mut cmd: Commands,
@@ -109,8 +141,12 @@ pub(crate) fn change_square_kind<T: TopDownScene>(
     keyboard: Res<ButtonInput<KeyCode>>,
 
     windows: Query<&Window, With<PrimaryWindow>>,
-    cameras: Query<(&Camera, &GlobalTransform, Option<&RenderLayers>)>,
+    cameras: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
+    if !toolbar.display_grid {
+        return;
+    }
+
     let ctrl_pressed = keyboard.pressed(KeyCode::ControlLeft);
     let just_pressed_left = mouse.just_pressed(MouseButton::Left);
     let just_released_left = mouse.just_released(MouseButton::Left);
@@ -184,11 +220,15 @@ pub(crate) fn recolor_squares<T: TopDownScene>(
 
     mut squares: Query<(&SquareSprite, &mut Sprite)>,
     windows: Query<&Window, With<PrimaryWindow>>,
-    cameras: Query<(&Camera, &GlobalTransform, Option<&RenderLayers>)>,
+    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
+    if !toolbar.display_grid {
+        return;
+    }
+
     let squares_painted: Option<HashSet<_>> =
         toolbar.begin_rect_at.and_then(|begin_rect_at| {
-            let clicked_at = cursor_to_square(T::layout(), windows, cameras)?;
+            let clicked_at = cursor_to_square(T::layout(), windows, camera)?;
 
             Some(selection_rect(begin_rect_at, clicked_at).collect())
         });
@@ -223,6 +263,10 @@ pub(crate) fn export_map<T: TopDownScene>(
 ) where
     T::LocalTileKind: Ord,
 {
+    if !toolbar.display_grid {
+        return;
+    }
+
     // filter out needless squares
     toolbar.copy_of_map.retain(|sq, tiles| {
         if !T::contains(*sq) {
@@ -339,14 +383,11 @@ fn selection_rect(
 fn cursor_to_square(
     layout: &SquareLayout,
     windows: Query<&Window, With<PrimaryWindow>>,
-    cameras: Query<(&Camera, &GlobalTransform, Option<&RenderLayers>)>,
+    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) -> Option<Square> {
     let cursor_pos = windows.single().cursor_position()?;
 
-    let (camera, camera_transform, _) = cameras.iter().find(|(_, _, l)| {
-        l.map(|l| l.intersects(&RenderLayers::layer(0)))
-            .unwrap_or(true)
-    })?;
+    let (camera, camera_transform) = camera.single();
     let world_pos =
         camera.viewport_to_world_2d(camera_transform, cursor_pos)?;
 
@@ -374,6 +415,7 @@ impl<L: Tile> TileMapMakerToolbar<L> {
             paint: default(),
             layer: 0,
             paint_over_tiles: false,
+            display_grid: true,
             begin_rect_at: None,
         }
     }

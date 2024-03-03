@@ -76,9 +76,17 @@ pub fn windowed_app() -> App {
 
     // TODO: dev only
     app.add_plugins((
+        bevy_egui::EguiPlugin,
         WorldInspectorPlugin::new(),
         StateInspectorPlugin::<GlobalGameState>::default(),
     ));
+    fn configure_visuals_system(mut contexts: bevy_egui::EguiContexts) {
+        contexts.ctx_mut().set_visuals(bevy_egui::egui::Visuals {
+            window_rounding: 0.0.into(),
+            ..Default::default()
+        });
+    }
+    app.add_systems(Startup, configure_visuals_system);
 
     app.add_plugins((
         bevy_magic_light_2d::Plugin,

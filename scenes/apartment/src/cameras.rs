@@ -1,6 +1,6 @@
 use bevy::render::view::RenderLayers;
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
-use common_visuals::camera::{order, render_layer, PIXEL_ZOOM};
+use common_visuals::camera::{order, render_layer, MainCamera, PIXEL_ZOOM};
 
 use crate::prelude::*;
 
@@ -21,6 +21,7 @@ fn spawn(mut cmd: Commands) {
 
     cmd.spawn((
         Name::from("Apartment camera"),
+        MainCamera,
         CameraEntity,
         PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
