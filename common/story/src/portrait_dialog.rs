@@ -612,8 +612,8 @@ fn spawn_choices(
                             },
                         ),
                         style: Style {
-                            width: Val::Px(CHOICE_TEXT_BOUNDS.x),
-                            height: Val::Px(CHOICE_TEXT_BOUNDS.y),
+                            max_width: Val::Px(CHOICE_TEXT_BOUNDS.x),
+                            max_height: Val::Px(CHOICE_TEXT_BOUNDS.y),
                             align_self: AlignSelf::Center,
                             ..default()
                         },

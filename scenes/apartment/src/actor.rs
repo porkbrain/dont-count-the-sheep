@@ -6,6 +6,7 @@ mod player;
 
 use bevy::ecs::event::event_update_condition;
 use common_top_down::actor::{self, movement_event_emitted};
+use main_game_lib::cutscene::in_cutscene;
 
 use crate::{prelude::*, Apartment};
 
@@ -36,7 +37,8 @@ impl bevy::app::Plugin for Plugin {
                 player::enter_the_elevator,
             )
                 .run_if(event_update_condition::<ApartmentAction>)
-                .run_if(in_state(GlobalGameState::InApartment)),
+                .run_if(in_state(GlobalGameState::InApartment))
+                .run_if(not(in_cutscene())),
         );
 
         app.add_systems(

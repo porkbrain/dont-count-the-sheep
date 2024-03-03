@@ -30,8 +30,6 @@ use crate::{ActorMovementEvent, Player, TileKind, TopDownScene};
 
 /// The label's bg is a rect with a half transparent color.
 const HALF_TRANSPARENT: Color = Color::rgba(0.0, 0.0, 0.0, 0.5);
-/// The font size of the label text that shows up when inspecting.
-const FONT_SIZE: f32 = 12.0;
 /// When the player releases the inspect button, the labels fade out in this
 /// duration.
 const FADE_OUT_IN: Duration = Duration::from_millis(5000);
@@ -236,19 +234,24 @@ pub(crate) fn show_all_in_vicinity(
             (true, None) => {
                 trace!("Displaying label {}", label.display);
 
+                let font_size = label.category.font_zone();
+
                 // bit of padding and then a few pixels per character
                 // this is easier than waiting for the text to be rendered and
                 // then using the logical size, and the impression doesn't
                 // matter for such a short text
                 let bg_box_width =
-                    15.0 + FONT_SIZE / 7.0 * label.display.len() as f32;
+                    font_size + font_size / 7.0 * label.display.len() as f32;
                 let bg = cmd
                     .spawn(InspectLabelBg)
                     .insert(SpriteBundle {
                         transform: Transform::from_translation(Vec3::Z),
                         sprite: Sprite {
                             color: HALF_TRANSPARENT,
-                            custom_size: Some(Vec2::new(bg_box_width, 10.0)),
+                            custom_size: Some(Vec2::new(
+                                bg_box_width,
+                                font_size / 2.0,
+                            )),
                             ..default()
                         },
                         ..default()
@@ -271,7 +274,7 @@ pub(crate) fn show_all_in_vicinity(
                                     font: asset_server.load(
                                         common_assets::fonts::TINY_PIXEL1,
                                     ),
-                                    font_size: FONT_SIZE,
+                                    font_size,
                                     color: label.category.color(),
                                 },
                             )],
@@ -395,6 +398,14 @@ impl InspectLabelCategory {
         match self {
             InspectLabelCategory::Default => Color::WHITE,
             InspectLabelCategory::Npc => Color::ORANGE,
+        }
+    }
+
+    /// The font size of the label text that shows up when inspecting.
+    fn font_zone(self) -> f32 {
+        match self {
+            InspectLabelCategory::Default => 12.0,
+            InspectLabelCategory::Npc => 16.0,
         }
     }
 }
