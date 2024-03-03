@@ -37,7 +37,7 @@ pub fn movement_event_emitted<T: TopDownScene>(
 }
 
 /// Entity with this component can be moved around.
-#[derive(Component, Reflect, Debug)]
+#[derive(Component, Reflect, Debug, Deserialize, Serialize)]
 pub struct Actor {
     /// What's the character type that's being represented.
     pub character: Character,
@@ -65,7 +65,7 @@ pub struct Actor {
 }
 
 /// Target for an actor to walk towards.
-#[derive(Reflect, Debug)]
+#[derive(Reflect, Debug, Deserialize, Serialize)]
 pub struct ActorTarget {
     /// The target square actor walks to.
     pub square: Square,
@@ -271,8 +271,7 @@ pub fn animate_movement<T: TopDownScene>(
     >,
 ) {
     for (entity, mut actor, sprite, transform) in actors.iter_mut() {
-        // sometimes we remove the `Player` component to take away control from
-        // the player
+        debug_assert!(!actor.is_player);
 
         animate_movement_for_actor::<T>(
             &time,
@@ -328,6 +327,8 @@ fn animate_movement_for_actor<T: TopDownScene>(
 
         // we need to update the tiles that the actor occupies because other
         // actors might be moving around it, freeing up some space
+        // OPTIMIZE: the logic for replacing standing still tiles can be
+        // simplified, and if it was, we could also run it when moving
         tilemap.replace_actor_tiles(entity, actor);
 
         // nowhere to move
@@ -667,12 +668,19 @@ impl<T: TopDownScene> TileMap<T> {
         for (sq, layer) in actor.occupies.drain(..) {
             // we can't assume it to eq the actor's tile because in some rare
             // edge cases we evict the actor, see below
-            self.set_tile_kind(sq, layer, TileKind::Empty);
+            self.map_tile(sq, layer, |current| {
+                if current == TileKind::Actor(entity) {
+                    Some(TileKind::Empty)
+                } else {
+                    None
+                }
+            });
         }
 
         let actor_stands_at = actor.current_square();
 
         let can_move = self.can_actor_move(entity, actor_stands_at);
+
         // If the actor cannot move (rare but possible), we have following
         // strategies:
         if !can_move && actor.is_player {
@@ -681,7 +689,7 @@ impl<T: TopDownScene> TileMap<T> {
             //      actors from [top down left right]
             //    - Player must go last in the iteration over all actor movement
 
-            for sq_to_clear in actor_stands_at.neighbors_no_diagonal() {
+            for sq_to_clear in actor_stands_at.neighbors_with_diagonal() {
                 self.map_tiles(sq_to_clear, |tile| {
                     if let TileKind::Actor(a) = tile {
                         if a != entity {
@@ -746,6 +754,8 @@ impl<T: TopDownScene> TileMap<T> {
 mod tests {
     use bevy::ecs::system::SystemId;
     use bevy_grid_squared::SquareLayout;
+    use rand::seq::IteratorRandom;
+    use strum::IntoEnumIterator;
 
     use super::*;
 
@@ -1022,6 +1032,7 @@ mod tests {
     /// each time.
     /// More directions can be added to the array, first one that's walkable
     /// will be chosen.
+    /// If direction array is empty, a random direction will be tried.
     fn run_system_several_times(
         w: &mut World,
         system_id: SystemId,
@@ -1033,26 +1044,40 @@ mod tests {
             let mut time = w.get_resource_mut::<Time>().unwrap();
             time.advance_by(STEP_TIME + Duration::from_millis(1));
 
-            let mut move_actor = |actor_entity, directions| {
-                let tilemap = TileMap::<TestScene>::clone(
-                    w.get_resource::<TileMap<TestScene>>().unwrap(),
-                );
+            let mut move_actor =
+                |actor_entity, directions: &[GridDirection]| {
+                    let tilemap = TileMap::<TestScene>::clone(
+                        w.get_resource::<TileMap<TestScene>>().unwrap(),
+                    );
 
-                let mut entity_ref = w.get_entity_mut(actor_entity).unwrap();
-                let mut actor_comp = entity_ref.get_mut::<Actor>().unwrap();
-                if actor_comp.walking_to.is_none() {
-                    for direction in directions {
-                        let goto = actor_comp.walking_from + direction;
+                    let mut entity_ref =
+                        w.get_entity_mut(actor_entity).unwrap();
+                    let mut actor_comp = entity_ref.get_mut::<Actor>().unwrap();
+                    if actor_comp.walking_to.is_none() {
+                        let random_direction = GridDirection::iter()
+                            .choose(&mut rand::thread_rng())
+                            .unwrap();
+                        let random_directions =
+                            &[random_direction, random_direction.opposite()];
+                        let directions = if directions.is_empty() {
+                            random_directions
+                        } else {
+                            directions
+                        };
 
-                        if tilemap.is_walkable(goto, actor_entity) {
-                            // go in direction if possible
-                            actor_comp.walking_to =
-                                Some(ActorTarget::new(goto));
-                            break;
+                        for direction in directions {
+                            let goto = actor_comp.walking_from + direction;
+
+                            if tilemap.is_walkable(goto, actor_entity) {
+                                trace!("Goto {goto}");
+                                // go in direction if possible
+                                actor_comp.walking_to =
+                                    Some(ActorTarget::new(goto));
+                                break;
+                            }
                         }
                     }
-                }
-            };
+                };
 
             for (actor, direction) in actors_to_move {
                 move_actor(*actor, *direction);

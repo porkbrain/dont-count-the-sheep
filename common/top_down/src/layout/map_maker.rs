@@ -233,8 +233,7 @@ pub(crate) fn export_map<T: TopDownScene>(
             match tile {
                 // Should not happen
                 TileKind::Actor(_) => {
-                    error!("Actor tile found in toolbar map");
-                    return false;
+                    panic!("Actor tile found in toolbar map");
                 }
                 // these are fine
                 TileKind::Wall | TileKind::Empty | TileKind::Trail => {}
