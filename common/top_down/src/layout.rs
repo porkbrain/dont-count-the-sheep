@@ -174,7 +174,8 @@ pub trait ZoneTile {
 #[reflect(Resource, InspectorOptions)]
 pub struct TileMap<T: TopDownScene> {
     /// There can be multiple layers of tiles on a single square.
-    squares: HashMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
+    pub(crate) squares:
+        HashMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
     #[serde(skip)]
     #[reflect(ignore)]
     _phantom: PhantomData<T>,
@@ -408,10 +409,10 @@ impl<T: TopDownScene> TileMap<T> {
             .unwrap_or(false)
     }
 
-    /// For given square, find the first `None` tile or insert a new layer.
-    /// Then return the index of the layer.
+    /// For given square, find the first [`TileKind::Empty`] tile or insert a
+    /// new layer. Then return the index of the layer.
     ///
-    /// Must not be called with `TileKind::None`.
+    /// Must not be called with [`TileKind::Empty`].
     #[inline]
     pub fn add_tile_to_first_empty_layer(
         &mut self,
@@ -438,9 +439,8 @@ impl<T: TopDownScene> TileMap<T> {
                 }
             })
             .unwrap_or_else(|| {
-                let layer = tiles.len();
                 tiles.push(into_tile);
-                layer
+                tiles.len() - 1
             });
 
         Some(layer)
@@ -472,6 +472,36 @@ impl<T: TopDownScene> TileMap<T> {
         *tile = kind.into();
 
         Some(current)
+    }
+
+    /// If the mapping anon fn returns [`None`] then nothing happens.
+    pub fn map_tile(
+        &mut self,
+        of: Square,
+        layer: usize,
+        map: impl FnOnce(
+            TileKind<T::LocalTileKind>,
+        ) -> Option<TileKind<T::LocalTileKind>>,
+    ) -> Option<TileKind<T::LocalTileKind>> {
+        if !T::contains(of) {
+            return None;
+        }
+
+        let tiles = self.squares.entry(of).or_default();
+
+        if tiles.len() <= layer {
+            tiles.resize(layer + 1, TileKind::Empty);
+        }
+
+        let tile = &mut tiles[layer]; // safe cuz we just resized
+        let current = *tile;
+
+        if let Some(new_kind) = map(current) {
+            *tile = new_kind;
+            Some(current)
+        } else {
+            None
+        }
     }
 
     /// Map each tile on the given square to the given kind.

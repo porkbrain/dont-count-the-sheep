@@ -5,6 +5,7 @@ version.workspace = true
 
 [dependencies]
 bevy.workspace = true
+strum.workspace = true
 
 [dependencies.serde]
 default-features = false

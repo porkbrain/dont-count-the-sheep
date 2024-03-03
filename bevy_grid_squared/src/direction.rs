@@ -4,10 +4,23 @@ use bevy::{
     math::Vec2,
     reflect::{std_traits::ReflectDefault, Reflect},
 };
+use serde::{Deserialize, Serialize};
+use strum::EnumIter;
 
 use crate::Square;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Reflect, Default)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+    Reflect,
+    Default,
+    EnumIter,
+    Serialize,
+    Deserialize,
+)]
 #[reflect(Default)]
 pub enum GridDirection {
     /// ↑

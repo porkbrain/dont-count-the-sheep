@@ -28,8 +28,8 @@ strum.workspace = true
 
 
 [dev-dependencies]
+rand.workspace = true
 ron.workspace = true
-
 
 [features]
 dev = ["ron", "graphviz-rust"]
