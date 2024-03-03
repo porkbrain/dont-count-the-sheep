@@ -217,7 +217,7 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
 /// This will overwrite the RON file.
 /// We draw an overlay with tiles that you can edit with left and right mouse
 /// buttons.
-#[cfg(feature = "dev")]
+#[cfg(feature = "devtools")]
 pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
     app: &mut App,
     running: S,

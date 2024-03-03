@@ -3,8 +3,8 @@ name = "common_story"
 version.workspace = true
 edition.workspace = true
 
+
 [dependencies]
-bevy-inspector-egui.workspace = true
 bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
@@ -14,3 +14,7 @@ common_visuals.workspace = true
 itertools.workspace = true
 serde.workspace = true
 strum.workspace = true
+
+
+[features]
+devtools = []

@@ -74,7 +74,7 @@ pub(crate) enum ClimateLightMode {
 
 /// Debug tool.
 /// Point which is shown when being lit by the climate.
-#[cfg(feature = "dev")]
+#[cfg(feature = "devtools")]
 #[derive(Component)]
 struct RayPoint;
 
@@ -108,7 +108,7 @@ impl bevy::app::Plugin for Plugin {
                     .run_if(in_state(GlobalGameState::MeditationInMenu)),
             );
 
-        #[cfg(feature = "dev")]
+        #[cfg(feature = "devtools")]
         app.add_systems(
             Update,
             visualize_raypoints
@@ -183,7 +183,7 @@ fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
         ));
     }
 
-    #[cfg(feature = "dev")]
+    #[cfg(feature = "devtools")]
     for _ in 0..10000 {
         use rand::{thread_rng, Rng};
 
@@ -205,7 +205,7 @@ fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
     }
 }
 
-#[cfg(feature = "dev")]
+#[cfg(feature = "devtools")]
 fn despawn_raypoints(
     mut cmd: Commands,
     raypoints: Query<Entity, With<RayPoint>>,
@@ -442,7 +442,7 @@ fn angle_between_closest_ray_and_point(
     angle_to_ray
 }
 
-#[cfg(feature = "dev")]
+#[cfg(feature = "devtools")]
 fn visualize_raypoints(
     climate: Query<(&Climate, &Transform)>,
     mut raypoints: Query<

@@ -5,12 +5,12 @@ version.workspace = true
 
 
 [dependencies]
-bevy_egui.workspace = true             # TODO: dev
+bevy_egui = { workspace = true, optional = true }
 bevy_grid_squared.workspace = true
 bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true
 bevy_webp_anim.workspace = true
-bevy-inspector-egui.workspace = true
+bevy-inspector-egui = { workspace = true, optional = true }
 bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
@@ -20,9 +20,19 @@ common_store.workspace = true
 common_story.workspace = true
 common_top_down.workspace = true
 common_visuals.workspace = true
+leafwing-input-manager.workspace = true
 strum.workspace = true
 
 
 [features]
+devtools = [
+    "bevy_egui",
+    "bevy-inspector-egui",
+    "bevy/glam_assert",
+    "common_story/devtools",
+    "common_top_down/devtools",
+    "common_visuals/devtools",
+    "leafwing-input-manager/egui",
+]
 # used by scene_dev_playground to import some extra state from this crate
 dev-playground = []

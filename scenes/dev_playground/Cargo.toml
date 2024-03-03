@@ -5,13 +5,13 @@ edition.workspace = true
 
 
 [dependencies]
-bevy = { workspace = true, features = ["glam_assert"] }
+bevy.workspace = true
 bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
 common_story.workspace = true
-common_top_down = { workspace = true, features = ["dev"] }
+common_top_down = { workspace = true, features = ["devtools"] }
 common_visuals.workspace = true
 itertools.workspace = true
 lazy_static.workspace = true

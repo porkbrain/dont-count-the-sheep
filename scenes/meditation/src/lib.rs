@@ -112,7 +112,7 @@ pub fn add(app: &mut App) {
         all_cleaned_up.run_if(in_state(GlobalGameState::MeditationQuitting)),
     );
 
-    #[cfg(feature = "dev")]
+    #[cfg(feature = "devtools")]
     {
         debug!("Adding dev");
 
@@ -121,7 +121,7 @@ pub fn add(app: &mut App) {
             path::visualize.run_if(in_state(GlobalGameState::MeditationInGame)),
         );
 
-        #[cfg(feature = "dev-poissons")]
+        #[cfg(feature = "devtools-poissons")]
         common_physics::poissons_equation::register_visualization::<
             gravity::Gravity,
             gravity::ChangeOfBasis,
