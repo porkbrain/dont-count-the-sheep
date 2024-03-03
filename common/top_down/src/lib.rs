@@ -243,6 +243,7 @@ pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
         (
             layout::map_maker::change_square_kind::<T>,
             layout::map_maker::recolor_squares::<T>,
+            layout::map_maker::update_ui::<T>,
         )
             .run_if(in_state(running.clone()))
             .chain(),
