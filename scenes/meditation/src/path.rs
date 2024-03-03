@@ -436,7 +436,7 @@ mod infinity_sign {
     }
 }
 
-#[cfg(feature = "dev")]
+#[cfg(feature = "devtools")]
 pub(crate) fn visualize(mut gizmos: Gizmos) {
     gizmos.linestrip(
         lvl1_a::CURVE.iter_positions(100).map(|p| p.extend(0.0)),

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use common_ext::QueryExt;
 
-#[cfg(feature = "dev")]
+#[cfg(feature = "devtools")]
 use crate::layout::map_maker;
 use crate::{TileMap, TopDownScene};
 
@@ -40,7 +40,7 @@ pub(crate) fn try_insert_map_as_resource<T: TopDownScene>(
     if map_assets.get(map).is_some() {
         let loaded_map = map_assets.remove(map).unwrap(); // safe ^
 
-        #[cfg(feature = "dev")]
+        #[cfg(feature = "devtools")]
         {
             // include the loaded map in the toolbar, which will allow us to
             // store ONLY user changes, not dynamic changes made by the logic
@@ -59,7 +59,7 @@ pub(crate) fn remove_resources<T: TopDownScene>(mut cmd: Commands) {
     cmd.remove_resource::<TileMap<T>>();
     cmd.remove_resource::<crate::actor::ActorZoneMap<T::LocalTileKind>>();
 
-    #[cfg(feature = "dev")]
+    #[cfg(feature = "devtools")]
     {
         cmd.remove_resource::<map_maker::TileMapMakerToolbar<T::LocalTileKind>>();
     }

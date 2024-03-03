@@ -2,9 +2,9 @@
 //! Where can the character go? Where are the walls? Where are the immovable
 //! objects?
 
-#[cfg(feature = "dev")]
+#[cfg(feature = "devtools")]
 mod build_pathfinding_graph;
-#[cfg(feature = "dev")]
+#[cfg(feature = "devtools")]
 pub(crate) mod map_maker;
 pub(crate) mod systems;
 
@@ -12,7 +12,6 @@ use std::{marker::PhantomData, ops::RangeInclusive};
 
 use bevy::{math::vec2, prelude::*, utils::hashbrown::HashMap};
 use bevy_grid_squared::{sq, Square, SquareLayout};
-use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use smallvec::SmallVec;
 
@@ -161,17 +160,9 @@ pub trait ZoneTile {
 
 /// Holds the tiles in a hash map.
 #[derive(
-    Asset,
-    Resource,
-    Serialize,
-    Deserialize,
-    Reflect,
-    InspectorOptions,
-    Default,
-    Clone,
-    Debug,
+    Asset, Resource, Serialize, Deserialize, Reflect, Default, Clone, Debug,
 )]
-#[reflect(Resource, InspectorOptions)]
+#[reflect(Resource)]
 pub struct TileMap<T: TopDownScene> {
     /// There can be multiple layers of tiles on a single square.
     pub(crate) squares:
