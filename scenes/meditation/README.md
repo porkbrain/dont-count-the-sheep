@@ -46,4 +46,4 @@ From bright yellowy which burns the Polpo faster, to dark blue which slows the P
 ## Cargo features
 
 There are two debug features which help visualize the game state:
-`dev` and `dev-poisson`.
+`devtools` and `devtools-poisson`.

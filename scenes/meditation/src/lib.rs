@@ -114,7 +114,7 @@ pub fn add(app: &mut App) {
 
     #[cfg(feature = "devtools")]
     {
-        debug!("Adding dev");
+        debug!("Adding devtools");
 
         app.add_systems(
             Last,
