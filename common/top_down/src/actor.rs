@@ -58,6 +58,17 @@ pub struct Actor {
     /// the size of a square. On more granular maps, the actor can occupy
     /// more squares.
     /// Also, different characters can occupy different squares.
+    ///
+    /// # Important
+    /// The [`TileMap::replace_actor_tiles`] is responsible for updating this
+    /// field.
+    /// That logic contains an escape hatch for situations in which two actors
+    /// are for some reason stuck on another.
+    /// This escape hatch might set a tile to [`TileKind::Empty`] from the
+    /// actor tile. Therefore, this field might contain indexes that now
+    /// belong to other actors.
+    /// It's necessary therefore to check the index before mutating it to
+    /// confirm the escape hatch did not change it.
     occupies: Vec<TileIndex>,
     /// This information is duplicated.
     /// We also have a player component that's assigned to the player entity.
