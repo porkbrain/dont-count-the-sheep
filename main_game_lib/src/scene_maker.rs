@@ -1,15 +1,18 @@
-//! Dev tool that allows in-game scene creation and editing.
+//! Loads scenes from asset config file.
+//! Useful for creating scenes in-game with dev tools and then loading them
+//! later in the game.
+//! This suggests that some of the code is not used in the final build and
+//! hidden behind a feature `devtools`.
 
-use bevy::window::PrimaryWindow;
-use bevy_inspector_egui::{
-    prelude::ReflectInspectorOptions, quick::ResourceInspectorPlugin,
-    InspectorOptions,
+mod store_and_load;
+#[cfg(feature = "devtools")]
+mod toolbar;
+
+use self::{
+    store_and_load::{SceneSprite, SceneSpriteAtlas},
+    toolbar::SceneMakerToolbar,
 };
-use common_visuals::camera::MainCamera;
-
 use crate::prelude::*;
-
-const HIGHLIGHT_COLOR: Color = Color::rgba(0.25, 0.25, 0.25, 0.8);
 
 /// A plugin that allows in-game scene creation and editing.
 pub struct Plugin<S> {
@@ -26,275 +29,31 @@ pub struct Plugin<S> {
 
 impl<S: States + Copy> bevy::app::Plugin for Plugin<S> {
     fn build(&self, app: &mut App) {
-        app.register_type::<SceneMakerToolbar>().add_plugins(
-            ResourceInspectorPlugin::<SceneMakerToolbar>::default(),
-        );
+        app.register_type::<SceneSprite>()
+            .register_type::<SceneSpriteAtlas>()
+            .add_systems(
+                Update,
+                store_and_load::load_scene.run_if(in_state(self.loading)),
+            );
 
-        app.add_systems(OnEnter(self.loading), spawn_toolbar)
-            .add_systems(Update, move_sprite.run_if(in_state(self.running)))
-            .add_systems(OnExit(self.quitting), despawn_toolbar);
-    }
-}
+        #[cfg(feature = "devtools")]
+        {
+            use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
-#[derive(Resource, Reflect, Default, InspectorOptions)]
-#[reflect(Resource, InspectorOptions)]
-struct SceneMakerToolbar {
-    /// Whether the scene maker is active.
-    is_active: bool,
-    #[reflect(ignore)]
-    selected_sprite: Option<MoveSprite>,
-}
+            app.register_type::<SceneMakerToolbar>().add_plugins(
+                ResourceInspectorPlugin::<SceneMakerToolbar>::default(),
+            );
 
-enum MoveSprite {
-    Highlighted {
-        entity: Entity,
-        og_color: Color,
-    },
-    Selected {
-        entity: Entity,
-        offset: Vec2,
-        og_transform: Transform,
-        og_color: Color,
-    },
-}
-
-fn spawn_toolbar(mut cmd: Commands) {
-    cmd.init_resource::<SceneMakerToolbar>();
-}
-
-fn despawn_toolbar(mut cmd: Commands) {
-    cmd.remove_resource::<SceneMakerToolbar>();
-}
-
-/// Moves a sprite around with the mouse.
-/// 1. Click on a sprite to select it (left button just pressed)
-/// 2. Hold the mouse and move it to position the sprite (left button pressed)
-/// 3. Release the mouse to place the sprite (left button just released)
-/// 4. You can press Esc to cancel the movement.
-/// 5. If no action is pressed, simply highlight the sprite closest to the
-///    cursor.
-///
-/// The position is always rounded to the nearest half a point.
-fn move_sprite(
-    mut toolbar: ResMut<SceneMakerToolbar>,
-    mouse: Res<ButtonInput<MouseButton>>,
-    keyboard: Res<ButtonInput<KeyCode>>,
-    images: Res<Assets<Image>>,
-    texture_atlases: Res<Assets<TextureAtlasLayout>>,
-
-    windows: Query<&Window, With<PrimaryWindow>>,
-    camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    mut sprites: Query<(
-        Entity,
-        &mut Sprite,
-        &GlobalTransform,
-        &mut Transform,
-        &Handle<Image>,
-        &ViewVisibility,
-        Option<&TextureAtlas>,
-    )>,
-) {
-    if !toolbar.is_active {
-        return;
-    }
-
-    let calc_cursor_pos = || {
-        let cursor_pos = windows.single().cursor_position()?;
-        let (camera, camera_transform) = camera.single();
-        camera.viewport_to_world_2d(camera_transform, cursor_pos)
-    };
-
-    let entity_candidate = |cursor_pos| {
-        sprites
-            .iter()
-            .filter(|(_, _, _, _, _, visibility, _)| visibility.get())
-            .filter_map(
-                |(entity, sprite, gtransform, _, texture, _, texture_atlas)| {
-                    let size = if let Some(TextureAtlas { layout, .. }) =
-                        texture_atlas
-                    {
-                        texture_atlases.get(layout)?.textures.get(0)?.size()
-                    } else {
-                        images.get(texture)?.size().as_vec2()
-                    };
-
-                    let center = gtransform.translation().truncate()
-                        - sprite.anchor.as_vec() * size;
-                    let sprite_area = Rect::from_center_size(center, size);
-
-                    sprite_area
-                        .contains(cursor_pos)
-                        .then(|| (entity, size.x * size.y))
-                },
-            )
-            .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
-            .map(|(entity, _)| entity)
-    };
-
-    let should_select_sprite = mouse.just_pressed(MouseButton::Left); // 1.
-    let should_move_sprite =
-        mouse.pressed(MouseButton::Left) && !should_select_sprite; // 2.
-    let should_place_sprite = mouse.just_released(MouseButton::Left); // 3.
-    let should_cancel_move =
-        keyboard.just_pressed(KeyCode::Escape) && should_move_sprite; // 4.
-
-    if should_place_sprite
-        && let Some(MoveSprite::Selected {
-            entity, og_color, ..
-        }) = toolbar.selected_sprite.as_ref()
-    {
-        //
-        // 3.
-        //
-        trace!("Placing sprite");
-
-        let (_, mut sprite, ..) = sprites.get_mut(*entity).unwrap();
-        sprite.color = *og_color;
-
-        toolbar.selected_sprite = None;
-    } else if should_select_sprite {
-        //
-        // 1.
-        //
-        trace!("Selecting sprite");
-
-        let Some(cursor_pos) = calc_cursor_pos() else {
-            return;
-        };
-        let Some(entity) = entity_candidate(cursor_pos) else {
-            return;
-        };
-
-        match toolbar.selected_sprite.take() {
-            Some(MoveSprite::Highlighted {
-                entity: prev_entity,
-                og_color,
-            }) => {
-                let (_, mut sprite, ..) = sprites.get_mut(prev_entity).unwrap();
-                sprite.color = og_color;
-            }
-            Some(MoveSprite::Selected {
-                entity: prev_entity,
-                og_color,
-                og_transform,
-                ..
-            }) => {
-                let (_, mut sprite, _, mut current_transform, ..) =
-                    sprites.get_mut(prev_entity).unwrap();
-                *current_transform = og_transform;
-                sprite.color = og_color;
-            }
-            None => {}
-        }
-
-        let (_, mut sprite, _, transform, ..) =
-            sprites.get_mut(entity).unwrap();
-        let offset = cursor_pos - transform.translation.truncate();
-        let og_color = sprite.color;
-        let og_transform = *transform;
-
-        sprite.color = HIGHLIGHT_COLOR;
-        toolbar.selected_sprite = Some(MoveSprite::Selected {
-            entity,
-            offset,
-            og_transform,
-            og_color,
-        });
-    } else if should_cancel_move
-        && let Some(MoveSprite::Selected {
-            entity,
-            og_color,
-            og_transform,
-            ..
-        }) = toolbar.selected_sprite.as_ref()
-    {
-        //
-        // 4.
-        //
-        trace!("Cancelling move");
-
-        let (_, mut sprite, _, mut current_transform, ..) =
-            sprites.get_mut(*entity).unwrap();
-        *current_transform = *og_transform;
-        sprite.color = *og_color;
-
-        toolbar.selected_sprite = None;
-    } else if should_move_sprite
-        && let Some(MoveSprite::Selected { entity, offset, .. }) =
-            toolbar.selected_sprite.as_ref()
-    {
-        //
-        // 2.
-        //
-        let Some(cursor_pos) = calc_cursor_pos() else {
-            warn!("Cursor position not found when moving sprite");
-            return;
-        };
-
-        let (_, _, _, mut transform, ..) = sprites.get_mut(*entity).unwrap();
-        let new_pos = cursor_pos - *offset;
-        transform.translation = Vec3::new(
-            (new_pos.x * 2.0).round() / 2.0,
-            (new_pos.y * 2.0).round() / 2.0,
-            transform.translation.z,
-        );
-    } else {
-        //
-        // 5.
-        //
-
-        let Some(cursor_pos) = calc_cursor_pos() else {
-            return;
-        };
-
-        let closest_entity = entity_candidate(cursor_pos);
-
-        match (closest_entity, toolbar.selected_sprite.take()) {
-            // closest entity different than the one highlighted
-            (
-                Some(closest_entity),
-                Some(MoveSprite::Highlighted {
-                    entity: prev_entity,
-                    og_color,
-                }),
-            ) if closest_entity != prev_entity => {
-                // cancel highlight on previous entity
-                let (_, mut sprite, ..) = sprites.get_mut(prev_entity).unwrap();
-                sprite.color = og_color;
-
-                // apply highlight to closest entity
-                let (_, mut sprite, ..) =
-                    sprites.get_mut(closest_entity).unwrap();
-                let og_color = sprite.color;
-                sprite.color = HIGHLIGHT_COLOR;
-                toolbar.selected_sprite = Some(MoveSprite::Highlighted {
-                    entity: closest_entity,
-                    og_color,
-                });
-            }
-            // closest entity already highlighted or
-            (Some(_), opt @ Some(_)) => {
-                toolbar.selected_sprite = opt;
-            }
-            // nothing to do
-            (None, None) => {}
-            // closest entity not highlighted
-            (Some(closest_entity), None) => {
-                let (_, mut sprite, ..) =
-                    sprites.get_mut(closest_entity).unwrap();
-                let og_color = sprite.color;
-                sprite.color = HIGHLIGHT_COLOR;
-                toolbar.selected_sprite = Some(MoveSprite::Highlighted {
-                    entity: closest_entity,
-                    og_color,
-                });
-            }
-            // no closest entity, cancel highlight
-            (None, Some(MoveSprite::Highlighted { entity, og_color })) => {
-                let (_, mut sprite, ..) = sprites.get_mut(entity).unwrap();
-                sprite.color = og_color;
-            }
-            (_, Some(MoveSprite::Selected { .. })) => unreachable!(),
+            app.add_systems(OnEnter(self.loading), toolbar::spawn)
+                .add_systems(
+                    Update,
+                    (
+                        toolbar::move_sprite_system,
+                        store_and_load::react_to_changes,
+                    )
+                        .run_if(in_state(self.running)),
+                )
+                .add_systems(OnExit(self.quitting), toolbar::despawn);
         }
     }
 }

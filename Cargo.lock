@@ -2718,6 +2718,8 @@ dependencies = [
  "common_top_down",
  "common_visuals",
  "leafwing-input-manager",
+ "ron",
+ "serde",
  "strum",
 ]
 
