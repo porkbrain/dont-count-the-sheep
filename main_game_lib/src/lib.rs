@@ -1,9 +1,12 @@
 #![doc = include_str!("../../README.md")]
 #![feature(trivial_bounds)]
+#![feature(let_chains)]
 #![deny(missing_docs)]
 
 pub mod cutscene;
 pub mod prelude;
+#[cfg(feature = "devtools")]
+pub mod scene_maker;
 pub mod state;
 pub mod vec2_ext;
 
