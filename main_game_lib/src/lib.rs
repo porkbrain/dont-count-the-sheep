@@ -5,7 +5,6 @@
 
 pub mod cutscene;
 pub mod prelude;
-#[cfg(feature = "devtools")]
 pub mod scene_maker;
 pub mod state;
 pub mod vec2_ext;
