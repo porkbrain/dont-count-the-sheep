@@ -44,7 +44,7 @@ pub struct SpriteSceneHandle<T> {
 }
 
 /// Stored in a .ron file.
-#[derive(Asset, TypePath, Serialize, Deserialize)]
+#[derive(Asset, TypePath, Serialize, Deserialize, Debug)]
 pub struct SceneSerde {
     sprites: Vec<SceneSpriteSerde>,
 }
@@ -55,7 +55,7 @@ pub struct LoadedFromSceneFile;
 
 /// This is a single entity stored in the scene file.
 /// Scene file is really just a collection of these entities.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct SceneSpriteSerde {
     /// This will be inserted as a component to the entity.
     /// Changes to this component will be reflected in the entity in-game.
@@ -70,7 +70,7 @@ struct SceneSpriteSerde {
 /// It cannot be updated in-game.
 /// When the entity is stored, the properties are constructed from relevant
 /// components.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct SceneSpriteSerdeOnly {
     /// [`Name`]
     name: String,
@@ -88,7 +88,7 @@ struct SceneSpriteSerdeOnly {
 }
 
 /// This is only really useful for devtools.
-#[derive(Component, Reflect, Default, Serialize, Deserialize, Clone)]
+#[derive(Component, Reflect, Debug, Default, Serialize, Deserialize, Clone)]
 #[reflect(Component, Default)]
 pub struct SceneSpriteConfig {
     // TODO: debug assert being loaded
@@ -111,10 +111,11 @@ pub struct SceneSpriteConfig {
 }
 
 /// This is only really useful for devtools.
-#[derive(Reflect, Default, Serialize, Deserialize, Clone)]
+#[derive(Reflect, Default, Serialize, Deserialize, Debug, Clone)]
 #[reflect(Default)]
 pub struct SceneSpriteAtlas {
     /// The index of the sprite in the atlas.
+    #[serde(default)]
     pub index: usize,
     /// The size of a single tile in the atlas.
     pub tile_size: Vec2,
@@ -123,13 +124,15 @@ pub struct SceneSpriteAtlas {
     /// The number of columns in the atlas.
     pub columns: usize,
     /// Set to `Vec2::ZERO` for no padding.
+    #[serde(default)]
     pub padding: Vec2,
     /// Set to `Vec2::ZERO` for no offset.
+    #[serde(default)]
     pub offset: Vec2,
 }
 
 /// Serializable and deserializable version of `Anchor`.
-#[derive(Reflect, Default, Serialize, Deserialize)]
+#[derive(Reflect, Debug, Default, Serialize, Deserialize)]
 enum AnchorSerde {
     /// `Vec2::ZERO`
     #[default]
@@ -387,3 +390,76 @@ impl<T> From<&SpriteSceneHandle<T>> for AssetId<SceneSerde> {
         handle.into()
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use ron::ser::PrettyConfig;
+
+//     use super::*;
+
+//     #[test]
+//     fn xd() {
+//         let with_atlas = SceneSpriteSerde {
+//             reactive_component: SceneSpriteConfig {
+//                 asset_path: "a".to_string(),
+//                 overwrite_zindex: Some(0.0),
+//                 calc_zindex_as_if_y_was_offset_by: Some(0.0),
+//                 atlas: Some(SceneSpriteAtlas {
+//                     index: 0,
+//                     tile_size: Vec2::new(1.0, 1.0),
+//                     rows: 1,
+//                     columns: 1,
+//                     padding: Vec2::ZERO,
+//                     offset: Vec2::ZERO,
+//                 }),
+//             },
+//             serde_only: SceneSpriteSerdeOnly {
+//                 name: "a".to_string(),
+//                 initial_position: Vec2::ZERO,
+//                 anchor: None,
+//                 color: None,
+//             },
+//         };
+
+//         let raw = ron::ser::to_string_pretty(
+//             &with_atlas,
+//             PrettyConfig::default().struct_names(true),
+//         )
+//         .unwrap();
+
+//         panic!("{:?}", raw);
+//     }
+
+//     #[test]
+//     fn xdxd() {
+//         let xd = r#"
+//         (
+//             sprites: [
+//                 (
+//                     reactive_component: (
+//                         asset_path: "apartment/brown_light_door_atlas.png",
+//                         calc_zindex_as_if_y_was_offset_by: Some(8.5),
+//                     ),
+//                     serde_only: (
+//                         name: "Bedroom door",
+//                         anchor: Some(BottomCenter),
+//                         initial_position: (-105.0, -88.0),
+//                         atlas: Some(SceneSpriteAtlas(
+//                             index: 0,
+//                             tile_size: (27.0, 53.0),
+//                             rows: 1,
+//                             columns: 2,
+//                             padding: (1.0, 0.0),
+//                             offset: (0.0, 0.0),
+//                         ))
+//                     )
+//                 )
+//             ],
+//         )
+//         "#;
+
+//         let scene: SceneSerde = ron::de::from_str(xd).unwrap();
+
+//         panic!("{:#?}", scene);
+//     }
+// }

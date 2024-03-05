@@ -214,6 +214,7 @@ impl<L> DoorBuilder<L> {
 
     /// If the door is closed, we insert a wall between the obstacle squares
     /// if set.
+    #[must_use]
     pub fn build<T: TopDownScene>(self, tilemap: &mut TileMap<T>) -> Door<L> {
         let obstacle = self.obstacle.map(|(from, to)| {
             let layers = if matches!(self.initial_state, DoorState::Closed) {

@@ -119,5 +119,53 @@
                 anchor: Some(BottomCenter),
             )
         ),
+        (
+            reactive_component: (
+                asset_path: "apartment/brown_light_door_atlas.png",
+                calc_zindex_as_if_y_was_offset_by: Some(8.5),
+                atlas: Some((
+                    tile_size: (27.0, 53.0),
+                    rows: 1,
+                    columns: 2,
+                    padding: (1.0, 0.0),
+                )),
+            ),
+            serde_only: (
+                name: "Bedroom door",
+                anchor: Some(BottomCenter),
+                initial_position: (-105.0, -88.0),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/elevator_atlas.png",
+                overwrite_zindex: Some(-1.0),
+                atlas: Some((
+                    tile_size: (51.0, 57.0),
+                    rows: 1,
+                    columns: 8,
+                    padding: (4.0, 0.0),
+                )),
+            ),
+            serde_only: (
+                name: "Elevator",
+                initial_position: (-201.5, -49.0),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/vending_machine_atlas.png",
+                atlas: Some((
+                    tile_size: (30.0, 55.0),
+                    rows: 1,
+                    columns: 4,
+                    padding: (1.0, 0.0),
+                )),
+            ),
+            serde_only: (
+                name: "Vending machine",
+                initial_position: (-268.0, -60.0),
+            )
+        ),
     ],
 )

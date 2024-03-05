@@ -1,4 +1,4 @@
-use bevy::{render::view::RenderLayers, sprite::Anchor};
+use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_top_down::{
     actor::{self, movement_event_emitted, Who},
@@ -116,7 +116,8 @@ fn spawn2(
             | "Bedroom cupboard"
             | "Bedroom laundry basket"
             | "Back wall furniture" => {}
-            "Hallway background" | "Hallway door #1" | "Hallway door #2" => {
+            "Vending machine" | "Hallway background" | "Hallway door #1"
+            | "Hallway door #2" => {
                 entity_cmd.insert(HallwayEntity);
                 entity_cmd.add(|mut w: EntityWorldMut| {
                     w.get_mut::<Sprite>().expect("Sprite").color =
@@ -136,12 +137,54 @@ fn spawn2(
                         ),
                 );
             }
+            "Bedroom door" => {
+                let door = DoorBuilder::new(ApartmentTileKind::PlayerDoorZone)
+                    .add_open_criteria(DoorOpenCriteria::Character(
+                        common_story::Character::Winnie,
+                    ))
+                    .add_open_criteria(DoorOpenCriteria::Character(
+                        common_story::Character::Unnamed,
+                    ))
+                    .with_initial_state(DoorState::Closed)
+                    .with_obstacle_when_closed_between(
+                        sq(-40, -21),
+                        sq(-31, -21),
+                    )
+                    .build(&mut tilemap);
+                entity_cmd.insert(door);
+            }
+            "Elevator" => {
+                entity_cmd.insert((
+                    Elevator,
+                    HallwayEntity,
+                    InspectLabelCategory::Default
+                        .into_label("Elevator")
+                        .emit_event_on_interacted(
+                            ApartmentAction::EnterElevator,
+                        ),
+                    AtlasAnimation {
+                        on_last_frame: AtlasAnimationEnd::RemoveTimer,
+                        first: 0,
+                        last: 7,
+                        ..default()
+                    },
+                ));
+                entity_cmd.add(|mut w: EntityWorldMut| {
+                    w.get_mut::<Sprite>().expect("Sprite").color =
+                        PRIMARY_COLOR;
+                });
+
+                zone_to_inspect_label_entity
+                    .map
+                    .insert(ApartmentTileKind::ElevatorZone, entity_cmd.id());
+            }
             _ => {
                 error!("Sprite {name:?} not handled");
             }
         }
     }
 
+    cmd.insert_resource(zone_to_inspect_label_entity);
     cmd.entity(handle_entity).despawn();
 }
 
@@ -196,19 +239,12 @@ fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
-    tilemap: Option<ResMut<TileMap<Apartment>>>,
 
     entities: Query<Entity, With<LayoutEntity>>,
 ) {
-    let Some(mut tilemap) = tilemap else {
-        return; // wait for tilemap to load
-    };
-
     if !entities.is_empty() {
         return; // already spawned
     }
-
-    let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
 
     // cloud atlas is rendered on top of the bg but below the furniture
 
@@ -253,124 +289,16 @@ fn spawn(
     cmd.spawn(Name::from("Bathroom cloud atlas"))
         .insert(cloud_atlas_bundle(vec2(-176.0, 145.0)));
 
-    // TODO: the other two doors
-    // bedroom door opens (sprite index 2) when the player is near the door
     cmd.spawn((
-        Name::from("Bedroom door"),
-        DoorBuilder::new(ApartmentTileKind::PlayerDoorZone)
-            .add_open_criteria(DoorOpenCriteria::Character(
-                common_story::Character::Winnie,
-            ))
-            .add_open_criteria(DoorOpenCriteria::Character(
-                common_story::Character::Unnamed,
-            ))
-            .with_initial_state(DoorState::Closed)
-            .with_obstacle_when_closed_between(sq(-40, -21), sq(-31, -21))
-            .build(&mut tilemap),
-        LayoutEntity,
-        RenderLayers::layer(render_layer::BG),
-        SpriteSheetBundle {
-            texture: asset_server.load(assets::BEDROOM_MAIN_DOOR),
-            atlas: TextureAtlas {
-                index: 0,
-                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
-                    vec2(27.0, 53.0),
-                    2,
-                    1,
-                    Some(vec2(1.0, 0.0)),
-                    None,
-                )),
-            },
-            sprite: Sprite {
-                anchor: Anchor::BottomCenter,
-                ..default()
-            },
-            transform: Transform::from_translation(
-                // sometimes to make the game feel better, the z coordinate
-                // needs to be adjusted
-                <Apartment as TopDownScene>::extend_z_with_y_offset(
-                    vec2(-105.0, -88.0),
-                    8.5,
-                ),
-            ),
-            ..default()
-        },
-    ));
-
-    // the elevator takes the player to the next location
-    let elevator = cmd
-        .spawn((
-            Name::from("Elevator"),
-            Elevator,
-            LayoutEntity,
-            HallwayEntity,
-            RenderLayers::layer(render_layer::BG),
-            InspectLabelCategory::Default
-                .into_label("Elevator")
-                .emit_event_on_interacted(ApartmentAction::EnterElevator),
-            // this animation is important for elevator cutscene
-            AtlasAnimation {
-                on_last_frame: AtlasAnimationEnd::RemoveTimer,
-                first: 0,
-                last: 7,
-                ..default()
-            },
-            SpriteSheetBundle {
-                texture: asset_server.load(assets::ELEVATOR_ATLAS),
-                atlas: TextureAtlas {
-                    index: 0,
-                    layout: texture_atlases.add(TextureAtlasLayout::from_grid(
-                        vec2(51.0, 57.0),
-                        8,
-                        1,
-                        Some(vec2(4.0, 0.0)),
-                        None,
-                    )),
-                },
-                sprite: Sprite {
-                    color: PRIMARY_COLOR,
-                    ..default()
-                },
-                transform: Transform::from_translation(
-                    vec2(-201.5, -49.0).extend(zindex::ELEVATOR),
-                ),
-                ..default()
-            },
-        ))
-        .id();
-    zone_to_inspect_label_entity
-        .map
-        .insert(ApartmentTileKind::ElevatorZone, elevator);
-
-    cmd.spawn((
-        Name::from("Vending machine"),
-        LayoutEntity,
         HallwayEntity,
-        RenderLayers::layer(render_layer::BG),
         SpriteSheetBundle {
-            texture: asset_server.load(assets::VENDING_MACHINE_ATLAS),
-            atlas: TextureAtlas {
-                index: 0,
-                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
-                    vec2(30.0, 55.0),
-                    4,
-                    1,
-                    Some(vec2(1.0, 0.0)),
-                    None,
-                )),
-            },
             sprite: Sprite {
                 color: PRIMARY_COLOR,
                 ..default()
             },
-            transform: Transform::from_translation(
-                vec2(-268.0, -60.0).extend(zindex::ELEVATOR),
-            ),
             ..default()
         },
     ));
-
-    cmd.insert_resource(zone_to_inspect_label_entity);
 }
 
 fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
