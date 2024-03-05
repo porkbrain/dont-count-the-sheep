@@ -1,9 +1,11 @@
 use std::{marker::PhantomData, sync::Arc};
 
 use bevy::{
-    asset::{Asset, AssetServer, Handle, StrongHandle},
+    asset::{AssetServer, Handle, StrongHandle, UntypedHandle},
     ecs::system::{Commands, Res, Resource},
     log::error,
+    prelude::default,
+    utils::HashMap,
 };
 
 /// Assets that are loaded once and never unloaded.
@@ -28,7 +30,7 @@ impl AssetList for StaticScene {
 /// Then, we can load all assets on scene load and drop them all on scene exit.
 #[derive(Resource)]
 pub struct AssetStore<T> {
-    assets: Vec<Arc<StrongHandle>>,
+    assets: HashMap<&'static str, Arc<StrongHandle>>,
 
     _phantom: PhantomData<T>,
 }
@@ -66,12 +68,17 @@ impl<T: AssetList> AssetStore<T> {
         let mut store = Self::new();
 
         for folder in T::folders() {
-            store.append_handle(asset_server.load_folder(*folder));
+            match asset_server.load_folder(*folder) {
+                Handle::Strong(h) => {
+                    store.assets.insert(folder, h);
+                }
+                Handle::Weak(_) => error!("Cannot append weak handle"),
+            }
         }
 
         for file in T::files() {
             if let Handle::Strong(handle) = asset_server.load_untyped(*file) {
-                store.append(handle);
+                store.assets.insert(file, handle);
             }
         }
 
@@ -82,10 +89,10 @@ impl<T: AssetList> AssetStore<T> {
         &self,
         asset_server: &bevy::asset::AssetServer,
     ) -> bool {
-        self.assets.iter().all(|h| {
-            asset_server.is_loaded_with_dependencies(
-                bevy::asset::UntypedHandle::Strong(Arc::clone(h)),
-            )
+        self.assets.values().all(|h| {
+            asset_server.is_loaded_with_dependencies(UntypedHandle::Strong(
+                Arc::clone(h),
+            ))
         })
     }
 }
@@ -93,20 +100,8 @@ impl<T: AssetList> AssetStore<T> {
 impl<T> AssetStore<T> {
     pub fn new() -> Self {
         Self {
-            assets: Vec::new(),
+            assets: default(),
             _phantom: PhantomData,
-        }
-    }
-
-    pub fn append(&mut self, asset: Arc<StrongHandle>) {
-        self.assets.push(asset);
-    }
-
-    #[inline]
-    pub fn append_handle<A: Asset>(&mut self, h: Handle<A>) {
-        match h {
-            Handle::Strong(h) => self.append(h),
-            Handle::Weak(_) => error!("Cannot append weak handle"),
         }
     }
 }
@@ -114,17 +109,5 @@ impl<T> AssetStore<T> {
 impl<T> Default for AssetStore<T> {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-impl<T, A: Asset> From<Vec<Handle<A>>> for AssetStore<T> {
-    fn from(value: Vec<Handle<A>>) -> Self {
-        let mut store = Self::new();
-
-        for h in value {
-            store.append_handle(h);
-        }
-
-        store
     }
 }

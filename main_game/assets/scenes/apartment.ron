@@ -1,0 +1,123 @@
+(
+    sprites: [
+        (
+            reactive_component: (
+                asset_path: "apartment/bg.png",
+                overwrite_zindex: Some(-3.0),
+            ),
+            serde_only: (
+                name: "Bedroom, bathroom and kitchen background",
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/backwall_furniture.png",
+                overwrite_zindex: Some(-1.0),
+            ),
+            serde_only: (
+                name: "Back wall furniture",
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/toilet.png",
+            ),
+            serde_only: (
+                initial_position: (-143.0, -10.0),
+                name: "Bathroom toilet",
+                anchor: Some(BottomCenter),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/shoerack.png",
+            ),
+            serde_only: (
+                initial_position: (-63.0, -77.0),
+                name: "Bedroom shoe rack",
+                anchor: Some(BottomCenter),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/fridge.png",
+            ),
+            serde_only: (
+                initial_position: (79.0, 37.0),
+                name: "Kitchen fridge",
+                anchor: Some(BottomCenter),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/kitchen_table.png",
+            ),
+            serde_only: (
+                initial_position: (151.0, 11.0),
+                name: "Kitchen table",
+                anchor: Some(BottomCenter),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/cupboard.png",
+                calc_zindex_as_if_y_was_offset_by: Some(2.5),
+            ),
+            serde_only: (
+                initial_position: (-95.0, -25.0),
+                name: "Bedroom cupboard",
+                anchor: Some(BottomCenter),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/laundry_basket.png",
+                calc_zindex_as_if_y_was_offset_by: Some(5.0),
+            ),
+            serde_only: (
+                initial_position: (-51.0, -25.0),
+                name: "Bedroom laundry basket",
+                anchor: Some(BottomCenter),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/hallway.png",
+                overwrite_zindex: Some(-2.0),
+            ),
+            serde_only: (
+                name: "Hallway background",
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/black_door.png",
+            ),
+            serde_only: (
+                initial_position: (-204.0, -130.0),
+                name: "Hallway door #1",
+                anchor: Some(BottomCenter),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/black_door.png",
+            ),
+            serde_only: (
+                initial_position: (19.0, -130.0),
+                name: "Hallway door #2",
+                anchor: Some(BottomCenter),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/meditation_chair.png",
+            ),
+            serde_only: (
+                initial_position: (38.0, 69.0),
+                name: "Bedroom meditation chair",
+                anchor: Some(BottomCenter),
+            )
+        ),
+    ],
+)

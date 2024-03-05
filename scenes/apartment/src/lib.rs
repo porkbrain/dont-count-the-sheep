@@ -17,6 +17,7 @@ use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use consts::START_LOADING_SCREEN_AFTER;
 use layout::ApartmentTileKind;
+use main_game_lib::scene_maker::{self, SpriteScene};
 use prelude::*;
 
 /// Important scene struct.
@@ -46,6 +47,21 @@ pub fn add(app: &mut App) {
 
     app.add_plugins((cameras::Plugin, layout::Plugin, actor::Plugin));
 
+    #[cfg(feature = "devtools")]
+    {
+        debug!("Adding scene maker plugin");
+        app.add_plugins(
+            main_game_lib::scene_maker::Plugin::<Apartment, _>::new(
+                StateSemantics {
+                    loading: GlobalGameState::ApartmentLoading,
+                    running: GlobalGameState::InApartment,
+                    quitting: GlobalGameState::ApartmentQuitting,
+                    paused: None,
+                },
+            ),
+        );
+    }
+
     debug!("Adding assets");
 
     app.add_systems(
@@ -65,6 +81,9 @@ pub fn add(app: &mut App) {
         Last,
         finish_when_everything_loaded
             .run_if(in_state(GlobalGameState::ApartmentLoading))
+            .run_if(scene_maker::are_sprites_spawned_and_file_despawned::<
+                Apartment,
+            >())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
@@ -180,6 +199,16 @@ impl TopDownScene for Apartment {
 
     fn asset_path() -> &'static str {
         assets::MAP
+    }
+}
+
+impl SpriteScene for Apartment {
+    fn asset_path() -> &'static str {
+        assets::SCENE
+    }
+
+    fn y_range() -> std::ops::RangeInclusive<f32> {
+        <Self as TopDownScene>::y_range()
     }
 }
 

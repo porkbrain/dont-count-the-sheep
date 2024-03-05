@@ -10,5 +10,4 @@ pub(crate) const BG_HALLWAY: f32 = -2.0;
 
 pub(crate) const CLOUD_ATLAS: f32 = -1.5;
 
-pub(crate) const BACKWALL_FURNITURE: f32 = -1.0;
 pub(crate) const ELEVATOR: f32 = -1.0;

@@ -11,9 +11,10 @@ pub mod vec2_ext;
 
 use bevy::{app::AppExit, prelude::*};
 use bevy_pixel_camera::PixelCameraPlugin;
+use common_assets::RonLoader;
 pub use common_ext;
 
-use crate::prelude::*;
+use crate::{prelude::*, scene_maker::SceneSerde};
 
 /// Constructs a new app with all the necessary plugins and systems.
 ///
@@ -69,14 +70,23 @@ pub fn windowed_app() -> App {
 
     info!("Initializing Don't Count The Sheep");
 
-    app.init_state::<GlobalGameState>()
-        .register_type::<GlobalGameState>()
+    app.init_asset::<SceneSerde>()
+        .init_asset_loader::<RonLoader<SceneSerde>>()
+        .init_state::<GlobalGameState>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
-        .insert_resource(GlobalGameStateTransitionStack::default())
-        .register_type::<GlobalGameStateTransitionStack>();
+        .insert_resource(GlobalGameStateTransitionStack::default());
 
     #[cfg(feature = "devtools")]
     {
+        use scene_maker::store_and_load::{
+            SceneSpriteAtlas, SceneSpriteConfig,
+        };
+
+        app.register_type::<GlobalGameStateTransitionStack>()
+            .register_type::<GlobalGameState>()
+            .register_type::<SceneSpriteConfig>()
+            .register_type::<SceneSpriteAtlas>();
+
         use bevy_inspector_egui::quick::{
             StateInspectorPlugin, WorldInspectorPlugin,
         };
@@ -85,6 +95,7 @@ pub fn windowed_app() -> App {
             WorldInspectorPlugin::new(),
             StateInspectorPlugin::<GlobalGameState>::default(),
         ));
+        // no idea what this does, just copied it from some example
         fn configure_visuals_system(mut contexts: bevy_egui::EguiContexts) {
             contexts.ctx_mut().set_visuals(bevy_egui::egui::Visuals {
                 window_rounding: 0.0.into(),

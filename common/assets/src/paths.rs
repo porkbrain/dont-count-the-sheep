@@ -9,8 +9,11 @@ pub mod fonts {
 }
 
 pub mod apartment {
+    // TODO: remove unused paths
+
     pub const FOLDER: &str = "apartment";
     pub const MAP: &str = "maps/apartment.ron";
+    pub const SCENE: &str = "scenes/apartment.ron";
     pub const BG: &str = "apartment/bg.png";
     pub const HALLWAY: &str = "apartment/hallway.png";
 

@@ -5,7 +5,7 @@ use bevy::window::PrimaryWindow;
 use common_visuals::camera::MainCamera;
 
 use super::SceneMakerToolbar;
-use crate::prelude::*;
+use crate::{prelude::*, scene_maker::LoadedFromSceneFile};
 
 const HIGHLIGHT_COLOR: Color = Color::rgba(0.25, 0.25, 0.25, 0.8);
 
@@ -37,15 +37,18 @@ pub fn system(
 
     windows: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    mut sprites: Query<(
-        Entity,
-        &mut Sprite,
-        &GlobalTransform,      // compare with cursor position
-        &mut Transform,        // update when moving around
-        &Handle<Image>,        // we need to know how big the sprite is
-        &ViewVisibility,       // ignore hidden sprites
-        Option<&TextureAtlas>, // if texture atlas, get single tile size
-    )>,
+    mut sprites: Query<
+        (
+            Entity,
+            &mut Sprite,
+            &GlobalTransform, // compare with cursor position
+            &mut Transform,   // update when moving around
+            &Handle<Image>,   // we need to know how big the sprite is
+            &ViewVisibility,  // ignore hidden sprites
+            Option<&TextureAtlas>, // if texture atlas, get single tile size
+        ),
+        With<LoadedFromSceneFile>,
+    >,
 ) {
     if !toolbar.is_active {
         return;

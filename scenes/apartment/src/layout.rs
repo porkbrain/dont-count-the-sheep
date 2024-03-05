@@ -13,7 +13,10 @@ use common_visuals::{
     camera::render_layer, AtlasAnimation, AtlasAnimationEnd,
     AtlasAnimationTimer, BeginInterpolationEvent,
 };
-use main_game_lib::common_ext::QueryExt;
+use main_game_lib::{
+    common_ext::QueryExt,
+    scene_maker::{self, SceneSerde, SpriteScene, SpriteSceneHandle},
+};
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use strum::{EnumIter, IntoEnumIterator};
@@ -29,11 +32,22 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        #[cfg(feature = "devtools")]
         app.register_type::<ApartmentTileKind>();
 
         app.add_systems(
             Update,
             spawn.run_if(in_state(GlobalGameState::ApartmentLoading)),
+        )
+        .add_systems(
+            Update,
+            spawn2
+                .run_if(in_state(GlobalGameState::ApartmentLoading))
+                .run_if(not(
+                    scene_maker::are_sprites_spawned_and_file_despawned::<
+                        Apartment,
+                    >(),
+                )),
         )
         .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn)
         .add_systems(
@@ -47,6 +61,88 @@ impl bevy::app::Plugin for Plugin {
                 .after(actor::emit_movement_events::<Apartment>),
         );
     }
+}
+
+// TODO
+fn spawn2(
+    mut cmd: Commands,
+    asset_server: Res<AssetServer>,
+    mut scenes: ResMut<Assets<SceneSerde>>,
+    mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    tilemap: Option<ResMut<TileMap<Apartment>>>,
+
+    q: Query<(Entity, &SpriteSceneHandle<Apartment>)>,
+) {
+    let Some((handle_entity, SpriteSceneHandle { handle, .. })) =
+        q.get_single_or_none()
+    else {
+        trace!("Spawning Apartment sprite scene handle");
+        cmd.spawn(SpriteSceneHandle::<Apartment>::new(
+            asset_server.load(<Apartment as SpriteScene>::asset_path()),
+        ));
+        return;
+    };
+    if !asset_server.is_loaded_with_dependencies(handle) {
+        return;
+    }
+    let Some(mut tilemap) = tilemap else {
+        return; // wait for tilemap to load
+    };
+
+    let mut scene = scenes.remove(handle).expect("Scene file is loaded");
+
+    info!("Spawning apartment scene");
+
+    let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
+
+    while let Some((mut entity_cmd, name)) = scene
+        .spawn_next_sprite::<Apartment>(
+            &mut cmd,
+            &asset_server,
+            &mut atlas_layouts,
+        )
+    {
+        trace!("Spawned {name:?} from scene file");
+
+        entity_cmd
+            .insert((LayoutEntity, RenderLayers::layer(render_layer::BG)));
+
+        match name.as_str() {
+            "Bedroom, bathroom and kitchen background"
+            | "Bathroom toilet"
+            | "Bedroom shoe rack"
+            | "Kitchen table"
+            | "Kitchen fridge"
+            | "Bedroom cupboard"
+            | "Bedroom laundry basket"
+            | "Back wall furniture" => {}
+            "Hallway background" | "Hallway door #1" | "Hallway door #2" => {
+                entity_cmd.insert(HallwayEntity);
+                entity_cmd.add(|mut w: EntityWorldMut| {
+                    w.get_mut::<Sprite>().expect("Sprite").color =
+                        PRIMARY_COLOR;
+                });
+            }
+            "Bedroom meditation chair" => {
+                zone_to_inspect_label_entity
+                    .map
+                    .insert(ApartmentTileKind::MeditationZone, entity_cmd.id());
+
+                entity_cmd.insert(
+                    InspectLabelCategory::Default
+                        .into_label("Meditate")
+                        .emit_event_on_interacted(
+                            ApartmentAction::StartMeditation,
+                        ),
+                );
+            }
+            _ => {
+                error!("Sprite {name:?} not handled");
+            }
+        }
+    }
+
+    cmd.entity(handle_entity).despawn();
 }
 
 #[derive(Component)]
@@ -113,163 +209,6 @@ fn spawn(
     }
 
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
-
-    #[derive(Default)]
-    struct ToSpawn {
-        name: &'static str,
-        asset: &'static str,
-        // if not specified, it's calculated from position
-        zindex: Option<f32>,
-        position: Vec2,
-        color: Option<Color>,
-        is_hallway_entity: bool,
-        anchor: Anchor,
-        anchor_y_offset: f32,
-        assign_as_inspect_label_for_zone:
-            Option<(&'static str, ApartmentAction, ApartmentTileKind)>,
-    }
-
-    for ToSpawn {
-        name,
-        asset,
-        zindex,
-        color,
-        is_hallway_entity,
-        position,
-        anchor,
-        anchor_y_offset,
-        assign_as_inspect_label_for_zone,
-    } in [
-        ToSpawn {
-            name: "Bedroom, bathroom and kitchen background",
-            asset: assets::BG,
-            zindex: Some(zindex::BG_BATHROOM_BEDROOM_AND_KITCHEN),
-            ..default()
-        },
-        ToSpawn {
-            name: "Back wall furniture",
-            asset: assets::BACKWALL_FURNITURE,
-            zindex: Some(zindex::BACKWALL_FURNITURE),
-            ..default()
-        },
-        ToSpawn {
-            name: "Bathroom toilet",
-            asset: assets::TOILET,
-            position: vec2(-143.0, -10.0),
-            anchor: Anchor::BottomCenter,
-            ..default()
-        },
-        ToSpawn {
-            name: "Bedroom cupboard",
-            asset: assets::CUPBOARD,
-            position: vec2(-95.0, -25.0),
-            anchor: Anchor::BottomCenter,
-            anchor_y_offset: 2.5,
-            ..default()
-        },
-        ToSpawn {
-            name: "Bedroom laundry basket",
-            asset: assets::LAUNDRY_BASKET,
-            position: vec2(-51.0, -25.0),
-            anchor: Anchor::BottomCenter,
-            anchor_y_offset: 5.0,
-            ..default()
-        },
-        ToSpawn {
-            name: "Bedroom shoe rack",
-            asset: assets::SHOERACK,
-            position: vec2(-63.0, -77.0),
-            anchor: Anchor::BottomCenter,
-            ..default()
-        },
-        ToSpawn {
-            name: "Kitchen fridge",
-            asset: assets::FRIDGE,
-            position: vec2(79.0, 37.0),
-            anchor: Anchor::BottomCenter,
-            ..default()
-        },
-        ToSpawn {
-            name: "Kitchen table",
-            asset: assets::KITCHEN_TABLE,
-            position: vec2(151.0, 11.0),
-            anchor: Anchor::BottomCenter,
-            ..default()
-        },
-        ToSpawn {
-            name: "Hallway background",
-            asset: assets::HALLWAY,
-            zindex: Some(zindex::BG_HALLWAY),
-            color: Some(PRIMARY_COLOR),
-            is_hallway_entity: true,
-            ..default()
-        },
-        ToSpawn {
-            name: "Hallway door #1",
-            asset: assets::HALLWAY_DOOR,
-            color: Some(PRIMARY_COLOR),
-            is_hallway_entity: true,
-            position: vec2(-204.0, -130.0),
-            anchor: Anchor::BottomCenter,
-            ..default()
-        },
-        ToSpawn {
-            name: "Hallway door #2",
-            asset: assets::HALLWAY_DOOR,
-            color: Some(PRIMARY_COLOR),
-            is_hallway_entity: true,
-            position: vec2(19.0, -130.0),
-            anchor: Anchor::BottomCenter,
-            ..default()
-        },
-        ToSpawn {
-            name: "Bedroom meditation chair",
-            asset: assets::MEDITATION_CHAIR,
-            position: vec2(38.0, 69.0),
-            anchor: Anchor::BottomCenter,
-            assign_as_inspect_label_for_zone: Some((
-                "Meditate",
-                ApartmentAction::StartMeditation,
-                ApartmentTileKind::MeditationZone,
-            )),
-            ..default()
-        },
-    ] {
-        let translate = zindex
-            .map(|zindex| position.extend(zindex))
-            .unwrap_or_else(|| {
-                Apartment::extend_z_with_y_offset(position, anchor_y_offset)
-            });
-        let mut entity = cmd.spawn((
-            Name::from(name),
-            LayoutEntity,
-            RenderLayers::layer(render_layer::BG),
-            SpriteBundle {
-                texture: asset_server.load(asset),
-                transform: Transform::from_translation(translate),
-                sprite: Sprite {
-                    color: color.unwrap_or_default(),
-                    anchor,
-                    ..default()
-                },
-                ..default()
-            },
-        ));
-
-        if is_hallway_entity {
-            entity.insert(HallwayEntity);
-        }
-
-        if let Some((label, action, zone)) = assign_as_inspect_label_for_zone {
-            zone_to_inspect_label_entity.map.insert(zone, entity.id());
-
-            entity.insert(
-                InspectLabelCategory::Default
-                    .into_label(label)
-                    .emit_event_on_interacted(action),
-            );
-        }
-    }
 
     // cloud atlas is rendered on top of the bg but below the furniture
 
@@ -349,7 +288,10 @@ fn spawn(
             transform: Transform::from_translation(
                 // sometimes to make the game feel better, the z coordinate
                 // needs to be adjusted
-                Apartment::extend_z_with_y_offset(vec2(-105.0, -88.0), 8.5),
+                <Apartment as TopDownScene>::extend_z_with_y_offset(
+                    vec2(-105.0, -88.0),
+                    8.5,
+                ),
             ),
             ..default()
         },

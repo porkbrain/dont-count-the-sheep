@@ -1,12 +1,57 @@
-use bevy::sprite::Anchor;
+use std::ops::RangeInclusive;
+
+use bevy::{ecs::system::EntityCommands, sprite::Anchor};
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 
+/// Defines a scene.
+pub trait SpriteScene: Send + Sync + 'static {
+    /// Path to the .ron file with sprite scene data.
+    fn asset_path() -> &'static str;
+
+    /// The range of y coordinates on the map.
+    fn y_range() -> RangeInclusive<f32>;
+
+    /// Given a position on the map, add a z coordinate.
+    /// Will return a z-coordinate in the range of -0.1 to 1.1.
+    #[inline]
+    fn extend_z(Vec2 { x, y }: Vec2) -> Vec3 {
+        let (min, max) = Self::y_range().into_inner();
+        let size = max - min;
+        debug_assert!(size > 0.0, "{max} - {min} <= 0.0");
+
+        // we allow for a tiny leeway for positions outside of the bounding box
+        let z = ((max - y) / size).clamp(-0.1, 1.1);
+
+        Vec3::new(x, y, z)
+    }
+
+    /// Given a position on the map, add a z coordinate as if the y coordinate
+    /// was offset by `offset`.
+    fn extend_z_with_y_offset(Vec2 { x, y }: Vec2, offset: f32) -> Vec3 {
+        let z = Self::extend_z(Vec2 { x, y: y + offset }).z;
+        Vec3::new(x, y, z)
+    }
+}
+
+/// Used for loading of the scene.
+#[derive(Component)]
+pub struct SpriteSceneHandle<T> {
+    /// The actual handle that can be used to load the file.
+    pub handle: Handle<SceneSerde>,
+    _phantom: std::marker::PhantomData<T>,
+}
+
+/// Stored in a .ron file.
 #[derive(Asset, TypePath, Serialize, Deserialize)]
-pub(super) struct SceneSerde {
+pub struct SceneSerde {
     sprites: Vec<SceneSpriteSerde>,
 }
+
+/// Any entity that's loaded from a config scene file will have this component.
+#[derive(Component)]
+pub struct LoadedFromSceneFile;
 
 /// This is a single entity stored in the scene file.
 /// Scene file is really just a collection of these entities.
@@ -14,12 +59,10 @@ pub(super) struct SceneSerde {
 struct SceneSpriteSerde {
     /// This will be inserted as a component to the entity.
     /// Changes to this component will be reflected in the entity in-game.
-    #[serde(flatten)]
-    reactive_component: SceneSprite,
+    reactive_component: SceneSpriteConfig,
     /// Used to construct the entity's components on deserialization.
     /// On serialization we collect the properties from the entity and store
     /// them here.
-    #[serde(flatten)]
     serde_only: SceneSpriteSerdeOnly,
 }
 
@@ -32,37 +75,57 @@ struct SceneSpriteSerdeOnly {
     /// [`Name`]
     name: String,
     /// [`Transform`]
+    #[serde(default)]
     initial_position: Vec2,
     /// [`Sprite`]
-    anchor: AnchorSerde,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    anchor: Option<AnchorSerde>,
     /// [`Sprite`]
-    color: Color,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    color: Option<Color>,
 }
 
+/// This is only really useful for devtools.
 #[derive(Component, Reflect, Default, Serialize, Deserialize, Clone)]
 #[reflect(Component, Default)]
-pub(super) struct SceneSprite {
+pub struct SceneSpriteConfig {
     // TODO: debug assert being loaded
-    asset_path: String,
+    /// The path to the texture asset.
+    pub asset_path: String,
     /// If not specified, it's calculated from position.
-    overwrite_zindex: Option<f32>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub overwrite_zindex: Option<f32>,
     /// If provided, the zindex will be calculated as if the y position was
     /// offset by this value.
-    calc_zindex_as_if_y_was_offset_by: f32,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub calc_zindex_as_if_y_was_offset_by: Option<f32>,
     /// If the texture is a sprite atlas, this will be used to calculate the
     /// sprite's position in the atlas.
-    atlas: Option<SceneSpriteAtlas>,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub atlas: Option<SceneSpriteAtlas>,
 }
 
+/// This is only really useful for devtools.
 #[derive(Reflect, Default, Serialize, Deserialize, Clone)]
 #[reflect(Default)]
-pub(super) struct SceneSpriteAtlas {
-    index: usize,
-    tile_size: Vec2,
-    rows: usize,
-    columns: usize,
-    padding: Vec2,
-    offset: Vec2,
+pub struct SceneSpriteAtlas {
+    /// The index of the sprite in the atlas.
+    pub index: usize,
+    /// The size of a single tile in the atlas.
+    pub tile_size: Vec2,
+    /// The number of rows in the atlas.
+    pub rows: usize,
+    /// The number of columns in the atlas.
+    pub columns: usize,
+    /// Set to `Vec2::ZERO` for no padding.
+    pub padding: Vec2,
+    /// Set to `Vec2::ZERO` for no offset.
+    pub offset: Vec2,
 }
 
 /// Serializable and deserializable version of `Anchor`.
@@ -92,32 +155,36 @@ enum AnchorSerde {
     Custom(Vec2),
 }
 
-pub(super) fn load_scene(
-    mut cmd: Commands,
-    asset_server: Res<AssetServer>,
-    mut scenes: ResMut<Assets<SceneSerde>>,
-    mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-) {
-    let handle: Handle<SceneSerde> = asset_server.load("path/to/asset");
-    if !asset_server.is_loaded_with_dependencies(&handle) {
-        return;
-    }
+impl SceneSerde {
+    /// Spawns the next sprite in the scene.
+    /// Returns the commands with which more components can be added to the
+    /// entity.
+    /// The [`Name`] component has already been inserted!
+    /// It's returned so that it can be matched on.
+    /// This is how you can determine what entity you're working with.
+    pub fn spawn_next_sprite<'a, T: SpriteScene>(
+        &mut self,
+        cmd: &'a mut Commands,
+        asset_server: &AssetServer,
+        atlas_layouts: &mut Assets<TextureAtlasLayout>,
+    ) -> Option<(EntityCommands<'a>, Name)> {
+        let (entity, name) = load_sprite::<T>(
+            cmd,
+            asset_server,
+            atlas_layouts,
+            self.sprites.pop()?,
+        );
 
-    let Some(scene) = scenes.remove(handle) else {
-        return;
-    };
-
-    for sprite in scene.sprites {
-        load_sprite(&mut cmd, &asset_server, &mut atlas_layouts, sprite);
+        Some((cmd.entity(entity), name))
     }
 }
 
-fn load_sprite(
+fn load_sprite<T: SpriteScene>(
     cmd: &mut Commands,
     asset_server: &AssetServer,
     atlas_layouts: &mut Assets<TextureAtlasLayout>,
     sprite: SceneSpriteSerde,
-) {
+) -> (Entity, Name) {
     let SceneSpriteSerdeOnly {
         name,
         initial_position,
@@ -125,26 +192,32 @@ fn load_sprite(
         color,
     } = sprite.serde_only;
 
-    let transform = Transform::from_translation(Vec3::new(
-        initial_position.x,
-        initial_position.y,
+    let translation =
         if let Some(z) = sprite.reactive_component.overwrite_zindex {
-            z
+            initial_position.extend(z)
         } else {
-            todo!("calc zindex");
-        },
-    ));
+            T::extend_z_with_y_offset(
+                initial_position,
+                sprite
+                    .reactive_component
+                    .calc_zindex_as_if_y_was_offset_by
+                    .unwrap_or_default(),
+            )
+        };
 
-    let mut root = cmd.spawn_empty();
+    let transform = Transform::from_translation(translation);
 
-    root.insert(Name::new(name));
+    let mut root = cmd.spawn(LoadedFromSceneFile);
+    let name = Name::new(name);
+
+    root.insert(name.clone());
     root.insert(SpatialBundle {
         transform,
         ..default()
     });
     root.insert(Sprite {
-        color,
-        anchor: anchor.into(),
+        color: color.unwrap_or_default(),
+        anchor: anchor.unwrap_or_default().into(),
         ..default()
     });
     root.insert(
@@ -162,11 +235,18 @@ fn load_sprite(
             index: atlas.index,
         });
     }
-    root.insert(sprite.reactive_component);
+    #[cfg(feature = "devtools")]
+    {
+        // the reactive component is used to update the entity in-game
+        // conveniently, which is only used for scene making
+        root.insert(sprite.reactive_component);
+    }
+
+    (root.id(), name)
 }
 
 #[cfg(feature = "devtools")]
-pub(super) fn react_to_changes(
+pub(super) fn react_to_changes<T: SpriteScene>(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
@@ -174,22 +254,25 @@ pub(super) fn react_to_changes(
     mut sprites: Query<
         (
             Entity,
-            &SceneSprite,
+            &SceneSpriteConfig,
             &mut Transform,
             &mut Handle<Image>,
             Option<&mut TextureAtlas>,
         ),
-        Changed<SceneSprite>,
+        (Changed<SceneSpriteConfig>, With<LoadedFromSceneFile>),
     >,
 ) {
     for (entity, truth, mut transform, mut texture, atlas) in sprites.iter_mut()
     {
         *texture = asset_server.load(&truth.asset_path);
 
-        transform.translation.z = if let Some(z) = truth.overwrite_zindex {
-            z
+        transform.translation = if let Some(z) = truth.overwrite_zindex {
+            transform.translation.truncate().extend(z)
         } else {
-            todo!("calc zindex");
+            T::extend_z_with_y_offset(
+                transform.translation.truncate(),
+                truth.calc_zindex_as_if_y_was_offset_by.unwrap_or_default(),
+            )
         };
 
         match (&truth.atlas, atlas.is_some()) {
@@ -216,9 +299,14 @@ pub(super) fn react_to_changes(
     }
 }
 
+// TODO: run this if UI button pressed
+// also in the same UI we want to display form to add new sprite component
 #[cfg(feature = "devtools")]
 pub(super) fn store(
-    sprites: Query<(&SceneSprite, &Name, &Transform, &Sprite)>,
+    sprites: Query<
+        (&SceneSpriteConfig, &Name, &Transform, &Sprite),
+        With<LoadedFromSceneFile>,
+    >,
 ) {
     let sprites =
         sprites
@@ -228,8 +316,16 @@ pub(super) fn store(
                 serde_only: SceneSpriteSerdeOnly {
                     name: name.to_string(),
                     initial_position: transform.translation.truncate(),
-                    anchor: sprite.anchor.into(),
-                    color: sprite.color,
+                    anchor: if sprite.anchor == default() {
+                        None
+                    } else {
+                        Some(sprite.anchor.into())
+                    },
+                    color: if sprite.color == default() {
+                        None
+                    } else {
+                        Some(sprite.color)
+                    },
                 },
             });
 
@@ -238,6 +334,8 @@ pub(super) fn store(
     };
 
     let to_save = ron::ser::to_string_pretty(&scene, default()).unwrap();
+
+    todo!("{to_save}");
 }
 
 impl From<AnchorSerde> for Anchor {
@@ -271,5 +369,21 @@ impl From<Anchor> for AnchorSerde {
             Anchor::TopRight => Self::TopRight,
             Anchor::Custom(point) => Self::Custom(point),
         }
+    }
+}
+
+impl<T> SpriteSceneHandle<T> {
+    /// Creates a new handle.
+    pub fn new(handle: Handle<SceneSerde>) -> Self {
+        Self {
+            handle,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T> From<&SpriteSceneHandle<T>> for AssetId<SceneSerde> {
+    fn from(SpriteSceneHandle { handle, .. }: &SpriteSceneHandle<T>) -> Self {
+        handle.into()
     }
 }
