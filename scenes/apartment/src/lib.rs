@@ -10,7 +10,6 @@ mod cameras;
 mod consts;
 mod layout;
 mod prelude;
-mod zindex;
 
 use bevy::utils::Instant;
 use common_assets::{store::AssetList, AssetStore};

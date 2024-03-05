@@ -167,5 +167,37 @@
                 initial_position: (-268.0, -60.0),
             )
         ),
+        (
+            reactive_component: (
+                asset_path: "apartment/cloud_atlas.png",
+                overwrite_zindex: Some(-1.5),
+                atlas: Some((
+                    tile_size: (35.0, 11.0),
+                    rows: 1,
+                    columns: 34,
+                    padding: (2.0, 0.0),
+                )),
+            ),
+            serde_only: (
+                name: "Bedroom cloud atlas",
+                initial_position: (-70.5, 113.5),
+            )
+        ),
+        (
+            reactive_component: (
+                asset_path: "apartment/cloud_atlas.png",
+                overwrite_zindex: Some(-1.5),
+                atlas: Some((
+                    tile_size: (35.0, 11.0),
+                    rows: 1,
+                    columns: 34,
+                    padding: (2.0, 0.0),
+                )),
+            ),
+            serde_only: (
+                name: "Kitchen cloud atlas",
+                initial_position: (96.0, 113.5),
+            )
+        )
     ],
 )

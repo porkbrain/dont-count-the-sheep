@@ -37,11 +37,7 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             Update,
-            spawn.run_if(in_state(GlobalGameState::ApartmentLoading)),
-        )
-        .add_systems(
-            Update,
-            spawn2
+            spawn
                 .run_if(in_state(GlobalGameState::ApartmentLoading))
                 .run_if(not(
                     scene_maker::are_sprites_spawned_and_file_despawned::<
@@ -63,8 +59,56 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-// TODO
-fn spawn2(
+#[derive(Component)]
+struct LayoutEntity;
+
+/// Hallway is darkened when the player is in the apartment but once the player
+/// approaches the door or is in the hallway, it's lit up.
+#[derive(Component)]
+pub(crate) struct HallwayEntity;
+
+/// Elevator is a special entity that has a sprite sheet with several frames.
+/// It opens when an actor is near it and closes when the actor leaves or
+/// enters.
+#[derive(Component)]
+pub(crate) struct Elevator;
+
+/// We arbitrarily derive the [`Default`] to allow reflection.
+/// It does not have a meaningful default value.
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    Deserialize,
+    EnumIter,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+    Reflect,
+    Serialize,
+    strum::Display,
+)]
+#[reflect(Default)]
+#[allow(clippy::enum_variant_names)]
+pub enum ApartmentTileKind {
+    /// We want to darken the hallway when the player is in the apartment.
+    HallwayZone,
+    /// Everything that's in the player's apartment.
+    PlayerApartmentZone,
+    #[default]
+    BedZone,
+    ElevatorZone,
+    PlayerDoorZone,
+    MeditationZone,
+    TeaZone,
+}
+
+/// The names are stored in the scene file.
+/// See the [`Apartment`] implementation of [`SpriteScene`].
+fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
     mut scenes: ResMut<Assets<SceneSerde>>,
@@ -178,6 +222,25 @@ fn spawn2(
                     .map
                     .insert(ApartmentTileKind::ElevatorZone, entity_cmd.id());
             }
+            "Bedroom cloud atlas" | "Kitchen cloud atlas" => {
+                entity_cmd.add(|mut w: EntityWorldMut| {
+                    w.get_mut::<TextureAtlas>().expect("TextureAtlas").index =
+                        thread_rng().gen_range(0..CLOUD_FRAMES);
+                });
+
+                entity_cmd.insert((
+                    AtlasAnimation {
+                        on_last_frame: AtlasAnimationEnd::Loop,
+                        first: 0,
+                        last: CLOUD_FRAMES - 1,
+                        ..default()
+                    },
+                    AtlasAnimationTimer::new(
+                        CLOUD_ATLAS_FRAME_TIME,
+                        TimerMode::Repeating,
+                    ),
+                ));
+            }
             _ => {
                 error!("Sprite {name:?} not handled");
             }
@@ -186,119 +249,6 @@ fn spawn2(
 
     cmd.insert_resource(zone_to_inspect_label_entity);
     cmd.entity(handle_entity).despawn();
-}
-
-#[derive(Component)]
-struct LayoutEntity;
-
-/// Hallway is darkened when the player is in the apartment but once the player
-/// approaches the door or is in the hallway, it's lit up.
-#[derive(Component)]
-pub(crate) struct HallwayEntity;
-
-/// Elevator is a special entity that has a sprite sheet with several frames.
-/// It opens when an actor is near it and closes when the actor leaves or
-/// enters.
-#[derive(Component)]
-pub(crate) struct Elevator;
-
-/// We arbitrarily derive the [`Default`] to allow reflection.
-/// It does not have a meaningful default value.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Default,
-    Deserialize,
-    EnumIter,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    Reflect,
-    Serialize,
-    strum::Display,
-)]
-#[reflect(Default)]
-#[allow(clippy::enum_variant_names)]
-pub enum ApartmentTileKind {
-    /// We want to darken the hallway when the player is in the apartment.
-    HallwayZone,
-    /// Everything that's in the player's apartment.
-    PlayerApartmentZone,
-    #[default]
-    BedZone,
-    ElevatorZone,
-    PlayerDoorZone,
-    MeditationZone,
-    TeaZone,
-}
-
-fn spawn(
-    mut cmd: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
-
-    entities: Query<Entity, With<LayoutEntity>>,
-) {
-    if !entities.is_empty() {
-        return; // already spawned
-    }
-
-    // cloud atlas is rendered on top of the bg but below the furniture
-
-    let mut cloud_atlas_bundle = |position: Vec2| {
-        (
-            LayoutEntity,
-            RenderLayers::layer(render_layer::BG),
-            AtlasAnimation {
-                on_last_frame: AtlasAnimationEnd::Loop,
-                first: 0,
-                last: CLOUD_FRAMES - 1,
-                ..default()
-            },
-            AtlasAnimationTimer::new(
-                CLOUD_ATLAS_FRAME_TIME,
-                TimerMode::Repeating,
-            ),
-            SpriteSheetBundle {
-                texture: asset_server.load(assets::CLOUD_ATLAS),
-                atlas: TextureAtlas {
-                    index: thread_rng().gen_range(0..CLOUD_FRAMES),
-                    layout: texture_atlases.add(TextureAtlasLayout::from_grid(
-                        vec2(CLOUD_WIDTH, CLOUD_HEIGHT),
-                        CLOUD_FRAMES,
-                        1,
-                        Some(vec2(CLOUD_PADDING, 0.0)),
-                        None,
-                    )),
-                },
-                transform: Transform::from_translation(
-                    position.extend(zindex::CLOUD_ATLAS),
-                ),
-                ..default()
-            },
-        )
-    };
-
-    cmd.spawn(Name::from("Bedroom cloud atlas"))
-        .insert(cloud_atlas_bundle(vec2(-70.5, 113.5)));
-    cmd.spawn(Name::from("Kitchen cloud atlas"))
-        .insert(cloud_atlas_bundle(vec2(96.0, 113.5)));
-    cmd.spawn(Name::from("Bathroom cloud atlas"))
-        .insert(cloud_atlas_bundle(vec2(-176.0, 145.0)));
-
-    cmd.spawn((
-        HallwayEntity,
-        SpriteSheetBundle {
-            sprite: Sprite {
-                color: PRIMARY_COLOR,
-                ..default()
-            },
-            ..default()
-        },
-    ));
 }
 
 fn despawn(mut cmd: Commands, query: Query<Entity, With<LayoutEntity>>) {
