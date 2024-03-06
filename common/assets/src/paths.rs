@@ -1,4 +1,5 @@
-//! All the assets that the game loads are stored as string paths here.
+//! Some assets that the game loads are stored as string paths here.
+//! More are stored in scene RON files.
 
 pub mod fonts {
     pub const FOLDER: &str = "fonts";
@@ -9,29 +10,9 @@ pub mod fonts {
 }
 
 pub mod apartment {
-    // TODO: remove unused paths
-
     pub const FOLDER: &str = "apartment";
     pub const MAP: &str = "maps/apartment.ron";
     pub const SCENE: &str = "scenes/apartment.ron";
-    pub const BG: &str = "apartment/bg.png";
-    pub const HALLWAY: &str = "apartment/hallway.png";
-
-    pub const CLOUD_ATLAS: &str = "apartment/cloud_atlas.png";
-
-    pub const BACKWALL_FURNITURE: &str = "apartment/backwall_furniture.png";
-    pub const FRIDGE: &str = "apartment/fridge.png";
-    pub const KITCHEN_TABLE: &str = "apartment/kitchen_table.png";
-    pub const LAUNDRY_BASKET: &str = "apartment/laundry_basket.png";
-    pub const SHOERACK: &str = "apartment/shoerack.png";
-    pub const CUPBOARD: &str = "apartment/cupboard.png";
-    pub const TOILET: &str = "apartment/toilet.png";
-    pub const BEDROOM_MAIN_DOOR: &str = "apartment/brown_light_door_atlas.png";
-    pub const HALLWAY_DOOR: &str = "apartment/black_door.png";
-    pub const ELEVATOR_ATLAS: &str = "apartment/elevator_atlas.png";
-    pub const VENDING_MACHINE_ATLAS: &str =
-        "apartment/vending_machine_atlas.png";
-    pub const MEDITATION_CHAIR: &str = "apartment/meditation_chair.png";
 
     pub const WINNIE_SLEEPING: &str = "apartment/sleeping.png";
     pub const WINNIE_MEDITATING: &str = "apartment/meditating.png";
