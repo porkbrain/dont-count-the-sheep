@@ -4,30 +4,10 @@
 //! This suggests that some of the code is not used in the final build and
 //! hidden behind a feature `devtools`.
 //!
-//! # Example
-//! You can spawn a scene with a system like this:
-//!
-//! ```rust,ignore
-//! fn load_scene<T: SpriteScene>(
-//!     mut cmd: Commands,
-//!     asset_server: Res<AssetServer>,
-//!     mut scenes: ResMut<Assets<SceneSerde>>,
-//!     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-//! ) {
-//!     let mut scene = scenes
-//!         .remove(asset_server.load(T::asset_path()))
-//!         .expect("is_scene_file_ready run condition");
-//!
-//!     while let Some((entity_cmd, name)) =
-//!         scene.spawn_next_sprite(&mut cmd, &asset_server, &mut atlas_layouts)
-//!     {
-//!         // your custom logic for the sprite
-//!     }
-//! }
-//! ```
-//!
+//! See the existing spawn implementations for examples.
 //! Make sure to use the [`bevy::ecs::schedule::common_conditions::not`] ∘
-//! [`are_scene_sprites_spawned`].
+//! [`are_sprites_spawned_and_file_despawned`] run condition on your spawn
+//! system.
 
 pub(crate) mod store_and_load;
 #[cfg(feature = "devtools")]
