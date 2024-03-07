@@ -58,16 +58,24 @@ pub(crate) struct TileMapMakerToolbar<L: Tile> {
 #[derive(Component)]
 pub(crate) struct DebugLayoutGrid;
 
+/// Contains:
+/// 1. button to hide the grid with squares that show tile kinds
+/// 2. button to store the map into a file
 pub(crate) fn update_ui<T: TopDownScene>(
     mut contexts: EguiContexts,
     mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
 
     mut grid_root: Query<&mut Visibility, With<DebugLayoutGrid>>,
-) {
+) where
+    T::LocalTileKind: Ord,
+{
     let ctx = contexts.ctx_mut();
     bevy_egui::egui::Window::new("Map maker")
         .vscroll(true)
         .show(ctx, |ui| {
+            //
+            // 1.
+            //
             if ui.button("Toggle square grid").clicked() {
                 let mut visibility = grid_root.single_mut();
                 *visibility = match *visibility {
@@ -80,6 +88,13 @@ pub(crate) fn update_ui<T: TopDownScene>(
                         Visibility::Visible
                     }
                 };
+            }
+
+            //
+            // 2.
+            //
+            if ui.button("Store map").clicked() {
+                export_map::<T>(&mut toolbar);
             }
         });
 }
@@ -259,8 +274,8 @@ pub(crate) fn recolor_squares<T: TopDownScene>(
     }
 }
 
-pub(crate) fn export_map<T: TopDownScene>(
-    mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
+fn export_map<T: TopDownScene>(
+    toolbar: &mut TileMapMakerToolbar<T::LocalTileKind>,
 ) where
     T::LocalTileKind: Ord,
 {

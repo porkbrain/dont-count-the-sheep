@@ -302,45 +302,6 @@ pub(super) fn react_to_changes<T: SpriteScene>(
     }
 }
 
-// TODO: run this if UI button pressed
-// also in the same UI we want to display form to add new sprite component
-#[cfg(feature = "devtools")]
-pub(super) fn store(
-    sprites: Query<
-        (&SceneSpriteConfig, &Name, &Transform, &Sprite),
-        With<LoadedFromSceneFile>,
-    >,
-) {
-    let sprites =
-        sprites
-            .iter()
-            .map(|(scene_sprite, name, transform, sprite)| SceneSpriteSerde {
-                reactive_component: scene_sprite.clone(),
-                serde_only: SceneSpriteSerdeOnly {
-                    name: name.to_string(),
-                    initial_position: transform.translation.truncate(),
-                    anchor: if sprite.anchor == default() {
-                        None
-                    } else {
-                        Some(sprite.anchor.into())
-                    },
-                    color: if sprite.color == default() {
-                        None
-                    } else {
-                        Some(sprite.color)
-                    },
-                },
-            });
-
-    let scene = SceneSerde {
-        sprites: sprites.collect(),
-    };
-
-    let to_save = ron::ser::to_string_pretty(&scene, default()).unwrap();
-
-    todo!("{to_save}");
-}
-
 impl From<AnchorSerde> for Anchor {
     fn from(anchor: AnchorSerde) -> Self {
         match anchor {
