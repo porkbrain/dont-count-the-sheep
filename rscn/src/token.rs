@@ -8,16 +8,9 @@ mod string_attribute;
 
 use logos::Logos;
 
-use crate::{
-    Animation, ExtResource, ExtResourceAttribute, NodeAttribute, Number,
-    ParseConf, SectionKey, State, SubResource, SubResourceAttribute, X, Y,
-};
+use crate::intermediate_repr::*;
 
-pub fn parse(tscn: &str) -> State {
-    parse_with_conf(tscn, Default::default())
-}
-
-pub fn parse_with_conf(tscn: &str, conf: ParseConf) -> State {
+pub(crate) fn parse(tscn: &str) -> State {
     let mut lex = TscnToken::lexer(tscn);
     let mut expecting = Expecting::default();
     let mut state = State::default();
@@ -27,8 +20,7 @@ pub fn parse_with_conf(tscn: &str, conf: ParseConf) -> State {
             panic!("No token for {}", lex.slice());
         };
 
-        expecting =
-            parse_with_state(&conf, &mut state, expecting, token, lex.slice());
+        expecting = parse_with_state(&mut state, expecting, token, lex.slice());
     }
 
     state
@@ -104,19 +96,26 @@ enum Expecting {
     HeadingOrSectionKey,
     /// Zero or more ext resource attributes.
     /// Ends with [`TscnToken::SquareBracketClose`].
-    ExtResourceAttributes(Vec<ExtResourceAttribute>),
+    ExtResourceAttributes {
+        id: Option<ExtResourceId>,
+        kind: Option<ExtResourceKind>,
+        path: Option<String>,
+    },
     /// Zero or more sub resource attributes.
     /// Ends with [`TscnToken::SquareBracketClose`].
     SubResourceAttributes(Vec<SubResourceAttribute>),
     /// Zero or more node attributes.
     /// Ends with [`TscnToken::SquareBracketClose`].
-    NodeAttributes(Vec<NodeAttribute>),
+    NodeAttributes {
+        name: Option<String>,
+        parent: Option<String>,
+        kind: Option<ParsedNodeKind>,
+    },
     /// Building a specific section key.
     SectionKey(SectionKeyBuilder),
 }
 
 fn parse_with_state(
-    conf: &ParseConf,
     state: &mut State,
     expecting: Expecting,
     token: TscnToken,
@@ -127,13 +126,20 @@ fn parse_with_state(
         // Headings
         ////
         TscnToken::GdSceneHeading => expecting, // after "[" comes "gd_scene"
-        TscnToken::ExtResourceHeading => {
-            Expecting::ExtResourceAttributes(Vec::new())
-        }
+        TscnToken::ExtResourceHeading => Expecting::ExtResourceAttributes {
+            id: None,   // mandatory
+            kind: None, // mandatory
+            path: None, // mandatory
+        },
         TscnToken::SubResourceHeading => {
             Expecting::SubResourceAttributes(Vec::new())
         }
-        TscnToken::NodeHeading => Expecting::NodeAttributes(Vec::new()),
+        TscnToken::NodeHeading => Expecting::NodeAttributes {
+            name: None, // mandatory
+            kind: None, // mandatory
+            // parent can be empty only for the root node
+            parent: None,
+        },
 
         ////
         // Structs

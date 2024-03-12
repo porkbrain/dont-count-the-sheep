@@ -1,5 +1,4 @@
 use super::*;
-use crate::Node;
 
 pub(super) fn parse_open(expecting: Expecting) -> Expecting {
     match expecting {
@@ -32,22 +31,30 @@ pub(super) fn parse_close(
 ) -> Expecting {
     match expecting {
         Expecting::GdSceneHeading => Expecting::Heading,
-        Expecting::ExtResourceAttributes(attrs) => {
-            state.ext_resources.push(ExtResource { attrs });
+        Expecting::ExtResourceAttributes { kind, id, path } => {
+            state.ext_resources.push(ParsedExtResource {
+                kind: kind
+                    .expect("ExtResource 'type' attribute should be present"),
+                id: id.expect("ExtResource 'id' attribute should be present"),
+                path: path
+                    .expect("ExtResource 'path' attribute should be present"),
+            });
             // no section keys for ext resources
             Expecting::Heading
         }
         Expecting::SubResourceAttributes(attrs) => {
-            state.sub_resources.push(SubResource {
+            state.sub_resources.push(ParsedSubResource {
                 attrs,
                 section_keys: Vec::new(),
             });
             // supports section keys such as atlas, region or animations
             Expecting::HeadingOrSectionKey
         }
-        Expecting::NodeAttributes(attrs) => {
-            state.nodes.push(Node {
-                attrs,
+        Expecting::NodeAttributes { name, kind, parent } => {
+            state.nodes.push(ParsedNode {
+                name: name.expect("Node 'name' attribute should be present"),
+                kind: kind.expect("Node 'type' attribute should be present"),
+                parent,
                 section_keys: Vec::new(),
             });
             // supports section keys such as z_index, texture, position,

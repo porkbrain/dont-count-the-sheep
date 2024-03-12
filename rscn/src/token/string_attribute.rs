@@ -7,17 +7,29 @@ pub(super) fn parse(mut expecting: Expecting, s: &str) -> Expecting {
     let value = &value[1..value.len() - 1]; // remove quotes
 
     match expecting {
-        Expecting::ExtResourceAttributes(ref mut attrs) => {
-            let attr = match (key, value) {
-                ("type", "Texture2D") => ExtResourceAttribute::TypeTexture2D,
-                ("uid", _) => ExtResourceAttribute::Uid(value.to_string()),
-                ("path", _) => ExtResourceAttribute::Path(value.to_string()),
-                ("id", _) => ExtResourceAttribute::Id(value.to_string().into()),
+        Expecting::ExtResourceAttributes {
+            ref mut id,
+            ref mut kind,
+            ref mut path,
+        } => {
+            match (key, value) {
+                ("type", "Texture2D") => {
+                    assert!(kind.replace(ExtResourceKind::Texture2D).is_none());
+                }
+                ("path", _) => {
+                    assert!(path.replace(value.to_string()).is_none());
+                }
+                ("id", _) => {
+                    assert!(id
+                        .replace(ExtResourceId(value.to_string().into()))
+                        .is_none());
+                }
+                // we don't care
+                ("uid", _) => {}
                 _ => {
                     panic!("Unknown ExtResourceAttribute {key}={value}")
                 }
             };
-            attrs.push(attr);
         }
         Expecting::SubResourceAttributes(ref mut attrs) => {
             let attr = match (key, value) {
@@ -34,21 +46,37 @@ pub(super) fn parse(mut expecting: Expecting, s: &str) -> Expecting {
             };
             attrs.push(attr);
         }
-        Expecting::NodeAttributes(ref mut attrs) => {
-            let attr = match (key, value) {
-                ("type", "Node2D") => NodeAttribute::TypeNode2D,
-                ("type", "Sprite2D") => NodeAttribute::TypeSprite2D,
-                ("type", "AnimatedSprite2D") => {
-                    NodeAttribute::TypeAnimatedSprite2D
+        Expecting::NodeAttributes {
+            ref mut name,
+            ref mut parent,
+            ref mut kind,
+        } => {
+            match (key, value) {
+                // each attr can be present only once, hence the assertions
+                ("type", "Node2D") => {
+                    assert!(kind.replace(ParsedNodeKind::Node2D).is_none())
                 }
-                ("type", "Node") => NodeAttribute::TypeNode,
-                ("name", _) => NodeAttribute::Name(value.to_string()),
-                ("parent", _) => NodeAttribute::Parent(value.to_string()),
+                ("type", "Sprite2D") => {
+                    assert!(kind.replace(ParsedNodeKind::Sprite2D).is_none())
+                }
+                ("type", "AnimatedSprite2D") => {
+                    assert!(kind
+                        .replace(ParsedNodeKind::AnimatedSprite2D)
+                        .is_none())
+                }
+                ("type", "Node") => {
+                    assert!(kind.replace(ParsedNodeKind::Node).is_none())
+                }
+                ("name", _) => {
+                    assert!(name.replace(value.to_string()).is_none())
+                }
+                ("parent", _) => {
+                    assert!(parent.replace(value.to_string()).is_none())
+                }
                 _ => {
                     panic!("Unknown NodeAttribute {key}={value}")
                 }
             };
-            attrs.push(attr);
         }
         _ => {
             panic!("Unexpected string attribute for {expecting:?}")

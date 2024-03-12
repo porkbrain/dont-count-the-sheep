@@ -1,5 +1,6 @@
+use bevy::utils::default;
+
 use super::*;
-use crate::AnimationFrame;
 
 pub(super) fn parse(
     state: &mut State,
@@ -23,14 +24,14 @@ pub(super) fn parse(
                 })
             }
             "z_index" => Expecting::SectionKey(SectionKeyBuilder::ZIndex),
-            "texture" => Expecting::SectionKey(SectionKeyBuilder::Texture(
-                Default::default(),
-            )),
-            "position" => Expecting::SectionKey(SectionKeyBuilder::Position(
-                Default::default(),
-            )),
+            "texture" => {
+                Expecting::SectionKey(SectionKeyBuilder::Texture(default()))
+            }
+            "position" => {
+                Expecting::SectionKey(SectionKeyBuilder::Position(default()))
+            }
             "sprite_frames" => Expecting::SectionKey(
-                SectionKeyBuilder::SpriteFrames(Default::default()),
+                SectionKeyBuilder::SpriteFrames(default()),
             ),
             s if s.starts_with("metadata/") => {
                 Expecting::SectionKey(SectionKeyBuilder::StringMetadata(

@@ -4,4 +4,5 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-logos = "0.14"
+bevy.workspace = true
+logos.workspace = true

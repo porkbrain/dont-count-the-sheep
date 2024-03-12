@@ -1,0 +1,129 @@
+#[derive(Default, Debug, PartialEq, Eq)]
+pub(crate) struct State {
+    pub(crate) ext_resources: Vec<ParsedExtResource>,
+    pub(crate) sub_resources: Vec<ParsedSubResource>,
+    pub(crate) nodes: Vec<ParsedNode>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct ParsedExtResource {
+    pub(crate) kind: ExtResourceKind,
+    pub(crate) path: String,
+    pub(crate) id: ExtResourceId,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct ParsedSubResource {
+    pub(crate) attrs: Vec<SubResourceAttribute>,
+    pub(crate) section_keys: Vec<SectionKey>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct ParsedNode {
+    pub(crate) name: String,
+    pub(crate) parent: Option<String>,
+    pub(crate) kind: ParsedNodeKind,
+    pub(crate) section_keys: Vec<SectionKey>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum ExtResourceKind {
+    Texture2D,
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub(crate) struct ExtResourceId(pub(crate) String);
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum SubResourceAttribute {
+    TypeAtlasTexture,
+    TypeSpriteFrames,
+    Id(SubResourceId),
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum ParsedNodeKind {
+    Node,
+    Node2D,
+    Sprite2D,
+    AnimatedSprite2D,
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub(crate) struct SubResourceId(pub(crate) String);
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum SectionKey {
+    AtlasExtResource(ExtResourceId),
+    RegionRect2(X, Y, X, Y),
+    SingleAnim(Animation),
+    ZIndex(Number),
+    TextureExtResource(ExtResourceId),
+    Position(X, Y),
+    SpriteFramesSubResource(SubResourceId),
+    /// key - value metadata pair where the value is of type string
+    StringMetadata(String, String),
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct Animation {
+    pub(crate) frames: Vec<AnimationFrame>,
+    pub(crate) loop_: bool,
+    pub(crate) name: String,
+    /// FPS
+    pub(crate) speed: Number,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct AnimationFrame {
+    pub(crate) texture: SubResourceId,
+}
+
+#[derive(Debug, PartialEq)]
+pub(crate) struct Number(pub(crate) f32);
+
+#[derive(Debug, PartialEq)]
+pub(crate) struct X(pub(crate) f32);
+
+/// The Y coordinate in godot increases as it goes down.
+#[derive(Debug, PartialEq)]
+pub(crate) struct Y(pub(crate) f32);
+
+impl Y {
+    pub(crate) fn into_bevy_coords(self) -> f32 {
+        self.0
+    }
+}
+
+impl Eq for Number {}
+impl Eq for Y {}
+impl Eq for X {}
+
+impl From<String> for SubResourceId {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
+
+impl From<String> for ExtResourceId {
+    fn from(s: String) -> Self {
+        Self(s)
+    }
+}
+
+impl From<f32> for Number {
+    fn from(f: f32) -> Self {
+        Self(f)
+    }
+}
+
+impl Default for Animation {
+    fn default() -> Self {
+        Animation {
+            frames: vec![],
+            loop_: false,
+            name: "default".to_string(),
+            speed: Number(0.0),
+        }
+    }
+}
