@@ -65,9 +65,9 @@ pub struct SubResourceId(pub String);
 #[derive(Debug, PartialEq, Eq)]
 pub enum SectionKey {
     AtlasExtResource(ExtResourceId),
-    RegionRect2(i64, i64, i64, i64),
+    RegionRect2(X, Y, X, Y),
     SingleAnim(Animation),
-    ZIndex(i64),
+    ZIndex(Number),
     TextureExtResource(ExtResourceId),
     Position(X, Y),
     SpriteFramesSubResource(SubResourceId),
@@ -80,7 +80,8 @@ pub struct Animation {
     pub frames: Vec<AnimationFrame>,
     pub loop_: bool,
     pub name: String,
-    pub speed: Fps,
+    /// FPS
+    pub speed: Number,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -89,7 +90,7 @@ pub struct AnimationFrame {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Fps(pub f32);
+pub struct Number(pub f32);
 
 #[derive(Debug, PartialEq)]
 pub struct X(pub f32);
@@ -98,7 +99,7 @@ pub struct X(pub f32);
 #[derive(Debug, PartialEq)]
 pub struct Y(pub f32);
 
-impl Eq for Fps {}
+impl Eq for Number {}
 impl Eq for Y {}
 impl Eq for X {}
 
@@ -114,13 +115,19 @@ impl From<String> for ExtResourceId {
     }
 }
 
+impl From<f32> for Number {
+    fn from(f: f32) -> Self {
+        Self(f)
+    }
+}
+
 impl Default for Animation {
     fn default() -> Self {
         Animation {
             frames: vec![],
             loop_: false,
             name: "default".to_string(),
-            speed: Fps(0.0),
+            speed: Number(0.0),
         }
     }
 }

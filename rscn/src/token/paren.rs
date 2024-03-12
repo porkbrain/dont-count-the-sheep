@@ -14,13 +14,13 @@ pub(super) fn parse_open(expecting: Expecting) -> Expecting {
         )),
         Expecting::SectionKey(SectionKeyBuilder::Region(
             Rect2Expecting::ParenOpen,
-        )) => Expecting::SectionKey(SectionKeyBuilder::Region(
-            Rect2Expecting::Int1,
-        )),
+        )) => {
+            Expecting::SectionKey(SectionKeyBuilder::Region(Rect2Expecting::X1))
+        }
         Expecting::SectionKey(SectionKeyBuilder::Position(
             Vector2Expecting::ParenOpen,
         )) => Expecting::SectionKey(SectionKeyBuilder::Position(
-            Vector2Expecting::Float1,
+            Vector2Expecting::X,
         )),
         Expecting::SectionKey(SectionKeyBuilder::SpriteFrames(
             SubResourceExpecting::ParenOpen,

@@ -1,7 +1,6 @@
 mod colon;
 mod curly_bracket;
-mod float;
-mod int;
+mod number;
 mod paren;
 mod square_bracket;
 mod string;
@@ -10,7 +9,7 @@ mod string_attribute;
 use logos::Logos;
 
 use crate::{
-    Animation, ExtResource, ExtResourceAttribute, Fps, NodeAttribute,
+    Animation, ExtResource, ExtResourceAttribute, NodeAttribute, Number,
     ParseConf, SectionKey, State, SubResource, SubResourceAttribute, X, Y,
 };
 
@@ -53,10 +52,8 @@ enum TscnToken {
     #[token("&")]
     Ampersand,
 
-    #[regex(r#"-?\d+"#, priority = 3)]
-    Int,
-    #[regex(r#"-?\d+\.\d+"#)]
-    Float,
+    #[regex(r#"-?\d+(\.\d+)?"#, priority = 3)]
+    Number,
     #[regex(r#"[A-Za-z0-9_/]+|"[A-Za-z0-9_/]+""#, priority = 2)]
     String,
     #[token("true")]
@@ -249,8 +246,8 @@ fn parse_with_state(
         // Basic types
         ////
         TscnToken::String => string::parse(state, expecting, s),
-        TscnToken::Int => int::parse(state, expecting, s),
-        TscnToken::Float => float::parse(expecting, s),
+        TscnToken::Number => number::parse(state, expecting, s),
+        // TscnToken::Float => float::parse(expecting, s),
         TscnToken::True | TscnToken::False => match expecting {
             Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                 mut state,
@@ -349,11 +346,11 @@ enum Rect2Expecting {
     #[default]
     Rect2,
     ParenOpen,
-    Int1,
-    Int2(i64),
-    Int3(i64, i64),
-    Int4(i64, i64, i64),
-    ParenClose(i64, i64, i64, i64),
+    X1,
+    Y1(X),
+    X2(X, Y),
+    Y2(X, Y, X),
+    ParenClose(X, Y, X, Y),
 }
 
 /// e.g. `Vector2(-201.5, 49.5)`
@@ -362,8 +359,8 @@ enum Vector2Expecting {
     #[default]
     Vector2,
     ParenOpen,
-    Float1,
-    Float2(X),
+    X,
+    Y(X),
     ParenClose(X, Y),
 }
 
