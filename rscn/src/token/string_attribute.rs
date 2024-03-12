@@ -27,7 +27,7 @@ pub(super) fn parse(mut expecting: Expecting, s: &str) -> Expecting {
                 ("type", "SpriteFrames") => {
                     SubResourceAttribute::TypeSpriteFrames
                 }
-                ("id", _) => SubResourceAttribute::Id(value.to_string()),
+                ("id", _) => SubResourceAttribute::Id(value.to_string().into()),
                 _ => {
                     panic!("Unknown SubResourceAttribute {key}={value}")
                 }

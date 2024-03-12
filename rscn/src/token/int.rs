@@ -1,5 +1,5 @@
 use Expecting::SectionKey as Sk;
-use Rect2BuilderExpecting as Rect2B;
+use Rect2Expecting as Rect2B;
 use SectionKeyBuilder as SkB;
 
 use super::*;

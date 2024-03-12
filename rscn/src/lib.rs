@@ -37,11 +37,50 @@ pub enum ExtResourceAttribute {
 pub enum SubResourceAttribute {
     TypeAtlasTexture,
     TypeSpriteFrames,
-    Id(String),
+    Id(SubResourceId),
 }
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub struct SubResourceId(pub String);
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SectionKey {
     AtlasExtResource(String),
     RegionRect2(i64, i64, i64, i64),
+    SingleAnim(Animation),
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Animation {
+    pub frames: Vec<AnimationFrame>,
+    pub loop_: bool,
+    pub name: String,
+    pub speed: Fps,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct AnimationFrame {
+    pub texture: SubResourceId,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Fps(pub f32);
+
+impl Eq for Fps {}
+
+impl From<String> for SubResourceId {
+    fn from(s: String) -> Self {
+        SubResourceId(s)
+    }
+}
+
+impl Default for Animation {
+    fn default() -> Self {
+        Animation {
+            frames: vec![],
+            loop_: false,
+            name: "default".to_string(),
+            speed: Fps(0.0),
+        }
+    }
 }
