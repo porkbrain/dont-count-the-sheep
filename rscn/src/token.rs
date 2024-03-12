@@ -103,7 +103,10 @@ enum Expecting {
     },
     /// Zero or more sub resource attributes.
     /// Ends with [`TscnToken::SquareBracketClose`].
-    SubResourceAttributes(Vec<SubResourceAttribute>),
+    SubResourceAttributes {
+        id: Option<SubResourceId>,
+        kind: Option<SubResourceKind>,
+    },
     /// Zero or more node attributes.
     /// Ends with [`TscnToken::SquareBracketClose`].
     NodeAttributes {
@@ -131,9 +134,10 @@ fn parse_with_state(
             kind: None, // mandatory
             path: None, // mandatory
         },
-        TscnToken::SubResourceHeading => {
-            Expecting::SubResourceAttributes(Vec::new())
-        }
+        TscnToken::SubResourceHeading => Expecting::SubResourceAttributes {
+            id: None,   // mandatory
+            kind: None, // mandatory
+        },
         TscnToken::NodeHeading => Expecting::NodeAttributes {
             name: None, // mandatory
             kind: None, // mandatory

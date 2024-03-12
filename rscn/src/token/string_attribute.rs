@@ -31,21 +31,25 @@ pub(super) fn parse(mut expecting: Expecting, s: &str) -> Expecting {
                 }
             };
         }
-        Expecting::SubResourceAttributes(ref mut attrs) => {
-            let attr = match (key, value) {
-                ("type", "AtlasTexture") => {
-                    SubResourceAttribute::TypeAtlasTexture
-                }
-                ("type", "SpriteFrames") => {
-                    SubResourceAttribute::TypeSpriteFrames
-                }
-                ("id", _) => SubResourceAttribute::Id(value.to_string().into()),
-                _ => {
-                    panic!("Unknown SubResourceAttribute {key}={value}")
-                }
-            };
-            attrs.push(attr);
-        }
+        Expecting::SubResourceAttributes {
+            ref mut id,
+            ref mut kind,
+        } => match (key, value) {
+            ("type", "AtlasTexture") => {
+                assert!(kind.replace(SubResourceKind::AtlasTexture).is_none());
+            }
+            ("type", "SpriteFrames") => {
+                assert!(kind.replace(SubResourceKind::SpriteFrames).is_none());
+            }
+            ("id", _) => {
+                assert!(id
+                    .replace(SubResourceId(value.to_string().into()))
+                    .is_none());
+            }
+            _ => {
+                panic!("Unknown SubResourceAttribute {key}={value}")
+            }
+        },
         Expecting::NodeAttributes {
             ref mut name,
             ref mut parent,

@@ -1,4 +1,5 @@
-// TODO: forbid undocumented public items
+#![doc = include_str!("../README.md")]
+#![deny(missing_docs)]
 
 mod intermediate_repr;
 mod token;
@@ -130,9 +131,9 @@ fn from_state_to_tscn(
     // now that the nodes are sorted we can iterate over them and we will be
     // guaranteed that a parent is always added before its children
 
-    for parsed_node in state.nodes {
-        use intermediate_repr::{Number, SectionKey, X};
-
+    let mut nodes = vec![];
+    std::mem::swap(&mut nodes, &mut state.nodes); // to avoid borrow checker
+    for parsed_node in nodes {
         let mut metadata = HashMap::new();
 
         let mut z_index = None;
@@ -141,55 +142,16 @@ fn from_state_to_tscn(
         let mut animation = None;
 
         for section_key in parsed_node.section_keys {
-            match section_key {
-                SectionKey::RegionRect2(..) => {
-                    panic!("Node should not have a region section key")
-                }
-                SectionKey::SingleAnim(..) => {
-                    panic!("Node should not have an animation section key")
-                }
-                SectionKey::AtlasExtResource(..) => {
-                    panic!("Node should not have an atlas section key")
-                }
-
-                SectionKey::ZIndex(Number(z)) => {
-                    assert!(
-                        z_index.replace(z).is_none(),
-                        "Node should not have more than one z_index"
-                    );
-                }
-                SectionKey::Position(X(x), y) => {
-                    position = Vec2::new(x, y.into_bevy_coords());
-                }
-                SectionKey::StringMetadata(key, value) => {
-                    assert!(
-                        metadata.insert(key, value).is_none(),
-                        "Node should not have more than \
-                        one metadata with the same key"
-                    );
-                }
-
-                SectionKey::TextureExtResource(id) => {
-                    let prefixless_path = state
-                        .ext_resources
-                        .iter()
-                        .find(|res| res.id == id)
-                        .map(|res| {
-                            assert!(res
-                                .path
-                                .starts_with(&conf.asset_path_prefix));
-                            res.path[conf.asset_path_prefix.len()..].to_owned()
-                        })
-                        .expect("ext resource should exist");
-                    assert!(
-                        path.replace(prefixless_path).is_none(),
-                        "Node should not have more than one texture"
-                    );
-                }
-                SectionKey::SpriteFramesSubResource(id) => {
-                    println!("todo: SpriteFrames ({id:?})");
-                }
-            }
+            apply_section_key(
+                &conf,
+                &state,
+                section_key,
+                &mut z_index,
+                &mut position,
+                &mut metadata,
+                &mut path,
+                &mut animation,
+            );
         }
 
         let in_2d = match parsed_node.kind {
@@ -197,11 +159,11 @@ fn from_state_to_tscn(
                 position,
                 z_index,
                 texture: Some(SpriteTexture {
-                    path: String::new(),
-                    // path.expect("AnimatedSprite2D should have a texture"),
-                    animation, /* animation:
-                                * animation.expect("AnimatedSprite2D should
-                                * have an animation"), */
+                    path: path.expect("AnimatedSprite2D should have a texture"),
+                    animation: {
+                        assert!(animation.is_some());
+                        animation
+                    },
                 }),
             }),
             ParsedNodeKind::Sprite2D => Some(In2D {
@@ -262,4 +224,152 @@ fn from_state_to_tscn(
     }
 
     Tscn { root }
+}
+
+fn apply_section_key(
+    conf: &Config,
+    state: &intermediate_repr::State,
+    section_key: intermediate_repr::SectionKey,
+    z_index: &mut Option<f32>,
+    position: &mut Vec2,
+    metadata: &mut HashMap<String, String>,
+    path: &mut Option<String>,
+    animation: &mut Option<SpriteFrames>,
+) {
+    use intermediate_repr::{Number, SectionKey, X};
+
+    match section_key {
+        SectionKey::RegionRect2(..) => {
+            panic!("Node should not have a region section key")
+        }
+        SectionKey::SingleAnim(..) => {
+            panic!("Node should not have an animation section key")
+        }
+        SectionKey::AtlasExtResource(..) => {
+            panic!("Node should not have an atlas section key")
+        }
+
+        SectionKey::ZIndex(Number(z)) => {
+            assert!(
+                z_index.replace(z).is_none(),
+                "Node should not have more than one z_index"
+            );
+        }
+        SectionKey::Position(X(x), y) => {
+            *position = Vec2::new(x, y.into_bevy_coords());
+        }
+        SectionKey::StringMetadata(key, value) => {
+            assert!(
+                metadata.insert(key, value).is_none(),
+                "Node should not have more than \
+                one metadata with the same key"
+            );
+        }
+
+        SectionKey::TextureExtResource(id) => {
+            let prefixless_path = state
+                .ext_resources
+                .iter()
+                .find(|res| res.id == id)
+                .map(|res| {
+                    assert!(res.path.starts_with(&conf.asset_path_prefix));
+                    res.path[conf.asset_path_prefix.len()..].to_owned()
+                })
+                .expect("ext resource should exist");
+            assert!(
+                path.replace(prefixless_path).is_none(),
+                "Node should not have more than one texture"
+            );
+        }
+        SectionKey::SpriteFramesSubResource(id) => {
+            let res = state
+                .sub_resources
+                .iter()
+                .find(|res| res.id == id)
+                .expect("sub resource should exist");
+            assert_eq!(1, res.section_keys.len());
+
+            let SectionKey::SingleAnim(anim) = &res.section_keys[0] else {
+                panic!(
+                    "SpriteFrames should have \
+                            exactly one SingleAnim section key"
+                )
+            };
+
+            let frames: Vec<_> = anim
+                .frames
+                .iter()
+                .map(|frame| {
+                    let frame = state
+                        .sub_resources
+                        .iter()
+                        .find(|res| res.id == frame.texture)
+                        .expect("sub resource should exist");
+                    assert_eq!(2, frame.section_keys.len());
+
+                    let prefixless_path = frame
+                        .section_keys
+                        .iter()
+                        .find_map(|section_key| {
+                            let SectionKey::AtlasExtResource(id) = section_key
+                            else {
+                                return None;
+                            };
+
+                            let prefixless_path = state
+                                .ext_resources
+                                .iter()
+                                .find(|res| res.id == *id)
+                                .map(|res| {
+                                    assert!(res
+                                        .path
+                                        .starts_with(&conf.asset_path_prefix));
+                                    res.path[conf.asset_path_prefix.len()..]
+                                        .to_owned()
+                                })
+                                .expect("ext resource should exist");
+
+                            Some(prefixless_path)
+                        })
+                        .expect(
+                            "sub resource should have an atlas section key",
+                        );
+
+                    if let Some(path) = path {
+                        assert_eq!(path, &prefixless_path);
+                    } else {
+                        *path = Some(prefixless_path);
+                    }
+
+                    frame
+                        .section_keys
+                        .iter()
+                        .find_map(|section_key| {
+                            let SectionKey::RegionRect2(X(x1), y1, X(x2), y2) =
+                                section_key
+                            else {
+                                return None;
+                            };
+
+                            Some(Rect {
+                                min: Vec2::new(*x1, y1.into_bevy_coords()),
+                                max: Vec2::new(*x2, y2.into_bevy_coords()),
+                            })
+                        })
+                        .expect("sub resource should have a region section key")
+                })
+                .collect();
+            assert!(frames.len() > anim.index as usize);
+
+            assert!(animation
+                .replace(SpriteFrames {
+                    should_endless_loop: anim.loop_,
+                    fps: anim.speed.into(),
+                    should_autoload: anim.autoload,
+                    first_index: anim.index as usize,
+                    frames
+                })
+                .is_none());
+        }
+    }
 }

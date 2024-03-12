@@ -42,9 +42,11 @@ pub(super) fn parse_close(
             // no section keys for ext resources
             Expecting::Heading
         }
-        Expecting::SubResourceAttributes(attrs) => {
+        Expecting::SubResourceAttributes { id, kind } => {
             state.sub_resources.push(ParsedSubResource {
-                attrs,
+                id: id.expect("SubResource 'id' attribute should be present"),
+                kind: kind
+                    .expect("SubResource 'type' attribute should be present"),
                 section_keys: Vec::new(),
             });
             // supports section keys such as atlas, region or animations

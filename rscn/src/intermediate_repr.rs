@@ -14,7 +14,8 @@ pub(crate) struct ParsedExtResource {
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct ParsedSubResource {
-    pub(crate) attrs: Vec<SubResourceAttribute>,
+    pub(crate) id: SubResourceId,
+    pub(crate) kind: SubResourceKind,
     pub(crate) section_keys: Vec<SectionKey>,
 }
 
@@ -35,10 +36,9 @@ pub(crate) enum ExtResourceKind {
 pub(crate) struct ExtResourceId(pub(crate) String);
 
 #[derive(Debug, PartialEq, Eq)]
-pub(crate) enum SubResourceAttribute {
-    TypeAtlasTexture,
-    TypeSpriteFrames,
-    Id(SubResourceId),
+pub(crate) enum SubResourceKind {
+    AtlasTexture,
+    SpriteFrames,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -72,6 +72,8 @@ pub(crate) struct Animation {
     pub(crate) name: String,
     /// FPS
     pub(crate) speed: Number,
+    pub(crate) autoload: bool,
+    pub(crate) index: u32,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -79,14 +81,14 @@ pub(crate) struct AnimationFrame {
     pub(crate) texture: SubResourceId,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) struct Number(pub(crate) f32);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) struct X(pub(crate) f32);
 
 /// The Y coordinate in godot increases as it goes down.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) struct Y(pub(crate) f32);
 
 impl Y {
@@ -117,13 +119,21 @@ impl From<f32> for Number {
     }
 }
 
+impl From<Number> for f32 {
+    fn from(Number(n): Number) -> Self {
+        n
+    }
+}
+
 impl Default for Animation {
     fn default() -> Self {
         Animation {
-            frames: vec![],
-            loop_: false,
             name: "default".to_string(),
             speed: Number(0.0),
+            frames: vec![],
+            index: 0,
+            loop_: false,
+            autoload: false,
         }
     }
 }
