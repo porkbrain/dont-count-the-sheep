@@ -10,13 +10,32 @@ mod string_attribute;
 use logos::Logos;
 
 use crate::{
-    Animation, ExtResource, ExtResourceAttribute, Fps, ParseConf, SectionKey,
-    State, SubResource, SubResourceAttribute,
+    Animation, ExtResource, ExtResourceAttribute, Fps, NodeAttribute,
+    ParseConf, SectionKey, State, SubResource, SubResourceAttribute, X, Y,
 };
+
+pub fn parse(tscn: &str) {
+    parse_with_conf(tscn, Default::default())
+}
+
+pub fn parse_with_conf(tscn: &str, conf: ParseConf) {
+    let mut lex = TscnToken::lexer(tscn);
+    let mut expecting = Expecting::default();
+    let mut state = State::default();
+
+    while let Some(token) = lex.next() {
+        let Ok(token) = token else {
+            panic!("No token for {}", lex.slice());
+        };
+
+        expecting =
+            parse_with_state(&conf, &mut state, expecting, token, lex.slice());
+    }
+}
 
 #[derive(Logos, Debug, PartialEq, Eq)]
 #[logos(skip r"[ \t\n\f,]+")]
-pub(crate) enum TscnToken {
+enum TscnToken {
     #[token("[")]
     SquareBracketOpen,
     #[token("]")]
@@ -29,8 +48,6 @@ pub(crate) enum TscnToken {
     CurlyBracketOpen,
     #[token("}")]
     CurlyBracketClose,
-    // #[token("\"")]
-    // Quote,
     #[token(":")]
     Colon,
     #[token("&")]
@@ -92,27 +109,11 @@ enum Expecting {
     /// Zero or more sub resource attributes.
     /// Ends with [`TscnToken::SquareBracketClose`].
     SubResourceAttributes(Vec<SubResourceAttribute>),
+    /// Zero or more node attributes.
+    /// Ends with [`TscnToken::SquareBracketClose`].
+    NodeAttributes(Vec<NodeAttribute>),
     /// Building a specific section key.
     SectionKey(SectionKeyBuilder),
-}
-
-pub fn parse(tscn: &str) {
-    parse_with_conf(tscn, Default::default())
-}
-
-pub fn parse_with_conf(tscn: &str, conf: ParseConf) {
-    let mut lex = TscnToken::lexer(tscn);
-    let mut expecting = Expecting::default();
-    let mut state = State::default();
-
-    while let Some(token) = lex.next() {
-        let Ok(token) = token else {
-            panic!("No token for {}", lex.slice());
-        };
-
-        expecting =
-            parse_with_state(&conf, &mut state, expecting, token, lex.slice());
-    }
 }
 
 fn parse_with_state(
@@ -133,16 +134,22 @@ fn parse_with_state(
         TscnToken::SubResourceHeading => {
             Expecting::SubResourceAttributes(Vec::new())
         }
+        TscnToken::NodeHeading => Expecting::NodeAttributes(Vec::new()),
 
         ////
         // Structs
         ////
         TscnToken::ExtResourceStruct => {
+            // after `ExtResource` comes `(`
             match expecting {
-                // after `ExtResource` comes `(`
                 Expecting::SectionKey(SectionKeyBuilder::Atlas(
                     ExtResourceExpecting::ExtResource,
                 )) => Expecting::SectionKey(SectionKeyBuilder::Atlas(
+                    ExtResourceExpecting::ParenOpen,
+                )),
+                Expecting::SectionKey(SectionKeyBuilder::Texture(
+                    ExtResourceExpecting::ExtResource,
+                )) => Expecting::SectionKey(SectionKeyBuilder::Texture(
                     ExtResourceExpecting::ParenOpen,
                 )),
                 _ => {
@@ -165,6 +172,11 @@ fn parse_with_state(
                         ),
                     })
                 }
+                Expecting::SectionKey(SectionKeyBuilder::SpriteFrames(
+                    SubResourceExpecting::SubResource,
+                )) => Expecting::SectionKey(SectionKeyBuilder::SpriteFrames(
+                    SubResourceExpecting::ParenOpen,
+                )),
                 _ => {
                     panic!("Unexpected SubResourceStruct for {expecting:?}")
                 }
@@ -180,6 +192,19 @@ fn parse_with_state(
                 )),
                 _ => {
                     panic!("Unexpected Rect2Struct for {expecting:?}")
+                }
+            }
+        }
+        TscnToken::Vector2Struct => {
+            match expecting {
+                // after `Vector2` comes `(`
+                Expecting::SectionKey(SectionKeyBuilder::Position(
+                    Vector2Expecting::Vector2,
+                )) => Expecting::SectionKey(SectionKeyBuilder::Position(
+                    Vector2Expecting::ParenOpen,
+                )),
+                _ => {
+                    panic!("Unexpected Vector2Struct for {expecting:?}")
                 }
             }
         }
@@ -223,8 +248,8 @@ fn parse_with_state(
         ////
         // Basic types
         ////
-        TscnToken::String => string::parse(expecting, s),
-        TscnToken::Int => int::parse(expecting, s),
+        TscnToken::String => string::parse(state, expecting, s),
+        TscnToken::Int => int::parse(state, expecting, s),
         TscnToken::Float => float::parse(expecting, s),
         TscnToken::True | TscnToken::False => match expecting {
             Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
@@ -252,13 +277,6 @@ fn parse_with_state(
         TscnToken::Colon => colon::parse(expecting),
         TscnToken::CurlyBracketOpen => curly_bracket::parse_open(expecting),
         TscnToken::CurlyBracketClose => curly_bracket::parse_close(expecting),
-
-        ////
-        // TODO: This should be unreachable
-        ////
-        token => {
-            panic!("{token:?} => {s} ({}), expecting {expecting:?}", s.len());
-        }
     }
 }
 
@@ -290,20 +308,45 @@ enum SectionKeyBuilder {
         state: Animation,
         expecting: SingleAnimExpecting,
     },
+    /// e.g. `z_index = -2`
+    ZIndex,
+    /// e.g. `texture = ExtResource("3_j8n3v")`
+    Texture(ExtResourceExpecting),
+    /// e.g. `position = Vector2(-201.5, 49.5)`
+    Position(Vector2Expecting),
+    /// e.g. `sprite_frames = SubResource("SpriteFrames_33ymd")`
+    SpriteFrames(SubResourceExpecting),
+    /// e.g. `metadata/zone = "ElevatorZone"`
+    /// or   `metadata/label = "Elevator"`
+    ///
+    /// The string is the key "zone" or "label" etc.
+    Metadata(String),
 }
 
 /// e.g. `ExtResource("4_oy5kx")`
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Default, Debug, PartialEq, Eq)]
 enum ExtResourceExpecting {
+    #[default]
     ExtResource,
     ParenOpen,
     String,
     ParenClose(String),
 }
 
+/// e.g. `SubResource("4_oy5kx")`
+#[derive(Default, Debug, PartialEq, Eq)]
+enum SubResourceExpecting {
+    #[default]
+    SubResource,
+    ParenOpen,
+    String,
+    ParenClose(String),
+}
+
 /// e.g. `Rect2(385, 0, -51, 57)`
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Default, Debug, PartialEq, Eq)]
 enum Rect2Expecting {
+    #[default]
     Rect2,
     ParenOpen,
     Int1,
@@ -311,6 +354,17 @@ enum Rect2Expecting {
     Int3(i64, i64),
     Int4(i64, i64, i64),
     ParenClose(i64, i64, i64, i64),
+}
+
+/// e.g. `Vector2(-201.5, 49.5)`
+#[derive(Default, Debug, PartialEq, Eq)]
+enum Vector2Expecting {
+    #[default]
+    Vector2,
+    ParenOpen,
+    Float1,
+    Float2(X),
+    ParenClose(X, Y),
 }
 
 /// This should be recursive if ever we need to refactor.

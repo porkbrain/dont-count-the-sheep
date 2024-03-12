@@ -22,6 +22,18 @@ pub(super) fn parse(expecting: Expecting, s: &str) -> Expecting {
                 expecting: SingleAnimExpecting::ReadNextParamOrDone,
             })
         }
+
+        Expecting::SectionKey(SectionKeyBuilder::Position(
+            Vector2Expecting::Float1,
+        )) => Expecting::SectionKey(SectionKeyBuilder::Position(
+            Vector2Expecting::Float2(X(s.parse().unwrap())),
+        )),
+        Expecting::SectionKey(SectionKeyBuilder::Position(
+            Vector2Expecting::Float2(x),
+        )) => Expecting::SectionKey(SectionKeyBuilder::Position(
+            Vector2Expecting::ParenClose(x, Y(s.parse().unwrap())),
+        )),
+
         _ => panic!("Unexpected float for {expecting:?}"),
     }
 }

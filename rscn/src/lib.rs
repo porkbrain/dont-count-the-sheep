@@ -11,7 +11,7 @@ pub struct ParseConf {}
 pub struct State {
     pub ext_resources: Vec<ExtResource>,
     pub sub_resources: Vec<SubResource>,
-    nodes: Vec<()>,
+    pub nodes: Vec<Node>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -26,12 +26,21 @@ pub struct SubResource {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+pub struct Node {
+    pub attrs: Vec<NodeAttribute>,
+    pub section_keys: Vec<SectionKey>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum ExtResourceAttribute {
     TypeTexture2D,
     Uid(String),
     Path(String),
-    Id(String),
+    Id(ExtResourceId),
 }
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub struct ExtResourceId(pub String);
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SubResourceAttribute {
@@ -40,14 +49,30 @@ pub enum SubResourceAttribute {
     Id(SubResourceId),
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum NodeAttribute {
+    TypeNode2D,
+    TypeSprite2D,
+    TypeAnimatedSprite2D,
+    TypeNode,
+    Name(String),
+    Parent(String),
+}
+
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct SubResourceId(pub String);
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SectionKey {
-    AtlasExtResource(String),
+    AtlasExtResource(ExtResourceId),
     RegionRect2(i64, i64, i64, i64),
     SingleAnim(Animation),
+    ZIndex(i64),
+    TextureExtResource(ExtResourceId),
+    Position(X, Y),
+    SpriteFramesSubResource(SubResourceId),
+    /// key - value metadata pair where the value is of type string
+    StringMetadata(String, String),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -66,11 +91,26 @@ pub struct AnimationFrame {
 #[derive(Debug, PartialEq)]
 pub struct Fps(pub f32);
 
+#[derive(Debug, PartialEq)]
+pub struct X(pub f32);
+
+/// The Y coordinate in godot increases as it goes down.
+#[derive(Debug, PartialEq)]
+pub struct Y(pub f32);
+
 impl Eq for Fps {}
+impl Eq for Y {}
+impl Eq for X {}
 
 impl From<String> for SubResourceId {
     fn from(s: String) -> Self {
-        SubResourceId(s)
+        Self(s)
+    }
+}
+
+impl From<String> for ExtResourceId {
+    fn from(s: String) -> Self {
+        Self(s)
     }
 }
 

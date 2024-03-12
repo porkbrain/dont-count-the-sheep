@@ -1,4 +1,5 @@
 use super::*;
+use crate::Node;
 
 pub(super) fn parse_open(expecting: Expecting) -> Expecting {
     match expecting {
@@ -44,6 +45,16 @@ pub(super) fn parse_close(
             // supports section keys such as atlas, region or animations
             Expecting::HeadingOrSectionKey
         }
+        Expecting::NodeAttributes(attrs) => {
+            state.nodes.push(Node {
+                attrs,
+                section_keys: Vec::new(),
+            });
+            // supports section keys such as z_index, texture, position,
+            // sprite_frames or metadata/WHATEVER
+            Expecting::HeadingOrSectionKey
+        }
+
         Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
             state,
             expecting: SingleAnimExpecting::FrameStartCurlyBracketOrDone,
