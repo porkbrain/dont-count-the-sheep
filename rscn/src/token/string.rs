@@ -29,14 +29,14 @@ pub(super) fn parse(expecting: Expecting, s: &str) -> Expecting {
         )),
         Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
             state,
-            expecting: SingleAnimExpecting::FooBar,
+            expecting: SingleAnimExpecting::ReadNextParamOrDone,
         }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
             state,
             expecting: SingleAnimExpecting::NextParamColon(s.to_string()),
         }),
         Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
             state,
-            expecting: SingleAnimExpecting::FooBar2OrDone,
+            expecting: SingleAnimExpecting::FrameNextParamOrDone,
         }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
             state,
             expecting: SingleAnimExpecting::FrameNextParamColon(s.to_string()),
@@ -50,7 +50,7 @@ pub(super) fn parse(expecting: Expecting, s: &str) -> Expecting {
             });
             Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                 state,
-                expecting: SingleAnimExpecting::FooBar2OrDone,
+                expecting: SingleAnimExpecting::FrameNextParamOrDone,
             })
         }
         Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
@@ -60,7 +60,7 @@ pub(super) fn parse(expecting: Expecting, s: &str) -> Expecting {
             state.name = s.to_string();
             Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                 state,
-                expecting: SingleAnimExpecting::FooBar,
+                expecting: SingleAnimExpecting::ReadNextParamOrDone,
             })
         }
         _ => {

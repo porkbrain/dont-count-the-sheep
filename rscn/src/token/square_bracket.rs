@@ -49,7 +49,7 @@ pub(super) fn parse_close(
             expecting: SingleAnimExpecting::FrameStartCurlyBracketOrDone,
         }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
             state,
-            expecting: SingleAnimExpecting::FooBar,
+            expecting: SingleAnimExpecting::ReadNextParamOrDone,
         }),
         Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
             state: animation,

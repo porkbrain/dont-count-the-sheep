@@ -55,10 +55,10 @@ pub(super) fn parse_close(
         }
         Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
             state,
-            expecting: SingleAnimExpecting::FooBar2OrDone,
+            expecting: SingleAnimExpecting::FrameNextParamOrDone,
         }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
             state,
-            expecting: SingleAnimExpecting::FooBar2OrDone,
+            expecting: SingleAnimExpecting::FrameNextParamOrDone,
         }),
         _ => {
             panic!("Unexpected paren close for {expecting:?}")

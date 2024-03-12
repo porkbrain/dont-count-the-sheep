@@ -233,7 +233,7 @@ fn parse_with_state(
                     );
                     Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                         state,
-                        expecting: SingleAnimExpecting::FooBar2OrDone,
+                        expecting: SingleAnimExpecting::FrameNextParamOrDone,
                     })
                 }
                 Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
@@ -243,7 +243,7 @@ fn parse_with_state(
                     state.speed = Fps(s.parse().unwrap());
                     Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                         state,
-                        expecting: SingleAnimExpecting::FooBar,
+                        expecting: SingleAnimExpecting::ReadNextParamOrDone,
                     })
                 }
                 _ => panic!("Unexpected float for {expecting:?}"),
@@ -258,7 +258,7 @@ fn parse_with_state(
                     state.loop_ = matches!(token, TscnToken::True);
                     Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                         state,
-                        expecting: SingleAnimExpecting::FooBar,
+                        expecting: SingleAnimExpecting::ReadNextParamOrDone,
                     })
                 }
                 _ => panic!("Unexpected bool for {expecting:?}"),
@@ -319,14 +319,14 @@ fn parse_with_state(
                     expecting: SingleAnimExpecting::StartCurlyBracket,
                 }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                     state,
-                    expecting: SingleAnimExpecting::FooBar,
+                    expecting: SingleAnimExpecting::ReadNextParamOrDone,
                 }),
                 Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                     state,
                     expecting: SingleAnimExpecting::FrameStartCurlyBracketOrDone,
                 }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                     state,
-                    expecting: SingleAnimExpecting::FooBar2OrDone,
+                    expecting: SingleAnimExpecting::FrameNextParamOrDone,
                 }),
                 _ => panic!("Unexpected curly bracket open for {expecting:?}"),
             }
@@ -335,7 +335,7 @@ fn parse_with_state(
             expecting = match expecting {
                 Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                     state,
-                    expecting: SingleAnimExpecting::FooBar2OrDone,
+                    expecting: SingleAnimExpecting::FrameNextParamOrDone,
                 }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                     state,
                     expecting:
@@ -343,7 +343,7 @@ fn parse_with_state(
                 }),
                 Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                     state,
-                    expecting: SingleAnimExpecting::FooBar,
+                    expecting: SingleAnimExpecting::ReadNextParamOrDone,
                 }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                     state,
                     expecting: SingleAnimExpecting::EndSquareBracket,
@@ -421,16 +421,15 @@ enum SingleAnimExpecting {
     StartSquareBracket,
     StartCurlyBracket,
 
-    FooBar,
+    ReadNextParamOrDone,
     NextParamColon(String), // the param in question
     NextParamValue(String), // the param in question
 
     FramesStartSquareBracket,
     FrameStartCurlyBracketOrDone,
-    FooBar2OrDone,
+    FrameNextParamOrDone,
     FrameNextParamColon(String), // the param in question
     FrameNextParamValue(String), // the param in question
 
-    EndCurlyBracket,
     EndSquareBracket,
 }
