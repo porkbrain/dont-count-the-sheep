@@ -32,9 +32,11 @@ pub(super) fn parse(
             "sprite_frames" => Expecting::SectionKey(
                 SectionKeyBuilder::SpriteFrames(Default::default()),
             ),
-            s if s.starts_with("metadata/") => Expecting::SectionKey(
-                SectionKeyBuilder::Metadata(s["metadata/".len()..].to_string()),
-            ),
+            s if s.starts_with("metadata/") => {
+                Expecting::SectionKey(SectionKeyBuilder::StringMetadata(
+                    s["metadata/".len()..].to_string(),
+                ))
+            }
             _ => {
                 panic!("Unknown section key: '{s}' for {expecting:?}")
             }
@@ -92,7 +94,9 @@ pub(super) fn parse(
                 expecting: SingleAnimExpecting::ReadNextParamOrDone,
             })
         }
-        Expecting::SectionKey(SectionKeyBuilder::Metadata(with_param)) => {
+        Expecting::SectionKey(SectionKeyBuilder::StringMetadata(
+            with_param,
+        )) => {
             state
                 .nodes
                 .last_mut()

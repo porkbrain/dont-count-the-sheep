@@ -5,7 +5,9 @@ const TSCN: &str = include_str!("basic.tscn");
 
 #[test]
 fn it_does_not_panic() {
-    rscn::parse(TSCN);
+    let state = rscn::parse(TSCN);
+
+    println!("{state:#?}");
 
     panic!("-------------------------------------");
 }

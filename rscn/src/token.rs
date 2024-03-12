@@ -13,11 +13,11 @@ use crate::{
     ParseConf, SectionKey, State, SubResource, SubResourceAttribute, X, Y,
 };
 
-pub fn parse(tscn: &str) {
+pub fn parse(tscn: &str) -> State {
     parse_with_conf(tscn, Default::default())
 }
 
-pub fn parse_with_conf(tscn: &str, conf: ParseConf) {
+pub fn parse_with_conf(tscn: &str, conf: ParseConf) -> State {
     let mut lex = TscnToken::lexer(tscn);
     let mut expecting = Expecting::default();
     let mut state = State::default();
@@ -30,6 +30,8 @@ pub fn parse_with_conf(tscn: &str, conf: ParseConf) {
         expecting =
             parse_with_state(&conf, &mut state, expecting, token, lex.slice());
     }
+
+    state
 }
 
 #[derive(Logos, Debug, PartialEq, Eq)]
@@ -280,7 +282,12 @@ fn parse_with_state(
 #[derive(Debug, PartialEq, Eq)]
 enum SectionKeyBuilder {
     /// e.g. `atlas = ExtResource("4_oy5kx")`
+    /// Can be deduped with [`Self::Texture`]
     Atlas(ExtResourceExpecting),
+    /// e.g. `texture = ExtResource("3_j8n3v")`
+    /// Can be deduped with [`Self::Atlas`]
+    Texture(ExtResourceExpecting),
+
     /// e.g. `region = Rect2(385, 0, -51, 57)`
     Region(Rect2Expecting),
     /// e.g.
@@ -307,8 +314,6 @@ enum SectionKeyBuilder {
     },
     /// e.g. `z_index = -2`
     ZIndex,
-    /// e.g. `texture = ExtResource("3_j8n3v")`
-    Texture(ExtResourceExpecting),
     /// e.g. `position = Vector2(-201.5, 49.5)`
     Position(Vector2Expecting),
     /// e.g. `sprite_frames = SubResource("SpriteFrames_33ymd")`
@@ -317,7 +322,7 @@ enum SectionKeyBuilder {
     /// or   `metadata/label = "Elevator"`
     ///
     /// The string is the key "zone" or "label" etc.
-    Metadata(String),
+    StringMetadata(String),
 }
 
 /// e.g. `ExtResource("4_oy5kx")`
