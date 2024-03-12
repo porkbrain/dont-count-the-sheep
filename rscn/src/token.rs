@@ -1,3 +1,6 @@
+mod colon;
+mod curly_bracket;
+mod float;
 mod int;
 mod paren;
 mod square_bracket;
@@ -115,7 +118,7 @@ pub fn parse_with_conf(tscn: &str, conf: ParseConf) {
 fn parse_with_state(
     conf: &ParseConf,
     state: &mut State,
-    mut expecting: Expecting,
+    expecting: Expecting,
     token: TscnToken,
     s: &str,
 ) -> Expecting {
@@ -123,19 +126,19 @@ fn parse_with_state(
         ////
         // Headings
         ////
-        TscnToken::GdSceneHeading => {} // after "[" comes "gd_scene"
+        TscnToken::GdSceneHeading => expecting, // after "[" comes "gd_scene"
         TscnToken::ExtResourceHeading => {
-            expecting = Expecting::ExtResourceAttributes(Vec::new());
+            Expecting::ExtResourceAttributes(Vec::new())
         }
         TscnToken::SubResourceHeading => {
-            expecting = Expecting::SubResourceAttributes(Vec::new());
+            Expecting::SubResourceAttributes(Vec::new())
         }
 
         ////
         // Structs
         ////
         TscnToken::ExtResourceStruct => {
-            expecting = match expecting {
+            match expecting {
                 // after `ExtResource` comes `(`
                 Expecting::SectionKey(SectionKeyBuilder::Atlas(
                     ExtResourceExpecting::ExtResource,
@@ -145,10 +148,10 @@ fn parse_with_state(
                 _ => {
                     panic!("Unexpected ExtResourceStruct for {expecting:?}")
                 }
-            };
+            }
         }
         TscnToken::SubResourceStruct => {
-            expecting = match expecting {
+            match expecting {
                 Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                     state,
                     expecting:
@@ -165,10 +168,10 @@ fn parse_with_state(
                 _ => {
                     panic!("Unexpected SubResourceStruct for {expecting:?}")
                 }
-            };
+            }
         }
         TscnToken::Rect2Struct => {
-            expecting = match expecting {
+            match expecting {
                 // after `Rect2` comes `(`
                 Expecting::SectionKey(SectionKeyBuilder::Region(
                     Rect2Expecting::Rect2,
@@ -178,7 +181,7 @@ fn parse_with_state(
                 _ => {
                     panic!("Unexpected Rect2Struct for {expecting:?}")
                 }
-            };
+            }
         }
 
         ////
@@ -186,11 +189,13 @@ fn parse_with_state(
         ////
         TscnToken::SectionKeyAssignment => {
             assert!(matches!(expecting, Expecting::SectionKey(_)));
+            expecting
         }
         TscnToken::IntAttribute => {
             // there seem to only be int attributes in the gd_scene heading
             // and we don't really care about them
             assert_eq!(Expecting::GdSceneHeading, expecting);
+            expecting
         }
         TscnToken::Ampersand => {
             // godot's weird notation for strings
@@ -201,6 +206,7 @@ fn parse_with_state(
                     ..
                 }) if with_param == "name"
             ));
+            expecting
         }
 
         ////
@@ -210,147 +216,42 @@ fn parse_with_state(
             if Expecting::GdSceneHeading == expecting =>
         {
             // we don't care about any gd_scene attributes
+            expecting
         }
-        TscnToken::StringAttribute => {
-            expecting = string_attribute::parse(expecting, s)
-        }
+        TscnToken::StringAttribute => string_attribute::parse(expecting, s),
 
         ////
         // Basic types
         ////
-        TscnToken::String => expecting = string::parse(expecting, s),
-        TscnToken::Int => expecting = int::parse(expecting, s),
-        TscnToken::Float => {
-            expecting = match expecting {
+        TscnToken::String => string::parse(expecting, s),
+        TscnToken::Int => int::parse(expecting, s),
+        TscnToken::Float => float::parse(expecting, s),
+        TscnToken::True | TscnToken::False => match expecting {
+            Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
+                mut state,
+                expecting: SingleAnimExpecting::NextParamValue(with_param),
+            }) if with_param == "loop" => {
+                state.loop_ = matches!(token, TscnToken::True);
                 Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                     state,
-                    expecting:
-                        SingleAnimExpecting::FrameNextParamValue(with_param),
-                }) if with_param == "duration" => {
-                    assert_eq!(
-                        "1.0", s,
-                        "we only support evenly spaced frames"
-                    );
-                    Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                        state,
-                        expecting: SingleAnimExpecting::FrameNextParamOrDone,
-                    })
-                }
-                Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    mut state,
-                    expecting: SingleAnimExpecting::NextParamValue(with_param),
-                }) if with_param == "speed" => {
-                    state.speed = Fps(s.parse().unwrap());
-                    Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                        state,
-                        expecting: SingleAnimExpecting::ReadNextParamOrDone,
-                    })
-                }
-                _ => panic!("Unexpected float for {expecting:?}"),
+                    expecting: SingleAnimExpecting::ReadNextParamOrDone,
+                })
             }
-        }
-        TscnToken::True | TscnToken::False => {
-            expecting = match expecting {
-                Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    mut state,
-                    expecting: SingleAnimExpecting::NextParamValue(with_param),
-                }) if with_param == "loop" => {
-                    state.loop_ = matches!(token, TscnToken::True);
-                    Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                        state,
-                        expecting: SingleAnimExpecting::ReadNextParamOrDone,
-                    })
-                }
-                _ => panic!("Unexpected bool for {expecting:?}"),
-            }
-        }
+            _ => panic!("Unexpected bool for {expecting:?}"),
+        },
 
         ////
         // Brackets, quotes, parens, ...
         ////
-        TscnToken::SquareBracketOpen => {
-            expecting = square_bracket::parse_open(expecting)
-        }
+        TscnToken::SquareBracketOpen => square_bracket::parse_open(expecting),
         TscnToken::SquareBracketClose => {
-            expecting = square_bracket::parse_close(state, expecting)
+            square_bracket::parse_close(state, expecting)
         }
-        TscnToken::ParenOpen => expecting = paren::parse_open(expecting),
-        TscnToken::ParenClose => {
-            expecting = paren::parse_close(state, expecting)
-        }
-        // TscnToken::Quote => expecting = quote::parse(expecting),
-        TscnToken::Colon => {
-            expecting = match expecting {
-                Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::NextParamColon(with_param),
-                }) if with_param == "frames" => {
-                    Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                        state,
-                        expecting:
-                            SingleAnimExpecting::FramesStartSquareBracket,
-                    })
-                }
-                Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::NextParamColon(with_param),
-                }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::NextParamValue(with_param),
-                }),
-                Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting:
-                        SingleAnimExpecting::FrameNextParamColon(with_param),
-                }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::FrameNextParamValue(
-                        with_param,
-                    ),
-                }),
-                _ => panic!("Unexpected colon for {expecting:?}"),
-            }
-        }
-
-        TscnToken::CurlyBracketOpen => {
-            expecting = match expecting {
-                Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::StartCurlyBracket,
-                }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::ReadNextParamOrDone,
-                }),
-                Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::FrameStartCurlyBracketOrDone,
-                }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::FrameNextParamOrDone,
-                }),
-                _ => panic!("Unexpected curly bracket open for {expecting:?}"),
-            }
-        }
-        TscnToken::CurlyBracketClose => {
-            expecting = match expecting {
-                Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::FrameNextParamOrDone,
-                }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting:
-                        SingleAnimExpecting::FrameStartCurlyBracketOrDone,
-                }),
-                Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::ReadNextParamOrDone,
-                }) => Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
-                    state,
-                    expecting: SingleAnimExpecting::EndSquareBracket,
-                }),
-                _ => panic!("Unexpected curly bracket close for {expecting:?}"),
-            }
-        }
+        TscnToken::ParenOpen => paren::parse_open(expecting),
+        TscnToken::ParenClose => paren::parse_close(state, expecting),
+        TscnToken::Colon => colon::parse(expecting),
+        TscnToken::CurlyBracketOpen => curly_bracket::parse_open(expecting),
+        TscnToken::CurlyBracketClose => curly_bracket::parse_close(expecting),
 
         ////
         // TODO: This should be unreachable
@@ -359,8 +260,6 @@ fn parse_with_state(
             panic!("{token:?} => {s} ({}), expecting {expecting:?}", s.len());
         }
     }
-
-    expecting
 }
 
 #[derive(Debug, PartialEq, Eq)]
