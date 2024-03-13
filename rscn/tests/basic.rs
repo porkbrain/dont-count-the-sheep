@@ -1,7 +1,7 @@
 //! Test with a basic example that I setup.
 //! Contains nested nodes, metadata properties and spritesheets.
 
-use rscn::Config;
+use rscn::{Config, NodeName};
 
 const TSCN: &str = include_str!("basic.tscn");
 
@@ -10,12 +10,20 @@ fn it_does_not_panic() {
     let state = rscn::parse(
         TSCN,
         Config {
-            ysort: |v| v.extend(0.0),
             asset_path_prefix: "res://assets/",
         },
     );
 
-    println!("{state:#?}");
-
-    panic!("-------------------------------------");
+    assert_eq!(4, state.root.children.len());
+    for child_name in
+        ["Cupboard", "HallwayBg", "PlayerApartmentBg", "Elevator"].iter()
+    {
+        assert!(state
+            .root
+            .children
+            .get(&NodeName(child_name.to_string()))
+            .unwrap()
+            .in_2d
+            .is_some());
+    }
 }

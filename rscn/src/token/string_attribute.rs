@@ -21,7 +21,7 @@ pub(super) fn parse(mut expecting: Expecting, s: &str) -> Expecting {
                 }
                 ("id", _) => {
                     assert!(id
-                        .replace(ExtResourceId(value.to_string().into()))
+                        .replace(ExtResourceId(value.to_string()))
                         .is_none());
                 }
                 // we don't care
@@ -42,9 +42,7 @@ pub(super) fn parse(mut expecting: Expecting, s: &str) -> Expecting {
                 assert!(kind.replace(SubResourceKind::SpriteFrames).is_none());
             }
             ("id", _) => {
-                assert!(id
-                    .replace(SubResourceId(value.to_string().into()))
-                    .is_none());
+                assert!(id.replace(SubResourceId(value.to_string())).is_none());
             }
             _ => {
                 panic!("Unknown SubResourceAttribute {key}={value}")

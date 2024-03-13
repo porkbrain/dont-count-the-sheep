@@ -2,71 +2,110 @@
 #![deny(missing_docs)]
 
 mod intermediate_repr;
+mod spawner;
 mod token;
 
+use std::borrow::Cow;
+
 use bevy::{
-    math::{Rect, Vec2, Vec3},
+    math::{Rect, Vec2},
     utils::{default, HashMap},
 };
+use serde::{Deserialize, Serialize};
 
 use crate::intermediate_repr::ParsedNodeKind;
+pub use crate::spawner::TscnToBevy;
 
+/// Configure how the scene is converted from godot to bevy.
 pub struct Config {
-    pub ysort: fn(Vec2) -> Vec3,
     /// We assert each asset path starts with this prefix.
     /// Then we strip it.
     pub asset_path_prefix: &'static str,
 }
 
-pub fn parse(tscn: &str, config: Config) -> Tscn {
+/// Parses Godot's .tscn file with very strict requirements on the content.
+/// We only support nodes and parameters that are relevant to our game.
+/// We panic on unsupported content aggressively.
+///
+/// See also [`TscnTree::spawn_into`].
+pub fn parse(tscn: &str, config: Config) -> TscnTree {
     from_state_to_tscn(token::parse(tscn), config)
 }
 
-#[derive(Debug, PartialEq)]
-pub struct Tscn {
+/// A godot scene is a tree of nodes.
+/// This representation is used to populate bevy world.
+/// We are very selective about what we support.
+/// We panic on unsupported content aggressively.
+///
+/// See [`parse`] and [`TscnTree::spawn_into`].
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct TscnTree {
     /// Root node name must always equal to the scene name.
     /// Other nodes refer to it as `"."`.
     pub root: Node,
 }
 
-/// - `name`
-/// - ?`metadata`
-/// - ?`in_2d`
-/// - ?`children`
-#[derive(Debug, PartialEq)]
+/// Node's name is stored in the parent node's children map.
+///
+/// The convention is that a 2D node is an entity while a plain node is a
+/// component.
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Node {
+    /// Positional data is relevant for
+    /// - `Node2D`
+    /// - `Sprite2D`
+    /// - `AnimatedSprite2D`
+    ///
+    /// and irrelevant for
+    /// - `Node`
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub in_2d: Option<In2D>,
+    /// Any node can have some metadata.
+    /// These are relevant when spawning the node into bevy world.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default)]
     pub metadata: HashMap<String, String>,
+    /// These nodes will be spawned as children if they have 2D positional
+    /// data. Otherwise, they are treated as components and not entities.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default)]
     pub children: HashMap<NodeName, Node>,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
-pub struct NodeName(String);
+/// The name of a node is unique within its parent.
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
+pub struct NodeName(pub String);
 
-/// - `position`
-/// - ?`z_index`
-/// - ?`texture`
-#[derive(Debug, PartialEq)]
+/// Either a `Node2D`, `Sprite2D`, or `AnimatedSprite2D` node.
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct In2D {
+    /// in 2D
     pub position: Vec2,
+    /// Or calculated from position if missing.
+    /// If a 2D node has a 2D node child called "YSort", then the position
+    /// fed to the [`TscnToBevy::ysort`] function is the global position of
+    /// that "YSort", i.e. the position of the 2D node plus the position of
+    /// the "YSort".
     pub z_index: Option<f32>,
+    /// for images and animations
     pub texture: Option<SpriteTexture>,
 }
 
-/// - `texture`
-/// - ?`sprite_frames`
-#[derive(Debug, PartialEq)]
+/// For images and animations.
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct SpriteTexture {
-    /// The path to the asset stripped of `res://assets/` prefix.
+    /// The path to the asset stripped of typically the `res://assets/` prefix.
     /// E.g. `apartment/cupboard.png`.
-    ///
+    /// The prefix is set in the [`Config`].
+    pub path: String,
     /// We only support sprite frames that are part of an atlas (single file
     /// texture.)
-    pub path: String,
     pub animation: Option<SpriteFrames>,
 }
 
-#[derive(Debug, PartialEq)]
+/// Atlas animation.
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct SpriteFrames {
     /// If set to true, once the animation starts playing it will be repeated.
     pub should_endless_loop: bool,
@@ -80,12 +119,20 @@ pub struct SpriteFrames {
     /// Note that we use [`bevy::prelude::Rect`], hence the Y coordinate
     /// has been translated from godot to bevy coordinates.
     pub frames: Vec<Rect>,
+    /// The min size of the texture that fits all the frames.
+    pub size: Vec2,
+}
+
+impl<'a> From<NodeName> for Cow<'a, str> {
+    fn from(NodeName(name): NodeName) -> Self {
+        Cow::Owned(name)
+    }
 }
 
 fn from_state_to_tscn(
     mut state: intermediate_repr::State,
     conf: Config,
-) -> Tscn {
+) -> TscnTree {
     let root_node_index = state
         .nodes
         .iter()
@@ -223,9 +270,10 @@ fn from_state_to_tscn(
         }
     }
 
-    Tscn { root }
+    TscnTree { root }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn apply_section_key(
     conf: &Config,
     state: &intermediate_repr::State,
@@ -271,10 +319,7 @@ fn apply_section_key(
                 .ext_resources
                 .iter()
                 .find(|res| res.id == id)
-                .map(|res| {
-                    assert!(res.path.starts_with(&conf.asset_path_prefix));
-                    res.path[conf.asset_path_prefix.len()..].to_owned()
-                })
+                .map(|res| conf.to_prefixless_path(&res.path))
                 .expect("ext resource should exist");
             assert!(
                 path.replace(prefixless_path).is_none(),
@@ -296,6 +341,8 @@ fn apply_section_key(
                 )
             };
 
+            let mut max_y = 0.0f32;
+            let mut max_x = 0.0f32;
             let frames: Vec<_> = anim
                 .frames
                 .iter()
@@ -320,13 +367,7 @@ fn apply_section_key(
                                 .ext_resources
                                 .iter()
                                 .find(|res| res.id == *id)
-                                .map(|res| {
-                                    assert!(res
-                                        .path
-                                        .starts_with(&conf.asset_path_prefix));
-                                    res.path[conf.asset_path_prefix.len()..]
-                                        .to_owned()
-                                })
+                                .map(|res| conf.to_prefixless_path(&res.path))
                                 .expect("ext resource should exist");
 
                             Some(prefixless_path)
@@ -341,7 +382,7 @@ fn apply_section_key(
                         *path = Some(prefixless_path);
                     }
 
-                    frame
+                    let rect = frame
                         .section_keys
                         .iter()
                         .find_map(|section_key| {
@@ -356,7 +397,14 @@ fn apply_section_key(
                                 max: Vec2::new(*x2, y2.into_bevy_coords()),
                             })
                         })
-                        .expect("sub resource should have a region section key")
+                        .expect(
+                            "sub resource should have a region section key",
+                        );
+
+                    max_x = max_x.max(rect.max.x);
+                    max_y = max_y.max(rect.max.y);
+
+                    rect
                 })
                 .collect();
             assert!(frames.len() > anim.index as usize);
@@ -367,9 +415,17 @@ fn apply_section_key(
                     fps: anim.speed.into(),
                     should_autoload: anim.autoload,
                     first_index: anim.index as usize,
-                    frames
+                    frames,
+                    size: Vec2::new(max_x, max_y),
                 })
                 .is_none());
         }
+    }
+}
+
+impl Config {
+    fn to_prefixless_path(&self, godot_path: &str) -> String {
+        assert!(godot_path.starts_with(self.asset_path_prefix));
+        godot_path[self.asset_path_prefix.len()..].to_owned()
     }
 }
