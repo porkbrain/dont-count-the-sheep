@@ -176,7 +176,7 @@ impl BeginInterpolationEvent {
                     over,
                     animation_curve,
                     when_finished,
-                    started_at: Default::default(),
+                    started_at: default(),
                 })
             }
             InterpolationOf::Translation { from, to } => {
@@ -186,7 +186,7 @@ impl BeginInterpolationEvent {
                     over,
                     animation_curve,
                     when_finished,
-                    started_at: Default::default(),
+                    started_at: default(),
                 })
             }
             InterpolationOf::UiStyleHeight { from, to } => {
@@ -196,7 +196,7 @@ impl BeginInterpolationEvent {
                     over,
                     animation_curve,
                     when_finished,
-                    started_at: Default::default(),
+                    started_at: default(),
                 })
             }
         };
