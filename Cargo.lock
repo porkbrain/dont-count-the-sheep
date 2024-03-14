@@ -1430,9 +1430,12 @@ name = "common_rscn"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "common_ext",
  "common_top_down",
+ "common_visuals",
  "logos",
  "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -2762,6 +2765,7 @@ dependencies = [
  "common_assets",
  "common_ext",
  "common_loading_screen",
+ "common_rscn",
  "common_store",
  "common_story",
  "common_top_down",
@@ -3576,6 +3580,7 @@ dependencies = [
  "common_action",
  "common_assets",
  "common_loading_screen",
+ "common_rscn",
  "common_store",
  "common_story",
  "common_top_down",
