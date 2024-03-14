@@ -31,11 +31,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<BeginInterpolationEvent>()
-            .register_type::<TranslationInterpolation>()
-            .register_type::<ColorInterpolation>()
-            .register_type::<BeginAtlasAnimationAtRandom>()
-            .register_type::<Flicker>();
+        app.add_event::<BeginInterpolationEvent>();
 
         app.add_systems(Last, systems::recv_begin_interpolation_events);
 
@@ -45,6 +41,14 @@ impl bevy::app::Plugin for Plugin {
                 app::{Startup, Update},
                 diagnostic::FrameTimeDiagnosticsPlugin,
             };
+
+            app.register_type::<AtlasAnimation>()
+                .register_type::<AtlasAnimationEnd>()
+                .register_type::<TranslationInterpolation>()
+                .register_type::<ColorInterpolation>()
+                .register_type::<BeginAtlasAnimationAtRandom>()
+                .register_type::<Flicker>();
+
             app.add_plugins(FrameTimeDiagnosticsPlugin)
                 .add_systems(Startup, fps::spawn)
                 .add_systems(Update, fps::update);
