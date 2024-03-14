@@ -27,7 +27,7 @@ use crate::{In2D, Node, NodeName, SpriteTexture, TscnTree};
 /// and Y sorting.
 ///
 /// For scene dependent behavior, the implementation defer to the user by
-/// providing hooks like [`TscnToBevy::handle_plain_node`].
+/// providing hooks like [`TscnSpawner::handle_plain_node`].
 ///
 /// The implementation aggressively panics on invalid `.tscn` tree.
 /// We recommend to do the same in the hooks.
@@ -45,14 +45,14 @@ pub trait TscnSpawner {
     fn ysort(&mut self, position: Vec2) -> f32;
 
     /// Entity that has been spawned.
-    /// Runs after all [`TscnToBevy::handle_plain_node`].
+    /// Runs after all [`TscnSpawner::handle_plain_node`].
     /// The entity already has [`Name`], [`SpatialBundle`] and possibly
     /// [`Sprite`] and [`TextureAtlas`] components.
     fn on_spawned(&mut self, cmd: &mut Commands, who: Entity, name: NodeName);
 
     /// Any plan node (no 2D info) that is not handled by the default
     /// implementation will be passed to this function.
-    /// Runs before [`TscnToBevy::on_spawned`] of the parent.
+    /// Runs before [`TscnSpawner::on_spawned`] of the parent.
     /// The parent is already scheduled to spawn and has some components
     /// like [`Name`], [`Sprite`] and [`Handle<Image>`] if applicable.
     /// It does not have a [`SpatialBundle`] yet.

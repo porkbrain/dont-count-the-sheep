@@ -89,7 +89,7 @@ pub struct In2D {
     pub position: Vec2,
     /// Or calculated from position if missing.
     /// If a 2D node has a 2D node child called "YSort", then the position
-    /// fed to the [`TscnToBevy::ysort`] function is the global position of
+    /// fed to the [`TscnSpawner::ysort`] function is the global position of
     /// that "YSort", i.e. the position of the 2D node plus the position of
     /// the "YSort".
     pub z_index: Option<f32>,
@@ -155,7 +155,7 @@ pub fn parse(tscn: &str, config: &Config) -> TscnTree {
 }
 
 /// Run this system on enter to a scene to start loading the `.tscn` file.
-/// Use then [`scene_file_loaded_but_not_spawned`] condition to guard the
+/// Use then [`tscn_loaded_but_not_spawned`] condition to guard the
 /// system that spawns the scene after loading is done.
 pub fn start_loading_tscn<T: TscnInBevy>(
     mut cmd: Commands,

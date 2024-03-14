@@ -70,7 +70,7 @@ pub(crate) fn from_state(
 
         for section_key in parsed_node.section_keys {
             apply_section_key(
-                &conf,
+                conf,
                 &state,
                 section_key,
                 &mut z_index,
