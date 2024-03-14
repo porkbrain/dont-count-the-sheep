@@ -209,6 +209,12 @@ fn apply_section_key(
                 "Node should not have more than one texture"
             );
         }
+        SectionKey::FrameIndex(index) => {
+            animation
+                .as_mut()
+                .expect("Frame index always comes after sprite_frames")
+                .first_index = index;
+        }
         SectionKey::SpriteFramesSubResource(id) => {
             let res = state
                 .sub_resources
@@ -275,8 +281,8 @@ fn apply_section_key(
                             let SectionKey::RegionRect2(
                                 X(x1),
                                 Y(y1),
-                                X(x2),
-                                Y(y2),
+                                X(w),
+                                Y(h),
                             ) = section_key
                             else {
                                 return None;
@@ -284,7 +290,7 @@ fn apply_section_key(
 
                             Some(Rect {
                                 min: Vec2::new(*x1, *y1),
-                                max: Vec2::new(*x2, *y2),
+                                max: Vec2::new(*x1 + *w, *y1 + *h),
                             })
                         })
                         .expect(

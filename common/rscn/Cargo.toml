@@ -7,6 +7,7 @@ version.workspace = true
 bevy.workspace = true
 common_ext.workspace = true
 common_top_down.workspace = true
+common_visuals.workspace = true
 logos.workspace = true
 serde.workspace = true
 thiserror.workspace = true

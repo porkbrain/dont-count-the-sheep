@@ -259,7 +259,6 @@ fn parse_with_state(
         ////
         TscnToken::String => string::parse(state, expecting, s),
         TscnToken::Number => number::parse(state, expecting, s),
-        // TscnToken::Float => float::parse(expecting, s),
         TscnToken::True | TscnToken::False => match expecting {
             Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
                 mut state,
@@ -324,6 +323,10 @@ enum SectionKeyBuilder {
     },
     /// e.g. `z_index = -2`
     ZIndex,
+    /// e.g. `frame = 2`
+    FrameIndex,
+    /// e.g. `frame_progress = 0.847`
+    FrameProgress,
     /// e.g. `position = Vector2(-201.5, 49.5)`
     Position(Vector2Expecting),
     /// e.g. `sprite_frames = SubResource("SpriteFrames_33ymd")`

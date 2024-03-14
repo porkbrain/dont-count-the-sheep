@@ -64,7 +64,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2slx6")
 }],
-"loop": true,
+"loop": false,
 "name": &"default",
 "speed": 5.0
 }]
@@ -85,13 +85,16 @@ texture = ExtResource("3_j8n3v")
 z_index = -1
 position = Vector2(-201.5, 49.5)
 sprite_frames = SubResource("SpriteFrames_33ymd")
+frame = 2
+frame_progress = 0.843261
 
 [node name="HallwayEntity" type="Node" parent="Elevator"]
 
-[node name="InspectLabelCategory" type="Node" parent="Elevator"]
+[node name="InspectLabel" type="Node" parent="Elevator"]
 metadata/zone = "ElevatorZone"
 metadata/action = "EnterElevator"
 metadata/label = "Elevator"
+metadata/category = "Default"
 
 [node name="Cupboard" type="Sprite2D" parent="."]
 position = Vector2(-92, 6)

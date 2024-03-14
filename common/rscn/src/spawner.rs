@@ -15,6 +15,7 @@ use bevy::{
     utils::default,
 };
 use common_top_down::InspectLabelCategory;
+use common_visuals::{AtlasAnimation, AtlasAnimationEnd};
 
 use crate::{In2D, Node, NodeName, SpriteTexture, TscnTree};
 
@@ -208,15 +209,31 @@ fn node_to_entity<T: TscnSpawner>(
 
         if let Some(animation) = animation {
             let mut layout = TextureAtlasLayout::new_empty(animation.size);
+            let frames_count = animation.frames.len();
+            assert_ne!(0, frames_count);
             for frame in animation.frames {
                 layout.add_texture(frame);
             }
 
             let layout = spawner.add_texture_atlas(layout);
-            cmd.entity(entity).insert(TextureAtlas {
-                index: animation.first_index,
-                layout,
-            });
+            cmd.entity(entity)
+                .insert(TextureAtlas {
+                    index: animation.first_index,
+                    layout,
+                })
+                .insert(AtlasAnimation {
+                    on_last_frame: if animation.should_endless_loop {
+                        AtlasAnimationEnd::Loop
+                    } else {
+                        AtlasAnimationEnd::RemoveTimer
+                    },
+                    // This asks: "what's the first frame" when animation
+                    // resets. Even though the first frame
+                    // that's shown is the first_index.
+                    first: 0,
+                    last: frames_count - 1,
+                    ..default()
+                });
         }
     }
 

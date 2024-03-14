@@ -33,6 +33,10 @@ pub(super) fn parse(
             "sprite_frames" => Expecting::SectionKey(
                 SectionKeyBuilder::SpriteFrames(default()),
             ),
+            "frame" => Expecting::SectionKey(SectionKeyBuilder::FrameIndex),
+            "frame_progress" => {
+                Expecting::SectionKey(SectionKeyBuilder::FrameProgress)
+            }
             s if s.starts_with("metadata/") => {
                 Expecting::SectionKey(SectionKeyBuilder::StringMetadata(
                     s["metadata/".len()..].to_string(),

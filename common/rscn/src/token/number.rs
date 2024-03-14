@@ -61,6 +61,19 @@ pub(super) fn parse(
             Vector2Expecting::ParenClose(x, Y(s.parse().unwrap())),
         )),
 
+        Sk(SkB::FrameIndex) => {
+            state
+                .nodes
+                .last_mut()
+                .unwrap()
+                .section_keys
+                .push(SectionKey::FrameIndex(s.parse().unwrap()));
+
+            Expecting::HeadingOrSectionKey
+        }
+        // we don't care about this value
+        Sk(SkB::FrameProgress) => Expecting::HeadingOrSectionKey,
+
         _ => {
             panic!("Unexpected int {s} for {expecting:?}")
         }

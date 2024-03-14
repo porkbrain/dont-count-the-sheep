@@ -63,6 +63,7 @@ pub(crate) enum SectionKey {
     SpriteFramesSubResource(SubResourceId),
     /// key - value metadata pair where the value is of type string
     StringMetadata(String, String),
+    FrameIndex(usize),
 }
 
 #[derive(Debug, PartialEq, Eq)]
