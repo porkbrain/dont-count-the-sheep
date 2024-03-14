@@ -215,6 +215,12 @@ fn apply_section_key(
                 .expect("Frame index always comes after sprite_frames")
                 .first_index = index;
         }
+        SectionKey::Autoplay => {
+            animation
+                .as_mut()
+                .expect("Autoplay always comes after sprite_frames")
+                .should_autoload = true;
+        }
         SectionKey::SpriteFramesSubResource(id) => {
             let res = state
                 .sub_resources

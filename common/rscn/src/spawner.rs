@@ -1,6 +1,6 @@
 //! Spawns the scene into a bevy world.
 
-use std::str::FromStr;
+use std::{str::FromStr, time::Duration};
 
 use bevy::{
     asset::Handle,
@@ -11,11 +11,12 @@ use bevy::{
     prelude::SpatialBundle,
     render::texture::Image,
     sprite::{Sprite, TextureAtlas, TextureAtlasLayout},
+    time::TimerMode,
     transform::components::Transform,
     utils::default,
 };
 use common_top_down::InspectLabelCategory;
-use common_visuals::{AtlasAnimation, AtlasAnimationEnd};
+use common_visuals::{AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer};
 
 use crate::{In2D, Node, NodeName, SpriteTexture, TscnTree};
 
@@ -52,6 +53,9 @@ pub trait TscnSpawner {
     /// Any plan node (no 2D info) that is not handled by the default
     /// implementation will be passed to this function.
     /// Runs before [`TscnToBevy::on_spawned`] of the parent.
+    /// The parent is already scheduled to spawn and has some components
+    /// like [`Name`], [`Sprite`] and [`Handle<Image>`] if applicable.
+    /// It does not have a [`SpatialBundle`] yet.
     fn handle_plain_node(
         &mut self,
         _cmd: &mut Commands,
@@ -112,6 +116,48 @@ fn node_to_entity<T: TscnSpawner>(
         z_index,
         texture,
     } = node.in_2d.expect("only 2D nodes represent entities");
+
+    if let Some(SpriteTexture { path, animation }) = texture {
+        let texture = spawner.load_texture(&path);
+        cmd.entity(entity).insert(texture).insert(Sprite::default());
+
+        if let Some(animation) = animation {
+            let mut layout = TextureAtlasLayout::new_empty(animation.size);
+            let frames_count = animation.frames.len();
+            assert_ne!(0, frames_count);
+            for frame in animation.frames {
+                layout.add_texture(frame);
+            }
+
+            let layout = spawner.add_texture_atlas(layout);
+            cmd.entity(entity)
+                .insert(TextureAtlas {
+                    index: animation.first_index,
+                    layout,
+                })
+                .insert(AtlasAnimation {
+                    on_last_frame: if animation.should_endless_loop {
+                        AtlasAnimationEnd::Loop
+                    } else {
+                        AtlasAnimationEnd::RemoveTimer
+                    },
+                    // This asks: "what's the first frame" when animation
+                    // resets. Even though the first frame
+                    // that's shown is the first_index.
+                    first: 0,
+                    last: frames_count - 1,
+                    ..default()
+                });
+
+            if animation.should_autoload {
+                cmd.entity(entity).insert(AtlasAnimationTimer::new(
+                    Duration::from_secs_f32(1.0 / animation.fps),
+                    TimerMode::Repeating,
+                ));
+            }
+        }
+    }
+
     // might get populated by a YSort node, or if still None is calculated from
     // the position based on scene ysort impl
     let mut virtual_z_index = z_index;
@@ -202,40 +248,6 @@ fn node_to_entity<T: TscnSpawner>(
         transform,
         ..default()
     });
-
-    if let Some(SpriteTexture { path, animation }) = texture {
-        let texture = spawner.load_texture(&path);
-        cmd.entity(entity).insert(texture).insert(Sprite::default());
-
-        if let Some(animation) = animation {
-            let mut layout = TextureAtlasLayout::new_empty(animation.size);
-            let frames_count = animation.frames.len();
-            assert_ne!(0, frames_count);
-            for frame in animation.frames {
-                layout.add_texture(frame);
-            }
-
-            let layout = spawner.add_texture_atlas(layout);
-            cmd.entity(entity)
-                .insert(TextureAtlas {
-                    index: animation.first_index,
-                    layout,
-                })
-                .insert(AtlasAnimation {
-                    on_last_frame: if animation.should_endless_loop {
-                        AtlasAnimationEnd::Loop
-                    } else {
-                        AtlasAnimationEnd::RemoveTimer
-                    },
-                    // This asks: "what's the first frame" when animation
-                    // resets. Even though the first frame
-                    // that's shown is the first_index.
-                    first: 0,
-                    last: frames_count - 1,
-                    ..default()
-                });
-        }
-    }
 
     spawner.on_spawned(cmd, entity, name);
 }

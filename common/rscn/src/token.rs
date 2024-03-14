@@ -327,6 +327,8 @@ enum SectionKeyBuilder {
     FrameIndex,
     /// e.g. `frame_progress = 0.847`
     FrameProgress,
+    /// e.g. `autoplay = "default"` and must always be "default"
+    Autoplay,
     /// e.g. `position = Vector2(-201.5, 49.5)`
     Position(Vector2Expecting),
     /// e.g. `sprite_frames = SubResource("SpriteFrames_33ymd")`

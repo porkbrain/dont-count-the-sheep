@@ -37,6 +37,7 @@ pub(super) fn parse(
             "frame_progress" => {
                 Expecting::SectionKey(SectionKeyBuilder::FrameProgress)
             }
+            "autoplay" => Expecting::SectionKey(SectionKeyBuilder::Autoplay),
             s if s.starts_with("metadata/") => {
                 Expecting::SectionKey(SectionKeyBuilder::StringMetadata(
                     s["metadata/".len()..].to_string(),
@@ -46,6 +47,21 @@ pub(super) fn parse(
                 panic!("Unknown section key: '{s}' for {expecting:?}")
             }
         },
+
+        Expecting::SectionKey(SectionKeyBuilder::Autoplay) => {
+            assert_eq!(
+                "default", s,
+                "Name of atlas animation must be 'default' not '{s}'"
+            );
+            state
+                .nodes
+                .last_mut()
+                .unwrap()
+                .section_keys
+                .push(SectionKey::Autoplay);
+
+            Expecting::HeadingOrSectionKey
+        }
 
         Expecting::SectionKey(SectionKeyBuilder::Atlas(
             ExtResourceExpecting::String,

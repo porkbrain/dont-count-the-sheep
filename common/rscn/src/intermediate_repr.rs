@@ -64,6 +64,8 @@ pub(crate) enum SectionKey {
     /// key - value metadata pair where the value is of type string
     StringMetadata(String, String),
     FrameIndex(usize),
+    /// Whether the atlas should autoplay the animation.
+    Autoplay,
 }
 
 #[derive(Debug, PartialEq, Eq)]
