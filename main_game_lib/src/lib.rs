@@ -5,16 +5,14 @@
 
 pub mod cutscene;
 pub mod prelude;
-pub mod scene_maker;
 pub mod state;
 pub mod vec2_ext;
 
 use bevy::{app::AppExit, prelude::*};
 use bevy_pixel_camera::PixelCameraPlugin;
-use common_assets::RonLoader;
 pub use common_ext;
 
-use crate::{prelude::*, scene_maker::SceneSerde};
+use crate::prelude::*;
 
 /// Constructs a new app with all the necessary plugins and systems.
 ///
@@ -70,22 +68,16 @@ pub fn windowed_app() -> App {
 
     info!("Initializing Don't Count The Sheep");
 
-    app.init_asset::<SceneSerde>()
-        .init_asset_loader::<RonLoader<SceneSerde>>()
-        .init_state::<GlobalGameState>()
+    app.init_state::<GlobalGameState>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
-        .insert_resource(GlobalGameStateTransitionStack::default());
+        .insert_resource(GlobalGameStateTransitionStack::default())
+        .init_asset::<common_rscn::TscnTree>()
+        .init_asset_loader::<common_rscn::TscnLoader>();
 
     #[cfg(feature = "devtools")]
     {
-        use scene_maker::store_and_load::{
-            SceneSpriteAtlas, SceneSpriteConfig,
-        };
-
         app.register_type::<GlobalGameStateTransitionStack>()
-            .register_type::<GlobalGameState>()
-            .register_type::<SceneSpriteConfig>()
-            .register_type::<SceneSpriteAtlas>();
+            .register_type::<GlobalGameState>();
 
         use bevy_inspector_egui::quick::{
             StateInspectorPlugin, WorldInspectorPlugin,
