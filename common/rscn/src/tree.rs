@@ -4,7 +4,7 @@ use bevy::{
 };
 
 use crate::{
-    intermediate_repr::{self, ParsedNodeKind},
+    intermediate_repr::{self, ParsedNodeKind, Y},
     Config, In2D, Node, NodeName, SpriteFrames, SpriteTexture, TscnTree,
 };
 
@@ -187,7 +187,7 @@ fn apply_section_key(
             );
         }
         SectionKey::Position(X(x), y) => {
-            *position = Vec2::new(x, y.into_bevy_coords());
+            *position = Vec2::new(x, y.into_bevy_position_coords());
         }
         SectionKey::StringMetadata(key, value) => {
             assert!(
@@ -269,15 +269,22 @@ fn apply_section_key(
                         .section_keys
                         .iter()
                         .find_map(|section_key| {
-                            let SectionKey::RegionRect2(X(x1), y1, X(x2), y2) =
-                                section_key
+                            // we don't convert into bevy coords here because
+                            // bevy uses the top-left corner as the origin
+                            // for textures
+                            let SectionKey::RegionRect2(
+                                X(x1),
+                                Y(y1),
+                                X(x2),
+                                Y(y2),
+                            ) = section_key
                             else {
                                 return None;
                             };
 
                             Some(Rect {
-                                min: Vec2::new(*x1, y1.into_bevy_coords()),
-                                max: Vec2::new(*x2, y2.into_bevy_coords()),
+                                min: Vec2::new(*x1, *y1),
+                                max: Vec2::new(*x2, *y2),
                             })
                         })
                         .expect(

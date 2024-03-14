@@ -2,7 +2,6 @@
 //! Contains nested nodes, metadata properties and spritesheets.
 
 use bevy::utils::default;
-use common_rscn::NodeName;
 
 const TSCN: &str = include_str!("basic.tscn");
 
@@ -17,9 +16,24 @@ fn it_does_not_panic() {
         assert!(state
             .root
             .children
-            .get(&NodeName(child_name.to_string()))
+            .get(*child_name)
             .unwrap()
             .in_2d
             .is_some());
     }
+
+    assert_eq!(
+        -49.5,
+        state
+            .root
+            .children
+            .get("Elevator")
+            .as_ref()
+            .unwrap()
+            .in_2d
+            .as_ref()
+            .unwrap()
+            .position
+            .y
+    );
 }

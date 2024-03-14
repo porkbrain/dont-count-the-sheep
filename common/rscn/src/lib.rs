@@ -213,3 +213,9 @@ impl<'a> From<NodeName> for Cow<'a, str> {
         Cow::Owned(name)
     }
 }
+
+impl std::borrow::Borrow<str> for NodeName {
+    fn borrow(&self) -> &str {
+        &self.0
+    }
+}

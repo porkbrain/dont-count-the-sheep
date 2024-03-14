@@ -92,8 +92,12 @@ pub(crate) struct X(pub(crate) f32);
 pub(crate) struct Y(pub(crate) f32);
 
 impl Y {
-    pub(crate) fn into_bevy_coords(self) -> f32 {
-        self.0
+    /// This is the conversion from godot to bevy coordinates.
+    /// Note that not all Y coords should be converted.
+    /// For example sprite atlas positions into textures in bevy follow the
+    /// image processing convention where the origin is at the top left.
+    pub(crate) fn into_bevy_position_coords(self) -> f32 {
+        -self.0
     }
 }
 
