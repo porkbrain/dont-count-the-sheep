@@ -5,6 +5,8 @@ version.workspace = true
 
 [dependencies]
 bevy.workspace = true
+common_ext.workspace = true
 common_top_down.workspace = true
 logos.workspace = true
 serde.workspace = true
+thiserror.workspace = true

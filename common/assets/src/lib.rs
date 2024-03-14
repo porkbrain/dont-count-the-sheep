@@ -25,9 +25,6 @@ pub enum LoaderError {
     /// The file could not be loaded, most likely not found.
     #[error("Could load ron file: {0}")]
     Io(#[from] std::io::Error),
-    /// We convert the file bytes into a string, which can fail.
-    #[error("Non-utf8 string in ron file: {0}")]
-    Utf8(#[from] std::str::Utf8Error),
     /// The string must be parsable into the `T` type.
     #[error("Could not parse ron file: {0}")]
     Ron(#[from] ron::de::SpannedError),

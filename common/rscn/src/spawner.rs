@@ -29,15 +29,12 @@ use crate::{In2D, Node, NodeName, SpriteTexture, TscnTree};
 ///
 /// The implementation aggressively panics on invalid `.tscn` tree.
 /// We recommend to do the same in the hooks.
-pub trait TscnToBevy {
+pub trait TscnSpawner {
     /// The kind of action that can be emitted by an `InspectLabel`.
     type LocalActionKind: FromStr + Event + Clone;
 
     /// The kind of zone that can be entered by the player.
     type LocalZoneKind: FromStr;
-
-    /// Gives access to the commands to spawn entities.
-    fn cmd(&mut self) -> &mut Commands;
 
     /// Given a position in 2D, add a z index to it.
     /// This function is used for those nodes that don't have a z index set.
@@ -45,14 +42,18 @@ pub trait TscnToBevy {
     /// to this function is the global position of that "YSort" node.
     fn ysort(&mut self, position: Vec2) -> f32;
 
+    /// Entity that has been spawned.
+    /// Runs after all [`TscnToBevy::handle_plain_node`].
+    /// The entity already has [`Name`], [`SpatialBundle`] and possibly
+    /// [`Sprite`] and [`TextureAtlas`] components.
+    fn on_spawned(&mut self, cmd: &mut Commands, who: Entity, name: NodeName);
+
     /// Any plan node (no 2D info) that is not handled by the default
     /// implementation will be passed to this function.
-    ///
-    /// The default implementation handles:
-    /// - `InspectLabel`
-    /// - `YSort`
+    /// Runs before [`TscnToBevy::on_spawned`] of the parent.
     fn handle_plain_node(
         &mut self,
+        _cmd: &mut Commands,
         _parent: Entity,
         _name: String,
         _node: Node,
@@ -88,13 +89,23 @@ pub trait TscnToBevy {
 impl TscnTree {
     /// Spawns the tree of nodes into the world guided by the scene
     /// implementation.
-    pub fn spawn_into(self, scene: &mut impl TscnToBevy) {
-        let root = scene.cmd().spawn(Name::new("root")).id();
-        node_to_entity(scene, root, self.root);
+    pub fn spawn_into<T: TscnSpawner>(
+        self,
+        with_spawner: &mut T,
+        cmd: &mut Commands,
+    ) {
+        let root = cmd.spawn(Name::new(self.root_node_name.clone())).id();
+        node_to_entity(with_spawner, cmd, root, self.root_node_name, self.root);
     }
 }
 
-fn node_to_entity<S: TscnToBevy>(scene: &mut S, entity: Entity, node: Node) {
+fn node_to_entity<T: TscnSpawner>(
+    spawner: &mut T,
+    cmd: &mut Commands,
+    entity: Entity,
+    name: NodeName,
+    node: Node,
+) {
     let In2D {
         position,
         z_index,
@@ -118,15 +129,22 @@ fn node_to_entity<S: TscnToBevy>(scene: &mut S, entity: Entity, node: Node) {
                     virtual_z_index.is_none(),
                     "YSort must child of a node with no zindex"
                 );
-                virtual_z_index = Some(scene.ysort(position + *child_position));
+                virtual_z_index =
+                    Some(spawner.ysort(position + *child_position));
             }
             ("YSort", None) => panic!("YSort must be a Node2D with no zindex"),
 
             (_, Some(_)) => {
                 // recursively spawn children
-                let child_id = scene.cmd().spawn(Name::new(child_name)).id();
-                scene.cmd().entity(entity).add_child(child_id);
-                node_to_entity(scene, child_id, child_node);
+                let child_id = cmd.spawn(Name::new(child_name.clone())).id();
+                cmd.entity(entity).add_child(child_id);
+                node_to_entity(
+                    spawner,
+                    cmd,
+                    child_id,
+                    NodeName(child_name),
+                    child_node,
+                );
             }
 
             ("InspectLabel", None) => {
@@ -147,17 +165,17 @@ fn node_to_entity<S: TscnToBevy>(scene: &mut S, entity: Entity, node: Node) {
 
                 if let Some(action) = child_node.metadata.remove("action") {
                     label.set_emit_event_on_interacted(
-                        S::LocalActionKind::from_str(&action).unwrap_or_else(
+                        T::LocalActionKind::from_str(&action).unwrap_or_else(
                             |_| panic!("InspectLabel action not valid"),
                         ),
                     );
                 }
 
-                scene.cmd().entity(entity).insert(label);
+                cmd.entity(entity).insert(label);
 
                 if let Some(zone) = child_node.metadata.remove("zone") {
-                    scene.map_zone_to_inspect_label_entity(
-                        S::LocalZoneKind::from_str(&zone)
+                    spawner.map_zone_to_inspect_label_entity(
+                        T::LocalZoneKind::from_str(&zone)
                             .unwrap_or_else(|_| panic!("zone not valid")),
                         entity,
                     );
@@ -170,27 +188,23 @@ fn node_to_entity<S: TscnToBevy>(scene: &mut S, entity: Entity, node: Node) {
                 );
             }
             (_, None) => {
-                scene.handle_plain_node(entity, child_name, child_node)
+                spawner.handle_plain_node(cmd, entity, child_name, child_node)
             }
         }
     }
 
     let transform = Transform::from_translation(
         position
-            .extend(virtual_z_index.unwrap_or_else(|| scene.ysort(position))),
+            .extend(virtual_z_index.unwrap_or_else(|| spawner.ysort(position))),
     );
-    scene.cmd().entity(entity).insert(SpatialBundle {
+    cmd.entity(entity).insert(SpatialBundle {
         transform,
         ..default()
     });
 
     if let Some(SpriteTexture { path, animation }) = texture {
-        let texture = scene.load_texture(&path);
-        scene
-            .cmd()
-            .entity(entity)
-            .insert(texture)
-            .insert(Sprite::default());
+        let texture = spawner.load_texture(&path);
+        cmd.entity(entity).insert(texture).insert(Sprite::default());
 
         if let Some(animation) = animation {
             let mut layout = TextureAtlasLayout::new_empty(animation.size);
@@ -198,11 +212,13 @@ fn node_to_entity<S: TscnToBevy>(scene: &mut S, entity: Entity, node: Node) {
                 layout.add_texture(frame);
             }
 
-            let layout = scene.add_texture_atlas(layout);
-            scene.cmd().entity(entity).insert(TextureAtlas {
+            let layout = spawner.add_texture_atlas(layout);
+            cmd.entity(entity).insert(TextureAtlas {
                 index: animation.first_index,
                 layout,
             });
         }
     }
+
+    spawner.on_spawned(cmd, entity, name);
 }

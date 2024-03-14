@@ -1,18 +1,14 @@
 //! Test with a basic example that I setup.
 //! Contains nested nodes, metadata properties and spritesheets.
 
-use common_rscn::{Config, NodeName};
+use bevy::utils::default;
+use common_rscn::NodeName;
 
 const TSCN: &str = include_str!("basic.tscn");
 
 #[test]
 fn it_does_not_panic() {
-    let state = common_rscn::parse(
-        TSCN,
-        Config {
-            asset_path_prefix: "res://assets/",
-        },
-    );
+    let state = common_rscn::parse(TSCN, &default());
 
     assert_eq!(4, state.root.children.len());
     for child_name in

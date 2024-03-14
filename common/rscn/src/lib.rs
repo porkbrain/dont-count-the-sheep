@@ -2,34 +2,38 @@
 #![deny(missing_docs)]
 
 mod intermediate_repr;
+mod loader;
 mod spawner;
 mod token;
+mod tree;
 
 use std::borrow::Cow;
 
 use bevy::{
+    asset::{Asset, AssetServer, Assets, Handle},
+    ecs::{
+        component::Component,
+        entity::Entity,
+        system::{Commands, Query, Res},
+    },
     math::{Rect, Vec2},
-    utils::{default, HashMap},
+    reflect::TypePath,
+    utils::HashMap,
 };
+use common_ext::QueryExt;
 use serde::{Deserialize, Serialize};
 
-use crate::intermediate_repr::ParsedNodeKind;
-pub use crate::spawner::TscnToBevy;
+pub use crate::{
+    loader::{LoaderError, TscnLoader},
+    spawner::TscnSpawner,
+};
 
 /// Configure how the scene is converted from godot to bevy.
+#[derive(Serialize, Deserialize)]
 pub struct Config {
     /// We assert each asset path starts with this prefix.
     /// Then we strip it.
-    pub asset_path_prefix: &'static str,
-}
-
-/// Parses Godot's .tscn file with very strict requirements on the content.
-/// We only support nodes and parameters that are relevant to our game.
-/// We panic on unsupported content aggressively.
-///
-/// See also [`TscnTree::spawn_into`].
-pub fn parse(tscn: &str, config: Config) -> TscnTree {
-    from_state_to_tscn(token::parse(tscn), config)
+    pub asset_path_prefix: String,
 }
 
 /// A godot scene is a tree of nodes.
@@ -38,9 +42,10 @@ pub fn parse(tscn: &str, config: Config) -> TscnTree {
 /// We panic on unsupported content aggressively.
 ///
 /// See [`parse`] and [`TscnTree::spawn_into`].
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Asset, TypePath, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TscnTree {
-    /// Root node name must always equal to the scene name.
+    /// The root node of the scene as defined in Godot.
+    pub root_node_name: NodeName,
     /// Other nodes refer to it as `"."`.
     pub root: Node,
 }
@@ -123,309 +128,88 @@ pub struct SpriteFrames {
     pub size: Vec2,
 }
 
+/// Marks scene as "can be loaded from .tscn".
+pub trait TscnInBevy: Send + Sync + 'static {
+    /// Asset path of the `.tscn` file associated with this scene.
+    fn tscn_asset_path() -> &'static str;
+}
+
+/// Used for loading of [`TscnTree`] from a .tscn file.
+#[derive(Component)]
+pub struct TscnTreeHandle<T> {
+    /// Will be used to despawn this handle on consumption.
+    entity: Entity,
+    /// The actual handle that can be used to load the file.
+    /// Will be set to [`None`] once the scene is spawned.
+    handle: Option<Handle<TscnTree>>,
+    _phantom: std::marker::PhantomData<T>,
+}
+
+/// Parses Godot's .tscn file with very strict requirements on the content.
+/// We only support nodes and parameters that are relevant to our game.
+/// We panic on unsupported content aggressively.
+///
+/// See also [`TscnTree::spawn_into`].
+pub fn parse(tscn: &str, config: &Config) -> TscnTree {
+    tree::from_state(token::parse(tscn), config)
+}
+
+/// Run this system on enter to a scene to start loading the `.tscn` file.
+/// Use then [`scene_file_loaded_but_not_spawned`] condition to guard the
+/// system that spawns the scene after loading is done.
+pub fn start_loading_tscn<T: TscnInBevy>(
+    mut cmd: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    let mut e = cmd.spawn_empty();
+    e.insert(TscnTreeHandle::<T> {
+        entity: e.id(),
+        handle: Some(asset_server.load(T::tscn_asset_path())),
+        _phantom: Default::default(),
+    });
+}
+
+/// Guard condition for when spawning of the scene hasn't started but can be.
+pub fn tscn_loaded_but_not_spawned<T: TscnInBevy>(
+) -> impl FnMut(Query<&TscnTreeHandle<T>>, Res<AssetServer>) -> bool {
+    move |tscn: Query<&TscnTreeHandle<T>>, asset_server: Res<AssetServer>| {
+        tscn.get_single_or_none()
+            .and_then(|tscn| {
+                Some(
+                    asset_server
+                        .is_loaded_with_dependencies(tscn.handle.as_ref()?),
+                )
+            })
+            .unwrap_or(false)
+    }
+}
+
+impl<T> TscnTreeHandle<T> {
+    /// Consume the handle and return the loaded scene.
+    /// After this, the handle is useless and the entity is despawned.
+    /// Also, the scene is removed from the asset server.
+    pub fn consume(
+        &mut self,
+        cmd: &mut Commands,
+        assets: &mut Assets<TscnTree>,
+    ) -> TscnTree {
+        let handle = self.handle.take().expect("Handle already consumed");
+        let tscn = assets.remove(handle).expect("Handle not loaded");
+        cmd.entity(self.entity).despawn();
+        tscn
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            asset_path_prefix: "res://assets/".to_string(),
+        }
+    }
+}
+
 impl<'a> From<NodeName> for Cow<'a, str> {
     fn from(NodeName(name): NodeName) -> Self {
         Cow::Owned(name)
-    }
-}
-
-fn from_state_to_tscn(
-    mut state: intermediate_repr::State,
-    conf: Config,
-) -> TscnTree {
-    let root_node_index = state
-        .nodes
-        .iter()
-        .position(|node| node.parent.is_none())
-        .expect("there should be a node with no parent");
-    let parsed_root_node = state.nodes.remove(root_node_index);
-    assert!(
-        parsed_root_node.section_keys.is_empty(),
-        "Root node must have no extra data"
-    );
-    assert_eq!(
-        ParsedNodeKind::Node2D,
-        parsed_root_node.kind,
-        "Root node must be of type Node2D"
-    );
-
-    let mut root = Node {
-        in_2d: Some(In2D {
-            position: Vec2::ZERO,
-            z_index: None,
-            texture: None,
-        }),
-        metadata: default(),
-        children: default(),
-    };
-
-    // sort the nodes by their parent path:
-    // "." is 1, "JustAName" is 2, and each "/" in the string adds 1 to the
-    // so that e.g. "JustAName/Child" is 3
-    state.nodes.sort_by_key(|node| {
-        let p = node
-            .parent
-            .as_ref()
-            .expect("each node except for root should have a parent");
-
-        if p == "." {
-            1
-        } else {
-            2 + p.chars().filter(|c| *c == '/').count()
-        }
-    });
-
-    // now that the nodes are sorted we can iterate over them and we will be
-    // guaranteed that a parent is always added before its children
-
-    let mut nodes = vec![];
-    std::mem::swap(&mut nodes, &mut state.nodes); // to avoid borrow checker
-    for parsed_node in nodes {
-        let mut metadata = HashMap::new();
-
-        let mut z_index = None;
-        let mut position = Vec2::ZERO;
-        let mut path = None;
-        let mut animation = None;
-
-        for section_key in parsed_node.section_keys {
-            apply_section_key(
-                &conf,
-                &state,
-                section_key,
-                &mut z_index,
-                &mut position,
-                &mut metadata,
-                &mut path,
-                &mut animation,
-            );
-        }
-
-        let in_2d = match parsed_node.kind {
-            ParsedNodeKind::AnimatedSprite2D => Some(In2D {
-                position,
-                z_index,
-                texture: Some(SpriteTexture {
-                    path: path.expect("AnimatedSprite2D should have a texture"),
-                    animation: {
-                        assert!(animation.is_some());
-                        animation
-                    },
-                }),
-            }),
-            ParsedNodeKind::Sprite2D => Some(In2D {
-                position,
-                z_index,
-                texture: Some(SpriteTexture {
-                    path: path.expect("Sprite2D should have a texture"),
-                    animation: {
-                        assert!(animation.is_none());
-                        None
-                    },
-                }),
-            }),
-            ParsedNodeKind::Node2D => Some(In2D {
-                position,
-                z_index,
-                texture: {
-                    assert!(path.is_none());
-                    assert!(animation.is_none());
-                    None
-                },
-            }),
-            ParsedNodeKind::Node => {
-                assert_eq!(Vec2::ZERO, position);
-                assert!(z_index.is_none());
-                assert!(path.is_none());
-                assert!(animation.is_none());
-                None
-            }
-        };
-
-        let node = Node {
-            metadata,
-            in_2d,
-            children: default(),
-        };
-
-        let parent = parsed_node
-            .parent
-            .expect("each node except for root should have a parent");
-
-        if parent == "." {
-            root.children.insert(NodeName(parsed_node.name), node);
-        } else {
-            let mut current_parent = &mut root;
-
-            for fragment in parent.split('/') {
-                current_parent = current_parent
-                    .children
-                    .get_mut(&NodeName(fragment.to_string()))
-                    .expect("node path should point to a valid parent node");
-            }
-
-            current_parent
-                .children
-                .insert(NodeName(parsed_node.name), node);
-        }
-    }
-
-    TscnTree { root }
-}
-
-#[allow(clippy::too_many_arguments)]
-fn apply_section_key(
-    conf: &Config,
-    state: &intermediate_repr::State,
-    section_key: intermediate_repr::SectionKey,
-    z_index: &mut Option<f32>,
-    position: &mut Vec2,
-    metadata: &mut HashMap<String, String>,
-    path: &mut Option<String>,
-    animation: &mut Option<SpriteFrames>,
-) {
-    use intermediate_repr::{Number, SectionKey, X};
-
-    match section_key {
-        SectionKey::RegionRect2(..) => {
-            panic!("Node should not have a region section key")
-        }
-        SectionKey::SingleAnim(..) => {
-            panic!("Node should not have an animation section key")
-        }
-        SectionKey::AtlasExtResource(..) => {
-            panic!("Node should not have an atlas section key")
-        }
-
-        SectionKey::ZIndex(Number(z)) => {
-            assert!(
-                z_index.replace(z).is_none(),
-                "Node should not have more than one z_index"
-            );
-        }
-        SectionKey::Position(X(x), y) => {
-            *position = Vec2::new(x, y.into_bevy_coords());
-        }
-        SectionKey::StringMetadata(key, value) => {
-            assert!(
-                metadata.insert(key, value).is_none(),
-                "Node should not have more than \
-                one metadata with the same key"
-            );
-        }
-
-        SectionKey::TextureExtResource(id) => {
-            let prefixless_path = state
-                .ext_resources
-                .iter()
-                .find(|res| res.id == id)
-                .map(|res| conf.to_prefixless_path(&res.path))
-                .expect("ext resource should exist");
-            assert!(
-                path.replace(prefixless_path).is_none(),
-                "Node should not have more than one texture"
-            );
-        }
-        SectionKey::SpriteFramesSubResource(id) => {
-            let res = state
-                .sub_resources
-                .iter()
-                .find(|res| res.id == id)
-                .expect("sub resource should exist");
-            assert_eq!(1, res.section_keys.len());
-
-            let SectionKey::SingleAnim(anim) = &res.section_keys[0] else {
-                panic!(
-                    "SpriteFrames should have \
-                            exactly one SingleAnim section key"
-                )
-            };
-
-            let mut max_y = 0.0f32;
-            let mut max_x = 0.0f32;
-            let frames: Vec<_> = anim
-                .frames
-                .iter()
-                .map(|frame| {
-                    let frame = state
-                        .sub_resources
-                        .iter()
-                        .find(|res| res.id == frame.texture)
-                        .expect("sub resource should exist");
-                    assert_eq!(2, frame.section_keys.len());
-
-                    let prefixless_path = frame
-                        .section_keys
-                        .iter()
-                        .find_map(|section_key| {
-                            let SectionKey::AtlasExtResource(id) = section_key
-                            else {
-                                return None;
-                            };
-
-                            let prefixless_path = state
-                                .ext_resources
-                                .iter()
-                                .find(|res| res.id == *id)
-                                .map(|res| conf.to_prefixless_path(&res.path))
-                                .expect("ext resource should exist");
-
-                            Some(prefixless_path)
-                        })
-                        .expect(
-                            "sub resource should have an atlas section key",
-                        );
-
-                    if let Some(path) = path {
-                        assert_eq!(path, &prefixless_path);
-                    } else {
-                        *path = Some(prefixless_path);
-                    }
-
-                    let rect = frame
-                        .section_keys
-                        .iter()
-                        .find_map(|section_key| {
-                            let SectionKey::RegionRect2(X(x1), y1, X(x2), y2) =
-                                section_key
-                            else {
-                                return None;
-                            };
-
-                            Some(Rect {
-                                min: Vec2::new(*x1, y1.into_bevy_coords()),
-                                max: Vec2::new(*x2, y2.into_bevy_coords()),
-                            })
-                        })
-                        .expect(
-                            "sub resource should have a region section key",
-                        );
-
-                    max_x = max_x.max(rect.max.x);
-                    max_y = max_y.max(rect.max.y);
-
-                    rect
-                })
-                .collect();
-            assert!(frames.len() > anim.index as usize);
-
-            assert!(animation
-                .replace(SpriteFrames {
-                    should_endless_loop: anim.loop_,
-                    fps: anim.speed.into(),
-                    should_autoload: anim.autoload,
-                    first_index: anim.index as usize,
-                    frames,
-                    size: Vec2::new(max_x, max_y),
-                })
-                .is_none());
-        }
-    }
-}
-
-impl Config {
-    fn to_prefixless_path(&self, godot_path: &str) -> String {
-        assert!(godot_path.starts_with(self.asset_path_prefix));
-        godot_path[self.asset_path_prefix.len()..].to_owned()
     }
 }
