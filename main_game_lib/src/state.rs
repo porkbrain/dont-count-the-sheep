@@ -63,12 +63,28 @@ pub enum GlobalGameStateTransition {
     ApartmentQuittingToDowntownLoading,
 }
 
+/// Typical scene have several states with repeating semantics.
+pub struct StateSemantics<S> {
+    /// The state when the scene is loading.
+    /// Setups up resources.
+    pub loading: S,
+    /// The state when the scene is running.
+    /// Runs the necessary systems.
+    pub running: S,
+    /// The state when the scene is quitting.
+    /// Cleans up resources.
+    pub quitting: S,
+    /// Some scenes have a paused state.
+    pub paused: Option<S>,
+}
+
 /// Certain states have multiple allowed transitions.
 /// The tip of the stack must always match the current state.
 #[derive(Resource, Debug, Default, Reflect)]
 pub struct GlobalGameStateTransitionStack {
     stack: Vec<GlobalGameStateTransition>,
 }
+
 impl GlobalGameStateTransitionStack {
     /// Expect a transition.
     pub fn push(&mut self, transition: GlobalGameStateTransition) {

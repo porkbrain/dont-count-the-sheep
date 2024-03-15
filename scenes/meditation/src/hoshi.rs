@@ -158,7 +158,7 @@ fn spawn(
         HoshiEntity,
         RenderLayers::layer(render_layer::OBJ),
         AtlasAnimation {
-            on_last_frame: AtlasAnimationEnd::Custom(Box::new(
+            on_last_frame: AtlasAnimationEnd::run(Box::new(
                 |entity,
                  _animation,
                  _timer,

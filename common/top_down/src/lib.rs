@@ -225,14 +225,15 @@ pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
 ) where
     T::LocalTileKind: Ord,
 {
-    use bevy::input::common_conditions::input_just_pressed;
     use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+    use layout::map_maker::TileMapMakerToolbar as Toolbar;
 
     // we insert the toolbar along with the map
-    app.register_type::<layout::map_maker::TileMapMakerToolbar<T::LocalTileKind>>()
-        .add_plugins(ResourceInspectorPlugin::<
-            layout::map_maker::TileMapMakerToolbar<T::LocalTileKind>,
-        >::default());
+    app.register_type::<Toolbar<T::LocalTileKind>>()
+        .add_plugins(
+            ResourceInspectorPlugin::<Toolbar<T::LocalTileKind>>::new()
+                .run_if(resource_exists::<Toolbar<T::LocalTileKind>>),
+        );
 
     app.add_systems(
         OnEnter(running.clone()),
@@ -247,12 +248,6 @@ pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
         )
             .run_if(in_state(running.clone()))
             .chain(),
-    )
-    .add_systems(
-        Update,
-        layout::map_maker::export_map::<T>
-            .run_if(input_just_pressed(KeyCode::Enter))
-            .run_if(in_state(running.clone())),
     )
     .add_systems(
         OnExit(quitting.clone()),

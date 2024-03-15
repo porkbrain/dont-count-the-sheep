@@ -16,13 +16,15 @@ common_action.workspace = true
 common_assets.workspace = true
 common_ext.workspace = true
 common_loading_screen.workspace = true
+common_rscn.workspace = true
 common_store.workspace = true
 common_story.workspace = true
 common_top_down.workspace = true
 common_visuals.workspace = true
 leafwing-input-manager.workspace = true
+ron = { workspace = true, optional = true }
+serde.workspace = true
 strum.workspace = true
-
 
 [features]
 devtools = [
@@ -33,6 +35,7 @@ devtools = [
     "common_top_down/devtools",
     "common_visuals/devtools",
     "leafwing-input-manager/egui",
+    "ron",
 ]
 # used by scene_dev_playground to import some extra state from this crate
 dev-playground = []

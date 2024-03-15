@@ -6,35 +6,37 @@ use common_top_down::{
 use common_visuals::camera::render_layer;
 use main_game_lib::vec2_ext::Vec2Ext;
 
-use super::CharacterEntity;
 use crate::{layout::HallwayEntity, prelude::*, Apartment};
 
-pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
+pub(crate) fn spawn(
+    cmd: &mut Commands,
+    asset_server: &AssetServer,
+) -> Vec<Entity> {
+    let mut marie = cmd.spawn((
+        BehaviorTree::new(ExampleBehavior),
+        HallwayEntity,
+        RenderLayers::layer(render_layer::OBJ),
+    ));
     common_story::Character::Marie
         .bundle_builder()
+        .with_sprite_color(Some(PRIMARY_COLOR))
         .with_initial_position(vec2(-80.0, -100.0))
-        .insert::<Apartment>(
-            &asset_server,
-            &mut cmd.spawn((
-                BehaviorTree::new(ExampleBehavior),
-                CharacterEntity,
-                HallwayEntity,
-                RenderLayers::layer(render_layer::OBJ),
-            )),
-        );
+        .insert::<Apartment>(&asset_server, &mut marie);
+    let marie = marie.id();
 
+    let mut unnamed = cmd.spawn((
+        HallwayEntity,
+        BehaviorTree::new(ExampleBehavior2),
+        RenderLayers::layer(render_layer::OBJ),
+    ));
     common_story::Character::Unnamed
         .bundle_builder()
+        .with_sprite_color(Some(PRIMARY_COLOR))
         .with_initial_position(vec2(-150.0, -100.0))
-        .insert::<Apartment>(
-            &asset_server,
-            &mut cmd.spawn((
-                CharacterEntity,
-                HallwayEntity,
-                BehaviorTree::new(ExampleBehavior2),
-                RenderLayers::layer(render_layer::OBJ),
-            )),
-        );
+        .insert::<Apartment>(&asset_server, &mut unnamed);
+    let unnamed = unnamed.id();
+
+    vec![marie, unnamed]
 }
 
 struct ExampleBehavior;

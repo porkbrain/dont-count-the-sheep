@@ -11,6 +11,7 @@ bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
 common_loading_screen.workspace = true
+common_rscn.workspace = true
 common_store.workspace = true
 common_story.workspace = true
 common_top_down.workspace = true

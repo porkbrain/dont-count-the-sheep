@@ -8,7 +8,7 @@ use crate::EASE_IN_OUT;
 
 /// Describes how to drive an animation.
 /// The animation specifically integrates with texture atlas sprites.
-#[derive(Component, Default)]
+#[derive(Component, Default, Reflect)]
 pub struct AtlasAnimation {
     /// What should happen when the last frame is reached?
     pub on_last_frame: AtlasAnimationEnd,
@@ -23,6 +23,22 @@ pub struct AtlasAnimation {
     pub reversed: bool,
 }
 
+/// Can be used to run custom logic when the last frame of the animation is
+/// reached.
+#[allow(clippy::type_complexity)]
+pub type CustomAtlasAnimationEndFn = Box<
+    dyn Fn(
+            Entity,
+            &AtlasAnimation,
+            &mut AtlasAnimationTimer,
+            &mut TextureAtlas,
+            &mut Visibility,
+            &mut Commands,
+            &Time,
+        ) + Send
+        + Sync,
+>;
+
 /// Different strategies for when the last frame of an animation is reached.
 #[derive(Default, Reflect)]
 pub enum AtlasAnimationEnd {
@@ -35,23 +51,16 @@ pub enum AtlasAnimationEnd {
     /// Just removes the animation timer.
     /// Keeps the entity visible and on the last frame.
     RemoveTimer,
-    /// Can mutate state.
-    #[allow(clippy::type_complexity)]
-    #[reflect(ignore)]
-    Custom(
-        Box<
-            dyn Fn(
-                    Entity,
-                    &AtlasAnimation,
-                    &mut AtlasAnimationTimer,
-                    &mut TextureAtlas,
-                    &mut Visibility,
-                    &mut Commands,
-                    &Time,
-                ) + Send
-                + Sync,
-        >,
-    ),
+    /// Can optionally mutate state.
+    Custom {
+        /// The function to call when the last frame is reached.
+        /// If [`None`] then nothing happens when the last frame is reached.
+        /// In that situation you must have some logic that decides on further
+        /// action because otherwise the animation will keep looping on the
+        /// last frame.
+        #[reflect(ignore)]
+        with_fn: Option<CustomAtlasAnimationEndFn>,
+    },
 }
 
 /// Must be present for the systems to actually drive the animation.
@@ -119,6 +128,13 @@ pub(crate) enum OnInterpolationFinished {
     Custom(Arc<dyn Fn(&mut Commands) + Send + Sync>),
 }
 
+impl AtlasAnimationEnd {
+    /// Runs this fn when the last frame of the animation is reached.
+    pub fn run(fun: CustomAtlasAnimationEndFn) -> Self {
+        Self::Custom { with_fn: Some(fun) }
+    }
+}
+
 impl BeginInterpolationEvent {
     /// There are two ways of starting interpolations.
     /// One is to emit this struct as an event with [`EventWriter`].
@@ -176,7 +192,7 @@ impl BeginInterpolationEvent {
                     over,
                     animation_curve,
                     when_finished,
-                    started_at: Default::default(),
+                    started_at: default(),
                 })
             }
             InterpolationOf::Translation { from, to } => {
@@ -186,7 +202,7 @@ impl BeginInterpolationEvent {
                     over,
                     animation_curve,
                     when_finished,
-                    started_at: Default::default(),
+                    started_at: default(),
                 })
             }
             InterpolationOf::UiStyleHeight { from, to } => {
@@ -196,7 +212,7 @@ impl BeginInterpolationEvent {
                     over,
                     animation_curve,
                     when_finished,
-                    started_at: Default::default(),
+                    started_at: default(),
                 })
             }
         };

@@ -1,5 +1,6 @@
 #![doc = include_str!("../../README.md")]
 #![feature(trivial_bounds)]
+#![feature(let_chains)]
 #![deny(missing_docs)]
 
 pub mod cutscene;
@@ -68,13 +69,16 @@ pub fn windowed_app() -> App {
     info!("Initializing Don't Count The Sheep");
 
     app.init_state::<GlobalGameState>()
-        .register_type::<GlobalGameState>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
         .insert_resource(GlobalGameStateTransitionStack::default())
-        .register_type::<GlobalGameStateTransitionStack>();
+        .init_asset::<common_rscn::TscnTree>()
+        .init_asset_loader::<common_rscn::TscnLoader>();
 
     #[cfg(feature = "devtools")]
     {
+        app.register_type::<GlobalGameStateTransitionStack>()
+            .register_type::<GlobalGameState>();
+
         use bevy_inspector_egui::quick::{
             StateInspectorPlugin, WorldInspectorPlugin,
         };
@@ -83,6 +87,7 @@ pub fn windowed_app() -> App {
             WorldInspectorPlugin::new(),
             StateInspectorPlugin::<GlobalGameState>::default(),
         ));
+        // no idea what this does, just copied it from some example
         fn configure_visuals_system(mut contexts: bevy_egui::EguiContexts) {
             contexts.ctx_mut().set_visuals(bevy_egui::egui::Visuals {
                 window_rounding: 0.0.into(),
