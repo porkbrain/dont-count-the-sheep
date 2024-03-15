@@ -148,6 +148,13 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
                 .run_if(common_story::portrait_dialog::in_portrait_dialog())
                 .run_if(common_action::interaction_just_pressed()),
         )
+        .add_systems(
+            Update,
+            common_story::portrait_dialog::cancel
+                .run_if(in_state(running))
+                .run_if(common_story::portrait_dialog::in_portrait_dialog())
+                .run_if(common_action::cancel_just_pressed()),
+        )
         .add_systems(OnEnter(quitting), common_story::despawn_camera);
 
     debug!("Adding inspect ability for {}", T::type_path());

@@ -66,6 +66,14 @@ pub enum GlobalAction {
     Inspect,
 }
 
+/// Runs a system if cancel action is being held.
+pub fn cancel_just_pressed(
+) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
+    move |action_state: Res<ActionState<GlobalAction>>| {
+        action_state.just_pressed(&GlobalAction::Cancel)
+    }
+}
+
 /// Runs a system if inspect action is being held.
 pub fn inspect_just_pressed(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
