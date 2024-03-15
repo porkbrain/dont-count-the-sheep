@@ -602,7 +602,7 @@ impl CharacterBundleBuilder {
                 NpcInTheMap::default(),
                 InspectLabelCategory::Npc
                     .into_label(character.name())
-                    .emit_event_on_interacted(BeginDialogEvent(id)),
+                    .with_emit_event_on_interacted(BeginDialogEvent(id)),
             ));
         }
 

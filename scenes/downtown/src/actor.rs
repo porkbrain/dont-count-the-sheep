@@ -10,27 +10,20 @@ use crate::{prelude::*, Downtown};
 /// When the downtown is loaded, the character is spawned at this square.
 const DEFAULT_INITIAL_POSITION: Vec2 = vec2(-15.0, 15.0);
 
-/// Useful for despawning entities when leaving the downtown.
-#[derive(Component, Reflect)]
-struct CharacterEntity;
-
-#[derive(Event, Reflect)]
+#[derive(Event, Reflect, Clone, strum::EnumString)]
 pub enum DowntownAction {}
 
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GlobalGameState::DowntownLoading), spawn)
-            .add_systems(OnExit(GlobalGameState::DowntownQuitting), despawn);
-    }
+    fn build(&self, _: &mut App) {}
 }
 
-fn spawn(
-    mut cmd: Commands,
-    store: Res<GlobalStore>,
-    asset_server: Res<AssetServer>,
-) {
+pub(crate) fn spawn_player(
+    cmd: &mut Commands,
+    asset_server: &AssetServer,
+    store: &GlobalStore,
+) -> Vec<Entity> {
     use common_store::DowntownStore;
 
     let initial_position = store
@@ -49,29 +42,16 @@ fn spawn(
     let step_time = store.step_time_onload().get();
     store.step_time_onload().remove();
 
+    let mut player =
+        cmd.spawn((Player, RenderLayers::layer(render_layer::OBJ)));
     common_story::Character::Winnie
         .bundle_builder()
         .with_initial_position(initial_position)
         .with_walking_to(walking_to)
         .with_initial_step_time(step_time)
         .is_player(true)
-        .insert::<Downtown>(
-            &asset_server,
-            &mut cmd.spawn((
-                Player,
-                CharacterEntity,
-                RenderLayers::layer(render_layer::OBJ),
-            )),
-        );
-}
+        .insert::<Downtown>(asset_server, &mut player);
+    let player = player.id();
 
-fn despawn(
-    mut cmd: Commands,
-    characters: Query<Entity, With<CharacterEntity>>,
-) {
-    debug!("Despawning character entities");
-
-    for entity in characters.iter() {
-        cmd.entity(entity).despawn_recursive();
-    }
+    vec![player]
 }

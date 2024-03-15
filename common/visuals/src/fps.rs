@@ -38,9 +38,9 @@ pub(crate) fn spawn(mut cmd: Commands) {
                     left: Val::Auto,
                     // give it some padding for readability
                     padding: UiRect::all(Val::Px(4.0)),
-                    ..Default::default()
+                    ..default()
                 },
-                ..Default::default()
+                ..default()
             },
         ))
         .id();
@@ -68,7 +68,7 @@ pub(crate) fn spawn(mut cmd: Commands) {
                         },
                     },
                 ]),
-                ..Default::default()
+                ..default()
             },
         ))
         .id();

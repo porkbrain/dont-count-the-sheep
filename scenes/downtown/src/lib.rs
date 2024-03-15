@@ -8,10 +8,10 @@ mod cameras;
 mod consts;
 mod layout;
 mod prelude;
-mod zindex;
 
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::LoadingScreenState;
+use common_rscn::TscnInBevy;
 use layout::DowntownTileKind;
 use prelude::*;
 
@@ -135,11 +135,17 @@ impl TopDownScene for Downtown {
     }
 
     fn bounds() -> [i32; 4] {
-        [-80, 60, -20, 160]
+        [-200, 200, -200, 200]
     }
 
     fn asset_path() -> &'static str {
         assets::MAP
+    }
+}
+
+impl TscnInBevy for Downtown {
+    fn tscn_asset_path() -> &'static str {
+        "scenes/downtown.tscn"
     }
 }
 

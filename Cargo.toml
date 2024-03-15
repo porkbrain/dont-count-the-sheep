@@ -10,6 +10,7 @@ members = [
     "common/assets",
     "common/loading_screen",
     "common/physics",
+    "common/rscn",
     "common/store",
     "common/story",
     "common/story/derive",
@@ -65,6 +66,7 @@ common_assets = { path = "common/assets" }
 common_ext = { path = "common/ext" }
 common_loading_screen = { path = "common/loading_screen" }
 common_physics = { path = "common/physics" }
+common_rscn = { path = "common/rscn" }
 common_store = { path = "common/store" }
 common_story = { path = "common/story" }
 common_top_down = { path = "common/top_down" }
@@ -74,6 +76,7 @@ main_game_lib = { path = "main_game_lib" }
 graphviz-rust = "0.7"
 itertools = "0.12"
 lazy_static = "1.4"
+logos = "0.14"
 pathfinding = "4.8"
 rand = "0.8"
 ron = "0.8"

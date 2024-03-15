@@ -7,7 +7,7 @@ use common_top_down::{
 use common_visuals::camera::render_layer;
 use main_game_lib::{common_ext::QueryExt, cutscene::IntoCutscene};
 
-use super::{cutscenes, ApartmentAction, CharacterEntity};
+use super::{cutscenes, ApartmentAction};
 use crate::{
     cameras::CameraEntity,
     consts::*,
@@ -19,13 +19,13 @@ use crate::{
 /// When the character gets closer to certain zones, show UI to make it easier
 /// to visually identify what's going on.
 #[derive(Component, Reflect)]
-pub(super) struct TransparentOverlay;
+pub(crate) struct TransparentOverlay;
 
-pub(super) fn spawn(
-    mut cmd: Commands,
-    asset_server: Res<AssetServer>,
-    store: Res<GlobalStore>,
-) {
+pub(crate) fn spawn(
+    cmd: &mut Commands,
+    asset_server: &AssetServer,
+    store: &GlobalStore,
+) -> Vec<Entity> {
     let initial_position = store
         .position_on_load()
         .get()
@@ -42,37 +42,38 @@ pub(super) fn spawn(
     let step_time = store.step_time_onload().get();
     store.step_time_onload().remove();
 
+    let mut player =
+        cmd.spawn((Player, RenderLayers::layer(render_layer::OBJ)));
     common_story::Character::Winnie
         .bundle_builder()
         .is_player(true)
         .with_initial_position(initial_position)
         .with_walking_to(walking_to)
         .with_initial_step_time(step_time)
-        .insert::<Apartment>(
-            &asset_server,
-            &mut cmd.spawn((
-                Player,
-                CharacterEntity,
-                RenderLayers::layer(render_layer::OBJ),
-            )),
-        );
+        .insert::<Apartment>(asset_server, &mut player);
+    let player = player.id();
 
-    cmd.spawn((
-        Name::from("Transparent overlay"),
-        TransparentOverlay,
-        CharacterEntity,
-        RenderLayers::layer(render_layer::OBJ),
-        SpriteBundle {
-            texture: asset_server.load(assets::WINNIE_MEDITATING),
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
-            visibility: Visibility::Hidden,
-            sprite: Sprite {
-                color: Color::WHITE.with_a(0.5),
+    let overlay = cmd
+        .spawn((
+            Name::from("Transparent overlay"),
+            TransparentOverlay,
+            RenderLayers::layer(render_layer::OBJ),
+            SpriteBundle {
+                texture: asset_server.load(assets::WINNIE_MEDITATING),
+                transform: Transform::from_translation(Vec3::new(
+                    0.0, 0.0, 10.0,
+                )),
+                visibility: Visibility::Hidden,
+                sprite: Sprite {
+                    color: Color::WHITE.with_a(0.5),
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        },
-    ));
+        ))
+        .id();
+
+    vec![player, overlay]
 }
 
 /// Will change the game state to meditation minigame.

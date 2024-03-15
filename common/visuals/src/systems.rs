@@ -43,7 +43,7 @@ pub fn advance_atlas_animation(
                     AtlasAnimationEnd::RemoveTimer => {
                         cmd.entity(entity).remove::<AtlasAnimationTimer>();
                     }
-                    AtlasAnimationEnd::Custom(fun) => {
+                    AtlasAnimationEnd::Custom { with_fn: Some(fun) } => {
                         fun(
                             entity,
                             animation,
@@ -53,6 +53,9 @@ pub fn advance_atlas_animation(
                             &mut cmd,
                             &time,
                         );
+                    }
+                    AtlasAnimationEnd::Custom { with_fn: None } => {
+                        // nothing happens
                     }
                     AtlasAnimationEnd::Loop => {
                         atlas.index = if animation.reversed {

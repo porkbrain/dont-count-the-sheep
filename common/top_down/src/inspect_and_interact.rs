@@ -25,6 +25,7 @@ use common_store::{GlobalStore, InspectAbilityStore};
 use common_visuals::{
     camera::PIXEL_ZOOM, BeginInterpolationEvent, ColorInterpolation,
 };
+use strum::EnumString;
 
 use crate::{ActorMovementEvent, Player, TileKind, TopDownScene};
 
@@ -88,7 +89,7 @@ pub struct ReadyForInteraction;
 
 /// Different categories can have different radius of visibility based on the
 /// player's experience.
-#[derive(Default, Reflect, Clone, Copy, Debug)]
+#[derive(Default, Reflect, Clone, Copy, Debug, EnumString)]
 pub enum InspectLabelCategory {
     /// Default category, nothing special
     #[default]
@@ -380,9 +381,17 @@ impl InspectLabelCategory {
 
 impl InspectLabel {
     /// Set an event to be emitted when the label is interacted with.
-    pub fn emit_event_on_interacted(mut self, event: impl ActionEvent) -> Self {
+    pub fn with_emit_event_on_interacted(
+        mut self,
+        event: impl ActionEvent,
+    ) -> Self {
         self.emit_event_on_interacted = Some(Box::new(event));
         self
+    }
+
+    /// Set an event to be emitted when the label is interacted with.
+    pub fn set_emit_event_on_interacted(&mut self, event: impl ActionEvent) {
+        self.emit_event_on_interacted = Some(Box::new(event));
     }
 }
 

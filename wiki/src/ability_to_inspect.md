@@ -27,6 +27,15 @@ Or, you can hold `Alt` to keep the labels visible.
 
 ![Don't Count The Sheep example](assets/dont-count-the-sheep-inspect-world.png)
 
+## Categories
+
+Each label is in some category.
+The categories change the color, font-size, radius etc.
+Here's a list of categories:
+
+- `Default`
+- `Npc`
+
 ## Where does future development lead us?
 
 Monika likes the idea of not having the inspection mode always on, while Michael is annoyed when he has to press a button to see what's around him.

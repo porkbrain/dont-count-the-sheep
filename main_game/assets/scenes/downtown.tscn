@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://dtow2k2vgk8kg"]
+
+[ext_resource type="Texture2D" uid="uid://ctujtb5gwqvre" path="res://assets/downtown/bg.png" id="1_ac7tb"]
+
+[node name="Downtown" type="Node2D"]
+
+[node name="DowntownBg" type="Sprite2D" parent="."]
+z_index = -5
+position = Vector2(230, 95)
+texture = ExtResource("1_ac7tb")

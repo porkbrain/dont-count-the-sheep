@@ -1,0 +1,104 @@
+[gd_scene load_steps=14 format=3 uid="uid://dyrtqlwb1xtvf"]
+
+[ext_resource type="Texture2D" uid="uid://ciwlf0c0gyyyq" path="res://assets/apartment/bg.png" id="1_310fv"]
+[ext_resource type="Texture2D" uid="uid://bycuegh5eiofi" path="res://assets/apartment/cupboard.png" id="2_c00iy"]
+[ext_resource type="Texture2D" uid="uid://2nr502qjl1fn" path="res://assets/apartment/hallway.png" id="3_j8n3v"]
+[ext_resource type="Texture2D" uid="uid://cq4dga042qxr" path="res://assets/apartment/elevator_atlas.png" id="4_oy5kx"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n0t2h"]
+atlas = ExtResource("4_oy5kx")
+region = Rect2(0, 0, 51, 57)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s6ur5"]
+atlas = ExtResource("4_oy5kx")
+region = Rect2(55, 0, 51, 57)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_75jdg"]
+atlas = ExtResource("4_oy5kx")
+region = Rect2(110, 0, 51, 57)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4gfy3"]
+atlas = ExtResource("4_oy5kx")
+region = Rect2(165, 0, 51, 57)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jhc0q"]
+atlas = ExtResource("4_oy5kx")
+region = Rect2(220, 0, 51, 57)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_npugd"]
+atlas = ExtResource("4_oy5kx")
+region = Rect2(275, 0, 51, 57)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1nea5"]
+atlas = ExtResource("4_oy5kx")
+region = Rect2(330, 0, 51, 57)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2slx6"]
+atlas = ExtResource("4_oy5kx")
+region = Rect2(385, 0, 51, 57)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_33ymd"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n0t2h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s6ur5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_75jdg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4gfy3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jhc0q")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_npugd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1nea5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2slx6")
+}],
+"loop": false,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="Apartment" type="Node2D"]
+
+[node name="PlayerApartmentBg" type="Sprite2D" parent="."]
+z_index = -3
+texture = ExtResource("1_310fv")
+
+[node name="HallwayBg" type="Sprite2D" parent="."]
+z_index = -2
+texture = ExtResource("3_j8n3v")
+
+[node name="HallwayEntity" type="Node" parent="HallwayBg"]
+
+[node name="Elevator" type="AnimatedSprite2D" parent="."]
+z_index = -1
+position = Vector2(-201.5, 49.5)
+sprite_frames = SubResource("SpriteFrames_33ymd")
+frame = 2
+frame_progress = 0.843261
+
+[node name="HallwayEntity" type="Node" parent="Elevator"]
+
+[node name="InspectLabel" type="Node" parent="Elevator"]
+metadata/zone = "ElevatorZone"
+metadata/action = "EnterElevator"
+metadata/label = "Elevator"
+metadata/category = "Default"
+
+[node name="Cupboard" type="Sprite2D" parent="."]
+position = Vector2(-92, 6)
+texture = ExtResource("2_c00iy")
+
+[node name="YSort" type="Node2D" parent="Cupboard"]
+position = Vector2(0, 22)

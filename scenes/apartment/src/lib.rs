@@ -10,14 +10,16 @@ mod cameras;
 mod consts;
 mod layout;
 mod prelude;
-mod zindex;
 
 use bevy::utils::Instant;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
+use common_rscn::TscnInBevy;
 use consts::START_LOADING_SCREEN_AFTER;
 use layout::ApartmentTileKind;
 use prelude::*;
+
+use crate::layout::LayoutEntity;
 
 /// Important scene struct.
 /// We use it as identifiable generic in some common logic such as layout or
@@ -65,6 +67,7 @@ pub fn add(app: &mut App) {
         Last,
         finish_when_everything_loaded
             .run_if(in_state(GlobalGameState::ApartmentLoading))
+            .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
@@ -180,6 +183,12 @@ impl TopDownScene for Apartment {
 
     fn asset_path() -> &'static str {
         assets::MAP
+    }
+}
+
+impl TscnInBevy for Apartment {
+    fn tscn_asset_path() -> &'static str {
+        "scenes/apartment.tscn"
     }
 }
 
