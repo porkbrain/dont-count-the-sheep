@@ -21,7 +21,7 @@ pub(crate) fn spawn(
         .bundle_builder()
         .with_sprite_color(Some(PRIMARY_COLOR))
         .with_initial_position(vec2(-80.0, -100.0))
-        .insert::<Apartment>(&asset_server, &mut marie);
+        .insert::<Apartment>(asset_server, &mut marie);
     let marie = marie.id();
 
     let mut unnamed = cmd.spawn((
@@ -33,7 +33,7 @@ pub(crate) fn spawn(
         .bundle_builder()
         .with_sprite_color(Some(PRIMARY_COLOR))
         .with_initial_position(vec2(-150.0, -100.0))
-        .insert::<Apartment>(&asset_server, &mut unnamed);
+        .insert::<Apartment>(asset_server, &mut unnamed);
     let unnamed = unnamed.id();
 
     vec![marie, unnamed]

@@ -50,7 +50,7 @@ pub(crate) fn spawn(
         .with_initial_position(initial_position)
         .with_walking_to(walking_to)
         .with_initial_step_time(step_time)
-        .insert::<Apartment>(&asset_server, &mut player);
+        .insert::<Apartment>(asset_server, &mut player);
     let player = player.id();
 
     let overlay = cmd

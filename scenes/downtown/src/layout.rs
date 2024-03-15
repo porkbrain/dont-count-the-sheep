@@ -112,6 +112,7 @@ impl<'a> TscnSpawner for DowntownTscnSpawner<'a> {
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
 
+        #[allow(clippy::single_match)]
         match name.as_str() {
             "Downtown" => {
                 cmd.entity(who).insert(LayoutEntity);

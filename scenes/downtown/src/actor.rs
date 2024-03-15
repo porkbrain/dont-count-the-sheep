@@ -50,7 +50,7 @@ pub(crate) fn spawn_player(
         .with_walking_to(walking_to)
         .with_initial_step_time(step_time)
         .is_player(true)
-        .insert::<Downtown>(&asset_server, &mut player);
+        .insert::<Downtown>(asset_server, &mut player);
     let player = player.id();
 
     vec![player]
