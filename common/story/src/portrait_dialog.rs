@@ -216,7 +216,7 @@ pub fn cancel(
 
     root: Query<Entity, With<DialogUiRoot>>,
 ) {
-    trace!("Despawning dialog");
+    trace!("Canceling dialog");
 
     if let Some(f) = dialog.when_finished.take() {
         f(&mut cmd)
