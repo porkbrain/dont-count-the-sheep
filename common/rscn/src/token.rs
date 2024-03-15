@@ -27,7 +27,7 @@ pub(crate) fn parse(tscn: &str) -> State {
 }
 
 #[derive(Logos, Debug, PartialEq, Eq)]
-#[logos(skip r"[ \t\n\f,]+")]
+#[logos(skip r"[ \r\t\n\f,]+")]
 enum TscnToken {
     #[token("[")]
     SquareBracketOpen,

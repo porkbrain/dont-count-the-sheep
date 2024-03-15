@@ -203,3 +203,15 @@ impl std::fmt::Display for Apartment {
         write!(f, "{}", Apartment::name())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_has_valid_tscn_scene() {
+        const TSCN: &str =
+            include_str!("../../../main_game/assets/scenes/apartment.tscn");
+        common_rscn::parse(TSCN, &default());
+    }
+}
