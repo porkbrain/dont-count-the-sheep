@@ -90,7 +90,7 @@ impl<T: AssetList> AssetStore<T> {
         _asset_server: &bevy::asset::AssetServer,
     ) -> bool {
         true
-        // TODO
+        // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/87
         // self.assets.values().all(|h| {
         //     asset_server.is_loaded_with_dependencies(UntypedHandle::Strong(
         //         Arc::clone(h),

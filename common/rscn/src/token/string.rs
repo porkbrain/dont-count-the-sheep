@@ -40,7 +40,7 @@ pub(super) fn parse(
             "autoplay" => Expecting::SectionKey(SectionKeyBuilder::Autoplay),
             s if s.starts_with("metadata/") => {
                 Expecting::SectionKey(SectionKeyBuilder::StringMetadata(
-                    s["metadata/".len()..].to_string(),
+                    s["metadata/".len()..].to_ascii_lowercase(),
                 ))
             }
             _ => {
