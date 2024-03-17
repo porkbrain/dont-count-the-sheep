@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=26 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -14,12 +14,13 @@
 [ext_resource type="Texture2D" uid="uid://qjb3dquepnch" path="res://assets/downtown/truck.png" id="12_mwj3x"]
 [ext_resource type="Texture2D" uid="uid://cs4xyldoxgtxg" path="res://assets/downtown/tree.png" id="13_7q235"]
 [ext_resource type="Texture2D" uid="uid://b7r70khewajh0" path="res://assets/downtown/lamp.png" id="14_8uy80"]
-[ext_resource type="Texture2D" uid="uid://b3l3d28gta56i" path="res://assets/downtown/water_bottle.png" id="15_08gmr"]
 [ext_resource type="Texture2D" uid="uid://d3swa0vc5iitv" path="res://assets/downtown/briza.png" id="16_xr53b"]
 [ext_resource type="Texture2D" uid="uid://lgsyrvis4y80" path="res://assets/downtown/wired_fence.png" id="17_5ai3x"]
 [ext_resource type="Texture2D" uid="uid://bneahsxtb6wpe" path="res://assets/downtown/front field.png" id="18_yr0u5"]
 [ext_resource type="Texture2D" uid="uid://bq3fw5e27w801" path="res://assets/downtown/house_plantshoptrio.png" id="19_fdu3c"]
 [ext_resource type="Texture2D" uid="uid://dcl4guw8e72nh" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
+[ext_resource type="Texture2D" uid="uid://cvg4gqeelonji" path="res://assets/downtown/water_bottle_half.png" id="21_8m32a"]
+[ext_resource type="Texture2D" uid="uid://bq1om7k0xupt4" path="res://assets/downtown/water_bottle_empty.png" id="21_ovsql"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -162,10 +163,6 @@ texture = ExtResource("14_8uy80")
 position = Vector2(614, -235)
 texture = ExtResource("14_8uy80")
 
-[node name="WaterBottle" type="Sprite2D" parent="."]
-position = Vector2(-439, 184)
-texture = ExtResource("15_08gmr")
-
 [node name="TrashcanTables2" type="Sprite2D" parent="."]
 position = Vector2(-624, 525)
 texture = ExtResource("10_nyc25")
@@ -233,3 +230,12 @@ texture = ExtResource("17_5ai3x")
 z_index = -4
 position = Vector2(-357, -372)
 texture = ExtResource("20_o0xfm")
+
+[node name="WaterBottleEmpty" type="Sprite2D" parent="."]
+position = Vector2(-854, -324)
+rotation = 1.5708
+texture = ExtResource("21_ovsql")
+
+[node name="WaterBottleHalf" type="Sprite2D" parent="."]
+position = Vector2(-436, 184)
+texture = ExtResource("21_8m32a")
