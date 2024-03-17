@@ -61,7 +61,9 @@ texture = ExtResource("1_ac7tb")
 z_index = -4
 position = Vector2(-686, -30)
 sprite_frames = SubResource("SpriteFrames_q1mli")
-frame_progress = 0.564611
+autoplay = "default"
+frame = 2
+frame_progress = 1.0
 
 [node name="Waterdispenser" type="Sprite2D" parent="."]
 position = Vector2(-352, -55)
