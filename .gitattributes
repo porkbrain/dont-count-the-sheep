@@ -1,0 +1,8 @@
+* text=auto eol=lf
+
+# Older git versions try to fix line endings on images and fonts, this prevents it.
+*.png binary
+*.ico binary
+*.tff binary
+*.woff binary
+*.woff2 binary

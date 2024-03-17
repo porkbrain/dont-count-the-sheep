@@ -3,3 +3,4 @@ target
 bevy_behaviour_tree
 rustc-ice-*.txt
 debug.log
+*.tmp
