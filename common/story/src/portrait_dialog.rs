@@ -207,6 +207,27 @@ pub fn advance(
     }
 }
 
+/// Cancel the dialog.
+/// For example, if the player presses the cancel key.
+pub fn cancel(
+    mut cmd: Commands,
+    mut dialog: ResMut<PortraitDialog>,
+    mut controls: ResMut<ActionState<GlobalAction>>,
+
+    root: Query<Entity, With<DialogUiRoot>>,
+) {
+    trace!("Canceling dialog");
+
+    if let Some(f) = dialog.when_finished.take() {
+        f(&mut cmd)
+    }
+
+    cmd.remove_resource::<PortraitDialog>();
+    cmd.entity(root.single()).despawn_recursive();
+
+    controls.consume_all();
+}
+
 /// Run if pressed some movement key.
 /// If there are choices, then the selection will be changed if the movement
 /// was either up or down.

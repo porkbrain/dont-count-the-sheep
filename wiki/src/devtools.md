@@ -52,7 +52,11 @@ When creating this node, navigate to the _Inspector_ in the left panel, and unde
 
 ## Ysorting
 
-TODO
+Ysorting is a technique to render sprites in a top-down scene.
+It's a way to ensure that sprites are rendered in the correct order based on their y-coordinate.
+
+To apply ysorting to a node, the y-index must be set to **0** on the sprite node (default) and a new child node of type `Node2D` named `YSort` must be added.
+Ysorting only works for sibling nodes.
 
 ## Components
 
@@ -60,8 +64,13 @@ The purpose of components is to enhance the functionality of sprites.
 There are scene-specific components and others that can be utilized across multiple scenes.
 
 Components sometimes require metadata to specify or alter their behavior.
-A quirk of Godot is that it capitalizes the first letter of the key in the editor, although it stores it in the text file as it is.
-For this reason, metadata keys are not case-sensitive, but the values are case-sensitive.
+
+![Godot editor metadata](assets/godot-editor-metadata.png)
+
+1. Add a new metadata in the _Inspector_
+2. A quirk of Godot is that it capitalizes the first letter of the key in the editor, although it stores it in the text file as it is.
+   For this reason, metadata keys are not case-sensitive, but the values are case-sensitive.
+3. Metadata values are always strings.
 
 Here's an exhaustive list of components (defined as `Node` type with their names) and their metadata:
 

@@ -27,7 +27,7 @@ pub(crate) fn parse(tscn: &str) -> State {
 }
 
 #[derive(Logos, Debug, PartialEq, Eq)]
-#[logos(skip r"[ \r\t\n\f,]+")]
+#[logos(skip r"[\r\t\n\f,]+")]
 enum TscnToken {
     #[token("[")]
     SquareBracketOpen,
@@ -45,10 +45,12 @@ enum TscnToken {
     Colon,
     #[token("&")]
     Ampersand,
+    #[token(" ", priority = 1)]
+    Space,
 
     #[regex(r#"-?\d+(\.\d+)?"#, priority = 3)]
     Number,
-    #[regex(r#"[A-Za-z0-9_/]+|"[A-Za-z0-9_/]+""#, priority = 2)]
+    #[regex(r#"[A-Za-z0-9_/]+|"[A-Za-z0-9_/ ]+""#, priority = 2)]
     String,
     #[token("true")]
     True,
@@ -240,6 +242,11 @@ fn parse_with_state(
                     ..
                 }) if with_param == "name"
             ));
+            expecting
+        }
+        TscnToken::Space => {
+            // since we need to support spaces in strings but can ignore them
+            // otherwise, we match on this token and don't do anything
             expecting
         }
 
