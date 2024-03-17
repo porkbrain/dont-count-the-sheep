@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://qrq4qd72bkgp"]
+
+[ext_resource type="Texture2D" uid="uid://p2vei5la1m3i" path="res://assets/twinpeaks_apartment/twinpeaks_bg.png" id="1_cqoh4"]
+[ext_resource type="Texture2D" uid="uid://dgh7pxmg8k4yg" path="res://assets/twinpeaks_apartment/bed_plain.png" id="2_x34s0"]
+[ext_resource type="Texture2D" uid="uid://c40aoo40c6ysm" path="res://assets/twinpeaks_apartment/shower.png" id="3_i5k2w"]
+
+[node name="TwinPeaksApartment" type="Node2D"]
+
+[node name="TwinPeaksBg" type="Sprite2D" parent="."]
+position = Vector2(-53, 83)
+texture = ExtResource("1_cqoh4")
+
+[node name="BedPlain" type="Sprite2D" parent="."]
+position = Vector2(87, 21)
+texture = ExtResource("2_x34s0")
+
+[node name="Shower" type="Sprite2D" parent="."]
+position = Vector2(199, 60)
+texture = ExtResource("3_i5k2w")

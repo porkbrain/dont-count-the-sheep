@@ -1,0 +1,75 @@
+[gd_scene load_steps=13 format=3 uid="uid://drnrtwjeis0wl"]
+
+[ext_resource type="Texture2D" uid="uid://cgvnw3xu0g55c" path="res://assets/mall/mall.png" id="1_py6kn"]
+[ext_resource type="Texture2D" uid="uid://ci14c8skwcj7l" path="res://assets/apartment/vending_machine_atlas.png" id="2_83cf2"]
+[ext_resource type="Texture2D" uid="uid://ckr3s6a6pkgh8" path="res://assets/mall/mallisles.png" id="3_7qiwu"]
+[ext_resource type="Texture2D" uid="uid://ctx6632qwroaa" path="res://assets/mall/salebox.png" id="4_uvq87"]
+[ext_resource type="Texture2D" uid="uid://kk1gkcrurjt8" path="res://assets/mall/selfcheckout.png" id="5_g377o"]
+[ext_resource type="Texture2D" uid="uid://b8xjoqkbaiqyp" path="res://assets/mall/storage.png" id="6_egw2s"]
+[ext_resource type="Texture2D" uid="uid://b3kynf8hs73" path="res://assets/mall/mall_gate.png" id="7_34v1c"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
+atlas = ExtResource("2_83cf2")
+region = Rect2(0, 0, 30, 55)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gox4s"]
+atlas = ExtResource("2_83cf2")
+region = Rect2(32, 0, 30, 55)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_itvr6"]
+atlas = ExtResource("2_83cf2")
+region = Rect2(64, 0, 30, 55)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hwg4u"]
+atlas = ExtResource("2_83cf2")
+region = Rect2(96, 0, 30, 55)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_3xvgv"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wx86m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gox4s")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_itvr6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hwg4u")
+}],
+"loop": false,
+"name": &"default",
+"speed": 1.0
+}]
+
+[node name="Mall" type="Node2D"]
+
+[node name="MallBg" type="Sprite2D" parent="."]
+z_index = -3
+texture = ExtResource("1_py6kn")
+
+[node name="VendingMachine" type="AnimatedSprite2D" parent="."]
+position = Vector2(-137, 85)
+sprite_frames = SubResource("SpriteFrames_3xvgv")
+
+[node name="Mallisles" type="Sprite2D" parent="."]
+position = Vector2(-2, -7)
+texture = ExtResource("3_7qiwu")
+
+[node name="Salebox" type="Sprite2D" parent="."]
+position = Vector2(133, 84)
+texture = ExtResource("4_uvq87")
+
+[node name="SelfCheckout" type="Sprite2D" parent="."]
+position = Vector2(239, 75)
+texture = ExtResource("5_g377o")
+
+[node name="Storage" type="Sprite2D" parent="."]
+position = Vector2(-63, 89)
+texture = ExtResource("6_egw2s")
+
+[node name="MallGate" type="Sprite2D" parent="."]
+position = Vector2(140, 114)
+texture = ExtResource("7_34v1c")
