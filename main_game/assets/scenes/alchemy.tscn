@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://ct56ht7ur0t0f"]
+[gd_scene load_steps=12 format=3 uid="uid://ct56ht7ur0t0f"]
 
 [ext_resource type="Texture2D" uid="uid://dcer01q7xv8ia" path="res://assets/alchemy/bg.png" id="1_74288"]
 [ext_resource type="Texture2D" uid="uid://3ggxvu4wvtcb" path="res://assets/alchemy/tea_box.png" id="2_x3my5"]
@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://btigpyo866en0" path="res://assets/alchemy/podlozka_shadows.png" id="8_52jx3"]
 [ext_resource type="Texture2D" uid="uid://dbgbvfbydn1qw" path="res://assets/alchemy/sun_tea.png" id="9_ewqpb"]
 [ext_resource type="Texture2D" uid="uid://q6vrwa5soyby" path="res://assets/alchemy/lavender_tea.png" id="10_vkvkw"]
+[ext_resource type="Texture2D" uid="uid://dlc4uicxk3l14" path="res://assets/alchemy/tea_detail.png" id="11_q702v"]
 
 [node name="Node2D" type="Node2D"]
 
@@ -54,3 +55,7 @@ texture = ExtResource("9_ewqpb")
 [node name="LavenderTea" type="Sprite2D" parent="."]
 position = Vector2(210, -13)
 texture = ExtResource("10_vkvkw")
+
+[node name="TeaDetail" type="Sprite2D" parent="."]
+position = Vector2(12, 27)
+texture = ExtResource("11_q702v")
