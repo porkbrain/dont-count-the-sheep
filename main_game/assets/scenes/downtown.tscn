@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=27 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -21,6 +21,7 @@
 [ext_resource type="Texture2D" uid="uid://dcl4guw8e72nh" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
 [ext_resource type="Texture2D" uid="uid://bbvuyahml5l4l" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]
 [ext_resource type="Texture2D" uid="uid://cvg4gqeelonji" path="res://assets/downtown/water_bottle_half.png" id="21_8m32a"]
+[ext_resource type="Texture2D" uid="uid://dy8urm75tam2x" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -287,3 +288,15 @@ texture = ExtResource("10_nyc25")
 [node name="TrashcanTables10" type="Sprite2D" parent="parking"]
 position = Vector2(-615, 582)
 texture = ExtResource("10_nyc25")
+
+[node name="WiredFence" type="Sprite2D" parent="."]
+position = Vector2(114.5, 280.5)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence2" type="Sprite2D" parent="."]
+position = Vector2(29.5, 280.5)
+texture = ExtResource("17_5ai3x")
+
+[node name="ConstructionSiteSign" type="Sprite2D" parent="WiredFence2"]
+position = Vector2(1.5, 1)
+texture = ExtResource("22_m6eml")

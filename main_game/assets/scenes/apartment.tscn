@@ -1,4 +1,4 @@
-[gd_scene load_steps=73 format=3 uid="uid://dyrtqlwb1xtvf"]
+[gd_scene load_steps=75 format=3 uid="uid://dyrtqlwb1xtvf"]
 
 [ext_resource type="Texture2D" uid="uid://bricm0td6wv0a" path="res://assets/apartment/bg.png" id="1_310fv"]
 [ext_resource type="Texture2D" uid="uid://d4nio84mwac6h" path="res://assets/apartment/cupboard.png" id="2_c00iy"]
@@ -17,6 +17,8 @@
 [ext_resource type="Texture2D" uid="uid://cr11n5q0emwcs" path="res://assets/apartment/brown_dark_door_atlas.png" id="15_uv0h5"]
 [ext_resource type="Texture2D" uid="uid://cmjj0i8krpajr" path="res://assets/apartment/package.png" id="16_xbi0t"]
 [ext_resource type="Texture2D" uid="uid://bq1om7k0xupt4" path="res://assets/downtown/water_bottle_empty.png" id="17_je4lx"]
+[ext_resource type="Texture2D" uid="uid://jjh251d55ix0" path="res://assets/apartment/extraRoom.png" id="18_21dkk"]
+[ext_resource type="Texture2D" uid="uid://idx58sv6src5" path="res://assets/apartment/extrazed.png" id="19_ssl1d"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nte4w"]
 atlas = ExtResource("2_dx2fn")
@@ -523,7 +525,7 @@ position = Vector2(0, 18)
 [node name="HallwayEntity" type="Node" parent="HallwayDoor1"]
 
 [node name="HallwayDoor2" type="AnimatedSprite2D" parent="."]
-position = Vector2(26, 112)
+position = Vector2(51, 112)
 sprite_frames = SubResource("SpriteFrames_j7cpw")
 
 [node name="YSort" type="Node2D" parent="HallwayDoor2"]
@@ -542,3 +544,12 @@ metadata/label = "Open package"
 [node name="WaterBottleEmpty" type="Sprite2D" parent="."]
 position = Vector2(-98, -68)
 texture = ExtResource("17_je4lx")
+
+[node name="ExtraRoom" type="Sprite2D" parent="."]
+z_index = -4
+position = Vector2(0, 128)
+texture = ExtResource("18_21dkk")
+
+[node name="Extrazed" type="Sprite2D" parent="."]
+position = Vector2(135, 117)
+texture = ExtResource("19_ssl1d")
