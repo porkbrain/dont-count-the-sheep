@@ -3,26 +3,34 @@
 
 use std::{borrow::Cow, str::FromStr};
 
-use bevy::utils::{default, hashbrown::HashMap};
+use bevy::{
+    asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext},
+    reflect::Reflect,
+    utils::{default, hashbrown::HashMap},
+};
 use serde::{Deserialize, Serialize};
 use serde_with::{formats::PreferOne, serde_as, OneOrMany};
+use thiserror::Error;
 
 use crate::Character;
 
+#[derive(Asset, Deserialize, Serialize, Reflect)]
 pub struct Dialog {
     pub nodes: HashMap<NodeName, Node>,
     pub root: NodeName,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize, Reflect)]
 pub struct Node {
-    pub who: Character,
     pub name: NodeName,
+    pub who: Character,
     pub kind: NodeKind,
     pub next: Vec<NodeName>,
 }
 
-#[derive(Debug, Deserialize, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Deserialize, Serialize, Reflect, Clone, Hash, PartialEq, Eq,
+)]
 pub enum NodeName {
     Explicit(String),
     Auto(usize),
@@ -30,17 +38,7 @@ pub enum NodeName {
     Emerge,
 }
 
-/// Loading state for each guard is unnecessary until we actually prompt the
-/// guard.
-/// This abstraction allows us to defer loading.
-#[derive(Debug, Default)]
-pub enum LazyGuardState<T> {
-    Ready(T),
-    #[default]
-    Load,
-}
-
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize, Reflect)]
 pub enum NodeKind {
     Guard {
         /// Guard states are persisted across dialog sessions if
@@ -48,6 +46,7 @@ pub enum NodeKind {
         ///
         /// Otherwise the state is discarded after the dialog is over.
         state: Guard,
+        #[reflect(ignore)]
         params: HashMap<String, toml::Value>,
     },
     Vocative {
@@ -56,20 +55,76 @@ pub enum NodeKind {
     },
 }
 
-#[derive(Debug, strum::EnumDiscriminants)]
+#[derive(Debug, Deserialize, Serialize, Reflect)]
 pub enum Guard {
     EndDialog,
     Emerge,
     ExhaustiveAlternatives(LazyGuardState<ExhaustiveAlternativesState>),
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+/// Loading state for each guard is unnecessary until we actually prompt the
+/// guard.
+/// This abstraction allows us to defer loading.
+#[derive(Debug, Default, Deserialize, Serialize, Reflect)]
+pub enum LazyGuardState<T> {
+    Ready(T),
+    #[default]
+    Load,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, Reflect)]
 pub struct ExhaustiveAlternativesState {
     pub next_to_show: usize,
 }
 
-pub fn from_toml_str(toml: &str) -> Dialog {
-    let ParsedToml { dialog, nodes } = toml::from_str(toml).unwrap();
+/// Loads .toml files into [`Dialog`] representation.
+#[derive(Default)]
+pub struct DialogLoader;
+
+/// Errors that can occur when loading assets from .toml files.
+#[non_exhaustive]
+#[derive(Debug, Error)]
+pub enum LoaderError {
+    /// The file could not be loaded, most likely not found.
+    #[error("Could load .toml file: {0}")]
+    Io(#[from] std::io::Error),
+    /// We convert the file bytes into a string, which can fail.
+    #[error("Non-utf8 string in .toml file: {0}")]
+    Utf8(#[from] std::str::Utf8Error),
+    /// The .toml file could not be parsed.
+    #[error("Error parsing .toml file: {0}")]
+    Toml(#[from] toml::de::Error),
+}
+
+impl AssetLoader for DialogLoader {
+    type Asset = Dialog;
+    type Settings = ();
+    type Error = LoaderError;
+
+    fn load<'a>(
+        &'a self,
+        reader: &'a mut Reader,
+        _settings: &'a Self::Settings,
+        _load_context: &'a mut LoadContext,
+    ) -> bevy::utils::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+        Box::pin(async move {
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
+            let s = std::str::from_utf8(&bytes)?;
+            let toml = toml::from_str(s)?;
+            Ok(dialog_from_toml(toml))
+        })
+    }
+
+    fn extensions(&self) -> &[&str] {
+        &[]
+    }
+}
+
+/// 1. Create a map of nodes, where the key is the node name.
+/// 2. Add edges to the nodes.
+/// 3. Find the root node.
+fn dialog_from_toml(ParsedToml { dialog, nodes }: ParsedToml) -> Dialog {
     assert!(!nodes.is_empty(), "Dialog has no nodes");
 
     let mut node_map = HashMap::with_capacity(nodes.len() + 2);
@@ -195,7 +250,6 @@ pub fn from_toml_str(toml: &str) -> Dialog {
             .map(From::from)
             .unwrap_or(NodeName::Auto(0))
     };
-
     // asserts root node exists
     node_map.get(&root_name).expect("Root node not found");
 
@@ -336,6 +390,8 @@ mod tests {
 
     #[test]
     fn it_parses_basic_example() {
-        from_toml_str(include_str!("../tests/basic.toml"));
+        dialog_from_toml(
+            toml::from_str(include_str!("../tests/basic.toml")).unwrap(),
+        );
     }
 }

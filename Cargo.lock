@@ -1464,6 +1464,7 @@ dependencies = [
  "serde",
  "serde_with",
  "strum",
+ "thiserror",
  "toml",
 ]
 

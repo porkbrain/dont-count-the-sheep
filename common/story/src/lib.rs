@@ -71,6 +71,22 @@ pub enum Character {
     Otter,
 }
 
+/// Registers necessary assets and asset loaders.
+#[derive(Default)]
+pub struct Plugin;
+
+impl bevy::app::Plugin for Plugin {
+    fn build(&self, app: &mut App) {
+        app.init_asset::<deser::Dialog>()
+            .init_asset_loader::<deser::DialogLoader>();
+
+        #[cfg(feature = "devtools")]
+        {
+            app.register_type::<deser::Dialog>();
+        }
+    }
+}
+
 /// Marks the dialog camera.
 #[derive(Component)]
 pub struct DialogCamera;

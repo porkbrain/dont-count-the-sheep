@@ -9,7 +9,7 @@ import os
 def visualize_dialog(dialog_toml):
     graph = graphviz.Digraph(
         format="png",
-        graph_attr={"rankdir": "LR", "pad": "1.0"},
+        graph_attr={"rankdir": "LR", "pad": "1.0", "nodesep": "1.0", "ranksep": "1.0"},
     )
 
     # Parse TOML
@@ -77,7 +77,8 @@ def visualize_dialog(dialog_toml):
     for index, node in enumerate(dialog_data["node"]):
         node_name = node.get("name", f"node_{index}")
         if "next" in node:
-            for next_node in node["next"]:
+            nodes_len = len(node["next"])
+            for node_index, next_node in enumerate(node["next"]):
 
                 match next_node:
                     case "_emerge":
@@ -101,7 +102,7 @@ def visualize_dialog(dialog_toml):
                         )
                         graph.edge(node_name, exit_name)
                     case _:
-                        graph.edge(node_name, next_node)
+                        graph.edge(node_name, next_node, label=f"{node_index + 1}" if nodes_len > 1 else None)
         else:
             # If node doesn't have 'next', connect to the next node in the array
             next_index = index + 1
@@ -121,7 +122,7 @@ def visualize_dialog(dialog_toml):
 
 if __name__ == "__main__":
     # Load TOML from file
-    with open("elevator.toml", "r") as file:
+    with open("test.toml", "r") as file:
         dialog_toml = file.read()
 
     graph = visualize_dialog(dialog_toml)
