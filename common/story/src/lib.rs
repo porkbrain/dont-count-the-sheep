@@ -4,7 +4,9 @@
 #![feature(round_char_boundary)]
 #![feature(trivial_bounds)]
 #![deny(missing_docs)]
+#![feature(let_chains)]
 
+mod deser;
 pub mod portrait_dialog;
 
 use std::time::Duration;
