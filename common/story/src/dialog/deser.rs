@@ -3,128 +3,49 @@
 
 use std::{borrow::Cow, str::FromStr};
 
-use bevy::{
-    asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext},
-    reflect::Reflect,
-    utils::{default, hashbrown::HashMap},
-};
-use serde::{Deserialize, Serialize};
+use bevy::utils::{default, hashbrown::HashMap};
+use serde::Deserialize;
 use serde_with::{formats::PreferOne, serde_as, OneOrMany};
-use thiserror::Error;
 
-use crate::Character;
+use crate::{
+    dialog::{Dialog, Guard, Node, NodeKind, NodeName},
+    Character,
+};
 
-#[derive(Asset, Deserialize, Serialize, Reflect)]
-pub struct Dialog {
-    pub nodes: HashMap<NodeName, Node>,
-    pub root: NodeName,
+#[derive(Debug, Deserialize)]
+pub(super) struct ParsedToml {
+    dialog: ParsedDialog,
+
+    #[serde(rename = "node")]
+    nodes: Vec<ParsedNode>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Reflect)]
-pub struct Node {
-    pub name: NodeName,
-    pub who: Character,
-    pub kind: NodeKind,
-    pub next: Vec<NodeName>,
+#[derive(Debug, Deserialize)]
+struct ParsedDialog {
+    first_node: Option<String>,
+    #[serde(default)]
+    vars: toml::Table,
 }
 
-#[derive(
-    Debug, Deserialize, Serialize, Reflect, Clone, Hash, PartialEq, Eq,
-)]
-pub enum NodeName {
-    Explicit(String),
-    Auto(usize),
-    EndDialog,
-    Emerge,
-}
-
-#[derive(Debug, Deserialize, Serialize, Reflect)]
-pub enum NodeKind {
-    Guard {
-        /// Guard states are persisted across dialog sessions if
-        /// - the node has a [`NodeName::Explicit`]
-        ///
-        /// Otherwise the state is discarded after the dialog is over.
-        state: Guard,
-        #[reflect(ignore)]
-        params: HashMap<String, toml::Value>,
-    },
-    Vocative {
-        /// The dialog line to print.
-        line: String,
-    },
-}
-
-#[derive(Debug, Deserialize, Serialize, Reflect)]
-pub enum Guard {
-    EndDialog,
-    Emerge,
-    ExhaustiveAlternatives(LazyGuardState<ExhaustiveAlternativesState>),
-}
-
-/// Loading state for each guard is unnecessary until we actually prompt the
-/// guard.
-/// This abstraction allows us to defer loading.
-#[derive(Debug, Default, Deserialize, Serialize, Reflect)]
-pub enum LazyGuardState<T> {
-    Ready(T),
-    #[default]
-    Load,
-}
-
-#[derive(Debug, Serialize, Deserialize, Default, Reflect)]
-pub struct ExhaustiveAlternativesState {
-    pub next_to_show: usize,
-}
-
-/// Loads .toml files into [`Dialog`] representation.
-#[derive(Default)]
-pub struct DialogLoader;
-
-/// Errors that can occur when loading assets from .toml files.
-#[non_exhaustive]
-#[derive(Debug, Error)]
-pub enum LoaderError {
-    /// The file could not be loaded, most likely not found.
-    #[error("Could load .toml file: {0}")]
-    Io(#[from] std::io::Error),
-    /// We convert the file bytes into a string, which can fail.
-    #[error("Non-utf8 string in .toml file: {0}")]
-    Utf8(#[from] std::str::Utf8Error),
-    /// The .toml file could not be parsed.
-    #[error("Error parsing .toml file: {0}")]
-    Toml(#[from] toml::de::Error),
-}
-
-impl AssetLoader for DialogLoader {
-    type Asset = Dialog;
-    type Settings = ();
-    type Error = LoaderError;
-
-    fn load<'a>(
-        &'a self,
-        reader: &'a mut Reader,
-        _settings: &'a Self::Settings,
-        _load_context: &'a mut LoadContext,
-    ) -> bevy::utils::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
-        Box::pin(async move {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).await?;
-            let s = std::str::from_utf8(&bytes)?;
-            let toml = toml::from_str(s)?;
-            Ok(dialog_from_toml(toml))
-        })
-    }
-
-    fn extensions(&self) -> &[&str] {
-        &[]
-    }
+#[serde_as]
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ParsedNode {
+    name: Option<String>,
+    guard: Option<String>,
+    #[serde(default)]
+    params: toml::Table,
+    who: Option<String>,
+    en: Option<String>,
+    #[serde(default)]
+    #[serde_as(deserialize_as = "OneOrMany<_, PreferOne>")]
+    next: Vec<String>,
 }
 
 /// 1. Create a map of nodes, where the key is the node name.
 /// 2. Add edges to the nodes.
 /// 3. Find the root node.
-fn dialog_from_toml(ParsedToml { dialog, nodes }: ParsedToml) -> Dialog {
+pub(super) fn from_toml(ParsedToml { dialog, nodes }: ParsedToml) -> Dialog {
     assert!(!nodes.is_empty(), "Dialog has no nodes");
 
     let mut node_map = HashMap::with_capacity(nodes.len() + 2);
@@ -342,56 +263,4 @@ fn who_from_vars(vars: &toml::Table, node: &ParsedNode) -> Option<Character> {
         Character::from_str(s)
             .unwrap_or_else(|_| panic!("Unknown character '{s}'"))
     })
-}
-
-impl From<String> for NodeName {
-    fn from(s: String) -> Self {
-        match s.as_str() {
-            "_end_dialog" => NodeName::EndDialog,
-            "_emerge" => NodeName::Emerge,
-            _ => NodeName::Explicit(s),
-        }
-    }
-}
-
-#[derive(Debug, Deserialize)]
-struct ParsedToml {
-    dialog: ParsedDialog,
-
-    #[serde(rename = "node")]
-    nodes: Vec<ParsedNode>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ParsedDialog {
-    first_node: Option<String>,
-    #[serde(default)]
-    vars: toml::Table,
-}
-
-#[serde_as]
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct ParsedNode {
-    name: Option<String>,
-    guard: Option<String>,
-    #[serde(default)]
-    params: toml::Table,
-    who: Option<String>,
-    en: Option<String>,
-    #[serde(default)]
-    #[serde_as(deserialize_as = "OneOrMany<_, PreferOne>")]
-    next: Vec<String>,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_parses_basic_example() {
-        dialog_from_toml(
-            toml::from_str(include_str!("../tests/basic.toml")).unwrap(),
-        );
-    }
 }

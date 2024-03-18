@@ -1,24 +1,21 @@
 [dialog]
 first_node = "root"
 
-[dialog.vars]
-player = "Winnie"
-
 [[node]]
 name = "root"
-who = "${player}"
-en = "Let's see, ${player} is going to ..."
+who = "Winnie"
+en = "Let's see, I'm going to ..."
 next = ["ground_floor", "first_floor", "exit_elevator"]
 
 [[node]]
 name = "ground_floor"
 en = "the ground floor"
-next = "_end_dialog"
+next = ["_end_dialog"]
 
 [[node]]
 name = "exit_elevator"
 en = "exit the elevator"
-next = "_end_dialog"
+next = ["_end_dialog"]
 
 [[node]]
 name = "first_floor"
@@ -38,14 +35,14 @@ en = "... can't ... just ...\ncan you work you ..."
 en = "Arrgh!"
 [[node]]
 en = "Yep, that one is definitely not working."
-next = "root"
+next = ["root"]
 
 [[node]]
 name = "one_more_time"
 en = "Let's try again.\nNah, still not working."
-next = "root"
+next = ["root"]
 
 [[node]]
 name = "knows_elevator_not_working"
 en = "Still broken."
-next = "root"
+next = ["root"]

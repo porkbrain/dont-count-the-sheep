@@ -6,7 +6,7 @@
 #![deny(missing_docs)]
 #![feature(let_chains)]
 
-mod deser;
+pub mod dialog;
 pub mod portrait_dialog;
 
 use std::time::Duration;
@@ -77,12 +77,12 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.init_asset::<deser::Dialog>()
-            .init_asset_loader::<deser::DialogLoader>();
+        app.init_asset::<dialog::Dialog>()
+            .init_asset_loader::<dialog::DialogLoader>();
 
         #[cfg(feature = "devtools")]
         {
-            app.register_type::<deser::Dialog>();
+            app.register_type::<dialog::Dialog>();
         }
     }
 }
