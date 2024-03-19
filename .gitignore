@@ -1,6 +1,8 @@
 target
-.vscode
-bevy_behaviour_tree
 rustc-ice-*.txt
+
+.vscode/**/*
+!.vscode/tasks.json
+
 debug.log
 *.tmp
