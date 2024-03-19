@@ -2,6 +2,7 @@
 #![deny(missing_docs)]
 
 use std::{
+    borrow::{Borrow, Cow},
     marker::PhantomData,
     sync::{Arc, Mutex},
 };
@@ -29,7 +30,7 @@ pub struct GlobalStore {
 /// A key-value entry that you can read, write and remove.
 pub struct Entry<'a, T> {
     store: &'a Mutex<rusqlite::Connection>,
-    key: &'static str,
+    key: Cow<'static, str>,
 
     _phantom: PhantomData<T>,
 }
@@ -51,7 +52,7 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
         };
 
         let value =
-            Some(ron::from_str(&raw_value).expect("Cannot deserialize"));
+            Some(serde_json::from_str(&raw_value).expect("Cannot deserialize"));
 
         let ms = now.elapsed().as_millis();
         if ms > 1 {
@@ -65,14 +66,15 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
     pub fn set(&self, value: T) {
         let now = Instant::now();
 
-        let raw_value = ron::to_string(&value).expect("Cannot serialize");
+        let raw_value =
+            serde_json::to_string(&value).expect("Cannot serialize");
 
         {
             let conn = self.store.lock().unwrap();
             conn.execute(
                 "INSERT INTO kv (key, value) VALUES (?, ?)
                 ON CONFLICT (key) DO UPDATE SET value = excluded.value",
-                [&self.key, &raw_value.as_str()],
+                [&self.key.borrow(), &raw_value.as_str()],
             )
             .expect("Cannot insert into SQLite");
         }
@@ -207,6 +209,8 @@ mod downtown {
 
 pub use dialog::DialogStore;
 mod dialog {
+    use std::fmt::Display;
+
     use bevy::reflect::DynamicTypePath;
 
     use super::*;
@@ -226,6 +230,18 @@ mod dialog {
         fn insert_dialog(&self, name: impl TypePath) {
             self.insert_dialog_type_path(name.reflect_type_path());
         }
+
+        /// Access guard state using a unique guard kind id and a unique node
+        /// name.
+        ///
+        /// Unique node name is going to include the dialog file and the node
+        /// name within that file.
+        /// Unique guard kind id might be the enum variant name.
+        fn guard_state(
+            &self,
+            guard_kind: impl Display,
+            node_name: impl Display,
+        ) -> Entry<'_, serde_json::Value>;
     }
 
     impl DialogStore for GlobalStore {
@@ -256,6 +272,14 @@ mod dialog {
             )
             .expect("Cannot insert into SQLite");
         }
+
+        fn guard_state(
+            &self,
+            guard_kind: impl Display,
+            node_name: impl Display,
+        ) -> Entry<'_, serde_json::Value> {
+            self.entry(format!("dialog.guard_state.{guard_kind}.{node_name}"))
+        }
     }
 }
 
@@ -271,7 +295,7 @@ impl GlobalStore {
         }
     }
 
-    fn entry<T>(&self, key: &'static str) -> Entry<'_, T> {
+    fn entry<T>(&self, key: impl Into<Cow<'static, str>>) -> Entry<'_, T> {
         Entry::new(&self.conn, key)
     }
 }
@@ -283,10 +307,13 @@ impl Default for GlobalStore {
 }
 
 impl<'a, T> Entry<'a, T> {
-    fn new(store: &'a Mutex<rusqlite::Connection>, key: &'static str) -> Self {
+    fn new(
+        store: &'a Mutex<rusqlite::Connection>,
+        key: impl Into<Cow<'static, str>>,
+    ) -> Self {
         Self {
             store,
-            key,
+            key: key.into(),
             _phantom: PhantomData,
         }
     }

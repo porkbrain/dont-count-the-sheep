@@ -4,23 +4,28 @@
 #[allow(missing_docs)]
 pub enum DialogRoot {
     EnterTheApartmentElevator,
+    MarieBlabbering,
 }
 
 impl DialogRoot {
     /// Parse the dialog file into a dialog graph.
-    pub fn parse(self) -> super::Dialog {
+    pub fn parse(self) -> super::DialogGraph {
         super::deser::from_toml(toml::from_str(self.contents()).unwrap())
     }
 
     /// Get the path to the dialog file rooted in the assets directory.
     ///
     /// TODO: this can be done with a macro
+    /// TODO: explicit node names must include the file path
     fn contents(self) -> &'static str {
         use DialogRoot::*;
 
         match self {
             EnterTheApartmentElevator => {
                 include_str!("assets/enter_the_elevator.toml")
+            }
+            MarieBlabbering => {
+                include_str!("assets/marie_blabbering.toml")
             }
         }
     }
@@ -36,7 +41,7 @@ mod tests {
     fn it_validates_dialogs() {
         for dialog in DialogRoot::iter() {
             println!("Validating {dialog:?}");
-            dialog.parse();
+            println!("{:?}", dialog.parse());
         }
     }
 }

@@ -8,7 +8,7 @@ use serde::Deserialize;
 use serde_with::{formats::PreferOne, serde_as, OneOrMany};
 
 use crate::{
-    dialog::{Dialog, Guard, Node, NodeKind, NodeName},
+    dialog::{DialogGraph, GuardKind, Node, NodeKind, NodeName},
     Character,
 };
 
@@ -45,7 +45,9 @@ struct ParsedNode {
 /// 1. Create a map of nodes, where the key is the node name.
 /// 2. Add edges to the nodes.
 /// 3. Find the root node.
-pub(super) fn from_toml(ParsedToml { dialog, nodes }: ParsedToml) -> Dialog {
+pub(super) fn from_toml(
+    ParsedToml { dialog, nodes }: ParsedToml,
+) -> DialogGraph {
     assert!(!nodes.is_empty(), "Dialog has no nodes");
 
     let mut node_map = HashMap::with_capacity(nodes.len() + 2);
@@ -55,7 +57,7 @@ pub(super) fn from_toml(ParsedToml { dialog, nodes }: ParsedToml) -> Dialog {
             who: Character::Winnie,
             name: NodeName::EndDialog,
             kind: NodeKind::Guard {
-                state: Guard::EndDialog,
+                kind: GuardKind::EndDialog,
                 params: default(),
             },
             next: Vec::new(),
@@ -67,7 +69,7 @@ pub(super) fn from_toml(ParsedToml { dialog, nodes }: ParsedToml) -> Dialog {
             who: Character::Winnie,
             name: NodeName::Emerge,
             kind: NodeKind::Guard {
-                state: Guard::Emerge,
+                kind: GuardKind::Emerge,
                 params: default(),
             },
             next: Vec::new(),
@@ -89,7 +91,7 @@ pub(super) fn from_toml(ParsedToml { dialog, nodes }: ParsedToml) -> Dialog {
             .guard
             .as_ref()
             .map(|name| NodeKind::Guard {
-                state: guard_name_to_lazy_state(name.as_str()),
+                kind: guard_name_to_lazy_state(name.as_str()),
                 params: params_from_vars(&dialog.vars, &node),
             })
             .unwrap_or_else(|| NodeKind::Vocative {
@@ -174,17 +176,19 @@ pub(super) fn from_toml(ParsedToml { dialog, nodes }: ParsedToml) -> Dialog {
     // asserts root node exists
     node_map.get(&root_name).expect("Root node not found");
 
-    Dialog {
+    DialogGraph {
         nodes: node_map,
         root: root_name,
     }
 }
 
-fn guard_name_to_lazy_state(name: &str) -> Guard {
+// TODO: this can be deleted and done with strum's `EnumString`
+fn guard_name_to_lazy_state(name: &str) -> GuardKind {
     match name {
-        "exhaustive_alternatives" => Guard::ExhaustiveAlternatives(default()),
-        "end_dialog" => Guard::EndDialog,
-        "emerge" => Guard::Emerge,
+        "exhaustive_alternatives" => GuardKind::ExhaustiveAlternatives,
+        "reach_last_alternative" => GuardKind::ReachLastAlternative,
+        "end_dialog" => GuardKind::EndDialog,
+        "emerge" => GuardKind::Emerge,
         _ => panic!("Unknown guard '{name}'"),
     }
 }

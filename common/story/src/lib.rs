@@ -77,12 +77,9 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.init_asset::<dialog::Dialog>()
-            .init_asset_loader::<dialog::DialogLoader>();
-
         #[cfg(feature = "devtools")]
         {
-            app.register_type::<dialog::Dialog>();
+            app.register_type::<dialog::DialogGraph>();
         }
     }
 }

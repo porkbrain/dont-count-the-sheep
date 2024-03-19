@@ -21,7 +21,7 @@ next = ["_end_dialog"]
 name = "first_floor"
 en = "the first floor"
 [[node]]
-guard = "exhaustive_alternatives"
+guard = "reach_last_alternative"
 next = [
     "learned_elevator_not_working",
     "one_more_time",
