@@ -103,6 +103,7 @@ pub fn windowed_app() -> App {
         common_action::Plugin,
         common_loading_screen::Plugin,
         common_store::Plugin,
+        common_story::Plugin,
         common_top_down::Plugin,
         common_visuals::Plugin,
         cutscene::Plugin,
