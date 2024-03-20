@@ -268,3 +268,13 @@ fn who_from_vars(vars: &toml::Table, node: &ParsedNode) -> Option<Character> {
             .unwrap_or_else(|_| panic!("Unknown character '{s}'"))
     })
 }
+
+impl From<String> for NodeName {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "_end_dialog" => NodeName::EndDialog,
+            "_emerge" => NodeName::Emerge,
+            _ => NodeName::Explicit(s),
+        }
+    }
+}

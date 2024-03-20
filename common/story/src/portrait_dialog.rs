@@ -28,7 +28,12 @@ use common_store::{DialogStore, GlobalStore};
 use common_visuals::camera::render_layer;
 use itertools::Itertools;
 
-use crate::Character;
+use crate::{
+    dialog::{
+        AdvanceOutcome, BranchStatus, Branching, Dialog, NodeKind, NodeName,
+    },
+    Character,
+};
 
 const DIALOG_LEFT: Val = Val::Vw(10.0);
 const FONT_SIZE: f32 = 21.0;
@@ -55,6 +60,7 @@ pub struct PortraitDialog {
     /// The tiny delay lets the brain to at least get the gist of what's
     /// being said.
     last_frame_shown_at: Instant,
+    last_rendered_node: NodeName,
     /// Currently iterated steps.
     /// Can either end, display choices, or go to another story point.
     sequence: Vec<Step>,
@@ -84,7 +90,7 @@ pub struct DialogPortrait;
 /// the next sequence.
 #[derive(Component, Clone, Debug)]
 pub struct DialogChoice {
-    of: DialogTargetChoice,
+    of: NodeName,
     /// Starts at 0.
     order: usize,
     /// Is selected either if it's the first choice or if the player changed
@@ -122,7 +128,8 @@ trait AsChoice: AsSequence {
 #[allow(clippy::too_many_arguments)]
 pub fn advance(
     mut cmd: Commands,
-    mut dialog: ResMut<PortraitDialog>,
+    mut dialog_fe: ResMut<PortraitDialog>,
+    mut dialog_be: ResMut<Dialog>,
     asset_server: Res<AssetServer>,
     global_store: Res<GlobalStore>,
     mut controls: ResMut<ActionState<GlobalAction>>,
@@ -132,7 +139,7 @@ pub fn advance(
     mut portrait: Query<&mut UiImage, With<DialogPortrait>>,
     choices: Query<(Entity, &DialogChoice)>,
 ) {
-    if dialog.last_frame_shown_at.elapsed() < MIN_TEXT_FRAME_TIME {
+    if dialog_fe.last_frame_shown_at.elapsed() < MIN_TEXT_FRAME_TIME {
         return;
     }
 
@@ -165,7 +172,7 @@ pub fn advance(
                 // if there's more text to render, set the remaining text to
                 // the text component value and wait for the player to continue
                 text.sections[0].value = remaining_text.to_string();
-                dialog.last_frame_shown_at = Instant::now();
+                dialog_fe.last_frame_shown_at = Instant::now();
 
                 trace!("Rendering remaining text");
                 return;
@@ -173,37 +180,59 @@ pub fn advance(
         }
     }
 
-    let root = root.single();
-
-    let choices = choices
-        .iter()
-        .map(|(entity, choice)| (entity, choice.clone()))
-        .collect_vec();
-    let outcome = advance_sequence(
-        &mut cmd,
-        &asset_server,
-        &global_store,
-        &mut dialog,
-        &mut text,
-        root,
-        &choices,
-        |speaker| {
-            portrait.single_mut().texture =
-                asset_server.load(speaker.portrait_asset_path());
-        },
-    );
-
-    if let SequenceFinished::Yes = outcome {
-        trace!("Despawning dialog");
-
-        if let Some(f) = dialog.when_finished.take() {
-            f(&mut cmd)
+    loop {
+        if dialog_be.current_node != dialog_fe.last_rendered_node {
+            let node = dialog_be.current_node_info();
+            if let NodeKind::Vocative { line } = &node.kind {
+                text.sections[0].value = line.clone();
+                portrait.single_mut().texture =
+                    asset_server.load(node.who.portrait_asset_path());
+                dialog_fe.last_rendered_node = dialog_be.current_node.clone();
+                return;
+            }
         }
 
-        cmd.remove_resource::<PortraitDialog>();
-        cmd.entity(root).despawn_recursive();
+        match dialog_be.advance(&mut cmd) {
+            AdvanceOutcome::Transition => {
+                //
+            }
+            AdvanceOutcome::ScheduledDespawn => {
+                trace!("Despawning portrait dialog FE");
 
-        controls.consume_all();
+                if let Some(f) = dialog_fe.when_finished.take() {
+                    f(&mut cmd)
+                }
+
+                cmd.remove_resource::<PortraitDialog>();
+                cmd.entity(root.single()).despawn_recursive();
+
+                controls.consume_all();
+            }
+            AdvanceOutcome::AwaitingPlayerChoice => {
+                let Branching::Choice(branches) = &dialog_be.branching else {
+                    panic!("AwaitingPlayerChoice implies Branching::Choice");
+                };
+
+                let choices = choices
+                    .iter()
+                    .map(|(entity, choice)| (entity, choice.clone()))
+                    .collect_vec();
+                let outcome = show_player_choices(
+                    &mut cmd,
+                    &asset_server,
+                    &dialog_be,
+                    root.single(),
+                    &choices,
+                    branches,
+                );
+
+                // render choices
+                todo!()
+            }
+            AdvanceOutcome::CheckAgainAfterApplyDeferred => {
+                break;
+            }
+        }
     }
 }
 
@@ -367,24 +396,23 @@ fn spawn(
         ))
         .id();
 
-    let mut initial_speaker = None;
-    let outcome = advance_sequence(
-        cmd,
-        asset_server,
-        global_store,
-        &mut dialog,
-        &mut text,
-        root,
-        &[],
-        |speaker| {
-            initial_speaker = Some(speaker);
-        },
-    );
-    if let SequenceFinished::Yes = outcome {
-        debug!("Dialog sequence finished before spawning");
-        cmd.entity(root).despawn();
-        return;
-    }
+    // let mut initial_speaker = None;
+    // let outcome = advance_sequence(
+    //     cmd,
+    //     asset_server,
+    //     global_store,
+    //     &mut dialog,
+    //     root,
+    //     &[],
+    //     |speaker| {
+    //         initial_speaker = Some(speaker);
+    //     },
+    // );
+    // if let SequenceFinished::Yes = outcome {
+    //     debug!("Dialog sequence finished before spawning");
+    //     cmd.entity(root).despawn();
+    //     return;
+    // }
 
     cmd.insert_resource(dialog);
     cmd.entity(root).with_children(|parent| {
@@ -448,11 +476,11 @@ fn spawn(
                 ..default()
             },
         ));
-        if let Some(speaker) = initial_speaker {
-            portrait_cmd.insert(UiImage::new(
-                asset_server.load(speaker.portrait_asset_path()),
-            ));
-        }
+        // if let Some(speaker) = initial_speaker {
+        //     portrait_cmd.insert(UiImage::new(
+        //         asset_server.load(speaker.portrait_asset_path()),
+        //     ));
+        // }
     });
 }
 
@@ -467,105 +495,54 @@ enum SequenceFinished {
 /// Executes each dialog step until it reaches a step that requires player
 /// input such as text or choice.
 #[allow(clippy::too_many_arguments)]
-fn advance_sequence(
+fn show_player_choices(
     cmd: &mut Commands,
     asset_server: &AssetServer,
-    global_store: &GlobalStore,
-    dialog: &mut PortraitDialog,
-    text: &mut Text,
+    dialog_be: &Dialog,
     root: Entity,
     choices: &[(Entity, DialogChoice)],
-    mut set_portrait_image: impl FnMut(Character),
-) -> SequenceFinished {
-    loop {
-        let current_index = dialog.sequence_index;
-        if current_index >= dialog.sequence.len() {
-            trace!("Dialog sequence finished");
-            break SequenceFinished::Yes;
-        }
+    branches: &[BranchStatus],
+) {
+    // if let Some((_, choice)) = choices.iter().find(|(_, c)| c.is_selected) {
+    // // choice made, next sequence
+    // trace!("Made choice {:?}", choice.of);
 
-        debug_assert!(!dialog.sequence.is_empty());
+    // global_store.insert_dialog_type_path(choice.of.type_path());
 
-        trace!("Advancing sequence {:?}", dialog.sequence[current_index]);
+    // choices
+    //     .iter()
+    //     .for_each(|(entity, _)| cmd.entity(*entity).despawn_recursive());
 
-        match &dialog.sequence[current_index] {
-            Step::Text { speaker, content } => {
-                trace!("Text sequence by {speaker}");
-                text.sections[0].value = content.to_string();
+    // dialog.sequence = choice.of.sequence();
+    // dialog.sequence_index = 0;
+    // } else {
+    // spawn choices
 
-                if dialog.speaker != Some(*speaker) {
-                    set_portrait_image(*speaker);
-                    dialog.speaker = Some(*speaker);
-                }
+    let node = dialog_be.current_node_info();
+    let between = branches
+        .iter()
+        .enumerate()
+        .filter_map(|(branch_index, status)| match status {
+            BranchStatus::OfferAsChoice(text) => {
+                let node_name = node.next[branch_index].clone();
 
-                dialog.sequence_index += 1;
-                dialog.last_frame_shown_at = Instant::now();
-                break SequenceFinished::No;
+                Some((node_name, text))
             }
-            Step::GoTo { story_point } => {
-                // next sequence
-                trace!("Go to sequence {story_point:?}");
+            BranchStatus::Stop => None,
+            BranchStatus::Pending => unreachable!(),
+        })
+        .collect_vec();
 
-                global_store.insert_dialog_type_path(story_point.type_path());
-                dialog.sequence = story_point.sequence();
-                dialog.sequence_index = 0;
-            }
-            Step::Choice {
-                speaker,
-                content,
-                between,
-            } => {
-                if let Some((_, choice)) =
-                    choices.iter().find(|(_, c)| c.is_selected)
-                {
-                    // choice made, next sequence
-                    trace!("Made choice {:?}", choice.of);
+    let total = between.len();
+    debug_assert_ne!(0, total);
 
-                    global_store.insert_dialog_type_path(choice.of.type_path());
+    let transform_manager = node.who.choice_transform_manager(total);
 
-                    choices.iter().for_each(|(entity, _)| {
-                        cmd.entity(*entity).despawn_recursive()
-                    });
+    let children =
+        spawn_choices(cmd, asset_server, transform_manager, &between);
 
-                    dialog.sequence = choice.of.sequence();
-                    dialog.sequence_index = 0;
-                } else {
-                    trace!(
-                        "Displaying choice sequence by {speaker}: {between:?}"
-                    );
-
-                    text.sections[0].value = content.to_string();
-                    if dialog.speaker != Some(*speaker) {
-                        set_portrait_image(*speaker);
-                        dialog.speaker = Some(*speaker);
-                    }
-
-                    // spawn choices
-
-                    let total = between.len();
-                    debug_assert_ne!(0, total);
-
-                    let transform_manager = dialog
-                        .speaker
-                        .map(|c| c.choice_transform_manager(total))
-                        .unwrap_or_else(|| {
-                            ChoicePositionManager::no_portrait(total)
-                        });
-
-                    let children = spawn_choices(
-                        cmd,
-                        asset_server,
-                        transform_manager,
-                        between,
-                    );
-
-                    cmd.entity(root).push_children(&children);
-
-                    break SequenceFinished::No;
-                }
-            }
-        }
-    }
+    cmd.entity(root).push_children(&children);
+    // }
 }
 
 /// Each choice is spawned as a separate entity.
@@ -573,12 +550,12 @@ fn spawn_choices(
     cmd: &mut Commands,
     asset_server: &AssetServer,
     transform_manager: ChoicePositionManager,
-    between: &[DialogTargetChoice],
+    between: &[(NodeName, &String)],
 ) -> Vec<Entity> {
     between
         .iter()
         .enumerate()
-        .map(move |(i, of)| {
+        .map(move |(i, (of, choice_text))| {
             let (asset, color) = if i == 0 {
                 (
                     common_assets::dialog::DIALOG_CHOICE_HIGHLIGHTED,
@@ -589,7 +566,7 @@ fn spawn_choices(
             };
 
             let choice = DialogChoice {
-                of: *of,
+                of: of.clone(),
                 order: i,
                 is_selected: i == 0,
             };
@@ -624,7 +601,7 @@ fn spawn_choices(
                     RenderLayers::layer(render_layer::DIALOG),
                     TextBundle {
                         text: Text::from_section(
-                            of.choice(),
+                            *choice_text,
                             TextStyle {
                                 font: asset_server.load(FONT),
                                 font_size: CHOICE_FONT_SIZE,
@@ -649,6 +626,7 @@ fn spawn_choices(
 impl PortraitDialog {
     fn new(sequence: Vec<Step>) -> Self {
         Self {
+            last_rendered_node: todo!(),
             sequence,
             sequence_index: 0,
             speaker: None,
@@ -723,6 +701,7 @@ impl Step {
 impl Default for PortraitDialog {
     fn default() -> Self {
         Self {
+            last_rendered_node: todo!(),
             last_frame_shown_at: Instant::now(),
             sequence: vec![],
             sequence_index: 0,

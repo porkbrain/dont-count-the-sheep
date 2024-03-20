@@ -8,7 +8,7 @@ mod guard;
 mod list;
 
 use bevy::{
-    ecs::system::{Commands, ResMut, Resource},
+    ecs::system::{Commands, Resource},
     log::{trace, warn},
     reflect::Reflect,
     utils::hashbrown::HashMap,
@@ -25,21 +25,21 @@ use crate::Character;
 /// TODO
 #[derive(Resource, Reflect, Debug)]
 pub struct Dialog {
-    graph: DialogGraph,
-    guard_systems: HashMap<NodeName, GuardSystem>,
-    current_node: NodeName,
-    next_nodes: NextNodes,
+    pub(crate) graph: DialogGraph,
+    pub(crate) guard_systems: HashMap<NodeName, GuardSystem>,
+    pub(crate) current_node: NodeName,
+    pub(crate) branching: Branching,
 }
 
 #[derive(Reflect, Debug)]
-enum NextNodes {
+pub(crate) enum Branching {
     None,
     Single(NodeName),
-    Choice(Vec<(NodeName, NextNodeStatus)>),
+    Choice(Vec<BranchStatus>),
 }
 
 #[derive(Reflect, Debug)]
-enum NextNodeStatus {
+pub(crate) enum BranchStatus {
     Pending,
     OfferAsChoice(String),
     /// This branch is exhausted, presumably some guard decided to stop it.
@@ -109,26 +109,45 @@ pub(crate) enum GuardKind {
     ReachLastAlternative,
 }
 
-fn advance(mut cmd: Commands, mut dialog: ResMut<Dialog>) {
-    // TODO: finish rendering all text
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub(crate) enum AdvanceOutcome {
+    /// Some operations are still pending, try again later.
+    /// This will happen with guards.
+    /// Most guards will be ready in the next tick, but an async guard could
+    /// potentially take as much time as it needs for e.g. a UI animation.
+    ///
+    /// # Important
+    /// Don't call [`Dialog::advance`] before verifying that the current node
+    /// has indeed not changed.
+    CheckAgainAfterApplyDeferred,
+    /// You can check the new [`Dialog::current_node`].
+    Transition,
+    /// The dialog won't advance until the player makes a choice.
+    AwaitingPlayerChoice,
+    /// The dialog is over.
+    /// BE scheduled despawn of the [`Dialog`] resource and all guards.
+    ScheduledDespawn,
+}
 
-    match &dialog.current_node {
-        NodeName::EndDialog => {
-            todo!()
-        }
-        NodeName::Emerge => {
-            todo!()
-        }
-        node_name => {
-            let node = dialog.graph.nodes.get(node_name).unwrap();
-
-            match &node.kind {
+impl Dialog {
+    /// This method should be called by FE repeatedly until a node changes or
+    /// all choice branches are evaluated.
+    pub(crate) fn advance(&mut self, cmd: &mut Commands) -> AdvanceOutcome {
+        match &self.current_node {
+            NodeName::EndDialog => {
+                todo!();
+                AdvanceOutcome::ScheduledDespawn
+            }
+            NodeName::Emerge => {
+                todo!()
+            }
+            node_name => match &self.graph.nodes.get(node_name).unwrap().kind {
                 NodeKind::Vocative { .. } => {
-                    dialog.try_transition_or_offer_player_choice(&mut cmd);
+                    self.transition_or_offer_player_choice_if_all_ready(cmd)
                 }
                 NodeKind::Guard { kind, .. } => {
                     if let Some(guard_system) =
-                        dialog.guard_systems.get(&node.name)
+                        self.guard_systems.get(node_name)
                     {
                         cmd.run_system_with_input(
                             guard_system.entity,
@@ -139,105 +158,114 @@ fn advance(mut cmd: Commands, mut dialog: ResMut<Dialog>) {
                             "Registering guard system {kind:?} \
                             for node {node_name:?}"
                         );
-                        kind.register_system(&mut cmd, node_name.clone());
-                        // TODO: perhaps we can actually schedule transition
-                        // here
+                        kind.register_system(cmd, node_name.clone());
+                        cmd.add(GuardCmd::TryTransition(node_name.clone()));
                     }
+
+                    AdvanceOutcome::CheckAgainAfterApplyDeferred
                 }
-            }
+            },
         }
     }
-}
 
-impl From<String> for NodeName {
-    fn from(s: String) -> Self {
-        match s.as_str() {
-            "_end_dialog" => NodeName::EndDialog,
-            "_emerge" => NodeName::Emerge,
-            _ => NodeName::Explicit(s),
-        }
+    pub(crate) fn current_node_info(&self) -> &Node {
+        &self.graph.nodes.get(&self.current_node).unwrap()
     }
-}
 
-impl Dialog {
     fn transition_to(&mut self, cmd: &mut Commands, node_name: NodeName) {
         let next_nodes = &self.graph.nodes.get(&node_name).unwrap().next;
 
-        self.next_nodes = if next_nodes.is_empty() {
-            NextNodes::None
+        self.current_node = node_name;
+        self.branching = if next_nodes.is_empty() {
+            Branching::None
         } else if next_nodes.len() == 1 {
-            NextNodes::Single(next_nodes[0].clone())
+            Branching::Single(next_nodes[0].clone())
         } else {
-            NextNodes::Choice(
+            Branching::Choice(
                 next_nodes
                     .iter()
-                    .map(|next_node_name| {
-                        let status =
-                            NextNodeStatus::new(&self, cmd, next_node_name);
-
-                        (next_node_name.clone(), status)
+                    .enumerate()
+                    .map(|(next_branch_index, next_node_name)| {
+                        BranchStatus::new(
+                            &self,
+                            cmd,
+                            next_branch_index,
+                            next_node_name,
+                        )
                     })
                     .collect(),
             )
         };
-
-        self.current_node = node_name;
     }
 
-    fn try_transition_or_offer_player_choice(&mut self, cmd: &mut Commands) {
-        match &self.next_nodes {
-            NextNodes::None => {
+    fn transition_or_offer_player_choice_if_all_ready(
+        &mut self,
+        cmd: &mut Commands,
+    ) -> AdvanceOutcome {
+        match &self.branching {
+            Branching::None => {
                 warn!("NextNodes::None, emerging");
                 self.transition_to(cmd, NodeName::Emerge);
+                AdvanceOutcome::Transition
             }
-            NextNodes::Single(next_node) => {
+            Branching::Single(next_node) => {
                 self.transition_to(cmd, next_node.clone());
+                AdvanceOutcome::Transition
             }
-            NextNodes::Choice(next_nodes) => {
-                let any_pending = next_nodes.iter().any(|(_, status)| {
-                    matches!(status, NextNodeStatus::Pending)
-                });
+            Branching::Choice(branches) => {
+                let any_pending = branches
+                    .iter()
+                    .any(|status| matches!(status, BranchStatus::Pending));
 
                 if any_pending {
-                    return;
+                    // must be re-evaluated again next tick
+                    return AdvanceOutcome::CheckAgainAfterApplyDeferred;
                 }
 
-                let mut choices =
-                    next_nodes.iter().filter_map(|(node_name, status)| {
-                        match status {
-                            NextNodeStatus::OfferAsChoice(text) => {
-                                Some((node_name, text))
-                            }
-                            NextNodeStatus::Stop => None,
-                            NextNodeStatus::Pending => unreachable!(),
+                let mut choices = branches.iter().enumerate().filter_map(
+                    |(branch_index, status)| match status {
+                        BranchStatus::OfferAsChoice(text) => {
+                            Some((branch_index, text))
                         }
-                    });
+                        BranchStatus::Stop => None,
+                        BranchStatus::Pending => unreachable!(),
+                    },
+                );
 
-                if let Some((first_choice_node_name, first_choice_text)) =
-                    choices.next()
-                {
-                    if let Some(second_choice) = choices.next() {
-                        todo!()
+                if let Some((first_choice_branch_index, _)) = choices.next() {
+                    if choices.next().is_none() {
+                        let first_choice_node_name = self
+                            .graph
+                            .nodes
+                            .get(&self.current_node)
+                            .unwrap()
+                            .next
+                            .get(first_choice_branch_index)
+                            .unwrap()
+                            .clone();
+                        self.transition_to(cmd, first_choice_node_name);
+                        AdvanceOutcome::Transition
                     } else {
-                        self.transition_to(cmd, first_choice_node_name.clone())
+                        AdvanceOutcome::AwaitingPlayerChoice
                     }
                 } else {
                     warn!("NextNodes::Choice stopped all branches, emerging");
                     self.transition_to(cmd, NodeName::Emerge);
+                    AdvanceOutcome::Transition
                 }
             }
         }
     }
 }
 
-impl NextNodeStatus {
+impl BranchStatus {
     fn new(
         dialog: &Dialog,
         cmd: &mut Commands,
-        next_node_name: &NodeName,
+        branch_index: usize,
+        node_name: &NodeName,
     ) -> Self {
-        let next_node_kind =
-            &dialog.graph.nodes.get(next_node_name).unwrap().kind;
+        let next_node_kind = &dialog.graph.nodes.get(node_name).unwrap().kind;
 
         match next_node_kind {
             NodeKind::Vocative { line } => {
@@ -245,20 +273,24 @@ impl NextNodeStatus {
                 Self::OfferAsChoice(line.clone())
             }
             NodeKind::Guard { kind, .. } => {
-                if let Some(guard_system) =
-                    dialog.guard_systems.get(next_node_name)
+                if let Some(guard_system) = dialog.guard_systems.get(node_name)
                 {
                     cmd.run_system_with_input(
                         guard_system.entity,
-                        GuardCmd::PlayerChoice(next_node_name.clone()),
+                        GuardCmd::PlayerChoice {
+                            node_name: node_name.clone(),
+                            next_branch_index: branch_index,
+                        },
                     )
                 } else {
                     trace!(
-                        "Registering guard system {kind:?} \
-                        node {next_node_name:?}"
+                        "Registering guard system {kind:?} for {node_name:?}"
                     );
-                    kind.register_system(cmd, next_node_name.clone());
-                    // TODO: schedule player choice cmd
+                    kind.register_system(cmd, node_name.clone());
+                    cmd.add(GuardCmd::PlayerChoice {
+                        node_name: node_name.clone(),
+                        next_branch_index: branch_index,
+                    });
                 }
 
                 // we need to evaluate the guard

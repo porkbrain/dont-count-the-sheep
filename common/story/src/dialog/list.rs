@@ -41,7 +41,7 @@ mod tests {
     fn it_validates_dialogs() {
         for dialog in DialogRoot::iter() {
             println!("Validating {dialog:?}");
-            println!("{:?}", dialog.parse());
+            dialog.parse();
         }
     }
 }
