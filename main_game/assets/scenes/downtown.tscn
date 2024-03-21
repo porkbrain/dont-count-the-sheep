@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=28 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -22,6 +22,7 @@
 [ext_resource type="Texture2D" uid="uid://bbvuyahml5l4l" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]
 [ext_resource type="Texture2D" uid="uid://cvg4gqeelonji" path="res://assets/downtown/water_bottle_half.png" id="21_8m32a"]
 [ext_resource type="Texture2D" uid="uid://dy8urm75tam2x" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
+[ext_resource type="Texture2D" uid="uid://bqhuebro50e5n" path="res://assets/downtown/tower.png" id="23_7ng4s"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -300,3 +301,7 @@ texture = ExtResource("17_5ai3x")
 [node name="ConstructionSiteSign" type="Sprite2D" parent="WiredFence2"]
 position = Vector2(1.5, 1)
 texture = ExtResource("22_m6eml")
+
+[node name="Tower" type="Sprite2D" parent="."]
+position = Vector2(-189, -1000)
+texture = ExtResource("23_7ng4s")
