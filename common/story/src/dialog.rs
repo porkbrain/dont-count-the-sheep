@@ -10,7 +10,7 @@ mod list;
 use bevy::{
     ecs::{
         reflect::ReflectResource,
-        system::{Commands, Resource},
+        system::{CommandQueue, Commands, Resource},
         world::World,
     },
     log::{error, trace, warn},
@@ -34,7 +34,7 @@ pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
 #[reflect(Resource)]
 pub struct Dialog {
     pub(crate) graph: DialogGraph,
-    pub(crate) current_node: NodeName,
+    current_node: NodeName,
     pub(crate) branching: Branching,
     #[reflect(ignore)]
     pub(crate) guard_systems: HashMap<NodeName, GuardSystem>,
@@ -149,6 +149,10 @@ impl Dialog {
         self
     }
 
+    pub(crate) fn current_node(&self) -> &NodeName {
+        &self.current_node
+    }
+
     /// This method should be called by FE repeatedly until a node changes or
     /// all choice branches are evaluated.
     pub(crate) fn advance(&mut self, cmd: &mut Commands) -> AdvanceOutcome {
@@ -177,7 +181,7 @@ impl Dialog {
                             "Registering guard system {kind:?} \
                             for node {node_name:?}"
                         );
-                        kind.register_system(cmd, node_name.clone());
+                        cmd.add(kind.register_system_cmd(node_name.clone()));
                         cmd.add(GuardCmd::TryTransition(node_name.clone()));
                     }
 
@@ -196,29 +200,9 @@ impl Dialog {
         cmd: &mut Commands,
         node_name: NodeName,
     ) {
-        let next_nodes = &self.graph.nodes.get(&node_name).unwrap().next;
-
+        self.branching =
+            Branching::new(cmd, &node_name, &self.graph, &self.guard_systems);
         self.current_node = node_name;
-        self.branching = if next_nodes.is_empty() {
-            Branching::None
-        } else if next_nodes.len() == 1 {
-            Branching::Single(next_nodes[0].clone())
-        } else {
-            Branching::Choice(
-                next_nodes
-                    .iter()
-                    .enumerate()
-                    .map(|(next_branch_index, next_node_name)| {
-                        BranchStatus::new(
-                            &self,
-                            cmd,
-                            next_branch_index,
-                            next_node_name,
-                        )
-                    })
-                    .collect(),
-            )
-        };
     }
 
     pub(crate) fn spawn(self, cmd: &mut Commands) {
@@ -226,8 +210,6 @@ impl Dialog {
     }
 
     pub(crate) fn despawn(&mut self, cmd: &mut Commands) {
-        cmd.remove_resource::<Self>();
-
         for (node_name, guard_system) in self.guard_systems.drain() {
             cmd.run_system_with_input(
                 guard_system.entity,
@@ -244,6 +226,9 @@ impl Dialog {
         for fun in self.when_finished.drain(..) {
             fun(cmd);
         }
+
+        // must be added last because guards depend on this resource
+        cmd.remove_resource::<Self>();
     }
 
     fn transition_or_offer_player_choice_if_all_ready(
@@ -306,15 +291,90 @@ impl Dialog {
     }
 }
 
+impl Branching {
+    fn new(
+        cmd: &mut Commands,
+        from: &NodeName,
+        graph: &DialogGraph,
+        guard_systems: &HashMap<NodeName, GuardSystem>,
+    ) -> Self {
+        let next_nodes = &graph.nodes.get(from).unwrap().next;
+        trace!("Branching for {from:?}: {next_nodes:?}");
+
+        if next_nodes.is_empty() {
+            Branching::None
+        } else if next_nodes.len() == 1 {
+            Branching::Single(next_nodes[0].clone())
+        } else {
+            Branching::Choice(
+                next_nodes
+                    .iter()
+                    .enumerate()
+                    .map(|(next_branch_index, next_node_name)| {
+                        BranchStatus::new(
+                            cmd,
+                            graph,
+                            guard_systems,
+                            next_branch_index,
+                            next_node_name,
+                        )
+                    })
+                    .collect(),
+            )
+        }
+    }
+
+    /// This method can be only used when the [`Dialog`] resource is not yet
+    /// inserted.
+    /// It's used to init the guards.
+    /// Once in dialog, use [`Branching::new`] instead.
+    /// That method uses the guard cache to avoid spawning the same guard twice.
+    fn init(
+        cmd: &mut CommandQueue,
+        from: &NodeName,
+        graph: &DialogGraph,
+    ) -> Self {
+        let next_nodes = &graph.nodes.get(from).unwrap().next;
+        trace!("Branching for {from:?}: {next_nodes:?}");
+
+        if next_nodes.is_empty() {
+            Branching::None
+        } else if next_nodes.len() == 1 {
+            Branching::Single(next_nodes[0].clone())
+        } else {
+            Branching::Choice(
+                next_nodes
+                    .iter()
+                    .enumerate()
+                    .map(|(next_branch_index, next_node_name)| {
+                        BranchStatus::init(
+                            cmd,
+                            graph,
+                            next_branch_index,
+                            next_node_name,
+                        )
+                    })
+                    .collect(),
+            )
+        }
+    }
+}
+
 impl BranchStatus {
     fn new(
-        dialog: &Dialog,
         cmd: &mut Commands,
+        graph: &DialogGraph,
+        guard_systems: &HashMap<NodeName, GuardSystem>,
         branch_index: usize,
         node_name: &NodeName,
     ) -> Self {
-        let next_node = &dialog.graph.nodes.get(node_name).unwrap();
-        assert_eq!(Character::Winnie, next_node.who);
+        let next_node = &graph.nodes.get(node_name).unwrap();
+        assert_eq!(
+            Character::Winnie,
+            next_node.who,
+            "Only Winnie can branch ({:?})",
+            next_node
+        );
 
         match &next_node.kind {
             NodeKind::Vocative { line } => {
@@ -322,8 +382,7 @@ impl BranchStatus {
                 Self::OfferAsChoice(line.clone())
             }
             NodeKind::Guard { kind, .. } => {
-                if let Some(guard_system) = dialog.guard_systems.get(node_name)
-                {
+                if let Some(guard_system) = guard_systems.get(node_name) {
                     cmd.run_system_with_input(
                         guard_system.entity,
                         GuardCmd::PlayerChoice {
@@ -335,7 +394,7 @@ impl BranchStatus {
                     trace!(
                         "Registering guard system {kind:?} for {node_name:?}"
                     );
-                    kind.register_system(cmd, node_name.clone());
+                    cmd.add(kind.register_system_cmd(node_name.clone()));
                     cmd.add(GuardCmd::PlayerChoice {
                         node_name: node_name.clone(),
                         next_branch_index: branch_index,
@@ -347,13 +406,61 @@ impl BranchStatus {
             }
         }
     }
+
+    /// See [`Branching::init`]
+    fn init(
+        cmd: &mut CommandQueue,
+        graph: &DialogGraph,
+        branch_index: usize,
+        node_name: &NodeName,
+    ) -> Self {
+        let next_node = &graph.nodes.get(node_name).unwrap();
+        assert_eq!(
+            Character::Winnie,
+            next_node.who,
+            "Only Winnie can branch ({:?})",
+            next_node
+        );
+
+        match &next_node.kind {
+            NodeKind::Vocative { line } => {
+                //  TODO: this node is ready to be shown as an option
+                Self::OfferAsChoice(line.clone())
+            }
+            NodeKind::Guard { kind, .. } => {
+                trace!("Registering guard system {kind:?} for {node_name:?}");
+                cmd.push(kind.register_system_cmd(node_name.clone()));
+                cmd.push(GuardCmd::PlayerChoice {
+                    node_name: node_name.clone(),
+                    next_branch_index: branch_index,
+                });
+
+                // we need to evaluate the guard
+                Self::Pending
+            }
+        }
+    }
 }
 
 impl DialogGraph {
     /// Create a new dialog resource.
     /// It can then be associated with a FE to spawn the dialog.
-    pub fn into_dialog_resource(self) -> Dialog {
-        self.into()
+    ///
+    /// We accept command queue instead of commands because the guards spawned
+    /// by this method depend on the [`Dialog`] resource.
+    /// Therefore, the [`Dialog`] resource must be inserted before the guards
+    /// are spawned.
+    /// So apply the provided queue after inserting the [`Dialog`] resource
+    /// with relevant FE method.
+    pub fn into_dialog_resource(self, cmd: &mut CommandQueue) -> Dialog {
+        let branching = Branching::init(cmd, &self.root, &self);
+        Dialog {
+            current_node: self.root.clone(),
+            graph: self,
+            guard_systems: default(),
+            branching,
+            when_finished: default(),
+        }
     }
 }
 
@@ -365,18 +472,6 @@ impl std::fmt::Debug for Dialog {
             .field("current_node", &self.current_node)
             .field("branching", &self.branching)
             .finish()
-    }
-}
-
-impl From<DialogGraph> for Dialog {
-    fn from(graph: DialogGraph) -> Self {
-        Self {
-            current_node: graph.root.clone(),
-            graph,
-            guard_systems: default(),
-            branching: default(),
-            when_finished: default(),
-        }
     }
 }
 

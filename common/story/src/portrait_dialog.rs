@@ -139,6 +139,11 @@ impl bevy::app::Plugin for Plugin {
             app.register_type::<PortraitDialogState>()
                 .register_type::<PortraitDialog>()
                 .register_type::<DialogChoice>();
+
+            use bevy_inspector_egui::quick::StateInspectorPlugin;
+            app.add_plugins(
+                StateInspectorPlugin::<PortraitDialogState>::default(),
+            );
         }
     }
 }
@@ -216,7 +221,13 @@ fn player_wishes_to_continue(
         &mut portrait.single_mut(),
         choices,
     );
-    next_dialog_state.set(next_state);
+    match next_state {
+        PortraitDialogState::PlayerControl => {}
+        next_state => {
+            trace!("Player advancing dialog to {next_state:?}");
+            next_dialog_state.set(next_state);
+        }
+    };
 }
 
 /// Sometimes dialog nodes require some async operations to be completed before
@@ -252,7 +263,13 @@ fn await_portrait_async_ops(
         &mut portrait.single_mut(),
         choices,
     );
-    next_dialog_state.set(next_state);
+    match next_state {
+        PortraitDialogState::WaitingForAsync => {}
+        next_state => {
+            trace!("Await advancing dialog to {next_state:?}");
+            next_dialog_state.set(next_state);
+        }
+    };
 }
 
 fn advance_dialog(
@@ -271,13 +288,16 @@ fn advance_dialog(
         let last_matches_be_current = dialog_fe
             .last_rendered_node
             .as_ref()
-            .is_some_and(|n| *n == dialog_be.current_node);
+            .is_some_and(|n| n == dialog_be.current_node());
 
         if !last_matches_be_current {
-            dialog_fe.last_rendered_node = Some(dialog_be.current_node.clone());
+            dialog_fe.last_rendered_node =
+                Some(dialog_be.current_node().clone());
 
             let node = dialog_be.current_node_info();
             if let NodeKind::Vocative { line } = &node.kind {
+                trace!("Rendering vocative {:?}: '{line:?}'", node.who);
+
                 text.sections[0].value = line.clone();
                 portrait.texture =
                     asset_server.load(node.who.portrait_asset_path());
@@ -301,7 +321,7 @@ fn advance_dialog(
             }
             AdvanceOutcome::AwaitingPlayerChoice => {
                 if choices.is_empty() {
-                    // display player choices
+                    trace!("Displaying player choices");
 
                     let Branching::Choice(branches) = &dialog_be.branching
                     else {
@@ -334,6 +354,7 @@ fn advance_dialog(
                         cmd.entity(entity).despawn_recursive()
                     });
 
+                    trace!("Player chose {chosen_node_name:?}");
                     dialog_be.transition_to(cmd, chosen_node_name);
 
                     // run `advance` again
@@ -359,9 +380,9 @@ fn cancel(
     root: Query<Entity, With<DialogUiRoot>>,
     camera: Query<Entity, With<DialogCamera>>,
 ) {
-    trace!("Canceling dialog");
+    trace!("Cancelling dialog");
     dialog_be.despawn(&mut cmd);
-    dialog_fe.despawn(&mut cmd, &mut controls, root.single(), camera.single());
+    dialog_fe.despawn(&mut cmd, &mut controls, camera.single(), root.single());
 
     next_dialog_state.set(PortraitDialogState::NotInDialog);
 }
@@ -522,7 +543,7 @@ impl PortraitDialog {
 
         let root = cmd
             .spawn((
-                Name::new("Dialog root"),
+                Name::new("Portrait dialog root"),
                 DialogUiRoot,
                 TargetCamera(camera),
                 NodeBundle {
@@ -540,7 +561,7 @@ impl PortraitDialog {
         cmd.entity(root).with_children(|parent| {
             parent
                 .spawn((
-                    Name::new("Dialog bubble"),
+                    Name::new("Bubble"),
                     RenderLayers::layer(render_layer::DIALOG),
                     UiImage::new(
                         asset_server.load(common_assets::dialog::DIALOG_BUBBLE),
@@ -583,7 +604,7 @@ impl PortraitDialog {
 
             parent.spawn((
                 DialogPortrait,
-                Name::new("Dialog portrait"),
+                Name::new("Portrait"),
                 RenderLayers::layer(render_layer::DIALOG),
                 NodeBundle {
                     style: Style {
@@ -632,88 +653,90 @@ fn show_player_choices(
 
     let transform_manager = node.who.choice_transform_manager(total);
 
-    let children =
-        spawn_choices(cmd, asset_server, transform_manager, &between);
-
-    cmd.entity(root).push_children(&children);
+    for (order, (node_name, choice_text)) in between.iter().enumerate() {
+        let choice = spawn_choice(
+            cmd,
+            asset_server,
+            &transform_manager,
+            order,
+            node_name,
+            choice_text,
+        );
+        cmd.entity(root).add_child(choice);
+    }
 }
 
-/// Each choice is spawned as a separate entity.
-fn spawn_choices(
+fn spawn_choice(
     cmd: &mut Commands,
     asset_server: &AssetServer,
-    transform_manager: ChoicePositionManager,
-    between: &[(NodeName, &String)],
-) -> Vec<Entity> {
-    between
-        .iter()
-        .enumerate()
-        .map(move |(i, (of, choice_text))| {
-            let (asset, color) = if i == 0 {
-                (
-                    common_assets::dialog::DIALOG_CHOICE_HIGHLIGHTED,
-                    Color::WHITE,
-                )
-            } else {
-                (common_assets::dialog::DIALOG_CHOICE, Color::BLACK)
-            };
+    transform_manager: &ChoicePositionManager,
+    order: usize,
+    node_name: &NodeName,
+    choice_text: &str,
+) -> Entity {
+    let (asset, color) = if order == 0 {
+        (
+            common_assets::dialog::DIALOG_CHOICE_HIGHLIGHTED,
+            Color::WHITE,
+        )
+    } else {
+        (common_assets::dialog::DIALOG_CHOICE, Color::BLACK)
+    };
 
-            let choice = DialogChoice {
-                of: of.clone(),
-                order: i,
-                is_selected: i == 0,
-            };
+    let choice = DialogChoice {
+        of: node_name.clone(),
+        order,
+        is_selected: order == 0,
+    };
 
-            let Vec2 { x: left, y: bottom } = transform_manager.get(i);
+    let Vec2 { x: left, y: bottom } = transform_manager.get(order);
 
-            cmd.spawn((
-                Name::new(format!("Dialog choice {i}: {of:?}")),
-                RenderLayers::layer(render_layer::DIALOG),
-                choice,
-                UiImage::new(asset_server.load(asset)),
-                NodeBundle {
-                    z_index: ZIndex::Local(1 + i as i32),
-                    style: Style {
-                        width: Val::Px(350.0),
-                        height: Val::Px(92.0),
-                        position_type: PositionType::Absolute,
-                        left: Val::Px(left),
-                        bottom: Val::Px(bottom),
-                        justify_content: JustifyContent::Center,
-                        ..default()
+    cmd.spawn((
+        Name::new(format!("Choice {order}: {node_name:?}")),
+        RenderLayers::layer(render_layer::DIALOG),
+        choice,
+        UiImage::new(asset_server.load(asset)),
+        NodeBundle {
+            z_index: ZIndex::Local(1 + order as i32),
+            style: Style {
+                width: Val::Px(350.0),
+                height: Val::Px(92.0),
+                position_type: PositionType::Absolute,
+                left: Val::Px(left),
+                bottom: Val::Px(bottom),
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            // a `NodeBundle` is transparent by default, so to see the
+            // image we have to its color to `WHITE`
+            background_color: Color::WHITE.into(),
+            ..default()
+        },
+    ))
+    .with_children(|parent| {
+        parent.spawn((
+            Name::new("Dialog choice text"),
+            RenderLayers::layer(render_layer::DIALOG),
+            TextBundle {
+                text: Text::from_section(
+                    choice_text,
+                    TextStyle {
+                        font: asset_server.load(FONT),
+                        font_size: CHOICE_FONT_SIZE,
+                        color,
                     },
-                    // a `NodeBundle` is transparent by default, so to see the
-                    // image we have to its color to `WHITE`
-                    background_color: Color::WHITE.into(),
+                ),
+                style: Style {
+                    max_width: Val::Px(CHOICE_TEXT_BOUNDS.x),
+                    max_height: Val::Px(CHOICE_TEXT_BOUNDS.y),
+                    align_self: AlignSelf::Center,
                     ..default()
                 },
-            ))
-            .with_children(|parent| {
-                parent.spawn((
-                    Name::new("Dialog choice text"),
-                    RenderLayers::layer(render_layer::DIALOG),
-                    TextBundle {
-                        text: Text::from_section(
-                            *choice_text,
-                            TextStyle {
-                                font: asset_server.load(FONT),
-                                font_size: CHOICE_FONT_SIZE,
-                                color,
-                            },
-                        ),
-                        style: Style {
-                            max_width: Val::Px(CHOICE_TEXT_BOUNDS.x),
-                            max_height: Val::Px(CHOICE_TEXT_BOUNDS.y),
-                            align_self: AlignSelf::Center,
-                            ..default()
-                        },
-                        ..default()
-                    },
-                ));
-            })
-            .id()
-        })
-        .collect()
+                ..default()
+            },
+        ));
+    })
+    .id()
 }
 
 pub(super) struct ChoicePositionManager {

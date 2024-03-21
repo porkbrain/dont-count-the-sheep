@@ -9,7 +9,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use bevy::prelude::*;
+use bevy::{ecs::system::CommandQueue, prelude::*};
 use bevy_grid_squared::Square;
 use common_ext::QueryExt;
 use common_story::{dialog::DialogRoot, Character};
@@ -348,11 +348,13 @@ pub(crate) fn begin_dialog(
         Character::Marie => {
             stop_npc();
 
+            let mut cmd_queue = CommandQueue::default();
             DialogRoot::MarieBlabbering
                 .parse()
-                .into_dialog_resource()
+                .into_dialog_resource(&mut cmd_queue)
                 .on_finished(when_finished)
                 .spawn_with_portrait_ui(&mut cmd, &asset_server);
+            cmd.append(&mut cmd_queue);
         }
         _ => {
             // nothing just yet

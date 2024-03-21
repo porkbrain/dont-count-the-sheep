@@ -5,7 +5,7 @@ use bevy::{
         system::{Command, Commands, In, Local, Res, ResMut, SystemId},
         world::World,
     },
-    log::{error, warn},
+    log::error,
     reflect::Reflect,
 };
 use common_store::{DialogStore, GlobalStore};
@@ -44,12 +44,11 @@ pub(crate) enum GuardCmd {
 }
 
 impl GuardKind {
-    pub(crate) fn register_system(
+    pub(crate) fn register_system_cmd(
         self,
-        cmd: &mut Commands,
         node_name: NodeName,
-    ) {
-        cmd.add(move |w: &mut World| {
+    ) -> impl Command {
+        move |w: &mut World| {
             let entity = match self {
                 Self::ExhaustiveAlternatives => {
                     w.register_system(exhaustive_alternatives::system)
@@ -61,12 +60,12 @@ impl GuardKind {
                     .guard_systems
                     .insert(node_name, GuardSystem { entity, kind: self });
             } else {
-                warn!(
+                error!(
                     "Trying to add a guard {self} to a \
                     world without Dialog resource"
                 );
             }
-        });
+        }
     }
 }
 
@@ -81,7 +80,7 @@ impl Command for GuardCmd {
                 }
             }
         } else {
-            warn!("Dialog not found when trying to run {self:?}");
+            error!("Dialog not found when trying to run {self:?}");
         }
     }
 }
