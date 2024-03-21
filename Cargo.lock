@@ -1458,22 +1458,12 @@ dependencies = [
  "common_action",
  "common_assets",
  "common_store",
- "common_story_derive",
  "common_visuals",
  "itertools",
  "serde",
  "serde_with",
  "strum",
  "toml",
-]
-
-[[package]]
-name = "common_story_derive"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.52",
 ]
 
 [[package]]

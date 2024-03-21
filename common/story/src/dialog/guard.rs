@@ -20,7 +20,7 @@ pub(crate) struct GuardSystem {
 
 #[derive(Debug, Clone)]
 pub(crate) enum GuardCmd {
-    /// Will change the current node of the dialog is ready.
+    /// Will try change the current node of the dialog is ready.
     ///
     /// For guard with async ops, such as displaying UI with animations,
     /// this command might not result in transition.
@@ -36,6 +36,10 @@ pub(crate) enum GuardCmd {
         next_branch_index: usize,
     },
     /// The dialog is being despawned, save the state if necessary.
+    ///
+    /// # Important
+    /// The command for despawning the system comes immediately after this
+    /// guard cmd.
     Despawn(NodeName),
 }
 

@@ -13,7 +13,6 @@ members = [
     "common/rscn",
     "common/store",
     "common/story",
-    "common/story/derive",
     "common/top_down",
     "common/visuals",
     "main_game_lib",

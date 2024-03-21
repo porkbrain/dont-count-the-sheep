@@ -16,7 +16,7 @@ use bevy::{ecs::system::SystemId, prelude::*, render::view::RenderLayers};
 use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_store::GlobalStore;
-use common_story::portrait_dialog::{DialogRoot, PortraitDialog};
+use common_story::{dialog::DialogRoot, portrait_dialog::PortraitDialog};
 use common_top_down::{
     actor::player::TakeAwayPlayerControl, Actor, ActorTarget,
 };
@@ -615,7 +615,8 @@ fn begin_portrait_dialog(
         panic!("Expected BeginDialog step, got {step}");
     };
 
-    dialog.spawn(&mut cmd, &asset_server, &global_store, default());
+    todo!();
+    // dialog.spawn(&mut cmd, &asset_server, &global_store, default());
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }

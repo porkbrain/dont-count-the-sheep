@@ -1,9 +1,7 @@
 use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{DialogStore, GlobalStore};
-use common_story::portrait_dialog::{
-    apartment_elevator::TakeTheElevatorToGroundFloor, DialogRoot,
-};
+use common_story::dialog::DialogRoot;
 use common_visuals::EASE_IN_OUT;
 use main_game_lib::{
     cutscene::{self, CutsceneStep, IntoCutscene},
@@ -61,7 +59,7 @@ impl IntoCutscene for EnterTheElevator {
             WaitUntilActorAtRest(player),
             Sleep(from_millis(300)),
             // ask player where to go
-            BeginPortraitDialog(DialogRoot::EnteredTheElevator),
+            BeginPortraitDialog(DialogRoot::EnterTheApartmentElevator),
             WaitForPortraitDialogToEnd,
             Sleep(from_millis(300)),
             IfTrueThisElseThat(
@@ -109,5 +107,6 @@ impl IntoCutscene for EnterTheElevator {
 }
 
 fn did_choose_to_leave(store: &GlobalStore) -> bool {
-    store.was_this_the_last_dialog(TakeTheElevatorToGroundFloor)
+    todo!()
+    // store.was_this_the_last_dialog(TakeTheElevatorToGroundFloor)
 }

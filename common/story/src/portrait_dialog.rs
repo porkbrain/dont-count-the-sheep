@@ -10,21 +10,13 @@
 //!   choice based on whether the player **just** pressed up or down, run it if
 //!   the player pressed some movement key
 
-pub mod apartment_elevator;
-pub mod marie;
-
-mod aaatargets;
-
 use std::{collections::BTreeMap, time::Duration};
 
-pub use aaatargets::DialogRoot;
-use aaatargets::{DialogTargetChoice, DialogTargetGoto};
 use bevy::{
     math::vec2, prelude::*, render::view::RenderLayers, text::TextLayoutInfo,
     utils::Instant,
 };
 use common_action::{ActionState, GlobalAction};
-use common_store::{DialogStore, GlobalStore};
 use common_visuals::camera::render_layer;
 use itertools::Itertools;
 
@@ -43,9 +35,6 @@ const TEXT_BOUNDS: Vec2 = vec2(250.0, 120.0);
 const CHOICE_TEXT_BOUNDS: Vec2 = vec2(250.0, 50.0);
 const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 
-/// Can be used on components and resources to schedule commands.
-pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
-
 /// Will be true if in a dialog that takes away player control.
 pub fn in_portrait_dialog() -> impl FnMut(Option<Res<PortraitDialog>>) -> bool {
     move |dialog| dialog.is_some()
@@ -61,16 +50,6 @@ pub struct PortraitDialog {
     /// being said.
     last_frame_shown_at: Instant,
     last_rendered_node: NodeName,
-    /// Currently iterated steps.
-    /// Can either end, display choices, or go to another story point.
-    sequence: Vec<Step>,
-    /// Index of the current step.
-    sequence_index: usize,
-    /// Determines the portrait used
-    speaker: Option<Character>,
-    /// When dialog is finished, run these commands.
-    #[reflect(ignore)]
-    when_finished: Option<CmdFn>,
 }
 
 /// The root entity of the dialog UI.
@@ -98,29 +77,24 @@ pub struct DialogChoice {
     is_selected: bool,
 }
 
-/// Next step in the dialog can take various forms.
-#[derive(Debug)]
-enum Step {
-    Text {
-        speaker: Character,
-        content: &'static str,
-    },
-    Choice {
-        speaker: Character,
-        content: &'static str,
-        between: Vec<DialogTargetChoice>,
-    },
-    GoTo {
-        story_point: DialogTargetGoto,
-    },
-}
+impl Dialog {
+    /// Spawns the dialog UI and inserts all necessary resources.
+    pub fn spawn_with_portrait_ui(
+        self,
+        cmd: &mut Commands,
+        asset_server: &AssetServer,
+    ) {
+        let speaker = self.current_node_info().who;
+        PortraitDialog::new(self.current_node.clone()).spawn(
+            cmd,
+            asset_server,
+            speaker,
+        );
 
-trait AsSequence {
-    fn sequence() -> Vec<Step>;
-}
+        self.spawn(cmd);
 
-trait AsChoice: AsSequence {
-    fn choice() -> &'static str;
+        // TODO: we need to schedule first advance
+    }
 }
 
 /// Call this to load the next step in the dialog.
@@ -131,7 +105,6 @@ pub fn advance(
     mut dialog_fe: ResMut<PortraitDialog>,
     mut dialog_be: ResMut<Dialog>,
     asset_server: Res<AssetServer>,
-    global_store: Res<GlobalStore>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 
     root: Query<Entity, With<DialogUiRoot>>,
@@ -182,54 +155,74 @@ pub fn advance(
 
     loop {
         if dialog_be.current_node != dialog_fe.last_rendered_node {
+            dialog_fe.last_rendered_node = dialog_be.current_node.clone();
+
             let node = dialog_be.current_node_info();
             if let NodeKind::Vocative { line } = &node.kind {
                 text.sections[0].value = line.clone();
                 portrait.single_mut().texture =
                     asset_server.load(node.who.portrait_asset_path());
-                dialog_fe.last_rendered_node = dialog_be.current_node.clone();
-                return;
+
+                // let the player to read the text
+                break;
             }
         }
 
         match dialog_be.advance(&mut cmd) {
             AdvanceOutcome::Transition => {
-                //
+                // run `advance` again
             }
             AdvanceOutcome::ScheduledDespawn => {
                 trace!("Despawning portrait dialog FE");
 
-                if let Some(f) = dialog_fe.when_finished.take() {
-                    f(&mut cmd)
-                }
+                dialog_fe.despawn(&mut cmd, &mut controls, root.single());
 
-                cmd.remove_resource::<PortraitDialog>();
-                cmd.entity(root.single()).despawn_recursive();
-
-                controls.consume_all();
+                // the dialog is over
+                break;
             }
             AdvanceOutcome::AwaitingPlayerChoice => {
-                let Branching::Choice(branches) = &dialog_be.branching else {
-                    panic!("AwaitingPlayerChoice implies Branching::Choice");
-                };
+                if choices.is_empty() {
+                    // display player choices
 
-                let choices = choices
-                    .iter()
-                    .map(|(entity, choice)| (entity, choice.clone()))
-                    .collect_vec();
-                let outcome = show_player_choices(
-                    &mut cmd,
-                    &asset_server,
-                    &dialog_be,
-                    root.single(),
-                    &choices,
-                    branches,
-                );
+                    let Branching::Choice(branches) = &dialog_be.branching
+                    else {
+                        panic!(
+                            "AwaitingPlayerChoice implies Branching::Choice"
+                        );
+                    };
 
-                // render choices
-                todo!()
+                    show_player_choices(
+                        &mut cmd,
+                        &asset_server,
+                        &dialog_be,
+                        root.single(),
+                        branches,
+                    );
+
+                    // let the player make a choice
+                    break;
+                } else {
+                    // choices were already displayed so this time the player
+                    // confirmed their choice
+
+                    let chosen_node_name = choices
+                        .iter()
+                        .find(|(_, choice)| choice.is_selected)
+                        .map(|(_, choice)| choice.of.clone())
+                        .expect("There should be a selected choice");
+
+                    choices.iter().for_each(|(entity, _)| {
+                        cmd.entity(entity).despawn_recursive()
+                    });
+
+                    dialog_be.transition_to(&mut cmd, chosen_node_name);
+
+                    // run `advance` again
+                }
             }
             AdvanceOutcome::CheckAgainAfterApplyDeferred => {
+                // guards are still doing their thing, try again later
+                // TODO: we need to check advance again next tick
                 break;
             }
         }
@@ -240,21 +233,17 @@ pub fn advance(
 /// For example, if the player presses the cancel key.
 pub fn cancel(
     mut cmd: Commands,
-    mut dialog: ResMut<PortraitDialog>,
+    mut dialog_be: ResMut<Dialog>,
+    mut dialog_fe: ResMut<PortraitDialog>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 
     root: Query<Entity, With<DialogUiRoot>>,
 ) {
     trace!("Canceling dialog");
 
-    if let Some(f) = dialog.when_finished.take() {
-        f(&mut cmd)
-    }
+    dialog_be.despawn(&mut cmd);
 
-    cmd.remove_resource::<PortraitDialog>();
-    cmd.entity(root.single()).despawn_recursive();
-
-    controls.consume_all();
+    dialog_fe.despawn(&mut cmd, &mut controls, root.single());
 }
 
 /// Run if pressed some movement key.
@@ -353,86 +342,114 @@ pub fn change_selection(
     }
 }
 
-/// Some optional settings for the dialog.
-#[derive(Default)]
-pub struct DialogSettings {
-    /// When dialog is finished, run these commands.
-    pub when_finished: Option<CmdFn>,
-}
+impl PortraitDialog {
+    fn new(initial_node: NodeName) -> Self {
+        Self {
+            last_frame_shown_at: Instant::now(),
+            last_rendered_node: initial_node, // TODO
+        }
+    }
 
-/// Spawns [`PortraitDialog`] resource and all the necessary UI components.
-fn spawn(
-    cmd: &mut Commands,
-    asset_server: &AssetServer,
-    global_store: &GlobalStore,
-    sequence: Vec<Step>,
-    settings: DialogSettings,
-) {
-    let mut dialog = PortraitDialog::new(sequence);
-    dialog.when_finished = settings.when_finished;
+    fn despawn(
+        &mut self,
+        cmd: &mut Commands,
+        controls: &mut ActionState<GlobalAction>,
+        root: Entity,
+    ) {
+        cmd.remove_resource::<PortraitDialog>();
+        cmd.entity(root).despawn_recursive();
 
-    let mut text = Text::from_section(
-        "",
-        TextStyle {
-            font: asset_server.load(FONT),
-            font_size: FONT_SIZE,
-            color: Color::BLACK,
-        },
-    );
+        controls.consume_all();
+    }
 
-    let root = cmd
-        .spawn((
-            Name::new("Dialog root"),
-            DialogUiRoot,
-            NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    left: DIALOG_LEFT,
-                    ..default()
-                },
-                ..default()
+    /// Spawns [`PortraitDialog`] resource and all the necessary UI components.
+    fn spawn(
+        self,
+        cmd: &mut Commands,
+        asset_server: &AssetServer,
+        speaker: Character,
+    ) {
+        cmd.insert_resource(self);
+
+        let text = Text::from_section(
+            "",
+            TextStyle {
+                font: asset_server.load(FONT),
+                font_size: FONT_SIZE,
+                color: Color::BLACK,
             },
-        ))
-        .id();
+        );
 
-    // let mut initial_speaker = None;
-    // let outcome = advance_sequence(
-    //     cmd,
-    //     asset_server,
-    //     global_store,
-    //     &mut dialog,
-    //     root,
-    //     &[],
-    //     |speaker| {
-    //         initial_speaker = Some(speaker);
-    //     },
-    // );
-    // if let SequenceFinished::Yes = outcome {
-    //     debug!("Dialog sequence finished before spawning");
-    //     cmd.entity(root).despawn();
-    //     return;
-    // }
-
-    cmd.insert_resource(dialog);
-    cmd.entity(root).with_children(|parent| {
-        parent
+        let root = cmd
             .spawn((
-                Name::new("Dialog bubble"),
-                RenderLayers::layer(render_layer::DIALOG),
-                UiImage::new(
-                    asset_server.load(common_assets::dialog::DIALOG_BUBBLE),
-                ),
+                Name::new("Dialog root"),
+                DialogUiRoot,
                 NodeBundle {
                     style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        left: DIALOG_LEFT,
+                        ..default()
+                    },
+                    ..default()
+                },
+            ))
+            .id();
+
+        cmd.entity(root).with_children(|parent| {
+            parent
+                .spawn((
+                    Name::new("Dialog bubble"),
+                    RenderLayers::layer(render_layer::DIALOG),
+                    UiImage::new(
+                        asset_server.load(common_assets::dialog::DIALOG_BUBBLE),
+                    ),
+                    NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            width: Val::Px(400.0),
+                            height: Val::Px(414.0),
+                            bottom: Val::Px(290.0),
+                            justify_content: JustifyContent::Center,
+                            justify_items: JustifyItems::Center,
+                            align_content: AlignContent::Center,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        // a `NodeBundle` is transparent by default, so to see
+                        // the image we have to its
+                        // color to `WHITE`
+                        background_color: Color::WHITE.into(),
+                        ..default()
+                    },
+                ))
+                .with_children(|parent| {
+                    parent.spawn((
+                        DialogText,
+                        Name::new("Dialog text"),
+                        RenderLayers::layer(render_layer::DIALOG),
+                        TextBundle {
+                            text,
+                            style: Style {
+                                width: Val::Px(TEXT_BOUNDS.x),
+                                height: Val::Px(TEXT_BOUNDS.y),
+                                ..default()
+                            },
+                            ..default()
+                        },
+                    ));
+                });
+
+            parent.spawn((
+                DialogPortrait,
+                Name::new("Dialog portrait"),
+                RenderLayers::layer(render_layer::DIALOG),
+                NodeBundle {
+                    style: Style {
+                        width: Val::Px(common_assets::portraits::SIZE_PX.x),
+                        height: Val::Px(common_assets::portraits::SIZE_PX.y),
                         position_type: PositionType::Absolute,
-                        width: Val::Px(400.0),
-                        height: Val::Px(414.0),
-                        bottom: Val::Px(290.0),
-                        justify_content: JustifyContent::Center,
-                        justify_items: JustifyItems::Center,
-                        align_content: AlignContent::Center,
-                        align_items: AlignItems::Center,
+                        bottom: Val::Px(0.0),
                         ..default()
                     },
                     // a `NodeBundle` is transparent by default, so to see the
@@ -440,84 +457,20 @@ fn spawn(
                     background_color: Color::WHITE.into(),
                     ..default()
                 },
-            ))
-            .with_children(|parent| {
-                parent.spawn((
-                    DialogText,
-                    Name::new("Dialog text"),
-                    RenderLayers::layer(render_layer::DIALOG),
-                    TextBundle {
-                        text,
-                        style: Style {
-                            width: Val::Px(TEXT_BOUNDS.x),
-                            height: Val::Px(TEXT_BOUNDS.y),
-                            ..default()
-                        },
-                        ..default()
-                    },
-                ));
-            });
-
-        let mut portrait_cmd = parent.spawn((
-            DialogPortrait,
-            Name::new("Dialog portrait"),
-            RenderLayers::layer(render_layer::DIALOG),
-            NodeBundle {
-                style: Style {
-                    width: Val::Px(common_assets::portraits::SIZE_PX.x),
-                    height: Val::Px(common_assets::portraits::SIZE_PX.y),
-                    position_type: PositionType::Absolute,
-                    bottom: Val::Px(0.0),
-                    ..default()
-                },
-                // a `NodeBundle` is transparent by default, so to see the image
-                // we have to its color to `WHITE`
-                background_color: Color::WHITE.into(),
-                ..default()
-            },
-        ));
-        // if let Some(speaker) = initial_speaker {
-        //     portrait_cmd.insert(UiImage::new(
-        //         asset_server.load(speaker.portrait_asset_path()),
-        //     ));
-        // }
-    });
+                UiImage::new(asset_server.load(speaker.portrait_asset_path())),
+            ));
+        });
+    }
 }
 
-#[must_use]
-enum SequenceFinished {
-    /// Can be despawned or spawning skipped altogether.
-    Yes,
-    /// More things to do.
-    No,
-}
-
-/// Executes each dialog step until it reaches a step that requires player
-/// input such as text or choice.
-#[allow(clippy::too_many_arguments)]
+/// Renders UI for player choices.
 fn show_player_choices(
     cmd: &mut Commands,
     asset_server: &AssetServer,
     dialog_be: &Dialog,
     root: Entity,
-    choices: &[(Entity, DialogChoice)],
     branches: &[BranchStatus],
 ) {
-    // if let Some((_, choice)) = choices.iter().find(|(_, c)| c.is_selected) {
-    // // choice made, next sequence
-    // trace!("Made choice {:?}", choice.of);
-
-    // global_store.insert_dialog_type_path(choice.of.type_path());
-
-    // choices
-    //     .iter()
-    //     .for_each(|(entity, _)| cmd.entity(*entity).despawn_recursive());
-
-    // dialog.sequence = choice.of.sequence();
-    // dialog.sequence_index = 0;
-    // } else {
-    // spawn choices
-
     let node = dialog_be.current_node_info();
     let between = branches
         .iter()
@@ -542,7 +495,6 @@ fn show_player_choices(
         spawn_choices(cmd, asset_server, transform_manager, &between);
 
     cmd.entity(root).push_children(&children);
-    // }
 }
 
 /// Each choice is spawned as a separate entity.
@@ -623,35 +575,11 @@ fn spawn_choices(
         .collect()
 }
 
-impl PortraitDialog {
-    fn new(sequence: Vec<Step>) -> Self {
-        Self {
-            last_rendered_node: todo!(),
-            sequence,
-            sequence_index: 0,
-            speaker: None,
-            last_frame_shown_at: Instant::now(),
-            when_finished: None,
-        }
-    }
-}
-
 pub(super) struct ChoicePositionManager {
     positions: Vec<Vec2>,
 }
 
 impl ChoicePositionManager {
-    pub(super) fn no_portrait(total_choices: usize) -> Self {
-        Self {
-            positions: match total_choices {
-                1 => vec![vec2(0.0, 75.0)],
-                2 => vec![vec2(0.0, 140.0), vec2(0.0, 75.0)],
-                3 => vec![vec2(0.0, 145.0), vec2(0.0, 75.0), vec2(0.0, 5.0)],
-                total => todo!("Cannot handle {total} choices"),
-            },
-        }
-    }
-
     fn get(&self, index: usize) -> Vec2 {
         debug_assert!(
             index < self.positions.len(),
@@ -689,24 +617,11 @@ impl Character {
     }
 }
 
-impl Step {
-    fn text(character: Character, content: &'static str) -> Self {
-        Self::Text {
-            speaker: character,
-            content,
-        }
-    }
-}
-
 impl Default for PortraitDialog {
     fn default() -> Self {
         Self {
-            last_rendered_node: todo!(),
             last_frame_shown_at: Instant::now(),
-            sequence: vec![],
-            sequence_index: 0,
-            speaker: None,
-            when_finished: None,
+            last_rendered_node: NodeName::EndDialog,
         }
     }
 }

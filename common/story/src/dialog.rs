@@ -8,10 +8,14 @@ mod guard;
 mod list;
 
 use bevy::{
-    ecs::system::{Commands, Resource},
-    log::{trace, warn},
+    ecs::{
+        reflect::ReflectResource,
+        system::{Commands, Resource},
+        world::World,
+    },
+    log::{error, trace, warn},
     reflect::Reflect,
-    utils::hashbrown::HashMap,
+    utils::{default, hashbrown::HashMap},
 };
 pub use list::DialogRoot;
 use serde::{Deserialize, Serialize};
@@ -19,20 +23,28 @@ use serde::{Deserialize, Serialize};
 use self::guard::{GuardCmd, GuardSystem};
 use crate::Character;
 
-// user option if dialog has more than 1 next node and the who is Winnie
-// TODO: validate that if an option all who are winnie
+/// Can be used on components and resources to schedule commands.
+pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
 
-/// TODO
-#[derive(Resource, Reflect, Debug)]
+/// Dialog backend.
+/// It is a state machine that can be advanced.
+/// It controls a fleet of guards that can read and write game state and allow
+/// the dialog logic to be stateful.
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
 pub struct Dialog {
     pub(crate) graph: DialogGraph,
     pub(crate) guard_systems: HashMap<NodeName, GuardSystem>,
     pub(crate) current_node: NodeName,
     pub(crate) branching: Branching,
+    /// When dialog is finished, run these commands.
+    #[reflect(ignore)]
+    pub(crate) when_finished: Vec<CmdFn>,
 }
 
-#[derive(Reflect, Debug)]
+#[derive(Reflect, Debug, Default)]
 pub(crate) enum Branching {
+    #[default]
     None,
     Single(NodeName),
     Choice(Vec<BranchStatus>),
@@ -62,13 +74,11 @@ pub(crate) struct Node {
     pub(crate) next: Vec<NodeName>,
 }
 
+/// TODO: globally unique, must contain some kind of file name space.
 #[derive(
     Debug, Deserialize, Serialize, Reflect, Clone, Hash, PartialEq, Eq,
 )]
 pub(crate) enum NodeName {
-    // todo: globally unique
-    // TODO: we could store just the hash of the string if we wanted to allow
-    // copy, but is worse for debugging
     Explicit(String),
     Auto(usize),
     EndDialog,
@@ -88,6 +98,7 @@ pub(crate) enum NodeKind {
     },
     Vocative {
         /// The dialog line to print.
+        /// TODO: give option
         line: String,
     },
 }
@@ -130,12 +141,19 @@ pub(crate) enum AdvanceOutcome {
 }
 
 impl Dialog {
+    /// Schedule a command to run when the dialog is finished.
+    /// As many commands as you want can be scheduled.
+    pub fn on_finished(mut self, fun: CmdFn) -> Self {
+        self.when_finished.push(fun);
+        self
+    }
+
     /// This method should be called by FE repeatedly until a node changes or
     /// all choice branches are evaluated.
     pub(crate) fn advance(&mut self, cmd: &mut Commands) -> AdvanceOutcome {
         match &self.current_node {
             NodeName::EndDialog => {
-                todo!();
+                self.despawn(cmd);
                 AdvanceOutcome::ScheduledDespawn
             }
             NodeName::Emerge => {
@@ -172,7 +190,11 @@ impl Dialog {
         &self.graph.nodes.get(&self.current_node).unwrap()
     }
 
-    fn transition_to(&mut self, cmd: &mut Commands, node_name: NodeName) {
+    pub(crate) fn transition_to(
+        &mut self,
+        cmd: &mut Commands,
+        node_name: NodeName,
+    ) {
         let next_nodes = &self.graph.nodes.get(&node_name).unwrap().next;
 
         self.current_node = node_name;
@@ -196,6 +218,31 @@ impl Dialog {
                     .collect(),
             )
         };
+    }
+
+    pub(crate) fn spawn(self, cmd: &mut Commands) {
+        cmd.insert_resource(self);
+    }
+
+    pub(crate) fn despawn(&mut self, cmd: &mut Commands) {
+        cmd.remove_resource::<Self>();
+
+        for (node_name, guard_system) in self.guard_systems.drain() {
+            cmd.run_system_with_input(
+                guard_system.entity,
+                GuardCmd::Despawn(node_name.clone()),
+            );
+            let system_id = guard_system.entity;
+            cmd.add(move |w: &mut World| {
+                if let Err(e) = w.remove_system(system_id) {
+                    error!("Error removing guard system: {e:?}");
+                }
+            });
+        }
+
+        for fun in self.when_finished.drain(..) {
+            fun(cmd);
+        }
     }
 
     fn transition_or_offer_player_choice_if_all_ready(
@@ -265,9 +312,10 @@ impl BranchStatus {
         branch_index: usize,
         node_name: &NodeName,
     ) -> Self {
-        let next_node_kind = &dialog.graph.nodes.get(node_name).unwrap().kind;
+        let next_node = &dialog.graph.nodes.get(node_name).unwrap();
+        assert_eq!(Character::Winnie, next_node.who);
 
-        match next_node_kind {
+        match &next_node.kind {
             NodeKind::Vocative { line } => {
                 //  TODO: this node is ready to be shown as an option
                 Self::OfferAsChoice(line.clone())
@@ -296,6 +344,68 @@ impl BranchStatus {
                 // we need to evaluate the guard
                 Self::Pending
             }
+        }
+    }
+}
+
+impl DialogGraph {
+    /// Create a new dialog resource.
+    /// It can then be associated with a FE to spawn the dialog.
+    pub fn into_dialog_resource(self) -> Dialog {
+        self.into()
+    }
+}
+
+impl std::fmt::Debug for Dialog {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Dialog")
+            .field("graph", &self.graph)
+            .field("guard_systems", &self.guard_systems)
+            .field("current_node", &self.current_node)
+            .field("branching", &self.branching)
+            .finish()
+    }
+}
+
+impl From<DialogGraph> for Dialog {
+    fn from(graph: DialogGraph) -> Self {
+        Self {
+            current_node: graph.root.clone(),
+            graph,
+            guard_systems: default(),
+            branching: default(),
+            when_finished: default(),
+        }
+    }
+}
+
+impl Default for Dialog {
+    /// Implemented because we want to reflect resource in Bevy.
+    fn default() -> Self {
+        Self {
+            graph: DialogGraph {
+                nodes: {
+                    let mut node_map = HashMap::default();
+                    node_map.insert(
+                        NodeName::EndDialog,
+                        Node {
+                            who: Character::Winnie,
+                            name: NodeName::EndDialog,
+                            kind: NodeKind::Guard {
+                                kind: GuardKind::EndDialog,
+                                params: default(),
+                            },
+                            next: Vec::new(),
+                        },
+                    );
+                    node_map
+                },
+                root: NodeName::EndDialog,
+            },
+            guard_systems: default(),
+            current_node: NodeName::EndDialog,
+            branching: default(),
+            when_finished: default(),
         }
     }
 }
