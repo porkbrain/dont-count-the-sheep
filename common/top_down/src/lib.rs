@@ -40,10 +40,6 @@ impl bevy::app::Plugin for Plugin {
 /// including from other packages:
 /// - [`common_assets::store::insert_as_resource`]
 /// - [`common_assets::store::remove_as_resource`]
-/// - [`common_story::despawn_camera`]
-/// - [`common_story::portrait_dialog::advance`]
-/// - [`common_story::portrait_dialog::change_selection`]
-/// - [`common_story::spawn_camera`]
 /// - [`crate::actor::animate_movement`]
 /// - [`crate::actor::emit_movement_events`]
 /// - [`crate::actor::npc::drive_behavior`]
@@ -130,32 +126,6 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
         )
             .run_if(in_state(running)),
     );
-
-    debug!("Adding story for {}", T::type_path());
-
-    app.add_systems(OnEnter(loading), common_story::spawn_camera)
-        .add_systems(
-            Update,
-            common_story::portrait_dialog::change_selection
-                .run_if(in_state(running))
-                .run_if(common_story::portrait_dialog::in_portrait_dialog())
-                .run_if(common_action::move_action_just_pressed()),
-        )
-        .add_systems(
-            Last,
-            common_story::portrait_dialog::advance
-                .run_if(in_state(running))
-                .run_if(common_story::portrait_dialog::in_portrait_dialog())
-                .run_if(common_action::interaction_just_pressed()),
-        )
-        .add_systems(
-            Update,
-            common_story::portrait_dialog::cancel
-                .run_if(in_state(running))
-                .run_if(common_story::portrait_dialog::in_portrait_dialog())
-                .run_if(common_action::cancel_just_pressed()),
-        )
-        .add_systems(OnEnter(quitting), common_story::despawn_camera);
 
     debug!("Adding inspect ability for {}", T::type_path());
 

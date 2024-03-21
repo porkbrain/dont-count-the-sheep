@@ -77,9 +77,13 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(portrait_dialog::Plugin);
+
         #[cfg(feature = "devtools")]
         {
-            app.register_type::<dialog::DialogGraph>();
+            app.register_type::<dialog::DialogGraph>()
+                .register_type::<dialog::Dialog>()
+                .register_type::<Character>();
         }
     }
 }

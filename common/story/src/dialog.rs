@@ -34,9 +34,10 @@ pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
 #[reflect(Resource)]
 pub struct Dialog {
     pub(crate) graph: DialogGraph,
-    pub(crate) guard_systems: HashMap<NodeName, GuardSystem>,
     pub(crate) current_node: NodeName,
     pub(crate) branching: Branching,
+    #[reflect(ignore)]
+    pub(crate) guard_systems: HashMap<NodeName, GuardSystem>,
     /// When dialog is finished, run these commands.
     #[reflect(ignore)]
     pub(crate) when_finished: Vec<CmdFn>,
@@ -130,7 +131,7 @@ pub(crate) enum AdvanceOutcome {
     /// # Important
     /// Don't call [`Dialog::advance`] before verifying that the current node
     /// has indeed not changed.
-    CheckAgainAfterApplyDeferred,
+    WaitUntilNextTick,
     /// You can check the new [`Dialog::current_node`].
     Transition,
     /// The dialog won't advance until the player makes a choice.
@@ -180,7 +181,7 @@ impl Dialog {
                         cmd.add(GuardCmd::TryTransition(node_name.clone()));
                     }
 
-                    AdvanceOutcome::CheckAgainAfterApplyDeferred
+                    AdvanceOutcome::WaitUntilNextTick
                 }
             },
         }
@@ -266,7 +267,7 @@ impl Dialog {
 
                 if any_pending {
                     // must be re-evaluated again next tick
-                    return AdvanceOutcome::CheckAgainAfterApplyDeferred;
+                    return AdvanceOutcome::WaitUntilNextTick;
                 }
 
                 let mut choices = branches.iter().enumerate().filter_map(

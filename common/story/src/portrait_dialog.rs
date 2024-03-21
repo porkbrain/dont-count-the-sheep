@@ -1,14 +1,7 @@
 //! When a dialog is spawned, it's already loaded as it should look and does not
 //! require any additional actions.
 //!
-//! To start a dialog, call [`DialogRoot::spawn`].
-//!
-//! # Systems
-//! - [`crate::portrait_dialog::advance`] that advances the dialog one step
-//!   further, presumably fire it when the player presses the interact key
-//! - [`crate::portrait_dialog::change_selection`] that changes the selected
-//!   choice based on whether the player **just** pressed up or down, run it if
-//!   the player pressed some movement key
+//! TODO
 
 use std::{collections::BTreeMap, time::Duration};
 
@@ -49,32 +42,7 @@ pub struct PortraitDialog {
     /// The tiny delay lets the brain to at least get the gist of what's
     /// being said.
     last_frame_shown_at: Instant,
-    last_rendered_node: NodeName,
-}
-
-/// The root entity of the dialog UI.
-#[derive(Component)]
-pub struct DialogUiRoot;
-
-/// A child of the root entity that contains the text.
-#[derive(Component)]
-pub struct DialogText;
-
-/// A child of the root entity that contains the portrait image.
-#[derive(Component)]
-pub struct DialogPortrait;
-
-/// Entities that render choices in dialogs.
-/// When advancing the dialog, the selected choice will be used to determine
-/// the next sequence.
-#[derive(Component, Clone, Debug)]
-pub struct DialogChoice {
-    of: NodeName,
-    /// Starts at 0.
-    order: usize,
-    /// Is selected either if it's the first choice or if the player changed
-    /// selection to this.
-    is_selected: bool,
+    last_rendered_node: Option<NodeName>,
 }
 
 impl Dialog {
@@ -85,28 +53,111 @@ impl Dialog {
         asset_server: &AssetServer,
     ) {
         let speaker = self.current_node_info().who;
-        PortraitDialog::new(self.current_node.clone()).spawn(
-            cmd,
-            asset_server,
-            speaker,
-        );
+        PortraitDialog::default().spawn(cmd, asset_server, speaker);
 
         self.spawn(cmd);
+    }
+}
 
-        // TODO: we need to schedule first advance
+#[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash, Reflect)]
+enum PortraitDialogState {
+    /// This is the initial state.
+    /// When in this state, no systems run.
+    #[default]
+    NotInDialog,
+    /// When in this state, we run system [`await_portrait_async_ops`] every
+    /// tick.
+    /// When the dialog is ready, it will yield control to player by
+    /// transitioning to [`PortraitDialogState::PlayerControl`].
+    WaitingForAsync,
+    /// When in this state, we run system [`player_wishes_to_continue`] when
+    /// the player presses the interact key.
+    PlayerControl,
+}
+
+/// Marks the dialog camera.
+#[derive(Component)]
+struct DialogCamera;
+
+/// The root entity of the dialog UI.
+#[derive(Component)]
+struct DialogUiRoot;
+
+/// A child of the root entity that contains the text.
+#[derive(Component)]
+struct DialogText;
+
+/// A child of the root entity that contains the portrait image.
+#[derive(Component)]
+struct DialogPortrait;
+
+/// Entities that render choices in dialogs.
+/// When advancing the dialog, the selected choice will be used to determine
+/// the next sequence.
+#[derive(Component, Clone, Debug, Reflect)]
+struct DialogChoice {
+    of: NodeName,
+    /// Starts at 0.
+    order: usize,
+    /// Is selected either if it's the first choice or if the player changed
+    /// selection to this.
+    is_selected: bool,
+}
+
+pub(crate) struct Plugin;
+
+impl bevy::app::Plugin for Plugin {
+    fn build(&self, app: &mut App) {
+        app.init_state::<PortraitDialogState>();
+
+        app.add_systems(
+            First,
+            await_portrait_async_ops
+                .run_if(in_state(PortraitDialogState::WaitingForAsync)),
+        )
+        .add_systems(
+            Last,
+            player_wishes_to_continue
+                .run_if(in_state(PortraitDialogState::PlayerControl))
+                .run_if(common_action::interaction_just_pressed()),
+        )
+        .add_systems(
+            Update,
+            change_selection
+                .run_if(in_state(PortraitDialogState::PlayerControl))
+                .run_if(common_action::move_action_just_pressed()),
+        )
+        .add_systems(
+            Update,
+            cancel
+                .run_if(in_state(PortraitDialogState::PlayerControl))
+                .run_if(common_action::cancel_just_pressed()),
+        );
+
+        #[cfg(feature = "devtools")]
+        {
+            app.register_type::<PortraitDialogState>()
+                .register_type::<PortraitDialog>()
+                .register_type::<DialogChoice>();
+        }
     }
 }
 
 /// Call this to load the next step in the dialog.
 /// A step could be some text, or a player choice, etc.
+///
+/// This should run only in state [`PortraitDialogState::PlayerControl`] and
+/// if the player hit the interact button.
 #[allow(clippy::too_many_arguments)]
-pub fn advance(
+fn player_wishes_to_continue(
     mut cmd: Commands,
+    mut next_dialog_state: ResMut<NextState<PortraitDialogState>>,
     mut dialog_fe: ResMut<PortraitDialog>,
     mut dialog_be: ResMut<Dialog>,
     asset_server: Res<AssetServer>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 
+    camera: Query<Entity, With<DialogCamera>>,
     root: Query<Entity, With<DialogUiRoot>>,
     mut text: Query<(&mut Text, &TextLayoutInfo), With<DialogText>>,
     mut portrait: Query<&mut UiImage, With<DialogPortrait>>,
@@ -153,32 +204,100 @@ pub fn advance(
         }
     }
 
+    let next_state = advance_dialog(
+        &mut cmd,
+        &mut dialog_be,
+        &mut dialog_fe,
+        &asset_server,
+        &mut controls,
+        camera.single(),
+        root.single(),
+        &mut text,
+        &mut portrait.single_mut(),
+        choices,
+    );
+    next_dialog_state.set(next_state);
+}
+
+/// Sometimes dialog nodes require some async operations to be completed before
+/// the dialog can continue.
+/// These are e.g. animations etc.
+///
+/// This system will wait until the async operations are done and then continue.
+///
+/// Run this only if in state [`PortraitDialogState::WaitingForAsync`].
+fn await_portrait_async_ops(
+    mut cmd: Commands,
+    mut next_dialog_state: ResMut<NextState<PortraitDialogState>>,
+    mut dialog_fe: ResMut<PortraitDialog>,
+    mut dialog_be: ResMut<Dialog>,
+    asset_server: Res<AssetServer>,
+    mut controls: ResMut<ActionState<GlobalAction>>,
+
+    camera: Query<Entity, With<DialogCamera>>,
+    root: Query<Entity, With<DialogUiRoot>>,
+    mut text: Query<&mut Text, With<DialogText>>,
+    mut portrait: Query<&mut UiImage, With<DialogPortrait>>,
+    choices: Query<(Entity, &DialogChoice)>,
+) {
+    let next_state = advance_dialog(
+        &mut cmd,
+        &mut dialog_be,
+        &mut dialog_fe,
+        &asset_server,
+        &mut controls,
+        camera.single(),
+        root.single(),
+        &mut text.single_mut(),
+        &mut portrait.single_mut(),
+        choices,
+    );
+    next_dialog_state.set(next_state);
+}
+
+fn advance_dialog(
+    cmd: &mut Commands,
+    dialog_be: &mut Dialog,
+    dialog_fe: &mut PortraitDialog,
+    asset_server: &AssetServer,
+    controls: &mut ActionState<GlobalAction>,
+    camera: Entity,
+    root: Entity,
+    text: &mut Text,
+    portrait: &mut UiImage,
+    choices: Query<(Entity, &DialogChoice)>,
+) -> PortraitDialogState {
     loop {
-        if dialog_be.current_node != dialog_fe.last_rendered_node {
-            dialog_fe.last_rendered_node = dialog_be.current_node.clone();
+        let last_matches_be_current = dialog_fe
+            .last_rendered_node
+            .as_ref()
+            .is_some_and(|n| *n == dialog_be.current_node);
+
+        if !last_matches_be_current {
+            dialog_fe.last_rendered_node = Some(dialog_be.current_node.clone());
 
             let node = dialog_be.current_node_info();
             if let NodeKind::Vocative { line } = &node.kind {
                 text.sections[0].value = line.clone();
-                portrait.single_mut().texture =
+                portrait.texture =
                     asset_server.load(node.who.portrait_asset_path());
 
-                // let the player to read the text
-                break;
+                // let the player read the text
+                break PortraitDialogState::PlayerControl;
             }
         }
 
-        match dialog_be.advance(&mut cmd) {
+        match dialog_be.advance(cmd) {
             AdvanceOutcome::Transition => {
                 // run `advance` again
             }
             AdvanceOutcome::ScheduledDespawn => {
                 trace!("Despawning portrait dialog FE");
 
-                dialog_fe.despawn(&mut cmd, &mut controls, root.single());
+                dialog_fe.despawn(cmd, controls, camera, root);
 
                 // the dialog is over
-                break;
+                break PortraitDialogState::NotInDialog;
             }
             AdvanceOutcome::AwaitingPlayerChoice => {
                 if choices.is_empty() {
@@ -192,15 +311,15 @@ pub fn advance(
                     };
 
                     show_player_choices(
-                        &mut cmd,
-                        &asset_server,
-                        &dialog_be,
-                        root.single(),
+                        cmd,
+                        asset_server,
+                        dialog_be,
+                        root,
                         branches,
                     );
 
                     // let the player make a choice
-                    break;
+                    break PortraitDialogState::PlayerControl;
                 } else {
                     // choices were already displayed so this time the player
                     // confirmed their choice
@@ -215,15 +334,14 @@ pub fn advance(
                         cmd.entity(entity).despawn_recursive()
                     });
 
-                    dialog_be.transition_to(&mut cmd, chosen_node_name);
+                    dialog_be.transition_to(cmd, chosen_node_name);
 
                     // run `advance` again
                 }
             }
-            AdvanceOutcome::CheckAgainAfterApplyDeferred => {
+            AdvanceOutcome::WaitUntilNextTick => {
                 // guards are still doing their thing, try again later
-                // TODO: we need to check advance again next tick
-                break;
+                break PortraitDialogState::WaitingForAsync;
             }
         }
     }
@@ -231,25 +349,27 @@ pub fn advance(
 
 /// Cancel the dialog.
 /// For example, if the player presses the cancel key.
-pub fn cancel(
+fn cancel(
     mut cmd: Commands,
+    mut next_dialog_state: ResMut<NextState<PortraitDialogState>>,
     mut dialog_be: ResMut<Dialog>,
     mut dialog_fe: ResMut<PortraitDialog>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 
     root: Query<Entity, With<DialogUiRoot>>,
+    camera: Query<Entity, With<DialogCamera>>,
 ) {
     trace!("Canceling dialog");
-
     dialog_be.despawn(&mut cmd);
+    dialog_fe.despawn(&mut cmd, &mut controls, root.single(), camera.single());
 
-    dialog_fe.despawn(&mut cmd, &mut controls, root.single());
+    next_dialog_state.set(PortraitDialogState::NotInDialog);
 }
 
 /// Run if pressed some movement key.
 /// If there are choices, then the selection will be changed if the movement
 /// was either up or down.
-pub fn change_selection(
+fn change_selection(
     controls: Res<ActionState<GlobalAction>>,
     asset_server: Res<AssetServer>,
 
@@ -343,21 +463,16 @@ pub fn change_selection(
 }
 
 impl PortraitDialog {
-    fn new(initial_node: NodeName) -> Self {
-        Self {
-            last_frame_shown_at: Instant::now(),
-            last_rendered_node: initial_node, // TODO
-        }
-    }
-
     fn despawn(
         &mut self,
         cmd: &mut Commands,
         controls: &mut ActionState<GlobalAction>,
+        camera: Entity,
         root: Entity,
     ) {
-        cmd.remove_resource::<PortraitDialog>();
+        cmd.entity(camera).despawn();
         cmd.entity(root).despawn_recursive();
+        cmd.remove_resource::<PortraitDialog>();
 
         controls.consume_all();
     }
@@ -370,6 +485,31 @@ impl PortraitDialog {
         speaker: Character,
     ) {
         cmd.insert_resource(self);
+        // this transitions into the first dialog node
+        cmd.add(|w: &mut World| {
+            w.get_resource_mut::<NextState<PortraitDialogState>>()
+                .unwrap()
+                .set(PortraitDialogState::WaitingForAsync)
+        });
+
+        // Spawns the dialog camera which has a high order and only renders the
+        // dialog entities.
+        let camera = cmd
+            .spawn((
+                Name::from("Portrait dialog camera"),
+                DialogCamera,
+                RenderLayers::layer(render_layer::DIALOG),
+                Camera2dBundle {
+                    camera: Camera {
+                        hdr: true,
+                        order: common_visuals::camera::order::DIALOG,
+                        clear_color: ClearColorConfig::None,
+                        ..default()
+                    },
+                    ..default()
+                },
+            ))
+            .id();
 
         let text = Text::from_section(
             "",
@@ -384,6 +524,7 @@ impl PortraitDialog {
             .spawn((
                 Name::new("Dialog root"),
                 DialogUiRoot,
+                TargetCamera(camera),
                 NodeBundle {
                     style: Style {
                         width: Val::Percent(100.0),
@@ -621,7 +762,7 @@ impl Default for PortraitDialog {
     fn default() -> Self {
         Self {
             last_frame_shown_at: Instant::now(),
-            last_rendered_node: NodeName::EndDialog,
+            last_rendered_node: default(),
         }
     }
 }
