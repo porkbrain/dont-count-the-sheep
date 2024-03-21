@@ -331,10 +331,14 @@ fn migrate(conn: &mut rusqlite::Connection) {
             "CREATE TABLE dialogs (
                 id INTEGER PRIMARY KEY,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                type_path TEXT NOT NULL
+                namespace TEXT NOT NULL,
+                node_name TEXT NOT NULL
             );",
         ),
-        M::up("CREATE INDEX idx_type_path ON dialogs (type_path);"),
+        M::up(
+            "CREATE INDEX idx_dialogs_namespace_node_name \
+            ON dialogs (namespace, node_name);",
+        ),
         M::up(
             "CREATE TABLE discovered_with_inspect_ability (
                 label TEXT PRIMARY KEY

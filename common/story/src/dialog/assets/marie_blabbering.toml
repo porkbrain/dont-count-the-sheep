@@ -1,7 +1,4 @@
-[dialog]
-
-
-[[node]]
+[root]
 who = "Marie"
 en = "My husband, he was one beautiful eucaryote."
 next = ["sorry_for_your_loss", "what_happened"]

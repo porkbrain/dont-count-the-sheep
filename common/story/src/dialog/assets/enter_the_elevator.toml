@@ -1,8 +1,4 @@
-[dialog]
-first_node = "root"
-
-[[node]]
-name = "root"
+[root]
 who = "Winnie"
 en = "Let's see, I'm going to ..."
 next = ["ground_floor", "first_floor", "exit_elevator"]
@@ -35,14 +31,14 @@ en = "... can't ... just ...\ncan you work you ..."
 en = "Arrgh!"
 [[node]]
 en = "Yep, that one is definitely not working."
-next = ["root"]
+next = "_root"
 
 [[node]]
 name = "one_more_time"
 en = "Let's try again.\nNah, still not working."
-next = ["root"]
+next = "_root"
 
 [[node]]
 name = "knows_elevator_not_working"
 en = "Still broken."
-next = ["root"]
+next = "_root"

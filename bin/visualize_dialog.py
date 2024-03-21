@@ -25,6 +25,25 @@ def visualize_dialog(dialog_toml):
     # Parse TOML
     dialog_data = toml.loads(dialog_toml)
 
+    try:
+        root = dialog_data["root"]
+
+        if "name" not in root:
+            # default root name
+            root["name"] = "_root"
+        elif root["name"] != "_root":
+            # if provided, name must always equal to _root
+            raise ValueError("Root object name should be '_root'")
+
+        # node list is now optional, so default it to a list
+        if "node" not in dialog_data:
+            dialog_data["node"] = []
+
+        # add root object to the node list
+        dialog_data["node"].append(root)
+    except KeyError:
+        raise KeyError("Root object is not present in dialog_data")
+
     # Add nodes to the graph
     for index, node in enumerate(dialog_data["node"]):
         node_name = node.get("name", f"node_{index}")

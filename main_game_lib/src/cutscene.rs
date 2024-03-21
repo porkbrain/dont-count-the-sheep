@@ -12,7 +12,11 @@
 
 use std::sync::OnceLock;
 
-use bevy::{ecs::system::SystemId, prelude::*, render::view::RenderLayers};
+use bevy::{
+    ecs::system::{CommandQueue, SystemId},
+    prelude::*,
+    render::view::RenderLayers,
+};
 use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_store::GlobalStore;
@@ -608,15 +612,18 @@ fn begin_portrait_dialog(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
     asset_server: Res<AssetServer>,
-    global_store: Res<GlobalStore>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
     let CutsceneStep::BeginPortraitDialog(dialog) = &step else {
         panic!("Expected BeginDialog step, got {step}");
     };
 
-    todo!();
-    // dialog.spawn(&mut cmd, &asset_server, &global_store, default());
+    let mut cmd_queue = CommandQueue::default();
+    dialog
+        .parse()
+        .into_dialog_resource(&mut cmd_queue)
+        .spawn_with_portrait_ui(&mut cmd, &asset_server);
+    cmd.append(&mut cmd_queue);
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }

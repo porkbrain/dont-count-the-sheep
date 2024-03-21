@@ -10,7 +10,9 @@ use bevy::{
 };
 use common_store::{DialogStore, GlobalStore};
 
-use super::{BranchStatus, Branching, Dialog, GuardKind, NodeKind, NodeName};
+use super::{
+    BranchStatus, Branching, Dialog, GuardKind, LocalNodeName, NodeKind,
+};
 
 #[derive(Reflect, Debug, Clone, Copy)]
 pub(crate) struct GuardSystem {
@@ -24,7 +26,7 @@ pub(crate) enum GuardCmd {
     ///
     /// For guard with async ops, such as displaying UI with animations,
     /// this command might not result in transition.
-    TryTransition(NodeName),
+    TryTransition(LocalNodeName),
     /// We want to show player choices in dialog.
     /// This command says: in the [`Dialog::next_nodes`] array, at the
     /// specified index, give us string that we should show to the player
@@ -32,7 +34,7 @@ pub(crate) enum GuardCmd {
     /// It's possible that the guard will decide to stop the current branch
     /// with [`NextNode::Stop`].
     PlayerChoice {
-        node_name: NodeName,
+        node_name: LocalNodeName,
         next_branch_index: usize,
     },
     /// The dialog is being despawned, save the state if necessary.
@@ -40,13 +42,13 @@ pub(crate) enum GuardCmd {
     /// # Important
     /// The command for despawning the system comes immediately after this
     /// guard cmd.
-    Despawn(NodeName),
+    Despawn(LocalNodeName),
 }
 
 impl GuardKind {
     pub(crate) fn register_system_cmd(
         self,
-        node_name: NodeName,
+        node_name: LocalNodeName,
     ) -> impl Command {
         move |w: &mut World| {
             let entity = match self {
@@ -86,7 +88,7 @@ impl Command for GuardCmd {
 }
 
 impl GuardCmd {
-    fn node_name(&self) -> &NodeName {
+    fn node_name(&self) -> &LocalNodeName {
         match self {
             Self::TryTransition(node_name)
             | Self::PlayerChoice { node_name, .. }

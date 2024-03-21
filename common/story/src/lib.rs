@@ -11,9 +11,8 @@ pub mod portrait_dialog;
 
 use std::time::Duration;
 
-use bevy::{prelude::*, render::view::RenderLayers};
+use bevy::prelude::*;
 use common_assets::store::AssetList;
-use common_visuals::camera::{order, render_layer};
 use serde::{Deserialize, Serialize};
 use strum::{
     AsRefStr, Display, EnumCount, EnumIter, EnumString, IntoEnumIterator,
@@ -85,41 +84,6 @@ impl bevy::app::Plugin for Plugin {
                 .register_type::<dialog::Dialog>()
                 .register_type::<Character>();
         }
-    }
-}
-
-/// Marks the dialog camera.
-#[derive(Component)]
-pub struct DialogCamera;
-
-/// Spawns the dialog camera which has a high order and only renders the dialog
-/// entities.
-pub fn spawn_camera(mut cmd: Commands) {
-    cmd.spawn((
-        Name::from("Dialog camera"),
-        DialogCamera,
-        RenderLayers::layer(render_layer::DIALOG),
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true,
-                order: order::DIALOG,
-                clear_color: ClearColorConfig::None,
-                ..default()
-            },
-            ..default()
-        },
-    ));
-}
-
-/// Despawns the dialog camera.
-/// By despawning the camera you clean up the existing entities.
-/// Some scenes don't have the dialog.
-pub fn despawn_camera(
-    mut cmd: Commands,
-    entities: Query<Entity, With<DialogCamera>>,
-) {
-    for entity in entities.iter() {
-        cmd.entity(entity).despawn_recursive();
     }
 }
 

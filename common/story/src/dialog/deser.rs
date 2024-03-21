@@ -1,28 +1,33 @@
 //! We store dialogs in TOML files.
 //! Here we parse that into Rust representation.
 
-use std::{borrow::Cow, str::FromStr};
+use std::{borrow::Cow, iter, str::FromStr};
 
 use bevy::utils::{default, hashbrown::HashMap};
 use serde::Deserialize;
 use serde_with::{formats::PreferOne, serde_as, OneOrMany};
 
 use crate::{
-    dialog::{DialogGraph, GuardKind, Node, NodeKind, NodeName},
+    dialog::{DialogGraph, GuardKind, LocalNodeName, Node, NodeKind},
     Character,
 };
 
+const ROOT_NODE_NAME: &str = "_root";
+
 #[derive(Debug, Deserialize)]
 pub(super) struct ParsedToml {
+    #[serde(default)]
     dialog: ParsedDialog,
+
+    /// Must always be present.
+    root: ParsedNode,
 
     #[serde(rename = "node")]
     nodes: Vec<ParsedNode>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 struct ParsedDialog {
-    first_node: Option<String>,
     #[serde(default)]
     vars: toml::Table,
 }
@@ -46,16 +51,18 @@ struct ParsedNode {
 /// 2. Add edges to the nodes.
 /// 3. Find the root node.
 pub(super) fn from_toml(
-    ParsedToml { dialog, nodes }: ParsedToml,
+    ParsedToml {
+        dialog,
+        mut root,
+        nodes,
+    }: ParsedToml,
 ) -> DialogGraph {
-    assert!(!nodes.is_empty(), "Dialog has no nodes");
-
-    let mut node_map = HashMap::with_capacity(nodes.len() + 2);
+    let mut node_map = HashMap::with_capacity(nodes.len() + 3);
     node_map.insert(
-        NodeName::EndDialog,
+        LocalNodeName::EndDialog,
         Node {
             who: Character::Winnie,
-            name: NodeName::EndDialog,
+            name: LocalNodeName::EndDialog,
             kind: NodeKind::Guard {
                 kind: GuardKind::EndDialog,
                 params: default(),
@@ -64,10 +71,10 @@ pub(super) fn from_toml(
         },
     );
     node_map.insert(
-        NodeName::Emerge,
+        LocalNodeName::Emerge,
         Node {
             who: Character::Winnie,
-            name: NodeName::Emerge,
+            name: LocalNodeName::Emerge,
             kind: NodeKind::Guard {
                 kind: GuardKind::Emerge,
                 params: default(),
@@ -79,14 +86,20 @@ pub(super) fn from_toml(
     //
     // 1.
     //
+    if let Some(name) = &root.name {
+        assert_eq!(ROOT_NODE_NAME, name, "Root node must be called _root");
+    } else {
+        root.name = Some(ROOT_NODE_NAME.to_owned());
+    }
+
     let mut prev_who = Character::Winnie;
-    for (index, node) in nodes.iter().enumerate() {
+    for (index, node) in nodes.iter().chain(iter::once(&root)).enumerate() {
         let who = who_from_vars(&dialog.vars, &node).unwrap_or(prev_who);
         let name = node
             .name
             .clone()
             .map(From::from)
-            .unwrap_or(NodeName::Auto(index));
+            .unwrap_or(LocalNodeName::Auto(index));
         let kind = node
             .guard
             .as_ref()
@@ -122,12 +135,12 @@ pub(super) fn from_toml(
     //
     // 2.
     //
-    for (index, node) in nodes.iter().enumerate() {
+    for (index, node) in nodes.iter().chain(iter::once(&root)).enumerate() {
         let name = node
             .name
             .clone()
             .map(From::from)
-            .unwrap_or(NodeName::Auto(index));
+            .unwrap_or(LocalNodeName::Auto(index));
 
         if node.next.is_empty() {
             // if no next node is specified, that implies that the next node
@@ -139,7 +152,7 @@ pub(super) fn from_toml(
                     next.name
                         .clone()
                         .map(From::from)
-                        .unwrap_or(NodeName::Auto(index + 1))
+                        .unwrap_or(LocalNodeName::Auto(index + 1))
                 })
                 .unwrap_or_else(|| panic!("Node '{name:?}' has no next node"));
 
@@ -149,7 +162,7 @@ pub(super) fn from_toml(
         }
 
         for next in &node.next {
-            let next_name = NodeName::from(next.clone());
+            let next_name = LocalNodeName::from(next.clone());
             // asserts node exists
             node_map
                 .get(&next_name)
@@ -159,27 +172,7 @@ pub(super) fn from_toml(
         }
     }
 
-    //
-    // 3.
-    //
-    let root_name = if let Some(name) = dialog.first_node {
-        NodeName::Explicit(name)
-    } else {
-        nodes
-            .get(0)
-            .unwrap()
-            .name
-            .clone()
-            .map(From::from)
-            .unwrap_or(NodeName::Auto(0))
-    };
-    // asserts root node exists
-    node_map.get(&root_name).expect("Root node not found");
-
-    DialogGraph {
-        nodes: node_map,
-        root: root_name,
-    }
+    DialogGraph { nodes: node_map }
 }
 
 // TODO: this can be deleted and done with strum's `EnumString`
@@ -269,12 +262,13 @@ fn who_from_vars(vars: &toml::Table, node: &ParsedNode) -> Option<Character> {
     })
 }
 
-impl From<String> for NodeName {
+impl From<String> for LocalNodeName {
     fn from(s: String) -> Self {
         match s.as_str() {
-            "_end_dialog" => NodeName::EndDialog,
-            "_emerge" => NodeName::Emerge,
-            _ => NodeName::Explicit(s),
+            "_end_dialog" => LocalNodeName::EndDialog,
+            "_emerge" => LocalNodeName::Emerge,
+            ROOT_NODE_NAME => LocalNodeName::Root,
+            _ => LocalNodeName::Explicit(s),
         }
     }
 }

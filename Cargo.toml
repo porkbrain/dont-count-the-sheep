@@ -25,7 +25,7 @@ members = [
 
 
 [workspace.dependencies.bevy]
-version = "=0.13.0"
+version = "=0.13.1"
 default-features = false
 features = [
     "bevy_asset",
@@ -51,6 +51,8 @@ bevy_pixel_camera = "0.13"
 bevy_webp_anim = "0.3"
 bevy-inspector-egui = { version = "0.23", default-features = false }
 leafwing-input-manager = "0.13"
+# Upgrade to 0.26.0 panics:
+# > Error adding plugin bevy_egui::EguiPlugin: : plugin was already added in application
 bevy_egui = "0.25"
 
 scene_apartment = { path = "scenes/apartment" }

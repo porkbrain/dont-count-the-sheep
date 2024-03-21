@@ -10,9 +10,9 @@ pub(super) fn system(
 ) {
     if state.is_none() {
         match &guard_cmd {
-            GuardCmd::TryTransition(NodeName::Explicit(node_name))
+            GuardCmd::TryTransition(LocalNodeName::Explicit(node_name))
             | GuardCmd::PlayerChoice {
-                node_name: NodeName::Explicit(node_name),
+                node_name: LocalNodeName::Explicit(node_name),
                 ..
             } => {
                 let from_store = store
@@ -40,7 +40,7 @@ pub(super) fn system(
                 .get(*state) // which one is next to show (if any)
                 .cloned()
                 .inspect(|_| *state += 1) // next time show the next one
-                .unwrap_or(NodeName::Emerge); // all shown, stop
+                .unwrap_or(LocalNodeName::Emerge); // all shown, stop
             dialog.transition_to(&mut cmd, next_node);
         }
         GuardCmd::PlayerChoice {
@@ -80,7 +80,7 @@ pub(super) fn system(
                 branches[next_branch_index] = next_node_choice;
             };
         }
-        GuardCmd::Despawn(NodeName::Explicit(node_name)) => {
+        GuardCmd::Despawn(LocalNodeName::Explicit(node_name)) => {
             store
                 .guard_state(GuardKind::ExhaustiveAlternatives, node_name)
                 .set((*state).into());
