@@ -67,9 +67,11 @@ position = Vector2(239, 75)
 texture = ExtResource("5_g377o")
 
 [node name="Storage" type="Sprite2D" parent="."]
-position = Vector2(-63, 89)
+position = Vector2(-60, 89)
 texture = ExtResource("6_egw2s")
 
 [node name="MallGate" type="Sprite2D" parent="."]
 position = Vector2(140, 114)
 texture = ExtResource("7_34v1c")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

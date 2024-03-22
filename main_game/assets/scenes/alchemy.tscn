@@ -1,0 +1,61 @@
+[gd_scene load_steps=12 format=3 uid="uid://ct56ht7ur0t0f"]
+
+[ext_resource type="Texture2D" uid="uid://dcer01q7xv8ia" path="res://assets/alchemy/bg.png" id="1_74288"]
+[ext_resource type="Texture2D" uid="uid://3ggxvu4wvtcb" path="res://assets/alchemy/tea_box.png" id="2_x3my5"]
+[ext_resource type="Texture2D" uid="uid://cswqu52p4ag0o" path="res://assets/alchemy/teapot_teal.png" id="3_0pq5q"]
+[ext_resource type="Texture2D" uid="uid://cllt2xgn1jrdt" path="res://assets/alchemy/teapot_red.png" id="3_wij4x"]
+[ext_resource type="Texture2D" uid="uid://cyurmhys8esne" path="res://assets/alchemy/spoon.png" id="5_hjsa6"]
+[ext_resource type="Texture2D" uid="uid://c8ih8etw43coe" path="res://assets/alchemy/travel_cup_lavender.png" id="6_d35pb"]
+[ext_resource type="Texture2D" uid="uid://x83a5p2kcrbi" path="res://assets/alchemy/travel_cup_teal.png" id="7_hhmnr"]
+[ext_resource type="Texture2D" uid="uid://btigpyo866en0" path="res://assets/alchemy/podlozka_shadows.png" id="8_52jx3"]
+[ext_resource type="Texture2D" uid="uid://dbgbvfbydn1qw" path="res://assets/alchemy/sun_tea.png" id="9_ewqpb"]
+[ext_resource type="Texture2D" uid="uid://q6vrwa5soyby" path="res://assets/alchemy/lavender_tea.png" id="10_vkvkw"]
+[ext_resource type="Texture2D" uid="uid://dlc4uicxk3l14" path="res://assets/alchemy/tea_detail.png" id="11_q702v"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="Bg" type="Sprite2D" parent="."]
+z_index = -2
+position = Vector2(8, -2)
+texture = ExtResource("1_74288")
+
+[node name="TeaBox" type="Sprite2D" parent="."]
+position = Vector2(174, -28)
+texture = ExtResource("2_x3my5")
+
+[node name="TeapotTeal" type="Sprite2D" parent="."]
+position = Vector2(-49, 2)
+texture = ExtResource("3_0pq5q")
+
+[node name="TeapotRed" type="Sprite2D" parent="."]
+position = Vector2(-49, 2)
+texture = ExtResource("3_wij4x")
+
+[node name="Spoon" type="Sprite2D" parent="."]
+position = Vector2(-209, 83)
+texture = ExtResource("5_hjsa6")
+
+[node name="TravelCupLavender" type="Sprite2D" parent="."]
+position = Vector2(-213, -80)
+texture = ExtResource("6_d35pb")
+
+[node name="TravelCupTeal" type="Sprite2D" parent="."]
+position = Vector2(-213, -80)
+texture = ExtResource("7_hhmnr")
+
+[node name="PodlozkaShadows" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(8, -1)
+texture = ExtResource("8_52jx3")
+
+[node name="SunTea" type="Sprite2D" parent="."]
+position = Vector2(138, 40)
+texture = ExtResource("9_ewqpb")
+
+[node name="LavenderTea" type="Sprite2D" parent="."]
+position = Vector2(210, -13)
+texture = ExtResource("10_vkvkw")
+
+[node name="TeaDetail" type="Sprite2D" parent="."]
+position = Vector2(12, 27)
+texture = ExtResource("11_q702v")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=28 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -14,7 +14,15 @@
 [ext_resource type="Texture2D" uid="uid://qjb3dquepnch" path="res://assets/downtown/truck.png" id="12_mwj3x"]
 [ext_resource type="Texture2D" uid="uid://cs4xyldoxgtxg" path="res://assets/downtown/tree.png" id="13_7q235"]
 [ext_resource type="Texture2D" uid="uid://b7r70khewajh0" path="res://assets/downtown/lamp.png" id="14_8uy80"]
-[ext_resource type="Texture2D" uid="uid://b3l3d28gta56i" path="res://assets/downtown/water_bottle.png" id="15_08gmr"]
+[ext_resource type="Texture2D" uid="uid://d3swa0vc5iitv" path="res://assets/downtown/briza.png" id="16_xr53b"]
+[ext_resource type="Texture2D" uid="uid://lgsyrvis4y80" path="res://assets/downtown/wired_fence.png" id="17_5ai3x"]
+[ext_resource type="Texture2D" uid="uid://bneahsxtb6wpe" path="res://assets/downtown/front_field.png" id="18_yr0u5"]
+[ext_resource type="Texture2D" uid="uid://bq3fw5e27w801" path="res://assets/downtown/house_plantshoptrio.png" id="19_fdu3c"]
+[ext_resource type="Texture2D" uid="uid://dcl4guw8e72nh" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
+[ext_resource type="Texture2D" uid="uid://bbvuyahml5l4l" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]
+[ext_resource type="Texture2D" uid="uid://cvg4gqeelonji" path="res://assets/downtown/water_bottle_half.png" id="21_8m32a"]
+[ext_resource type="Texture2D" uid="uid://dy8urm75tam2x" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
+[ext_resource type="Texture2D" uid="uid://bqhuebro50e5n" path="res://assets/downtown/tower.png" id="23_7ng4s"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -52,28 +60,6 @@ z_index = -5
 position = Vector2(230, 95)
 texture = ExtResource("1_ac7tb")
 
-[node name="AcAtlas" type="AnimatedSprite2D" parent="."]
-z_index = -4
-position = Vector2(-686, -30)
-sprite_frames = SubResource("SpriteFrames_q1mli")
-frame_progress = 0.564611
-
-[node name="Waterdispenser" type="Sprite2D" parent="."]
-position = Vector2(-352, -55)
-texture = ExtResource("3_mnq47")
-
-[node name="BambooRooftop" type="Sprite2D" parent="."]
-position = Vector2(-401, -56)
-texture = ExtResource("4_uahdt")
-
-[node name="RecycleBin" type="Sprite2D" parent="."]
-position = Vector2(-66, -40)
-texture = ExtResource("5_her3o")
-
-[node name="Cone" type="Sprite2D" parent="."]
-position = Vector2(-66, 42)
-texture = ExtResource("6_4cklq")
-
 [node name="RecycleBin2" type="Sprite2D" parent="."]
 position = Vector2(382, -217)
 texture = ExtResource("5_her3o")
@@ -108,24 +94,16 @@ position = Vector2(-113, -257)
 texture = ExtResource("9_gwh2v")
 
 [node name="TrashcanTables" type="Sprite2D" parent="."]
-position = Vector2(-293, 165)
+position = Vector2(-325, 107)
 texture = ExtResource("10_nyc25")
 
-[node name="Beer" type="Sprite2D" parent="."]
-position = Vector2(-323, 121)
-texture = ExtResource("11_e3pff")
-
-[node name="Beer2" type="Sprite2D" parent="."]
-position = Vector2(-574, 131)
+[node name="Beer" type="Sprite2D" parent="TrashcanTables"]
+position = Vector2(-2, -13)
 texture = ExtResource("11_e3pff")
 
 [node name="Beer3" type="Sprite2D" parent="."]
 position = Vector2(-846, -336)
 texture = ExtResource("11_e3pff")
-
-[node name="Truck" type="Sprite2D" parent="."]
-position = Vector2(-634, 432)
-texture = ExtResource("12_mwj3x")
 
 [node name="Tree" type="Sprite2D" parent="."]
 position = Vector2(799, 72)
@@ -155,6 +133,175 @@ texture = ExtResource("14_8uy80")
 position = Vector2(614, -235)
 texture = ExtResource("14_8uy80")
 
-[node name="WaterBottle" type="Sprite2D" parent="."]
-position = Vector2(-439, 184)
-texture = ExtResource("15_08gmr")
+[node name="WiredFence4" type="Sprite2D" parent="."]
+position = Vector2(525, -64)
+texture = ExtResource("17_5ai3x")
+
+[node name="FrontField" type="Sprite2D" parent="."]
+z_index = -2
+position = Vector2(630, 7)
+texture = ExtResource("18_yr0u5")
+
+[node name="WiredFence5" type="Sprite2D" parent="."]
+position = Vector2(733, -63)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence6" type="Sprite2D" parent="."]
+position = Vector2(648, -63)
+texture = ExtResource("17_5ai3x")
+
+[node name="HousePlantshoptrio" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(293, -297)
+texture = ExtResource("19_fdu3c")
+
+[node name="RoofMall" type="Node2D" parent="."]
+
+[node name="Cone" type="Sprite2D" parent="RoofMall"]
+position = Vector2(-66, 42)
+texture = ExtResource("6_4cklq")
+
+[node name="Waterdispenser" type="Sprite2D" parent="RoofMall"]
+position = Vector2(-352, -55)
+texture = ExtResource("3_mnq47")
+
+[node name="AcAtlas" type="AnimatedSprite2D" parent="RoofMall"]
+z_index = -4
+position = Vector2(-686, -30)
+sprite_frames = SubResource("SpriteFrames_q1mli")
+autoplay = "default"
+frame = 2
+frame_progress = 1.0
+
+[node name="BambooRooftop" type="Sprite2D" parent="RoofMall"]
+position = Vector2(-401, -56)
+texture = ExtResource("4_uahdt")
+
+[node name="TrashcanTables6" type="Sprite2D" parent="RoofMall"]
+position = Vector2(-555, -10)
+texture = ExtResource("10_nyc25")
+
+[node name="TrashcanTables3" type="Sprite2D" parent="RoofMall"]
+position = Vector2(-293, 146)
+texture = ExtResource("10_nyc25")
+
+[node name="TrashcanTables5" type="Sprite2D" parent="RoofMall"]
+position = Vector2(-262, 105)
+texture = ExtResource("10_nyc25")
+
+[node name="TrashcanTables4" type="Sprite2D" parent="RoofMall"]
+position = Vector2(-631, 29)
+texture = ExtResource("10_nyc25")
+
+[node name="UmbrellaChair2" type="Sprite2D" parent="RoofMall"]
+position = Vector2(-423, 159)
+texture = ExtResource("20_sy6x1")
+
+[node name="WaterBottleHalf" type="Sprite2D" parent="RoofMall/UmbrellaChair2"]
+position = Vector2(-13, 25)
+texture = ExtResource("21_8m32a")
+
+[node name="UmbrellaChair" type="Sprite2D" parent="RoofMall"]
+position = Vector2(-565, 111)
+texture = ExtResource("20_sy6x1")
+
+[node name="Beer2" type="Sprite2D" parent="RoofMall/UmbrellaChair"]
+position = Vector2(-10, 24)
+texture = ExtResource("11_e3pff")
+
+[node name="RecycleBin" type="Sprite2D" parent="RoofMall"]
+position = Vector2(-66, -40)
+texture = ExtResource("5_her3o")
+
+[node name="compound" type="Node2D" parent="."]
+
+[node name="fences" type="Node2D" parent="compound"]
+
+[node name="CompoundGate" type="Sprite2D" parent="compound/fences"]
+z_index = -4
+position = Vector2(-357, -372)
+texture = ExtResource("20_o0xfm")
+
+[node name="WiredFence" type="Sprite2D" parent="compound/fences"]
+z_index = -2
+position = Vector2(-844, -368)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence2" type="Sprite2D" parent="compound/fences"]
+z_index = -2
+position = Vector2(-929, -368)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence3" type="Sprite2D" parent="compound/fences"]
+z_index = -2
+position = Vector2(-1014, -368)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence7" type="Sprite2D" parent="compound/fences"]
+z_index = -4
+position = Vector2(130, -368)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence8" type="Sprite2D" parent="compound/fences"]
+z_index = -4
+position = Vector2(291, -366)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence9" type="Sprite2D" parent="compound/fences"]
+z_index = -4
+position = Vector2(376, -366)
+texture = ExtResource("17_5ai3x")
+
+[node name="Briza" type="Sprite2D" parent="compound"]
+position = Vector2(-32, -589)
+texture = ExtResource("16_xr53b")
+
+[node name="UmbrellaChair" type="Sprite2D" parent="."]
+position = Vector2(-432, 31)
+texture = ExtResource("20_sy6x1")
+
+[node name="parking" type="Node2D" parent="."]
+
+[node name="Truck" type="Sprite2D" parent="parking"]
+position = Vector2(-634, 432)
+texture = ExtResource("12_mwj3x")
+
+[node name="TrashcanTables2" type="Sprite2D" parent="parking"]
+position = Vector2(-677, 507)
+texture = ExtResource("10_nyc25")
+
+[node name="Beer4" type="Sprite2D" parent="parking/TrashcanTables2"]
+position = Vector2(-2, -14)
+texture = ExtResource("11_e3pff")
+
+[node name="TrashcanTables7" type="Sprite2D" parent="parking"]
+position = Vector2(-617, 508)
+texture = ExtResource("10_nyc25")
+
+[node name="TrashcanTables8" type="Sprite2D" parent="parking"]
+position = Vector2(-645, 544)
+texture = ExtResource("10_nyc25")
+
+[node name="TrashcanTables9" type="Sprite2D" parent="parking"]
+position = Vector2(-678, 576)
+texture = ExtResource("10_nyc25")
+
+[node name="TrashcanTables10" type="Sprite2D" parent="parking"]
+position = Vector2(-615, 582)
+texture = ExtResource("10_nyc25")
+
+[node name="WiredFence" type="Sprite2D" parent="."]
+position = Vector2(114.5, 280.5)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence2" type="Sprite2D" parent="."]
+position = Vector2(29.5, 280.5)
+texture = ExtResource("17_5ai3x")
+
+[node name="ConstructionSiteSign" type="Sprite2D" parent="WiredFence2"]
+position = Vector2(1.5, 1)
+texture = ExtResource("22_m6eml")
+
+[node name="Tower" type="Sprite2D" parent="."]
+position = Vector2(-189, -1000)
+texture = ExtResource("23_7ng4s")

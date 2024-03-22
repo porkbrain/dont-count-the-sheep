@@ -1,21 +1,26 @@
-[gd_scene load_steps=72 format=3 uid="uid://dyrtqlwb1xtvf"]
+[gd_scene load_steps=77 format=3 uid="uid://dyrtqlwb1xtvf"]
 
-[ext_resource type="Texture2D" uid="uid://ciwlf0c0gyyyq" path="res://assets/apartment/bg.png" id="1_310fv"]
-[ext_resource type="Texture2D" uid="uid://bycuegh5eiofi" path="res://assets/apartment/cupboard.png" id="2_c00iy"]
-[ext_resource type="Texture2D" uid="uid://kytoyoyhjxxv" path="res://assets/apartment/cloud_atlas.png" id="2_dx2fn"]
-[ext_resource type="Texture2D" uid="uid://dn0f5bt32acd5" path="res://assets/apartment/backwall_furniture.png" id="2_l5qi7"]
-[ext_resource type="Texture2D" uid="uid://2nr502qjl1fn" path="res://assets/apartment/hallway.png" id="3_j8n3v"]
-[ext_resource type="Texture2D" uid="uid://d4gt4aikjid7a" path="res://assets/apartment/meditation_chair.png" id="3_j21xo"]
-[ext_resource type="Texture2D" uid="uid://d07qq5e0nd3h1" path="res://assets/apartment/toilet.png" id="4_5m0ph"]
-[ext_resource type="Texture2D" uid="uid://cq4dga042qxr" path="res://assets/apartment/elevator_atlas.png" id="4_oy5kx"]
-[ext_resource type="Texture2D" uid="uid://btsd7or6tk701" path="res://assets/apartment/laundry_basket.png" id="5_1layt"]
-[ext_resource type="Texture2D" uid="uid://kbsekm7v1fbk" path="res://assets/apartment/shoerack.png" id="9_aon56"]
-[ext_resource type="Texture2D" uid="uid://cxrax8hnp6oxo" path="res://assets/apartment/kitchen_table.png" id="10_xlbad"]
-[ext_resource type="Texture2D" uid="uid://iwunrdjegi2a" path="res://assets/apartment/brown_light_door_atlas.png" id="11_843ty"]
-[ext_resource type="Texture2D" uid="uid://mn6fsc2pn682" path="res://assets/apartment/fridge.png" id="12_wmkhs"]
-[ext_resource type="Texture2D" uid="uid://cqsdb5tp644w6" path="res://assets/apartment/vending_machine_atlas.png" id="14_1rrw2"]
-[ext_resource type="Texture2D" uid="uid://3212443mchtu" path="res://assets/apartment/brown_dark_door_atlas.png" id="15_uv0h5"]
-[ext_resource type="Texture2D" uid="uid://p6o4g707hml2" path="res://assets/apartment/package.png" id="16_xbi0t"]
+[ext_resource type="Texture2D" uid="uid://bricm0td6wv0a" path="res://assets/apartment/bg.png" id="1_310fv"]
+[ext_resource type="Texture2D" uid="uid://d4nio84mwac6h" path="res://assets/apartment/cupboard.png" id="2_c00iy"]
+[ext_resource type="Texture2D" uid="uid://d2307x8vnar88" path="res://assets/apartment/cloud_atlas.png" id="2_dx2fn"]
+[ext_resource type="Texture2D" uid="uid://bpyb6wjdu5d8i" path="res://assets/apartment/backwall_furniture.png" id="2_l5qi7"]
+[ext_resource type="Texture2D" uid="uid://tnf5osf57sy7" path="res://assets/apartment/hallway.png" id="3_j8n3v"]
+[ext_resource type="Texture2D" uid="uid://b0ri10adnfj07" path="res://assets/apartment/meditation_chair.png" id="3_j21xo"]
+[ext_resource type="Texture2D" uid="uid://cr0db66rcmgi4" path="res://assets/apartment/toilet.png" id="4_5m0ph"]
+[ext_resource type="Texture2D" uid="uid://bysxl6vneopup" path="res://assets/apartment/elevator_atlas.png" id="4_oy5kx"]
+[ext_resource type="Texture2D" uid="uid://b670eis7td4i2" path="res://assets/apartment/laundry_basket.png" id="5_1layt"]
+[ext_resource type="Texture2D" uid="uid://bhjx5gwvbw685" path="res://assets/apartment/shoerack.png" id="9_aon56"]
+[ext_resource type="Texture2D" uid="uid://iggm6gyhovjb" path="res://assets/apartment/kitchen_table.png" id="10_xlbad"]
+[ext_resource type="Texture2D" uid="uid://bpf0ynledh1b3" path="res://assets/apartment/brown_light_door_atlas.png" id="11_843ty"]
+[ext_resource type="Texture2D" uid="uid://cka1ouskra27" path="res://assets/apartment/fridge.png" id="12_wmkhs"]
+[ext_resource type="Texture2D" uid="uid://ci14c8skwcj7l" path="res://assets/apartment/vending_machine_atlas.png" id="14_1rrw2"]
+[ext_resource type="Texture2D" uid="uid://cr11n5q0emwcs" path="res://assets/apartment/brown_dark_door_atlas.png" id="15_uv0h5"]
+[ext_resource type="Texture2D" uid="uid://cmjj0i8krpajr" path="res://assets/apartment/package.png" id="16_xbi0t"]
+[ext_resource type="Texture2D" uid="uid://bq1om7k0xupt4" path="res://assets/downtown/water_bottle_empty.png" id="17_je4lx"]
+[ext_resource type="Texture2D" uid="uid://jjh251d55ix0" path="res://assets/apartment/extraRoom.png" id="18_21dkk"]
+[ext_resource type="Texture2D" uid="uid://c3xdnoi54w2b5" path="res://assets/apartment/policka_kocka.png" id="19_u2nxq"]
+[ext_resource type="Texture2D" uid="uid://cjba1m2q05bip" path="res://assets/apartment/skrabadlo.png" id="20_v30ey"]
+[ext_resource type="Texture2D" uid="uid://dmx1wicn8ly5v" path="res://assets/apartment/can.png" id="21_4e0f2"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nte4w"]
 atlas = ExtResource("2_dx2fn")
@@ -513,7 +518,7 @@ sprite_frames = SubResource("SpriteFrames_lxk6t")
 [node name="HallwayEntity" type="Node" parent="VendingMachine"]
 
 [node name="HallwayDoor1" type="AnimatedSprite2D" parent="."]
-position = Vector2(-152.5, 112)
+position = Vector2(-152.5, 110)
 sprite_frames = SubResource("SpriteFrames_j7cpw")
 
 [node name="YSort" type="Node2D" parent="HallwayDoor1"]
@@ -522,7 +527,7 @@ position = Vector2(0, 18)
 [node name="HallwayEntity" type="Node" parent="HallwayDoor1"]
 
 [node name="HallwayDoor2" type="AnimatedSprite2D" parent="."]
-position = Vector2(26, 112)
+position = Vector2(51, 110)
 sprite_frames = SubResource("SpriteFrames_j7cpw")
 
 [node name="YSort" type="Node2D" parent="HallwayDoor2"]
@@ -537,3 +542,24 @@ texture = ExtResource("16_xbi0t")
 
 [node name="InspectLabel" type="Node" parent="Package"]
 metadata/label = "Open package"
+
+[node name="WaterBottleEmpty" type="Sprite2D" parent="."]
+position = Vector2(-98, -68)
+texture = ExtResource("17_je4lx")
+
+[node name="ExtraRoom" type="Sprite2D" parent="."]
+z_index = -4
+position = Vector2(0, 128)
+texture = ExtResource("18_21dkk")
+
+[node name="PolickaKocka" type="Sprite2D" parent="."]
+position = Vector2(93, 119)
+texture = ExtResource("19_u2nxq")
+
+[node name="Skrabadlo" type="Sprite2D" parent="."]
+position = Vector2(190, 118)
+texture = ExtResource("20_v30ey")
+
+[node name="Can" type="Sprite2D" parent="."]
+position = Vector2(102, 107)
+texture = ExtResource("21_4e0f2")
