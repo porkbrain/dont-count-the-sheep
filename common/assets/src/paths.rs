@@ -92,7 +92,7 @@ pub mod portraits {
 
     pub const WINNIE: &str = "characters/portraits/winnie1.png";
     pub const PHOEBE: &str = "characters/portraits/princess1.png";
-    pub const MARIE: &str = "characters/portraits/widow1.png";
+    pub const MARIE: &str = "characters/portraits/marie1.png";
     pub const BOLT: &str = "characters/portraits/bolt1.png";
     pub const CAPY: &str = "characters/portraits/capy1.png";
     pub const CAT: &str = "characters/portraits/cat1.png";
@@ -111,6 +111,6 @@ pub mod character_atlases {
     pub const FOLDER: &str = "characters/atlases";
 
     pub const WINNIE: &str = "characters/atlases/winnie1.png";
-    pub const MARIE: &str = "characters/atlases/widow1.png";
+    pub const MARIE: &str = "characters/atlases/marie1.png";
     pub const UNNAMED: &str = "characters/atlases/noname1.png";
 }

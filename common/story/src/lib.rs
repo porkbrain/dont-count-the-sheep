@@ -4,14 +4,14 @@
 #![feature(round_char_boundary)]
 #![feature(trivial_bounds)]
 #![deny(missing_docs)]
+#![feature(let_chains)]
 
-pub mod portrait_dialog;
+pub mod dialog;
 
 use std::time::Duration;
 
-use bevy::{prelude::*, render::view::RenderLayers};
+use bevy::prelude::*;
 use common_assets::store::AssetList;
-use common_visuals::camera::{order, render_layer};
 use serde::{Deserialize, Serialize};
 use strum::{
     AsRefStr, Display, EnumCount, EnumIter, EnumString, IntoEnumIterator,
@@ -69,38 +69,20 @@ pub enum Character {
     Otter,
 }
 
-/// Marks the dialog camera.
-#[derive(Component)]
-pub struct DialogCamera;
+/// Registers necessary assets and asset loaders.
+#[derive(Default)]
+pub struct Plugin;
 
-/// Spawns the dialog camera which has a high order and only renders the dialog
-/// entities.
-pub fn spawn_camera(mut cmd: Commands) {
-    cmd.spawn((
-        Name::from("Dialog camera"),
-        DialogCamera,
-        RenderLayers::layer(render_layer::DIALOG),
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true,
-                order: order::DIALOG,
-                clear_color: ClearColorConfig::None,
-                ..default()
-            },
-            ..default()
-        },
-    ));
-}
+impl bevy::app::Plugin for Plugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(dialog::fe::portrait::Plugin);
 
-/// Despawns the dialog camera.
-/// By despawning the camera you clean up the existing entities.
-/// Some scenes don't have the dialog.
-pub fn despawn_camera(
-    mut cmd: Commands,
-    entities: Query<Entity, With<DialogCamera>>,
-) {
-    for entity in entities.iter() {
-        cmd.entity(entity).despawn_recursive();
+        #[cfg(feature = "devtools")]
+        {
+            app.register_type::<dialog::DialogGraph>()
+                .register_type::<dialog::Dialog>()
+                .register_type::<Character>();
+        }
     }
 }
 

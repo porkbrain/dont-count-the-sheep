@@ -2,6 +2,7 @@
 #![deny(missing_docs)]
 
 use std::{
+    borrow::{Borrow, Cow},
     marker::PhantomData,
     sync::{Arc, Mutex},
 };
@@ -29,7 +30,7 @@ pub struct GlobalStore {
 /// A key-value entry that you can read, write and remove.
 pub struct Entry<'a, T> {
     store: &'a Mutex<rusqlite::Connection>,
-    key: &'static str,
+    key: Cow<'static, str>,
 
     _phantom: PhantomData<T>,
 }
@@ -51,7 +52,7 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
         };
 
         let value =
-            Some(ron::from_str(&raw_value).expect("Cannot deserialize"));
+            Some(serde_json::from_str(&raw_value).expect("Cannot deserialize"));
 
         let ms = now.elapsed().as_millis();
         if ms > 1 {
@@ -65,14 +66,15 @@ impl<'a, T: Serialize + DeserializeOwned> Entry<'a, T> {
     pub fn set(&self, value: T) {
         let now = Instant::now();
 
-        let raw_value = ron::to_string(&value).expect("Cannot serialize");
+        let raw_value =
+            serde_json::to_string(&value).expect("Cannot serialize");
 
         {
             let conn = self.store.lock().unwrap();
             conn.execute(
                 "INSERT INTO kv (key, value) VALUES (?, ?)
                 ON CONFLICT (key) DO UPDATE SET value = excluded.value",
-                [&self.key, &raw_value.as_str()],
+                [&self.key.borrow(), &raw_value.as_str()],
             )
             .expect("Cannot insert into SQLite");
         }
@@ -207,7 +209,7 @@ mod downtown {
 
 pub use dialog::DialogStore;
 mod dialog {
-    use bevy::reflect::DynamicTypePath;
+    use std::fmt::Display;
 
     use super::*;
 
@@ -215,46 +217,79 @@ mod dialog {
     /// History and choices, etc.
     pub trait DialogStore {
         /// Get the last dialog entry's type path.
-        fn was_this_the_last_dialog(&self, name: impl TypePath) -> bool;
+        fn was_this_the_last_dialog(
+            &self,
+            namespace_and_name: (impl Display, impl Display),
+        ) -> bool;
 
         /// New dialog entry.
-        /// You can provide the type path directly.
-        fn insert_dialog_type_path(&self, path: &str);
+        fn insert_dialog(
+            &self,
+            namespace_and_name: (impl Display, impl Display),
+        );
 
-        /// New dialog entry.
-        /// The name of the dialog is the type path.
-        fn insert_dialog(&self, name: impl TypePath) {
-            self.insert_dialog_type_path(name.reflect_type_path());
-        }
+        /// Access guard state using a unique guard kind id and a unique node
+        /// name.
+        ///
+        /// Unique node name is going to include the dialog file and the node
+        /// name within that file.
+        /// Unique guard kind id might be the enum variant name.
+        fn guard_state(
+            &self,
+            guard_kind: impl Display,
+            namespace_and_name: (impl Display, impl Display),
+        ) -> Entry<'_, serde_json::Value>;
     }
 
     impl DialogStore for GlobalStore {
-        fn was_this_the_last_dialog(&self, name: impl TypePath) -> bool {
+        fn was_this_the_last_dialog(
+            &self,
+            (namespace, node_name): (impl Display, impl Display),
+        ) -> bool {
             let conn = self.conn.lock().unwrap();
 
             let value = conn
                 .query_row(
-                    "SELECT type_path FROM dialogs ORDER BY id DESC LIMIT 1",
+                    "SELECT namespace, node_name FROM dialogs \
+                    ORDER BY id DESC LIMIT 1",
                     [],
-                    |row| row.get(0),
+                    |row| Ok((row.get(0)?, row.get(1)?)),
                 )
                 .optional()
                 .expect("Cannot query SQLite");
 
             value
-                .map(|tp: String| tp == name.reflect_type_path())
+                .map(|(last_namespace, last_node_name): (String, String)| {
+                    last_namespace == namespace.to_string()
+                        && last_node_name == node_name.to_string()
+                })
                 .unwrap_or(false)
         }
 
-        fn insert_dialog_type_path(&self, path: &str) {
+        fn insert_dialog(
+            &self,
+            (namespace, node_name): (impl Display, impl Display),
+        ) {
             let conn = self.conn.lock().unwrap();
             conn.execute(
-                "INSERT INTO dialogs (type_path) VALUES (:type_path)",
+                "INSERT INTO dialogs (namespace, node_name) \
+                VALUES (:namespace, :node_name)",
                 named_params! {
-                    ":type_path": path,
+                    ":namespace": namespace.to_string(),
+                    ":node_name": node_name.to_string(),
                 },
             )
             .expect("Cannot insert into SQLite");
+        }
+
+        fn guard_state(
+            &self,
+            guard_kind: impl Display,
+            (namespace, node_name): (impl Display, impl Display),
+        ) -> Entry<'_, serde_json::Value> {
+            self.entry(format!(
+                "dialog.guard_state.{namespace}.{guard_kind}.{node_name}"
+            ))
         }
     }
 }
@@ -271,7 +306,7 @@ impl GlobalStore {
         }
     }
 
-    fn entry<T>(&self, key: &'static str) -> Entry<'_, T> {
+    fn entry<T>(&self, key: impl Into<Cow<'static, str>>) -> Entry<'_, T> {
         Entry::new(&self.conn, key)
     }
 }
@@ -283,10 +318,13 @@ impl Default for GlobalStore {
 }
 
 impl<'a, T> Entry<'a, T> {
-    fn new(store: &'a Mutex<rusqlite::Connection>, key: &'static str) -> Self {
+    fn new(
+        store: &'a Mutex<rusqlite::Connection>,
+        key: impl Into<Cow<'static, str>>,
+    ) -> Self {
         Self {
             store,
-            key,
+            key: key.into(),
             _phantom: PhantomData,
         }
     }
@@ -304,10 +342,14 @@ fn migrate(conn: &mut rusqlite::Connection) {
             "CREATE TABLE dialogs (
                 id INTEGER PRIMARY KEY,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                type_path TEXT NOT NULL
+                namespace TEXT NOT NULL,
+                node_name TEXT NOT NULL
             );",
         ),
-        M::up("CREATE INDEX idx_type_path ON dialogs (type_path);"),
+        M::up(
+            "CREATE INDEX idx_dialogs_namespace_node_name \
+            ON dialogs (namespace, node_name);",
+        ),
         M::up(
             "CREATE TABLE discovered_with_inspect_ability (
                 label TEXT PRIMARY KEY
@@ -355,19 +397,14 @@ mod tests {
         let conn = new_conn();
         let store = GlobalStore { conn };
 
-        #[derive(TypePath)]
-        struct Test;
+        store.insert_dialog(("ok/dialog.toml", "node1"));
+        assert!(store.was_this_the_last_dialog(("ok/dialog.toml", "node1")));
+        assert!(!store.was_this_the_last_dialog(("ok/dialog.toml", "node2")));
+        assert!(!store.was_this_the_last_dialog(("no/dialog.toml", "node1")));
 
-        #[derive(TypePath)]
-        struct Test2;
-
-        store.insert_dialog(Test);
-        assert!(store.was_this_the_last_dialog(Test));
-        assert!(!store.was_this_the_last_dialog(Test2));
-
-        store.insert_dialog(Test2);
-        assert!(store.was_this_the_last_dialog(Test2));
-        assert!(!store.was_this_the_last_dialog(Test));
+        store.insert_dialog(("ok/dialog.toml", "node2"));
+        assert!(store.was_this_the_last_dialog(("ok/dialog.toml", "node2")));
+        assert!(!store.was_this_the_last_dialog(("ok/dialog.toml", "node1")));
     }
 
     fn new_conn() -> Arc<Mutex<rusqlite::Connection>> {

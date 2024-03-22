@@ -12,7 +12,6 @@ pub mod layout;
 
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::{ecs::event::event_update_condition, prelude::*};
-use common_story::portrait_dialog::in_portrait_dialog;
 pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, TopDownScene};
 use leafwing_input_manager::plugin::InputManagerSystem;
@@ -40,10 +39,6 @@ impl bevy::app::Plugin for Plugin {
 /// including from other packages:
 /// - [`common_assets::store::insert_as_resource`]
 /// - [`common_assets::store::remove_as_resource`]
-/// - [`common_story::despawn_camera`]
-/// - [`common_story::portrait_dialog::advance`]
-/// - [`common_story::portrait_dialog::change_selection`]
-/// - [`common_story::spawn_camera`]
 /// - [`crate::actor::animate_movement`]
 /// - [`crate::actor::emit_movement_events`]
 /// - [`crate::actor::npc::drive_behavior`]
@@ -103,7 +98,7 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
                 .run_if(in_state(running))
                 .run_if(common_action::move_action_pressed())
                 .run_if(not(
-                    common_story::portrait_dialog::in_portrait_dialog(),
+                    common_story::dialog::fe::portrait::in_portrait_dialog(),
                 )),
         )
         .add_systems(
@@ -130,32 +125,6 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
         )
             .run_if(in_state(running)),
     );
-
-    debug!("Adding story for {}", T::type_path());
-
-    app.add_systems(OnEnter(loading), common_story::spawn_camera)
-        .add_systems(
-            Update,
-            common_story::portrait_dialog::change_selection
-                .run_if(in_state(running))
-                .run_if(common_story::portrait_dialog::in_portrait_dialog())
-                .run_if(common_action::move_action_just_pressed()),
-        )
-        .add_systems(
-            Last,
-            common_story::portrait_dialog::advance
-                .run_if(in_state(running))
-                .run_if(common_story::portrait_dialog::in_portrait_dialog())
-                .run_if(common_action::interaction_just_pressed()),
-        )
-        .add_systems(
-            Update,
-            common_story::portrait_dialog::cancel
-                .run_if(in_state(running))
-                .run_if(common_story::portrait_dialog::in_portrait_dialog())
-                .run_if(common_action::cancel_just_pressed()),
-        )
-        .add_systems(OnEnter(quitting), common_story::despawn_camera);
 
     debug!("Adding inspect ability for {}", T::type_path());
 
@@ -196,7 +165,9 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
             //    already emitted earlier. Since the commands to remove the
             //    dialog resource were applied, the condition to not run the
             //    begin_dialog system will not prevent rerun
-            .run_if(not(in_portrait_dialog()))
+            .run_if(not(
+                common_story::dialog::fe::portrait::in_portrait_dialog(),
+            ))
             .after(InputManagerSystem::Update),
     )
     .add_systems(
@@ -205,7 +176,9 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
             actor::npc::mark_nearby_as_ready_for_interaction,
             actor::npc::begin_dialog
                 .run_if(event_update_condition::<BeginDialogEvent>)
-                .run_if(not(in_portrait_dialog())),
+                .run_if(not(
+                    common_story::dialog::fe::portrait::in_portrait_dialog(),
+                )),
         )
             .run_if(in_state(running)),
     )

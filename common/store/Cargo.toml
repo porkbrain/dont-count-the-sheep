@@ -7,5 +7,5 @@ edition.workspace = true
 bevy.workspace = true
 rusqlite_migration.workspace = true
 rusqlite.workspace = true
+serde_json.workspace = true
 serde.workspace = true
-ron.workspace = true

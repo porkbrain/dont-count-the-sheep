@@ -1,9 +1,7 @@
 use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{DialogStore, GlobalStore};
-use common_story::portrait_dialog::{
-    apartment_elevator::TakeTheElevatorToGroundFloor, DialogRoot,
-};
+use common_story::dialog::DialogRoot;
 use common_visuals::EASE_IN_OUT;
 use main_game_lib::{
     cutscene::{self, CutsceneStep, IntoCutscene},
@@ -61,7 +59,7 @@ impl IntoCutscene for EnterTheElevator {
             WaitUntilActorAtRest(player),
             Sleep(from_millis(300)),
             // ask player where to go
-            BeginPortraitDialog(DialogRoot::EnteredTheElevator),
+            BeginPortraitDialog(DialogRoot::EnterTheApartmentElevator),
             WaitForPortraitDialogToEnd,
             Sleep(from_millis(300)),
             IfTrueThisElseThat(
@@ -108,6 +106,29 @@ impl IntoCutscene for EnterTheElevator {
     }
 }
 
+const GROUND_FLOOR_NODE_NAME: &str = "ground_floor";
+
 fn did_choose_to_leave(store: &GlobalStore) -> bool {
-    store.was_this_the_last_dialog(TakeTheElevatorToGroundFloor)
+    store.was_this_the_last_dialog((
+        DialogRoot::EnterTheApartmentElevator,
+        GROUND_FLOOR_NODE_NAME,
+    ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_has_ground_floor_node() {
+        let dialog = DialogRoot::EnterTheApartmentElevator.parse();
+
+        dialog
+            .node_names()
+            .filter_map(|node| {
+                Some(node.as_namespace_and_node_name_str()?.1.to_owned())
+            })
+            .find(|name| name.as_str() == GROUND_FLOOR_NODE_NAME)
+            .expect("Ground floor not found");
+    }
 }

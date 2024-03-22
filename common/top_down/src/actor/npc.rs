@@ -9,14 +9,10 @@ use std::{
     time::{Duration, Instant},
 };
 
-use bevy::prelude::*;
+use bevy::{ecs::system::CommandQueue, prelude::*};
 use bevy_grid_squared::Square;
 use common_ext::QueryExt;
-use common_store::GlobalStore;
-use common_story::{
-    portrait_dialog::{DialogRoot, DialogSettings},
-    Character,
-};
+use common_story::{dialog::DialogRoot, Character};
 
 use super::BeginDialogEvent;
 use crate::{
@@ -309,7 +305,6 @@ pub(crate) fn begin_dialog(
     mut cmd: Commands,
     mut events: EventReader<BeginDialogEvent>,
     asset_server: Res<AssetServer>,
-    global_store: Res<GlobalStore>,
 
     mut player: Query<&mut Actor, With<Player>>,
     mut actors: Query<&mut Actor, Without<Player>>,
@@ -344,23 +339,23 @@ pub(crate) fn begin_dialog(
         player.direction = actor.direction.opposite();
     };
 
-    let settings = DialogSettings {
-        when_finished: Some(Box::new(move |cmd| {
-            trace!("Removing BehaviorPaused from {character}");
-            cmd.entity(entity).remove::<BehaviorPaused>();
-        })),
-    };
+    let when_finished = Box::new(move |cmd: &mut Commands| {
+        trace!("Removing BehaviorPaused from {character}");
+        cmd.entity(entity).remove::<BehaviorPaused>();
+    });
 
     match character {
         Character::Marie => {
             stop_npc();
 
-            DialogRoot::MarieBlabbering.spawn(
-                &mut cmd,
-                &asset_server,
-                &global_store,
-                settings,
-            );
+            let mut cmd_queue = CommandQueue::default();
+            DialogRoot::MarieBlabbering
+                .parse()
+                .into_root_graph(None)
+                .into_dialog_resource(&mut cmd_queue)
+                .on_finished(when_finished)
+                .spawn_with_portrait_ui(&mut cmd, &asset_server);
+            cmd.append(&mut cmd_queue);
         }
         _ => {
             // nothing just yet

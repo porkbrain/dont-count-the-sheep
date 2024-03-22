@@ -13,7 +13,7 @@ members = [
     "common/rscn",
     "common/store",
     "common/story",
-    "common/story/derive",
+    "common/story/macros",
     "common/top_down",
     "common/visuals",
     "main_game_lib",
@@ -26,7 +26,7 @@ members = [
 
 
 [workspace.dependencies.bevy]
-version = "=0.13.0"
+version = "=0.13.1"
 default-features = false
 features = [
     "bevy_asset",
@@ -52,6 +52,8 @@ bevy_pixel_camera = "0.13"
 bevy_webp_anim = "0.3"
 bevy-inspector-egui = { version = "0.23", default-features = false }
 leafwing-input-manager = "0.13"
+# Upgrade to 0.26.0 panics:
+# > Error adding plugin bevy_egui::EguiPlugin: : plugin was already added in application
 bevy_egui = "0.25"
 
 scene_apartment = { path = "scenes/apartment" }
@@ -73,19 +75,25 @@ common_top_down = { path = "common/top_down" }
 common_visuals = { path = "common/visuals" }
 main_game_lib = { path = "main_game_lib" }
 
+convert_case = "0.6"
 graphviz-rust = "0.7"
 itertools = "0.12"
 lazy_static = "1.4"
 logos = "0.14"
 pathfinding = "4.8"
+proc-macro2 = "1.0"
+quote = "1.0"
 rand = "0.8"
 ron = "0.8"
 rusqlite = { version = "0.30", features = ["bundled", "chrono"] }
 rusqlite_migration = "1.1"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_with = "3.7"
 smallvec = "1.13"
 strum = { version = "0.26", features = ["derive"] }
 thiserror = "1.0"
+toml = "0.8"
 
 
 [profile.release]
