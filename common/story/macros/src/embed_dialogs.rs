@@ -29,9 +29,9 @@ fn dialog_directory() -> PathBuf {
     let cargo_toml_directory =
         env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
     Path::new(&cargo_toml_directory)
-        .join("src")
-        .join("dialog")
-        .join("assets")
+        .join("..")
+        .join("..")
+        .join("dialogs")
         .canonicalize()
         .expect("Failed to canonicalize dialog asset directory")
 }

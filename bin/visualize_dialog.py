@@ -12,8 +12,8 @@ import time
 import toml
 
 
-ASSET_DIR_PATH = "common/story/src/dialog/assets"
-CACHE_FILE_PATH = "common/story/src/dialog/assets/cache.csv"
+ASSET_DIR_PATH = "dialogs"
+CACHE_FILE_PATH = f"{ASSET_DIR_PATH}/cache.csv"
 
 
 def visualize_dialog(dialog_toml):
@@ -72,7 +72,8 @@ def visualize_dialog(dialog_toml):
                 rows.append("<TD>{}</TD>".format(node["params"]))
 
         if "who" in node:
-            image_path = "main_game/assets/characters/portraits/"
+            # with respect to the script path
+            image_path = "../main_game/assets/characters/portraits/"
             match node["who"]:
                 case "Redhead":
                     image_path += "redhead1.png"
@@ -87,7 +88,7 @@ def visualize_dialog(dialog_toml):
                 raise ValueError(f"Image {image_path} not found.")
 
             rows.append(
-                f"""<TD FIXEDSIZE="true" width="64" height="64"><IMG SRC="../../../../../{image_path}" /></TD>"""
+                f"""<TD FIXEDSIZE="true" width="64" height="64"><IMG SRC="{image_path}" /></TD>"""
             )
 
         if "en" in node:

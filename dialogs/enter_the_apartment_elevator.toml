@@ -6,12 +6,12 @@ next = ["ground_floor", "first_floor", "exit_elevator"]
 [[node]]
 name = "ground_floor"   # DO NOT RENAME, elevator cutscene depends on this
 en = "the ground floor"
-next = ["_end_dialog"]
+next = "_end_dialog"
 
 [[node]]
 name = "exit_elevator"
 en = "exit the elevator"
-next = ["_end_dialog"]
+next = "_end_dialog"
 
 [[node]]
 name = "first_floor"
