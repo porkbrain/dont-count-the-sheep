@@ -22,6 +22,7 @@ use bevy::{
     reflect::Reflect,
     utils::{default, hashbrown::HashMap},
 };
+use common_store::{DialogStore, GlobalStore};
 pub use list::DialogRoot;
 use serde::{Deserialize, Serialize};
 
@@ -184,7 +185,11 @@ impl Dialog {
 
     /// This method should be called by FE repeatedly until a node changes or
     /// all choice branches are evaluated.
-    pub(crate) fn advance(&mut self, cmd: &mut Commands) -> AdvanceOutcome {
+    pub(crate) fn advance(
+        &mut self,
+        cmd: &mut Commands,
+        store: &GlobalStore,
+    ) -> AdvanceOutcome {
         if &NodeName::EndDialog == &self.current_node {
             self.despawn(cmd);
             return AdvanceOutcome::ScheduledDespawn;
@@ -192,7 +197,7 @@ impl Dialog {
 
         match &self.graph.nodes.get(&self.current_node).unwrap().kind {
             NodeKind::Blank | NodeKind::Vocative { .. } => {
-                self.transition_or_offer_player_choice_if_all_ready(cmd)
+                self.transition_or_offer_player_choice_if_all_ready(cmd, store)
             }
             NodeKind::Guard { kind, .. } => {
                 let node_name = self.current_node.clone();
@@ -219,8 +224,15 @@ impl Dialog {
     pub(crate) fn transition_to(
         &mut self,
         cmd: &mut Commands,
+        store: &GlobalStore,
         node_name: NodeName,
     ) {
+        if let Some((namespace, node_name)) =
+            node_name.as_namespace_and_node_name_str()
+        {
+            store.insert_dialog((namespace, node_name));
+        }
+
         self.current_node = node_name.clone();
         self.branching =
             Branching::new(cmd, &node_name, &self.graph, &self.guard_systems)
@@ -255,11 +267,13 @@ impl Dialog {
     fn transition_or_offer_player_choice_if_all_ready(
         &mut self,
         cmd: &mut Commands,
+        store: &GlobalStore,
     ) -> AdvanceOutcome {
         match &self.branching {
             Branching::None => {
                 self.transition_to(
                     cmd,
+                    store,
                     if self.current_node == NodeName::Root {
                         error!("NextNodes::None in the root");
                         NodeName::EndDialog
@@ -271,7 +285,7 @@ impl Dialog {
                 AdvanceOutcome::Transition
             }
             Branching::Single(next_node) => {
-                self.transition_to(cmd, next_node.clone());
+                self.transition_to(cmd, store, next_node.clone());
                 AdvanceOutcome::Transition
             }
             Branching::Choice(branches) => {
@@ -305,14 +319,14 @@ impl Dialog {
                             .get(first_choice_branch_index)
                             .unwrap()
                             .clone();
-                        self.transition_to(cmd, first_choice_node_name);
+                        self.transition_to(cmd, store, first_choice_node_name);
                         AdvanceOutcome::Transition
                     } else {
                         AdvanceOutcome::AwaitingPlayerChoice
                     }
                 } else {
                     warn!("NextNodes::Choice stopped all branches, emerging");
-                    self.transition_to(cmd, NodeName::Root);
+                    self.transition_to(cmd, store, NodeName::Root);
                     AdvanceOutcome::Transition
                 }
             }
@@ -502,6 +516,11 @@ impl DialogGraph {
         self.root != NodeName::Root
     }
 
+    /// What node names are present in the graph.
+    pub fn node_names(&self) -> impl Iterator<Item = &NodeName> {
+        self.nodes.keys()
+    }
+
     /// Convert a subgraph into a root graph by inserting the root node and
     /// pointing the root to this subgraph's root.
     ///
@@ -543,6 +562,36 @@ impl DialogGraph {
         let other_root = other.root;
         self.nodes.get_mut(&to).unwrap().next.push(other_root);
         self.nodes.extend(other.nodes.into_iter());
+    }
+}
+
+impl NodeName {
+    const NAMESPACE_ROOT: &'static str = "_root";
+
+    fn from_namespace_and_node_name_str(
+        namespace: Namespace,
+        node_name: String,
+    ) -> Self {
+        match node_name.as_str() {
+            "_end_dialog" => Self::EndDialog,
+            "_emerge" => Self::Root,
+            Self::NAMESPACE_ROOT => Self::NamespaceRoot(namespace),
+            _ => Self::Explicit(namespace, node_name),
+        }
+    }
+
+    /// Get the namespace and node name.
+    /// Only works for [`NodeName::Explicit`] and [`NodeName::NamespaceRoot`].
+    pub fn as_namespace_and_node_name_str(&self) -> Option<(Namespace, &str)> {
+        match self {
+            Self::Explicit(namespace, node_name) => {
+                Some((namespace, &node_name))
+            }
+            Self::NamespaceRoot(namespace) => {
+                Some((namespace, Self::NAMESPACE_ROOT))
+            }
+            _ => None,
+        }
     }
 }
 

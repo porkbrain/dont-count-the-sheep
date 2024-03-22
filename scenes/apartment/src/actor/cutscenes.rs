@@ -106,7 +106,29 @@ impl IntoCutscene for EnterTheElevator {
     }
 }
 
+const GROUND_FLOOR_NODE_NAME: &str = "ground_floor";
+
 fn did_choose_to_leave(store: &GlobalStore) -> bool {
-    todo!()
-    // store.was_this_the_last_dialog(TakeTheElevatorToGroundFloor)
+    store.was_this_the_last_dialog((
+        DialogRoot::EnterTheApartmentElevator,
+        GROUND_FLOOR_NODE_NAME,
+    ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_has_ground_floor_node() {
+        let dialog = DialogRoot::EnterTheApartmentElevator.parse();
+
+        dialog
+            .node_names()
+            .filter_map(|node| {
+                Some(node.as_namespace_and_node_name_str()?.1.to_owned())
+            })
+            .find(|name| name.as_str() == GROUND_FLOOR_NODE_NAME)
+            .expect("Ground floor not found");
+    }
 }

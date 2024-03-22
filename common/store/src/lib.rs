@@ -211,25 +211,22 @@ pub use dialog::DialogStore;
 mod dialog {
     use std::fmt::Display;
 
-    use bevy::reflect::DynamicTypePath;
-
     use super::*;
 
     /// Store anything that's related to dialogs.
     /// History and choices, etc.
     pub trait DialogStore {
         /// Get the last dialog entry's type path.
-        fn was_this_the_last_dialog(&self, name: impl TypePath) -> bool;
+        fn was_this_the_last_dialog(
+            &self,
+            namespace_and_name: (impl Display, impl Display),
+        ) -> bool;
 
         /// New dialog entry.
-        /// You can provide the type path directly.
-        fn insert_dialog_type_path(&self, path: &str);
-
-        /// New dialog entry.
-        /// The name of the dialog is the type path.
-        fn insert_dialog(&self, name: impl TypePath) {
-            self.insert_dialog_type_path(name.reflect_type_path());
-        }
+        fn insert_dialog(
+            &self,
+            namespace_and_name: (impl Display, impl Display),
+        );
 
         /// Access guard state using a unique guard kind id and a unique node
         /// name.
@@ -240,35 +237,46 @@ mod dialog {
         fn guard_state(
             &self,
             guard_kind: impl Display,
-            namespace: impl Display,
-            node_name: impl Display,
+            namespace_and_name: (impl Display, impl Display),
         ) -> Entry<'_, serde_json::Value>;
     }
 
     impl DialogStore for GlobalStore {
-        fn was_this_the_last_dialog(&self, name: impl TypePath) -> bool {
+        fn was_this_the_last_dialog(
+            &self,
+            (namespace, node_name): (impl Display, impl Display),
+        ) -> bool {
             let conn = self.conn.lock().unwrap();
 
             let value = conn
                 .query_row(
-                    "SELECT type_path FROM dialogs ORDER BY id DESC LIMIT 1",
+                    "SELECT namespace, node_name FROM dialogs \
+                    ORDER BY id DESC LIMIT 1",
                     [],
-                    |row| row.get(0),
+                    |row| Ok((row.get(0)?, row.get(1)?)),
                 )
                 .optional()
                 .expect("Cannot query SQLite");
 
             value
-                .map(|tp: String| tp == name.reflect_type_path())
+                .map(|(last_namespace, last_node_name): (String, String)| {
+                    last_namespace == namespace.to_string()
+                        && last_node_name == node_name.to_string()
+                })
                 .unwrap_or(false)
         }
 
-        fn insert_dialog_type_path(&self, path: &str) {
+        fn insert_dialog(
+            &self,
+            (namespace, node_name): (impl Display, impl Display),
+        ) {
             let conn = self.conn.lock().unwrap();
             conn.execute(
-                "INSERT INTO dialogs (type_path) VALUES (:type_path)",
+                "INSERT INTO dialogs (namespace, node_name) \
+                VALUES (:namespace, :node_name)",
                 named_params! {
-                    ":type_path": path,
+                    ":namespace": namespace.to_string(),
+                    ":node_name": node_name.to_string(),
                 },
             )
             .expect("Cannot insert into SQLite");
@@ -277,8 +285,7 @@ mod dialog {
         fn guard_state(
             &self,
             guard_kind: impl Display,
-            namespace: impl Display,
-            node_name: impl Display,
+            (namespace, node_name): (impl Display, impl Display),
         ) -> Entry<'_, serde_json::Value> {
             self.entry(format!(
                 "dialog.guard_state.{namespace}.{guard_kind}.{node_name}"
@@ -390,19 +397,14 @@ mod tests {
         let conn = new_conn();
         let store = GlobalStore { conn };
 
-        #[derive(TypePath)]
-        struct Test;
+        store.insert_dialog(("ok/dialog.toml", "node1"));
+        assert!(store.was_this_the_last_dialog(("ok/dialog.toml", "node1")));
+        assert!(!store.was_this_the_last_dialog(("ok/dialog.toml", "node2")));
+        assert!(!store.was_this_the_last_dialog(("no/dialog.toml", "node1")));
 
-        #[derive(TypePath)]
-        struct Test2;
-
-        store.insert_dialog(Test);
-        assert!(store.was_this_the_last_dialog(Test));
-        assert!(!store.was_this_the_last_dialog(Test2));
-
-        store.insert_dialog(Test2);
-        assert!(store.was_this_the_last_dialog(Test2));
-        assert!(!store.was_this_the_last_dialog(Test));
+        store.insert_dialog(("ok/dialog.toml", "node2"));
+        assert!(store.was_this_the_last_dialog(("ok/dialog.toml", "node2")));
+        assert!(!store.was_this_the_last_dialog(("ok/dialog.toml", "node1")));
     }
 
     fn new_conn() -> Arc<Mutex<rusqlite::Connection>> {

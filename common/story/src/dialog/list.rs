@@ -43,6 +43,12 @@ impl DialogRoot {
     }
 }
 
+impl std::fmt::Display for DialogRoot {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.path())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use strum::IntoEnumIterator;

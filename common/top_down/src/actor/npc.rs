@@ -351,6 +351,7 @@ pub(crate) fn begin_dialog(
             let mut cmd_queue = CommandQueue::default();
             DialogRoot::MarieBlabbering
                 .parse()
+                .into_root_graph(None)
                 .into_dialog_resource(&mut cmd_queue)
                 .on_finished(when_finished)
                 .spawn_with_portrait_ui(&mut cmd, &asset_server);

@@ -21,7 +21,7 @@ pub(super) fn system(
                 ..
             } => {
                 let from_store = store
-                    .guard_state(KIND, namespace, node_name)
+                    .guard_state(KIND, (namespace, node_name))
                     .get()
                     .and_then(|v| v.as_u64())
                     .map(|v| v as usize);
@@ -46,7 +46,7 @@ pub(super) fn system(
                 .cloned()
                 .inspect(|_| *state += 1) // next time show the next one
                 .unwrap_or(NodeName::Root); // all shown, stop
-            dialog.transition_to(&mut cmd, next_node);
+            dialog.transition_to(&mut cmd, &store, next_node);
         }
         GuardCmd::PlayerChoice {
             node_name,
@@ -88,7 +88,7 @@ pub(super) fn system(
         }
         GuardCmd::Despawn(NodeName::Explicit(namespace, node_name)) => {
             store
-                .guard_state(KIND, namespace, node_name)
+                .guard_state(KIND, (namespace, node_name))
                 .set((*state).into());
         }
         GuardCmd::Despawn(_) => {

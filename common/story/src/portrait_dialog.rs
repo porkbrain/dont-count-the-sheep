@@ -10,6 +10,7 @@ use bevy::{
     utils::Instant,
 };
 use common_action::{ActionState, GlobalAction};
+use common_store::GlobalStore;
 use common_visuals::camera::render_layer;
 use itertools::Itertools;
 
@@ -160,6 +161,7 @@ fn player_wishes_to_continue(
     mut dialog_fe: ResMut<PortraitDialog>,
     mut dialog_be: ResMut<Dialog>,
     asset_server: Res<AssetServer>,
+    store: Res<GlobalStore>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 
     camera: Query<Entity, With<DialogCamera>>,
@@ -211,6 +213,7 @@ fn player_wishes_to_continue(
 
     let next_state = advance_dialog(
         &mut cmd,
+        &store,
         &mut dialog_be,
         &mut dialog_fe,
         &asset_server,
@@ -237,12 +240,14 @@ fn player_wishes_to_continue(
 /// This system will wait until the async operations are done and then continue.
 ///
 /// Run this only if in state [`PortraitDialogState::WaitingForAsync`].
+#[allow(clippy::too_many_arguments)]
 fn await_portrait_async_ops(
     mut cmd: Commands,
     mut next_dialog_state: ResMut<NextState<PortraitDialogState>>,
     mut dialog_fe: ResMut<PortraitDialog>,
     mut dialog_be: ResMut<Dialog>,
     asset_server: Res<AssetServer>,
+    store: Res<GlobalStore>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 
     camera: Query<Entity, With<DialogCamera>>,
@@ -253,6 +258,7 @@ fn await_portrait_async_ops(
 ) {
     let next_state = advance_dialog(
         &mut cmd,
+        &store,
         &mut dialog_be,
         &mut dialog_fe,
         &asset_server,
@@ -272,8 +278,10 @@ fn await_portrait_async_ops(
     };
 }
 
+#[allow(clippy::too_many_arguments)]
 fn advance_dialog(
     cmd: &mut Commands,
+    store: &GlobalStore,
     dialog_be: &mut Dialog,
     dialog_fe: &mut PortraitDialog,
     asset_server: &AssetServer,
@@ -307,7 +315,7 @@ fn advance_dialog(
             }
         }
 
-        match dialog_be.advance(cmd) {
+        match dialog_be.advance(cmd, store) {
             AdvanceOutcome::Transition => {
                 // run `advance` again
             }
@@ -355,7 +363,7 @@ fn advance_dialog(
                     });
 
                     trace!("Player chose {chosen_node_name:?}");
-                    dialog_be.transition_to(cmd, chosen_node_name);
+                    dialog_be.transition_to(cmd, store, chosen_node_name);
 
                     // run `advance` again
                 }

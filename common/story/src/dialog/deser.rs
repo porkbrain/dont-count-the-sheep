@@ -13,8 +13,6 @@ use crate::{
     Character,
 };
 
-const ROOT_NODE_NAME: &str = "_root";
-
 #[derive(Debug, Deserialize)]
 pub(super) struct ParsedToml {
     #[serde(default)]
@@ -82,9 +80,14 @@ fn from_toml(
     // 1.
     //
     if let Some(name) = &root.name {
-        assert_eq!(ROOT_NODE_NAME, name, "Root node must be called _root");
+        assert_eq!(
+            NodeName::NAMESPACE_ROOT,
+            name,
+            "Root node must be called {}",
+            NodeName::NAMESPACE_ROOT
+        );
     } else {
-        root.name = Some(ROOT_NODE_NAME.to_owned());
+        root.name = Some(NodeName::NAMESPACE_ROOT.to_owned());
     }
 
     let mut prev_who = Character::Winnie;
@@ -263,18 +266,4 @@ fn who_from_vars(vars: &toml::Table, node: &ParsedNode) -> Option<Character> {
         Character::from_str(s)
             .unwrap_or_else(|_| panic!("Unknown character '{s}'"))
     })
-}
-
-impl NodeName {
-    fn from_namespace_and_node_name_str(
-        namespace: Namespace,
-        node_name: String,
-    ) -> Self {
-        match node_name.as_str() {
-            "_end_dialog" => Self::EndDialog,
-            "_emerge" => Self::Root,
-            ROOT_NODE_NAME => Self::NamespaceRoot(namespace),
-            _ => Self::Explicit(namespace, node_name),
-        }
-    }
 }
