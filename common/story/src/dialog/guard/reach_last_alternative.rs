@@ -10,28 +10,8 @@ pub(super) fn system(
     mut dialog: ResMut<Dialog>,
     store: Res<GlobalStore>,
 ) {
-    // TODO: dedup
-    if state.is_none() {
-        match &guard_cmd {
-            GuardCmd::TryTransition(NodeName::Explicit(
-                namespace,
-                node_name,
-            ))
-            | GuardCmd::PlayerChoice {
-                node_name: NodeName::Explicit(namespace, node_name),
-                ..
-            } => {
-                let from_store = store
-                    .guard_state(KIND, (namespace, node_name))
-                    .get()
-                    .and_then(|v| v.as_u64())
-                    .map(|v| v as usize);
-                state.replace(from_store.unwrap_or(0))
-            }
-            _ => state.replace(0),
-        };
-    }
-    let state = state.as_mut().unwrap();
+    let state =
+        state.get_or_insert_with(|| KIND.load_state(&store, &guard_cmd));
 
     match guard_cmd {
         GuardCmd::TryTransition(node_name) => {

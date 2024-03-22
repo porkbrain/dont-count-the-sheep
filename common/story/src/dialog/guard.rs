@@ -8,8 +8,10 @@ use bevy::{
     },
     log::error,
     reflect::Reflect,
+    utils::default,
 };
 use common_store::{DialogStore, GlobalStore};
+use serde::de::DeserializeOwned;
 
 use super::{BranchStatus, Branching, Dialog, NodeKind, NodeName};
 
@@ -75,6 +77,31 @@ impl GuardKind {
                     world without Dialog resource"
                 );
             }
+        }
+    }
+}
+
+impl GuardKind {
+    fn load_state<T>(self, store: &GlobalStore, guard_cmd: &GuardCmd) -> T
+    where
+        T: Default + DeserializeOwned,
+    {
+        match guard_cmd {
+            GuardCmd::TryTransition(NodeName::Explicit(
+                namespace,
+                node_name,
+            ))
+            | GuardCmd::PlayerChoice {
+                node_name: NodeName::Explicit(namespace, node_name),
+                ..
+            } => {
+                let from_store = store
+                    .guard_state(self, (namespace, node_name))
+                    .get()
+                    .and_then(|v| serde_json::from_value(v).ok());
+                from_store.unwrap_or(default())
+            }
+            _ => default(),
         }
     }
 }

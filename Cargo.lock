@@ -1463,6 +1463,7 @@ dependencies = [
  "common_visuals",
  "itertools",
  "serde",
+ "serde_json",
  "serde_with",
  "strum",
  "toml",
