@@ -20,7 +20,7 @@ use bevy::{
 use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_store::GlobalStore;
-use common_story::{dialog::DialogRoot, portrait_dialog::PortraitDialog};
+use common_story::dialog::{fe::portrait::PortraitDialog, DialogRoot};
 use common_top_down::{
     actor::player::TakeAwayPlayerControl, Actor, ActorTarget,
 };

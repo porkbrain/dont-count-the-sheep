@@ -7,7 +7,6 @@
 #![feature(let_chains)]
 
 pub mod dialog;
-pub mod portrait_dialog;
 
 use std::time::Duration;
 
@@ -76,7 +75,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(portrait_dialog::Plugin);
+        app.add_plugins(dialog::fe::portrait::Plugin);
 
         #[cfg(feature = "devtools")]
         {

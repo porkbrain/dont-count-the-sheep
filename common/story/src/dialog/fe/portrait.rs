@@ -1,7 +1,8 @@
 //! When a dialog is spawned, it's already loaded as it should look and does not
 //! require any additional actions.
 //!
-//! TODO
+//! You first want to obtain the dialog be [`crate::Dialog`] and then spawn the
+//! dialog UI with [`crate::Dialog::spawn_with_portrait_ui`].
 
 use std::{collections::BTreeMap, time::Duration};
 

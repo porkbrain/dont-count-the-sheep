@@ -9,7 +9,7 @@ use serde_with::{formats::PreferOne, serde_as, OneOrMany};
 
 use super::{Namespace, NodeName};
 use crate::{
-    dialog::{DialogGraph, GuardKind, Node, NodeKind},
+    dialog::{DialogGraph, Node, NodeKind},
     Character,
 };
 
@@ -55,7 +55,6 @@ pub(super) fn subgraph_from_toml(
 
 /// 1. Create a map of nodes, where the key is the node name.
 /// 2. Add edges to the nodes.
-/// 3. Find the root node.
 fn from_toml(
     namespace: Namespace,
     ParsedToml {
@@ -102,7 +101,7 @@ fn from_toml(
             .guard
             .as_ref()
             .map(|name| NodeKind::Guard {
-                kind: guard_name_to_lazy_state(name.as_str()),
+                kind: FromStr::from_str(name.as_str()).expect("Unknown guard"),
                 params: params_from_vars(&dialog.vars, node),
             })
             .unwrap_or_else(|| NodeKind::Vocative {
@@ -180,15 +179,6 @@ fn from_toml(
     DialogGraph {
         root: NodeName::NamespaceRoot(namespace),
         nodes: node_map,
-    }
-}
-
-// TODO: this can be deleted and done with strum's `EnumString`
-fn guard_name_to_lazy_state(name: &str) -> GuardKind {
-    match name {
-        "exhaustive_alternatives" => GuardKind::ExhaustiveAlternatives,
-        "reach_last_alternative" => GuardKind::ReachLastAlternative,
-        _ => panic!("Unknown guard '{name}'"),
     }
 }
 

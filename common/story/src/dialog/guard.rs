@@ -11,7 +11,7 @@ use bevy::{
 };
 use common_store::{DialogStore, GlobalStore};
 
-use super::{BranchStatus, Branching, Dialog, GuardKind, NodeKind, NodeName};
+use super::{BranchStatus, Branching, Dialog, NodeKind, NodeName};
 
 #[derive(Reflect, Debug, Clone, Copy)]
 pub(crate) struct GuardSystem {
@@ -42,6 +42,13 @@ pub(crate) enum GuardCmd {
     /// The command for despawning the system comes immediately after this
     /// guard cmd.
     Despawn(NodeName),
+}
+
+#[derive(Debug, Reflect, strum::EnumString, strum::Display, Clone, Copy)]
+#[strum(serialize_all = "snake_case")]
+pub(crate) enum GuardKind {
+    ExhaustiveAlternatives,
+    ReachLastAlternative,
 }
 
 impl GuardKind {

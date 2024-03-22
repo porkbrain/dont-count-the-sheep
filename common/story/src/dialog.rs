@@ -9,6 +9,7 @@
 //! advances the dialog state.
 
 mod deser;
+pub mod fe;
 mod guard;
 mod list;
 
@@ -24,9 +25,8 @@ use bevy::{
 };
 use common_store::{DialogStore, GlobalStore};
 pub use list::DialogRoot;
-use serde::{Deserialize, Serialize};
 
-use self::guard::{GuardCmd, GuardSystem};
+use self::guard::{GuardCmd, GuardKind, GuardSystem};
 use crate::Character;
 
 /// Can be used on components and resources to schedule commands.
@@ -86,6 +86,7 @@ pub enum NodeName {
 
 /// The dialog asset that can be started.
 /// Since dialogs can be stateful, state is lazy loaded.
+/// The state is managed by systems called guards.
 #[derive(Debug, Reflect, Default)]
 pub struct DialogGraph {
     pub(crate) root: NodeName,
@@ -114,7 +115,7 @@ pub(crate) enum NodeKind {
     },
     Vocative {
         /// The dialog line to print.
-        /// TODO: give option
+        /// TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/95
         line: String,
     },
     /// A node that does nothing.
@@ -131,25 +132,12 @@ pub(crate) enum Branching {
 
 #[derive(Reflect, Debug)]
 pub(crate) enum BranchStatus {
+    /// Guards can be async.
+    /// They will eventually transition this status into another variant.
     Pending,
     OfferAsChoice(String),
     /// This branch is exhausted, presumably some guard decided to stop it.
     Stop,
-}
-
-#[derive(
-    Debug,
-    Deserialize,
-    Serialize,
-    Reflect,
-    strum::EnumString,
-    strum::Display,
-    Clone,
-    Copy,
-)]
-pub(crate) enum GuardKind {
-    ExhaustiveAlternatives,
-    ReachLastAlternative,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -419,7 +407,7 @@ impl BranchStatus {
         match &next_node.kind {
             NodeKind::Blank => Self::Stop,
             NodeKind::Vocative { line } => {
-                //  TODO: this node is ready to be shown as an option
+                //  TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/95
                 Self::OfferAsChoice(line.clone())
             }
             NodeKind::Guard { kind, .. } => {
@@ -466,7 +454,7 @@ impl BranchStatus {
         match &next_node.kind {
             NodeKind::Blank => Self::Stop,
             NodeKind::Vocative { line } => {
-                //  TODO: this node is ready to be shown as an option
+                //  TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/95
                 Self::OfferAsChoice(line.clone())
             }
             NodeKind::Guard { kind, .. } => {
