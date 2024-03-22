@@ -10,7 +10,10 @@ pub enum DialogRoot {
 impl DialogRoot {
     /// Parse the dialog file into a dialog graph.
     pub fn parse(self) -> super::DialogGraph {
-        super::deser::from_toml(toml::from_str(self.contents()).unwrap())
+        super::deser::subgraph_from_toml(
+            self.path(),
+            toml::from_str(self.contents()).unwrap(),
+        )
     }
 
     /// Get the path to the dialog file rooted in the assets directory.
@@ -27,6 +30,15 @@ impl DialogRoot {
             MarieBlabbering => {
                 include_str!("assets/marie_blabbering.toml")
             }
+        }
+    }
+
+    fn path(self) -> &'static str {
+        use DialogRoot::*;
+
+        match self {
+            EnterTheApartmentElevator => "assets/enter_the_elevator.toml",
+            MarieBlabbering => "assets/marie_blabbering.toml",
         }
     }
 }

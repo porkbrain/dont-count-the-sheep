@@ -1,4 +1,5 @@
 mod exhaustive_alternatives;
+mod reach_last_alternative;
 
 use bevy::{
     ecs::{
@@ -10,9 +11,7 @@ use bevy::{
 };
 use common_store::{DialogStore, GlobalStore};
 
-use super::{
-    BranchStatus, Branching, Dialog, GuardKind, LocalNodeName, NodeKind,
-};
+use super::{BranchStatus, Branching, Dialog, GuardKind, NodeKind, NodeName};
 
 #[derive(Reflect, Debug, Clone, Copy)]
 pub(crate) struct GuardSystem {
@@ -26,7 +25,7 @@ pub(crate) enum GuardCmd {
     ///
     /// For guard with async ops, such as displaying UI with animations,
     /// this command might not result in transition.
-    TryTransition(LocalNodeName),
+    TryTransition(NodeName),
     /// We want to show player choices in dialog.
     /// This command says: in the [`Dialog::next_nodes`] array, at the
     /// specified index, give us string that we should show to the player
@@ -34,7 +33,7 @@ pub(crate) enum GuardCmd {
     /// It's possible that the guard will decide to stop the current branch
     /// with [`NextNode::Stop`].
     PlayerChoice {
-        node_name: LocalNodeName,
+        node_name: NodeName,
         next_branch_index: usize,
     },
     /// The dialog is being despawned, save the state if necessary.
@@ -42,20 +41,22 @@ pub(crate) enum GuardCmd {
     /// # Important
     /// The command for despawning the system comes immediately after this
     /// guard cmd.
-    Despawn(LocalNodeName),
+    Despawn(NodeName),
 }
 
 impl GuardKind {
     pub(crate) fn register_system_cmd(
         self,
-        node_name: LocalNodeName,
+        node_name: NodeName,
     ) -> impl Command {
         move |w: &mut World| {
             let entity = match self {
                 Self::ExhaustiveAlternatives => {
                     w.register_system(exhaustive_alternatives::system)
                 }
-                _ => todo!(),
+                Self::ReachLastAlternative => {
+                    w.register_system(reach_last_alternative::system)
+                }
             };
             if let Some(mut dialog) = w.get_resource_mut::<Dialog>() {
                 dialog
@@ -88,7 +89,7 @@ impl Command for GuardCmd {
 }
 
 impl GuardCmd {
-    fn node_name(&self) -> &LocalNodeName {
+    fn node_name(&self) -> &NodeName {
         match self {
             Self::TryTransition(node_name)
             | Self::PlayerChoice { node_name, .. }

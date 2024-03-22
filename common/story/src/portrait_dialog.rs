@@ -15,8 +15,7 @@ use itertools::Itertools;
 
 use crate::{
     dialog::{
-        AdvanceOutcome, BranchStatus, Branching, Dialog, LocalNodeName,
-        NodeKind,
+        AdvanceOutcome, BranchStatus, Branching, Dialog, NodeKind, NodeName,
     },
     Character,
 };
@@ -43,7 +42,7 @@ pub struct PortraitDialog {
     /// The tiny delay lets the brain to at least get the gist of what's
     /// being said.
     last_frame_shown_at: Instant,
-    last_rendered_node: Option<LocalNodeName>,
+    last_rendered_node: Option<NodeName>,
 }
 
 impl Dialog {
@@ -97,7 +96,7 @@ struct DialogPortrait;
 /// the next sequence.
 #[derive(Component, Clone, Debug, Reflect)]
 struct DialogChoice {
-    of: LocalNodeName,
+    of: NodeName,
     /// Starts at 0.
     order: usize,
     /// Is selected either if it's the first choice or if the player changed
@@ -672,7 +671,7 @@ fn spawn_choice(
     asset_server: &AssetServer,
     transform_manager: &ChoicePositionManager,
     order: usize,
-    node_name: &LocalNodeName,
+    node_name: &NodeName,
     choice_text: &str,
 ) -> Entity {
     let (asset, color) = if order == 0 {

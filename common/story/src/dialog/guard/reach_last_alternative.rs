@@ -1,6 +1,6 @@
 use super::*;
 
-const KIND: GuardKind = GuardKind::ExhaustiveAlternatives;
+const KIND: GuardKind = GuardKind::ReachLastAlternative;
 
 pub(super) fn system(
     In(guard_cmd): In<GuardCmd>,
@@ -10,6 +10,7 @@ pub(super) fn system(
     mut dialog: ResMut<Dialog>,
     store: Res<GlobalStore>,
 ) {
+    // TODO: dedup
     if state.is_none() {
         match &guard_cmd {
             GuardCmd::TryTransition(NodeName::Explicit(
@@ -36,50 +37,42 @@ pub(super) fn system(
         GuardCmd::TryTransition(node_name) => {
             debug_assert_eq!(node_name, dialog.current_node);
 
-            let next_node = dialog
-                .graph
-                .nodes
-                .get(&node_name)
-                .unwrap()
-                .next // get next nodes
+            let next_nodes = &dialog.graph.nodes.get(&node_name).unwrap().next;
+
+            let next_node = next_nodes
                 .get(*state) // which one is next to show (if any)
                 .cloned()
                 .inspect(|_| *state += 1) // next time show the next one
-                .unwrap_or(NodeName::Root); // all shown, stop
+                // keep showing the last one
+                .unwrap_or_else(|| next_nodes.last().unwrap().clone());
             dialog.transition_to(&mut cmd, next_node);
         }
         GuardCmd::PlayerChoice {
             node_name,
             next_branch_index,
         } => {
-            let next_node_choice = if let Some(next_node_name) = dialog
-                .graph
-                .nodes
-                .get(&node_name)
-                .unwrap()
-                .next // get next nodes
-                .get(*state)
-            {
-                let next_node_kind =
-                    &dialog.graph.nodes.get(next_node_name).unwrap().kind;
+            let next_nodes = &dialog.graph.nodes.get(&node_name).unwrap().next;
 
-                match next_node_kind {
-                    NodeKind::Blank => BranchStatus::Stop,
-                    NodeKind::Vocative { line } => {
-                        // TODO: perhaps another property for choice
-                        BranchStatus::OfferAsChoice(line.clone())
-                    }
-                    NodeKind::Guard { .. } => {
-                        // evaluate next guard
-                        cmd.add(GuardCmd::PlayerChoice {
-                            node_name: next_node_name.clone(),
-                            next_branch_index,
-                        });
-                        return;
-                    }
+            let next_node_name = next_nodes
+                .get(*state)
+                .unwrap_or_else(|| next_nodes.last().unwrap());
+            let next_node_kind =
+                &dialog.graph.nodes.get(next_node_name).unwrap().kind;
+
+            let next_node_choice = match next_node_kind {
+                NodeKind::Blank => BranchStatus::Stop,
+                NodeKind::Vocative { line } => {
+                    // TODO: perhaps another property for choice
+                    BranchStatus::OfferAsChoice(line.clone())
                 }
-            } else {
-                BranchStatus::Stop
+                NodeKind::Guard { .. } => {
+                    // evaluate next guard
+                    cmd.add(GuardCmd::PlayerChoice {
+                        node_name: next_node_name.clone(),
+                        next_branch_index,
+                    });
+                    return;
+                }
             };
 
             if let Branching::Choice(branches) = &mut dialog.branching {

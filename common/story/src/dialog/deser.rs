@@ -3,12 +3,13 @@
 
 use std::{borrow::Cow, iter, str::FromStr};
 
-use bevy::utils::{default, hashbrown::HashMap};
+use bevy::utils::hashbrown::HashMap;
 use serde::Deserialize;
 use serde_with::{formats::PreferOne, serde_as, OneOrMany};
 
+use super::{Namespace, NodeName};
 use crate::{
-    dialog::{DialogGraph, GuardKind, LocalNodeName, Node, NodeKind},
+    dialog::{DialogGraph, GuardKind, Node, NodeKind},
     Character,
 };
 
@@ -47,38 +48,32 @@ struct ParsedNode {
     next: Vec<String>,
 }
 
+pub(super) fn subgraph_from_toml(
+    namespace: Namespace,
+    toml: ParsedToml,
+) -> DialogGraph {
+    from_toml(namespace, toml)
+}
+
 /// 1. Create a map of nodes, where the key is the node name.
 /// 2. Add edges to the nodes.
 /// 3. Find the root node.
-pub(super) fn from_toml(
+fn from_toml(
+    namespace: Namespace,
     ParsedToml {
         dialog,
         mut root,
         nodes,
     }: ParsedToml,
 ) -> DialogGraph {
-    let mut node_map = HashMap::with_capacity(nodes.len() + 3);
+    // + root + end dialog
+    let mut node_map = HashMap::with_capacity(nodes.len() + 2);
     node_map.insert(
-        LocalNodeName::EndDialog,
+        NodeName::EndDialog,
         Node {
             who: Character::Winnie,
-            name: LocalNodeName::EndDialog,
-            kind: NodeKind::Guard {
-                kind: GuardKind::EndDialog,
-                params: default(),
-            },
-            next: Vec::new(),
-        },
-    );
-    node_map.insert(
-        LocalNodeName::Emerge,
-        Node {
-            who: Character::Winnie,
-            name: LocalNodeName::Emerge,
-            kind: NodeKind::Guard {
-                kind: GuardKind::Emerge,
-                params: default(),
-            },
+            name: NodeName::EndDialog,
+            kind: NodeKind::Blank,
             next: Vec::new(),
         },
     );
@@ -98,8 +93,8 @@ pub(super) fn from_toml(
         let name = node
             .name
             .clone()
-            .map(From::from)
-            .unwrap_or(LocalNodeName::Auto(index));
+            .map(|s| NodeName::from_namespace_and_node_name_str(namespace, s))
+            .unwrap_or(NodeName::Auto(namespace, index));
         let kind = node
             .guard
             .as_ref()
@@ -139,8 +134,8 @@ pub(super) fn from_toml(
         let name = node
             .name
             .clone()
-            .map(From::from)
-            .unwrap_or(LocalNodeName::Auto(index));
+            .map(|s| NodeName::from_namespace_and_node_name_str(namespace, s))
+            .unwrap_or(NodeName::Auto(namespace, index));
 
         if node.next.is_empty() {
             // if no next node is specified, that implies that the next node
@@ -151,8 +146,12 @@ pub(super) fn from_toml(
                 .map(|next| {
                     next.name
                         .clone()
-                        .map(From::from)
-                        .unwrap_or(LocalNodeName::Auto(index + 1))
+                        .map(|s| {
+                            NodeName::from_namespace_and_node_name_str(
+                                namespace, s,
+                            )
+                        })
+                        .unwrap_or(NodeName::Auto(namespace, index + 1))
                 })
                 .unwrap_or_else(|| panic!("Node '{name:?}' has no next node"));
 
@@ -162,7 +161,10 @@ pub(super) fn from_toml(
         }
 
         for next in &node.next {
-            let next_name = LocalNodeName::from(next.clone());
+            let next_name = NodeName::from_namespace_and_node_name_str(
+                namespace,
+                next.clone(),
+            );
             // asserts node exists
             node_map
                 .get(&next_name)
@@ -172,7 +174,10 @@ pub(super) fn from_toml(
         }
     }
 
-    DialogGraph { nodes: node_map }
+    DialogGraph {
+        root: NodeName::NamespaceRoot(namespace),
+        nodes: node_map,
+    }
 }
 
 // TODO: this can be deleted and done with strum's `EnumString`
@@ -180,8 +185,6 @@ fn guard_name_to_lazy_state(name: &str) -> GuardKind {
     match name {
         "exhaustive_alternatives" => GuardKind::ExhaustiveAlternatives,
         "reach_last_alternative" => GuardKind::ReachLastAlternative,
-        "end_dialog" => GuardKind::EndDialog,
-        "emerge" => GuardKind::Emerge,
         _ => panic!("Unknown guard '{name}'"),
     }
 }
@@ -262,13 +265,16 @@ fn who_from_vars(vars: &toml::Table, node: &ParsedNode) -> Option<Character> {
     })
 }
 
-impl From<String> for LocalNodeName {
-    fn from(s: String) -> Self {
-        match s.as_str() {
-            "_end_dialog" => LocalNodeName::EndDialog,
-            "_emerge" => LocalNodeName::Emerge,
-            ROOT_NODE_NAME => LocalNodeName::Root,
-            _ => LocalNodeName::Explicit(s),
+impl NodeName {
+    fn from_namespace_and_node_name_str(
+        namespace: Namespace,
+        node_name: String,
+    ) -> Self {
+        match node_name.as_str() {
+            "_end_dialog" => Self::EndDialog,
+            "_emerge" => Self::Root,
+            ROOT_NODE_NAME => Self::NamespaceRoot(namespace),
+            _ => Self::Explicit(namespace, node_name),
         }
     }
 }

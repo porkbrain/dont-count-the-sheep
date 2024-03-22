@@ -240,6 +240,7 @@ mod dialog {
         fn guard_state(
             &self,
             guard_kind: impl Display,
+            namespace: impl Display,
             node_name: impl Display,
         ) -> Entry<'_, serde_json::Value>;
     }
@@ -276,9 +277,12 @@ mod dialog {
         fn guard_state(
             &self,
             guard_kind: impl Display,
+            namespace: impl Display,
             node_name: impl Display,
         ) -> Entry<'_, serde_json::Value> {
-            self.entry(format!("dialog.guard_state.{guard_kind}.{node_name}"))
+            self.entry(format!(
+                "dialog.guard_state.{namespace}.{guard_kind}.{node_name}"
+            ))
         }
     }
 }
