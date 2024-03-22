@@ -16,7 +16,7 @@
 [ext_resource type="Texture2D" uid="uid://b7r70khewajh0" path="res://assets/downtown/lamp.png" id="14_8uy80"]
 [ext_resource type="Texture2D" uid="uid://d3swa0vc5iitv" path="res://assets/downtown/briza.png" id="16_xr53b"]
 [ext_resource type="Texture2D" uid="uid://lgsyrvis4y80" path="res://assets/downtown/wired_fence.png" id="17_5ai3x"]
-[ext_resource type="Texture2D" uid="uid://bneahsxtb6wpe" path="res://assets/downtown/front field.png" id="18_yr0u5"]
+[ext_resource type="Texture2D" uid="uid://bneahsxtb6wpe" path="res://assets/downtown/front_field.png" id="18_yr0u5"]
 [ext_resource type="Texture2D" uid="uid://bq3fw5e27w801" path="res://assets/downtown/house_plantshoptrio.png" id="19_fdu3c"]
 [ext_resource type="Texture2D" uid="uid://dcl4guw8e72nh" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
 [ext_resource type="Texture2D" uid="uid://bbvuyahml5l4l" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]

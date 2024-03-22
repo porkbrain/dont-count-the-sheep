@@ -1,4 +1,4 @@
-[gd_scene load_steps=75 format=3 uid="uid://dyrtqlwb1xtvf"]
+[gd_scene load_steps=77 format=3 uid="uid://dyrtqlwb1xtvf"]
 
 [ext_resource type="Texture2D" uid="uid://bricm0td6wv0a" path="res://assets/apartment/bg.png" id="1_310fv"]
 [ext_resource type="Texture2D" uid="uid://d4nio84mwac6h" path="res://assets/apartment/cupboard.png" id="2_c00iy"]
@@ -18,7 +18,9 @@
 [ext_resource type="Texture2D" uid="uid://cmjj0i8krpajr" path="res://assets/apartment/package.png" id="16_xbi0t"]
 [ext_resource type="Texture2D" uid="uid://bq1om7k0xupt4" path="res://assets/downtown/water_bottle_empty.png" id="17_je4lx"]
 [ext_resource type="Texture2D" uid="uid://jjh251d55ix0" path="res://assets/apartment/extraRoom.png" id="18_21dkk"]
-[ext_resource type="Texture2D" uid="uid://idx58sv6src5" path="res://assets/apartment/extrazed.png" id="19_ssl1d"]
+[ext_resource type="Texture2D" uid="uid://c3xdnoi54w2b5" path="res://assets/apartment/policka_kocka.png" id="19_u2nxq"]
+[ext_resource type="Texture2D" uid="uid://cjba1m2q05bip" path="res://assets/apartment/skrabadlo.png" id="20_v30ey"]
+[ext_resource type="Texture2D" uid="uid://dmx1wicn8ly5v" path="res://assets/apartment/can.png" id="21_4e0f2"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nte4w"]
 atlas = ExtResource("2_dx2fn")
@@ -516,7 +518,7 @@ sprite_frames = SubResource("SpriteFrames_lxk6t")
 [node name="HallwayEntity" type="Node" parent="VendingMachine"]
 
 [node name="HallwayDoor1" type="AnimatedSprite2D" parent="."]
-position = Vector2(-152.5, 112)
+position = Vector2(-152.5, 110)
 sprite_frames = SubResource("SpriteFrames_j7cpw")
 
 [node name="YSort" type="Node2D" parent="HallwayDoor1"]
@@ -525,7 +527,7 @@ position = Vector2(0, 18)
 [node name="HallwayEntity" type="Node" parent="HallwayDoor1"]
 
 [node name="HallwayDoor2" type="AnimatedSprite2D" parent="."]
-position = Vector2(51, 112)
+position = Vector2(51, 110)
 sprite_frames = SubResource("SpriteFrames_j7cpw")
 
 [node name="YSort" type="Node2D" parent="HallwayDoor2"]
@@ -550,6 +552,14 @@ z_index = -4
 position = Vector2(0, 128)
 texture = ExtResource("18_21dkk")
 
-[node name="Extrazed" type="Sprite2D" parent="."]
-position = Vector2(135, 117)
-texture = ExtResource("19_ssl1d")
+[node name="PolickaKocka" type="Sprite2D" parent="."]
+position = Vector2(93, 119)
+texture = ExtResource("19_u2nxq")
+
+[node name="Skrabadlo" type="Sprite2D" parent="."]
+position = Vector2(190, 118)
+texture = ExtResource("20_v30ey")
+
+[node name="Can" type="Sprite2D" parent="."]
+position = Vector2(102, 107)
+texture = ExtResource("21_4e0f2")
