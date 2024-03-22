@@ -35,7 +35,7 @@ pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
 /// Namespace represents a dialog toml file with relative path from the root
 /// of the dialog directory.
 /// Each dialog file has a unique name.
-pub type Namespace = &'static str;
+pub type Namespace = DialogRoot;
 
 /// Dialog backend.
 /// It is a state machine that can be advanced.
@@ -108,6 +108,7 @@ pub(crate) enum NodeKind {
         ///
         /// Otherwise the state is discarded after the dialog is over.
         kind: GuardKind,
+        #[allow(dead_code)]
         #[reflect(ignore)]
         params: HashMap<String, toml::Value>,
     },
@@ -585,10 +586,10 @@ impl NodeName {
     pub fn as_namespace_and_node_name_str(&self) -> Option<(Namespace, &str)> {
         match self {
             Self::Explicit(namespace, node_name) => {
-                Some((namespace, &node_name))
+                Some((*namespace, &node_name))
             }
             Self::NamespaceRoot(namespace) => {
-                Some((namespace, Self::NAMESPACE_ROOT))
+                Some((*namespace, Self::NAMESPACE_ROOT))
             }
             _ => None,
         }

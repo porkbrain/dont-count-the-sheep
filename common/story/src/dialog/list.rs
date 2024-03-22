@@ -1,51 +1,28 @@
 //! List of all the dialogs in the game.
 
-#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash, strum::EnumIter)]
-#[allow(missing_docs)]
-pub enum DialogRoot {
-    EnterTheApartmentElevator,
-    MarieBlabbering,
-}
+// Generates a `DialogRoot` enum where each toml file is a variant.
+// It derives `strum::EnumMessage` where the detailed message is the toml file
+// and regular message is the file name.
+common_story_macros::embed_dialogs!();
 
 impl DialogRoot {
     /// Parse the dialog file into a dialog graph.
     pub fn parse(self) -> super::DialogGraph {
         super::deser::subgraph_from_toml(
-            self.path(),
+            self,
             toml::from_str(self.contents()).unwrap(),
         )
     }
 
-    /// Get the path to the dialog file rooted in the assets directory.
-    ///
-    /// TODO: this can be done with a macro
-    /// TODO: explicit node names must include the file path
     fn contents(self) -> &'static str {
-        use DialogRoot::*;
-
-        match self {
-            EnterTheApartmentElevator => {
-                include_str!("assets/enter_the_elevator.toml")
-            }
-            MarieBlabbering => {
-                include_str!("assets/marie_blabbering.toml")
-            }
-        }
-    }
-
-    fn path(self) -> &'static str {
-        use DialogRoot::*;
-
-        match self {
-            EnterTheApartmentElevator => "assets/enter_the_elevator.toml",
-            MarieBlabbering => "assets/marie_blabbering.toml",
-        }
+        use strum::EnumMessage;
+        self.get_detailed_message().unwrap()
     }
 }
 
 impl std::fmt::Display for DialogRoot {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.path())
+        write!(f, "{self:?}")
     }
 }
 
