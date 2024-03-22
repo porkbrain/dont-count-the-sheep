@@ -191,7 +191,7 @@ impl Dialog {
         cmd: &mut Commands,
         store: &GlobalStore,
     ) -> AdvanceOutcome {
-        if &NodeName::EndDialog == &self.current_node {
+        if NodeName::EndDialog == self.current_node {
             self.despawn(cmd);
             return AdvanceOutcome::ScheduledDespawn;
         }
@@ -219,7 +219,7 @@ impl Dialog {
     }
 
     pub(crate) fn current_node_info(&self) -> &Node {
-        &self.graph.nodes.get(&self.current_node).unwrap()
+        self.graph.nodes.get(&self.current_node).unwrap()
     }
 
     pub(crate) fn transition_to(
@@ -562,7 +562,7 @@ impl DialogGraph {
 
         let other_root = other.root;
         self.nodes.get_mut(&to).unwrap().next.push(other_root);
-        self.nodes.extend(other.nodes.into_iter());
+        self.nodes.extend(other.nodes);
     }
 }
 
@@ -586,7 +586,7 @@ impl NodeName {
     pub fn as_namespace_and_node_name_str(&self) -> Option<(Namespace, &str)> {
         match self {
             Self::Explicit(namespace, node_name) => {
-                Some((*namespace, &node_name))
+                Some((*namespace, node_name))
             }
             Self::NamespaceRoot(namespace) => {
                 Some((*namespace, Self::NAMESPACE_ROOT))

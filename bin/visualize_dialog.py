@@ -109,7 +109,9 @@ def visualize_dialog(dialog_toml):
         node_name = node.get("name", f"node_{index}")
         if "next" in node:
             # prints whether next is a string of array of strings
-            next_nodes = node["next"] if isinstance(node["next"], list) else [node["next"]]
+            next_nodes = (
+                node["next"] if isinstance(node["next"], list) else [node["next"]]
+            )
             nodes_len = len(next_nodes)
             for node_index, next_node in enumerate(next_nodes):
 
@@ -238,6 +240,7 @@ class FileModifiedHandler(FileSystemEventHandler):
             self.needs_save = True
         except Exception as e:
             print(f"Failed to render {file_path}: {e}")
+
 
 def watch_for_changes(cache):
     # Instantiate a file system event handler

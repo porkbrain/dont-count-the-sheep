@@ -92,7 +92,7 @@ fn from_toml(
 
     let mut prev_who = Character::Winnie;
     for (index, node) in nodes.iter().chain(iter::once(&root)).enumerate() {
-        let who = who_from_vars(&dialog.vars, &node).unwrap_or(prev_who);
+        let who = who_from_vars(&dialog.vars, node).unwrap_or(prev_who);
         let name = node
             .name
             .clone()
@@ -103,7 +103,7 @@ fn from_toml(
             .as_ref()
             .map(|name| NodeKind::Guard {
                 kind: guard_name_to_lazy_state(name.as_str()),
-                params: params_from_vars(&dialog.vars, &node),
+                params: params_from_vars(&dialog.vars, node),
             })
             .unwrap_or_else(|| NodeKind::Vocative {
                 line: node
@@ -202,7 +202,7 @@ fn params_from_vars(
         .map(|(key, value)| match value.as_str() {
             Some(v) => {
                 if v.starts_with("${")
-                    && v.ends_with("}")
+                    && v.ends_with('}')
                     && let Some(new) = vars.get(&v[2..v.len() - 1])
                 {
                     // preserves toml value type
@@ -254,7 +254,7 @@ fn string_from_vars(vars: &toml::Table, mut v: String) -> String {
 
 fn who_from_vars(vars: &toml::Table, node: &ParsedNode) -> Option<Character> {
     node.who.as_ref().map(|who| {
-        let s = if who.starts_with("${") && who.ends_with("}") {
+        let s = if who.starts_with("${") && who.ends_with('}') {
             vars.get(&who[2..who.len() - 1])
                 .unwrap_or_else(|| panic!("Variable '{who}' not found"))
                 .as_str()
