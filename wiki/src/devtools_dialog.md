@@ -1,16 +1,16 @@
-# Writing dialog
+# Dialog Authoring
 
-The dialog system comprises [backend](#backend) and [frontend](#frontend) abstractions.
-Backend parses dialog `.toml` files we write into a directed cyclic graph and traverses the graph.
-Frontends render the dialog and handle user input.
+The dialog system consists of backend and frontend abstractions.
+The backend parses dialog `.toml` files into a directed cyclic graph and traverses the graph.
+Frontends are responsible for rendering the dialog and handling user input.
 
 ## Backend
 
-The journey of writing a dialog starts with a `.toml` file called _dialog file_.
-The name of the file must be in [`snake_case`](wiki-snake-case) and must reside in `dialogs` directory (with respect to game repository root.)
-A graph is a collection of nodes and edges.
-The dialog file represents a graph.
-We represent nodes as TOML tables.
+The process of writing a dialog begins with a `.toml` file known as the _dialog file_.
+The filename must be in [`snake_case`](wiki-snake-case) and located within the `dialogs` directory relative to the root of the game repository.
+
+A graph comprises nodes and edges, and the dialog file represents this graph.
+Nodes are represented as TOML tables.
 
 ```toml
 # example syntax of two nodes
@@ -25,28 +25,27 @@ name = "Another node"
 en = "Another English text to display"
 ```
 
-Each node has some keys:
+Each node possesses several keys:
 
-- `name` is an optional key.
-  Along with the file path this will create a globally unique identifier for the node.
-  Nodes can be referred to by this name.
-- `guard` is an optional key.
-  It must be a name of a [guard](#guards).
-  Having this key makes the node a _guard node_.
-- `en` is an optional key.
-  It is the English text to display.
-  It must be present if `guard` is not present.
-  In another words, a node must have either `en` or `guard`.
-  Having this key makes the node a _vocative node_.
-- `params` is an optional key.
-  It can be present only if `guard` is present.
-  See the [guards](#guards) section for more information.
-- `next` is an optional key.
-  It's either a string with the name of the next node or an array with the names of multiple possible next nodes.
+- `name`: Optional key.
+  Along with the file path, this creates a globally unique identifier for the node, which can be used for reference.
+- `guard`: Optional key
+  It must be the name of a [guard](#guards).
+  If present, this key designates the node as a "guard node."
+- `en`: Optional key.
+  This is the English text to display.
+  It must be present if `guard` is not.
+  In other words, a node must have either `en` or `guard`.
+  Having this key designates the node as a "vocative node."
+- `params`: Optional key.
+  It can only be present if `guard` is present.
+  Refer to the [guards](#guards) section for further details.
+- `next`: Optional key.
+  It can either be a string containing the name of the next node or an array containing the names of multiple possible next nodes.
   This key represents the edges of the graph.
-  Each node must be connected to some other node.
-  If this key is not present, the next node is automatically the next node in the file.
-  (Sometimes next node is also called an _outbound node_.)
+  Every node must be connected to at least one other node.
+  If this key is absent, the next node is automatically the subsequent node in the file.
+  (Sometimes, the next node is also referred to as an "outbound node.")
 
 ```toml
 # example sequence of nodes where first goes always to second, but then
@@ -69,14 +68,14 @@ name = "Second B"
 en = "Another choice"
 ```
 
-There are some special node names:
+Certain node names hold special significance:
 
-- When a node with name `_end_dialog` is reached, the dialog ends.
-- `_emerge` is a node whose behavior must be put into context, see [this](#emerging) section.
-- `_root` is a node that represents the starting point of the dialog.
-  Each dialog file must have a root table `[root]`.
-  This table will have the same keys as any other node with the exception of `name`.
-  The name of the root node is always `_root`.
+- When a node with the name `_end_dialog` is reached, the dialog concludes.
+- `_emerge` denotes a node whose behavior needs contextualization;
+  refer to the [emerging](#emerging) section for details.
+- `_root` represents the starting point of the dialog.
+  Every dialog file must contain a root table `[root]`, which shares the same keys as any other node except for name.
+  The name key does not apply to the root node.
 
 ```toml
 # finally, we have the first example of a complete dialog file
@@ -100,32 +99,31 @@ next = "_end_dialog"
 
 ### Guards
 
-Guards extend the functionality of the dialog system into new heights.
-Guards can remember, branch the dialog based on game state, change game state and much more.
-Some example of what guards could/can do:
+Guards elevate the functionality of the dialog system to new levels.
+They can remember information, branch the dialog based on game state, change game state, and much more.
+Some examples of what guards could do include:
 
-- check if player has some item
-- remove or add items from inventory
-- display some UI or animation
-- check if player has some skill
-- alter NPC relationship with the player
-- whatever you need
+- Checking if a player has a certain item
+- Removing or adding items from the inventory
+- Displaying UI or animations
+- Checking if a player possesses a specific skill
+- Altering NPC relationships with the player
+- ...
 
-Guards can accept parameters.
-The parameters are passed to the guard as an [inline table][toml-inline-table].
-The parameters differ from guard to guard, some have none.
+Guards can accept parameters, which are passed to the guard as an [inline table][toml-inline-table].
+The parameters vary from guard to guard; some guards require none.
 
-Typically what's important for a guard are the outbound nodes (nodes that the guard can lead to).
+Typically, what's crucial for a guard are the outbound nodes (nodes that the guard can lead to).
 
-Here's a list of supported guards with their parameters and description of what they do with the outbound nodes:
+Here's a list of supported guards with their parameters and descriptions of their functions with respect to outbound nodes:
 
 #### `exhaustive_alternatives`
 
 No parameters.
-Associate it with multiple outbound nodes and every time the dialog reaches this node, it will show the next node in the list.
-When the last node is reached, this guard will prevent the dialog from showing the branch again.
-When you give this node a name, it remembers the state and even if the player exists the dialog and comes back to this node, it will pick up where it left off.
-If you don't name it, once the dialog is over, it will start from the first node again next time the dialog starts.
+Associate it with multiple outbound nodes, and each time the dialog reaches this node, it will proceed to the next node in the list.
+When the last node is reached, this guard will prevent the dialog from revisiting this branch.
+If you assign a name to this node, it will remember its state, so even if the player exits the dialog and returns to this node, it will resume from where it left off.
+If left unnamed, once the dialog concludes, it will start again from the first node the next time the dialog initiates.
 
 ```toml
 # example
@@ -166,7 +164,7 @@ next = "start"
 
 #### `reach_last_alternative`
 
-Similar to [`exhaustive_alternatives`](#exhaustive_alternatives), but once the last alternative is reached it will always shows the last alternative from here onwards.
+Similar to [`exhaustive_alternatives`](#exhaustive_alternatives), but once the last alternative is reached, it will always show the last alternative from that point onward.
 
 ### Emerging
 
@@ -180,9 +178,9 @@ TODO
 
 ### Portrait dialog
 
-Frontend that pauses player movement.
-Can be used for dialog with NPCs or for cutscenes.
-Displays the portrait of who is speaking.
+A frontend that pauses player movement.
+It can be employed for dialogues with NPCs or for cutscenes.
+This frontend displays the portrait of the character who is speaking.
 
 <!-- List of References -->
 
