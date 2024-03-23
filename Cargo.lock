@@ -1416,7 +1416,10 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_pixel_camera",
+ "common_assets",
  "common_visuals",
+ "rand",
+ "strum",
 ]
 
 [[package]]

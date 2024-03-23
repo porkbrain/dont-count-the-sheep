@@ -115,17 +115,6 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
         )
         .add_systems(OnExit(running), layout::systems::remove_resources::<T>);
 
-    debug!("Adding visuals for {}", T::type_path());
-
-    app.add_systems(
-        FixedUpdate,
-        (
-            common_visuals::systems::advance_atlas_animation,
-            common_visuals::systems::interpolate,
-        )
-            .run_if(in_state(running)),
-    );
-
     debug!("Adding inspect ability for {}", T::type_path());
 
     app.register_type::<InspectLabel>()

@@ -134,7 +134,7 @@ pub(super) fn select(
         Selection::Restart => {
             // just a quick loading screen, no bg
             cmd.insert_resource(LoadingScreenSettings {
-                bg_image_asset: None,
+                atlas: None,
                 fade_loading_screen_in:
                     ON_RESTART_OR_EXIT_FADE_LOADING_SCREEN_IN,
                 fade_loading_screen_out: ON_RESTART_FADE_LOADING_SCREEN_OUT,
@@ -148,7 +148,7 @@ pub(super) fn select(
         Selection::Quit => {
             // just a quick loading screen, no bg
             cmd.insert_resource(LoadingScreenSettings {
-                bg_image_asset: None,
+                atlas: None,
                 fade_loading_screen_in:
                     ON_RESTART_OR_EXIT_FADE_LOADING_SCREEN_IN,
                 fade_loading_screen_out:

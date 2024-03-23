@@ -446,6 +446,12 @@ impl AtlasAnimationTimer {
     pub fn new(duration: Duration, mode: TimerMode) -> Self {
         Self(Timer::new(duration, mode))
     }
+
+    /// How many times a second should we go to the next frame.
+    #[inline]
+    pub fn new_fps(fps: f32) -> Self {
+        Self(Timer::from_seconds(1.0 / fps, TimerMode::Repeating))
+    }
 }
 
 impl AtlasAnimation {

@@ -114,3 +114,10 @@ pub mod character_atlases {
     pub const MARIE: &str = "characters/atlases/marie1.png";
     pub const UNNAMED: &str = "characters/atlases/noname1.png";
 }
+
+pub mod misc {
+    pub const LOADING_SCREEN_BUNNY_ATLAS: &str =
+        "misc/loading_screens/bunny_atlas.png";
+    pub const LOADING_SCREEN_SPACE_ATLAS: &str =
+        "misc/loading_screens/space_atlas.png";
+}

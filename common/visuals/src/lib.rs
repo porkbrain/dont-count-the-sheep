@@ -9,7 +9,7 @@ pub mod systems;
 mod types;
 
 use bevy::{
-    app::{App, Last},
+    app::{App, FixedUpdate, Last},
     math::{cubic_splines::CubicSegment, Vec2},
     render::color::Color,
 };
@@ -33,7 +33,11 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BeginInterpolationEvent>();
 
-        app.add_systems(Last, systems::recv_begin_interpolation_events);
+        app.add_systems(
+            FixedUpdate,
+            (systems::advance_atlas_animation, systems::interpolate),
+        )
+        .add_systems(Last, systems::recv_begin_interpolation_events);
 
         #[cfg(feature = "devtools")]
         {
