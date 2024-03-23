@@ -1514,6 +1514,7 @@ name = "common_visuals"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_pixel_camera",
  "common_ext",
  "lazy_static",
  "rand",

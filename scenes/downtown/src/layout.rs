@@ -32,15 +32,13 @@ use crate::{actor::DowntownAction, prelude::*, Downtown};
 pub enum DowntownTileKind {
     #[default]
     PlayerHouseEntrance,
+    MallEntrance,
 }
 
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        #[cfg(feature = "devtools")]
-        app.register_type::<DowntownTileKind>();
-
         app.add_systems(
             OnEnter(GlobalGameState::DowntownLoading),
             common_rscn::start_loading_tscn::<Downtown>,
@@ -160,7 +158,7 @@ impl common_top_down::layout::Tile for DowntownTileKind {
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::PlayerHouseEntrance => true,
+            Self::MallEntrance | Self::PlayerHouseEntrance => true,
         }
     }
 

@@ -39,6 +39,8 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
 
     /// How large is a tile and how do we translate between world coordinates
     /// and tile coordinates?
+    ///
+    /// TODO: Move out of this trait
     fn layout() -> &'static SquareLayout {
         const LAYOUT: SquareLayout = SquareLayout {
             square_size: 4.0,
@@ -50,6 +52,8 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
 
     /// Given a position on the map, add a z coordinate.
     /// Will return a z-coordinate in the range of -0.1 to 1.1.
+    ///
+    /// TODO: Move out of this trait
     #[inline]
     fn extend_z(Vec2 { x, y }: Vec2) -> Vec3 {
         let (min, max) = Self::y_range().into_inner();
@@ -64,6 +68,8 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
 
     /// Given a position on the map, add a z coordinate as if the y coordinate
     /// was offset by `offset`.
+    ///
+    /// TODO: Move out of this trait
     fn extend_z_with_y_offset(Vec2 { x, y }: Vec2, offset: f32) -> Vec3 {
         let z = Self::extend_z(Vec2 { x, y: y + offset }).z;
         Vec3::new(x, y, z)
@@ -81,6 +87,8 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     }
 
     /// Range of y world pos coordinates.
+    ///
+    /// TODO: Move out of this trait
     fn y_range() -> RangeInclusive<f32> {
         let [_, _, bottom, top] = Self::bounds();
         let min_y = Self::layout().square_to_world_pos(sq(0, bottom)).y;

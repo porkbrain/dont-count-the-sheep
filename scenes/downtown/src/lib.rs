@@ -4,8 +4,6 @@
 
 mod actor;
 mod autogen;
-mod cameras;
-mod consts;
 mod layout;
 mod prelude;
 
@@ -40,7 +38,24 @@ pub fn add(app: &mut App) {
 
     debug!("Adding plugins");
 
-    app.add_plugins((cameras::Plugin, layout::Plugin, actor::Plugin));
+    app.add_plugins((layout::Plugin, actor::Plugin));
+
+    debug!("Adding camera");
+
+    app.add_systems(
+        OnEnter(GlobalGameState::DowntownLoading),
+        common_visuals::camera::spawn,
+    )
+    .add_systems(
+        OnExit(GlobalGameState::DowntownQuitting),
+        common_visuals::camera::despawn,
+    )
+    .add_systems(
+        Update,
+        common_top_down::cameras::track_player_with_main_camera
+            .after(common_top_down::actor::animate_movement::<Downtown>)
+            .run_if(in_state(GlobalGameState::AtDowntown)),
+    );
 
     debug!("Adding assets");
 

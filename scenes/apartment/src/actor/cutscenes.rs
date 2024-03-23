@@ -8,7 +8,7 @@ use main_game_lib::{
     state::GlobalGameStateTransition as Ggst,
 };
 
-use crate::{consts::*, prelude::*};
+use crate::prelude::*;
 
 /// When near the elevator and presses the interaction button, start this
 /// cutscene.

@@ -24,8 +24,10 @@ pub struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<npc::PlanPathEvent>()
-            .add_event::<BeginDialogEvent>()
-            .register_type::<Actor>()
+            .add_event::<BeginDialogEvent>();
+
+        #[cfg(feature = "devtools")]
+        app.register_type::<Actor>()
             .register_type::<ActorTarget>()
             .register_type::<InspectLabelCategory>()
             .register_type::<npc::NpcInTheMap>()
@@ -45,8 +47,6 @@ impl bevy::app::Plugin for Plugin {
 /// - [`crate::actor::npc::plan_path`]
 /// - [`crate::actor::npc::run_path`]
 /// - [`crate::actor::player::move_around`]
-/// - [`common_visuals::systems::advance_atlas_animation`]
-/// - [`common_visuals::systems::interpolate`]
 pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
     app: &mut App,
     loading: S,
@@ -192,10 +192,12 @@ pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
     running: S,
     quitting: S,
 ) where
-    T::LocalTileKind: Ord,
+    T::LocalTileKind: Ord + bevy::reflect::GetTypeRegistration,
 {
     use bevy_inspector_egui::quick::ResourceInspectorPlugin;
     use layout::map_maker::TileMapMakerToolbar as Toolbar;
+
+    app.register_type::<T::LocalTileKind>();
 
     // we insert the toolbar along with the map
     app.register_type::<Toolbar<T::LocalTileKind>>()
