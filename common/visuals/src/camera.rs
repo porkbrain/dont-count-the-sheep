@@ -1,7 +1,19 @@
 //! Getting multiple cameras to work right is easier if all config lives
 //! together like a happy family.
 
-use bevy::ecs::component::Component;
+use bevy::{
+    core::Name,
+    core_pipeline::core_2d::Camera2dBundle,
+    ecs::{
+        component::Component,
+        entity::Entity,
+        query::With,
+        system::{Commands, Query},
+    },
+    render::{camera::Camera, view::RenderLayers},
+    utils::default,
+};
+use bevy_pixel_camera::{PixelViewport, PixelZoom};
 
 /// One pixel is 3x3 pixels on screen.
 pub const PIXEL_ZOOM: i32 = 3;
@@ -53,4 +65,32 @@ pub mod order {
     pub const LOADING: isize = 12;
     /// Overlay for devtools.
     pub const DEV: isize = 420;
+}
+
+/// System to spawn 2D camera with component [`MainCamera`].
+pub fn spawn(mut cmd: Commands) {
+    cmd.spawn((
+        Name::from("Main camera"),
+        MainCamera,
+        PixelZoom::Fixed(PIXEL_ZOOM),
+        PixelViewport,
+        RenderLayers::from_layers(&[
+            0, // for FPS and other debug tools
+            render_layer::BG,
+            render_layer::OBJ,
+        ]),
+        Camera2dBundle {
+            camera: Camera {
+                hdr: true,
+                order: order::DEFAULT,
+                ..default()
+            },
+            ..default()
+        },
+    ));
+}
+
+/// System to despawn 2D camera with component [`MainCamera`].
+pub fn despawn(mut cmd: Commands, camera: Query<Entity, With<MainCamera>>) {
+    cmd.entity(camera.single()).despawn();
 }

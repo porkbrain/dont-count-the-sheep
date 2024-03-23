@@ -4,13 +4,11 @@ use common_store::{ApartmentStore, GlobalStore};
 use common_top_down::{
     actor::CharacterExt, ActorMovementEvent, ActorTarget, TileKind,
 };
-use common_visuals::camera::render_layer;
+use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{common_ext::QueryExt, cutscene::IntoCutscene};
 
 use super::{cutscenes, ApartmentAction};
 use crate::{
-    cameras::CameraEntity,
-    consts::*,
     layout::{ApartmentTileKind, Elevator},
     prelude::*,
     Apartment,
@@ -18,6 +16,9 @@ use crate::{
 
 /// When the character gets closer to certain zones, show UI to make it easier
 /// to visually identify what's going on.
+///
+/// TODO: Load individual images and hide them. Then in layout add systems for
+/// displaying them when zone is entered and hiding them when zone is left.
 #[derive(Component, Reflect)]
 pub(crate) struct TransparentOverlay;
 
@@ -126,7 +127,7 @@ pub(super) fn enter_the_elevator(
 
     player: Query<Entity, With<Player>>,
     elevator: Query<Entity, With<Elevator>>,
-    camera: Query<Entity, With<CameraEntity>>,
+    camera: Query<Entity, With<MainCamera>>,
 ) {
     let is_triggered = action_events
         .read()

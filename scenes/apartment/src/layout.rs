@@ -57,9 +57,6 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        #[cfg(feature = "devtools")]
-        app.register_type::<ApartmentTileKind>();
-
         app.add_systems(
             OnEnter(GlobalGameState::ApartmentLoading),
             common_rscn::start_loading_tscn::<Apartment>,

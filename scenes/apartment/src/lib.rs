@@ -6,8 +6,6 @@
 
 mod actor;
 mod autogen;
-mod cameras;
-mod consts;
 mod layout;
 mod prelude;
 
@@ -15,7 +13,6 @@ use bevy::utils::Instant;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_rscn::TscnInBevy;
-use consts::START_LOADING_SCREEN_AFTER;
 use layout::ApartmentTileKind;
 use prelude::*;
 
@@ -46,7 +43,18 @@ pub fn add(app: &mut App) {
 
     debug!("Adding plugins");
 
-    app.add_plugins((cameras::Plugin, layout::Plugin, actor::Plugin));
+    app.add_plugins((layout::Plugin, actor::Plugin));
+
+    debug!("Adding camera");
+
+    app.add_systems(
+        OnEnter(GlobalGameState::ApartmentLoading),
+        common_visuals::camera::spawn,
+    )
+    .add_systems(
+        OnExit(GlobalGameState::ApartmentQuitting),
+        common_visuals::camera::despawn,
+    );
 
     debug!("Adding assets");
 

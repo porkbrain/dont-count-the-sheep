@@ -307,7 +307,7 @@ fn advance_dialog(
             if let NodeKind::Vocative { line } = &node.kind {
                 trace!("Rendering vocative {:?}: '{line:?}'", node.who);
 
-                text.sections[0].value = line.clone();
+                text.sections[0].value.clone_from(line);
                 portrait.texture =
                     asset_server.load(node.who.portrait_asset_path());
 
