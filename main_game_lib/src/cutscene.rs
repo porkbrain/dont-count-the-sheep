@@ -260,8 +260,9 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
 
         let mut top_entities = cmd.spawn((
             Name::new("Letterboxing: top quad"),
-            RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
             LetterboxingTopQuad,
+            TargetCamera(camera),
+            RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
             NodeBundle {
                 style: Style {
                     width: Val::Percent(100.0),
@@ -287,6 +288,7 @@ pub fn spawn_cutscene<Scene: IntoCutscene>(
         let mut bottom_entities = cmd.spawn((
             Name::new("Letterboxing: bottom quad"),
             LetterboxingBottomQuad,
+            TargetCamera(camera),
             RenderLayers::layer(render_layer::CUTSCENE_LETTERBOXING),
             NodeBundle {
                 style: Style {
