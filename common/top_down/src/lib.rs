@@ -69,7 +69,7 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
     debug!("Adding map layout for {}", T::type_path());
 
     app.add_event::<ActorMovementEvent<T::LocalTileKind>>()
-        .init_asset_loader::<common_assets::RonLoader<TileMap<T>>>()
+        .init_asset_loader::<common_assets::ron_loader::Loader<TileMap<T>>>()
         .init_asset::<TileMap<T>>()
         .register_type::<TileKind<T::LocalTileKind>>()
         .register_type::<TileMap<T>>()
