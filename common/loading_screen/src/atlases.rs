@@ -2,8 +2,6 @@
 //! atlases.
 //! This module enumerates all of them and provides a way to load them.
 
-// TODO; old loading screen
-
 use bevy::{
     math::vec2, reflect::Reflect, sprite::TextureAtlasLayout, utils::default,
 };
