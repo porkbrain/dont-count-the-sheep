@@ -64,7 +64,7 @@ pub enum AtlasAnimationEnd {
 }
 
 /// Must be present for the systems to actually drive the animation.
-#[derive(Component, Deref, DerefMut)]
+#[derive(Component, Deref, DerefMut, Reflect)]
 pub struct AtlasAnimationTimer(pub(crate) Timer);
 
 /// Allows to start an animation at random.
@@ -445,6 +445,12 @@ impl AtlasAnimationTimer {
     #[inline]
     pub fn new(duration: Duration, mode: TimerMode) -> Self {
         Self(Timer::new(duration, mode))
+    }
+
+    /// How many times a second should we go to the next frame.
+    #[inline]
+    pub fn new_fps(fps: f32) -> Self {
+        Self(Timer::from_seconds(1.0 / fps, TimerMode::Repeating))
     }
 }
 

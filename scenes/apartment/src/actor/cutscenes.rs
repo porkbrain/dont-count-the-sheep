@@ -68,7 +68,15 @@ impl IntoCutscene for EnterTheElevator {
                 Box::new(vec![ChangeGlobalState {
                     to: GlobalGameState::ApartmentQuitting,
                     with: Ggst::ApartmentQuittingToDowntownLoading,
-                    loading_screen: Some(LoadingScreenSettings { ..default() }),
+                    loading_screen: Some(LoadingScreenSettings {
+                        atlas: Some(
+                            common_loading_screen::LoadingScreenAtlas::random(),
+                        ),
+                        stare_at_loading_screen_for_at_least: Some(
+                            from_millis(2000),
+                        ),
+                        ..default()
+                    }),
                     // this is already done in this scene's smooth exit sys
                     change_loading_screen_state_to_start: false,
                 }]),

@@ -105,7 +105,7 @@ pub(super) fn start_meditation_minigame_if_near_chair(
         overlay.single_mut().color.set_a(1.0);
 
         cmd.insert_resource(LoadingScreenSettings {
-            bg_image_asset: Some(common_assets::meditation::LOADING_SCREEN),
+            atlas: Some(common_loading_screen::LoadingScreenAtlas::Space),
             stare_at_loading_screen_for_at_least: Some(
                 WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
             ),

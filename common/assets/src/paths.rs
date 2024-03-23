@@ -27,8 +27,6 @@ pub mod downtown {
 pub mod meditation {
     pub const FOLDER: &str = "meditation";
 
-    pub const LOADING_SCREEN: &str = "meditation/textures/loading_screen.png";
-
     pub const BACKGROUND_DEFAULT: &str = "meditation/textures/bg/default.png";
     pub const SHOOTING_STAR_ATLAS: &str =
         "meditation/textures/bg/shootingstar_atlas.png";
@@ -113,4 +111,11 @@ pub mod character_atlases {
     pub const WINNIE: &str = "characters/atlases/winnie1.png";
     pub const MARIE: &str = "characters/atlases/marie1.png";
     pub const UNNAMED: &str = "characters/atlases/noname1.png";
+}
+
+pub mod misc {
+    pub const LOADING_SCREEN_BUNNY_ATLAS: &str =
+        "misc/loading_screens/bunny_atlas.png";
+    pub const LOADING_SCREEN_SPACE_ATLAS: &str =
+        "misc/loading_screens/space_atlas.png";
 }

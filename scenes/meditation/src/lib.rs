@@ -56,11 +56,6 @@ pub fn add(app: &mut App) {
     debug!("Adding visuals");
 
     app.add_systems(
-        FixedUpdate,
-        common_visuals::systems::advance_atlas_animation
-            .run_if(in_state(GlobalGameState::MeditationInGame)),
-    );
-    app.add_systems(
         Update,
         (
             common_visuals::systems::begin_atlas_animation_at_random,
