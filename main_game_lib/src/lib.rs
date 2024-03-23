@@ -72,7 +72,8 @@ pub fn windowed_app() -> App {
         .insert_resource(ClearColor(PRIMARY_COLOR))
         .insert_resource(GlobalGameStateTransitionStack::default())
         .init_asset::<common_rscn::TscnTree>()
-        .init_asset_loader::<common_rscn::TscnLoader>();
+        .init_asset_loader::<common_rscn::TscnLoader>()
+        .init_asset_loader::<common_assets::ignore_loader::Loader>();
 
     #[cfg(feature = "devtools")]
     {
