@@ -48,6 +48,7 @@ impl bevy::app::Plugin for Plugin {
 
             app.register_type::<AtlasAnimation>()
                 .register_type::<AtlasAnimationEnd>()
+                .register_type::<AtlasAnimationTimer>()
                 .register_type::<TranslationInterpolation>()
                 .register_type::<ColorInterpolation>()
                 .register_type::<BeginAtlasAnimationAtRandom>()

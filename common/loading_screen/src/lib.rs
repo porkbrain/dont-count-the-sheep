@@ -19,10 +19,11 @@ mod atlases;
 use std::time::Duration;
 
 pub use atlases::LoadingScreenAtlas;
-use bevy::{prelude::*, render::view::RenderLayers, utils::Instant};
-use bevy_pixel_camera::{PixelViewport, PixelZoom};
+use bevy::{
+    math::vec3, prelude::*, render::view::RenderLayers, utils::Instant,
+};
 use common_visuals::{
-    camera::{order, render_layer, PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH},
+    camera::{order, render_layer, PIXEL_ZOOM},
     PRIMARY_COLOR,
 };
 
@@ -189,102 +190,108 @@ fn spawn_loading_screen(
 ) {
     trace!("Spawning loading screen");
 
-    cmd.spawn((
-        Name::from("Loading screen camera"),
-        LoadingCamera,
-        PixelZoom::FitSize {
-            width: PIXEL_VISIBLE_WIDTH as i32,
-            height: PIXEL_VISIBLE_HEIGHT as i32,
-        },
-        PixelViewport,
-        RenderLayers::layer(render_layer::LOADING),
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true,
-                order: order::LOADING,
-                clear_color: ClearColorConfig::None,
+    let camera = cmd
+        .spawn((
+            Name::from("Loading screen camera"),
+            LoadingCamera,
+            RenderLayers::layer(render_layer::LOADING),
+            Camera2dBundle {
+                camera: Camera {
+                    hdr: true,
+                    order: order::LOADING,
+                    clear_color: ClearColorConfig::None,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        },
-    ));
+        ))
+        .id();
 
     // quad
     cmd.spawn((
         Name::from("Loading screen quad"),
         LoadingQuad,
         RenderLayers::layer(render_layer::LOADING),
-        SpriteBundle {
-            sprite: Sprite {
-                color: {
-                    let mut c = PRIMARY_COLOR;
-                    c.set_a(0.0);
-                    c
-                },
-                // this is K-enough because the pixel zoom is set to fit
-                custom_size: Some(Vec2::new(
-                    PIXEL_VISIBLE_WIDTH,
-                    PIXEL_VISIBLE_HEIGHT,
-                )),
+        TargetCamera(camera),
+        NodeBundle {
+            background_color: BackgroundColor({
+                let mut c = PRIMARY_COLOR;
+                c.set_a(0.0);
+                c
+            }),
+            style: Style {
+                position_type: PositionType::Absolute,
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
                 ..default()
             },
-            transform: Transform::from_translation(Vec3::new(
-                0.0, 0.0, 1.0, // in front of the image
-            )),
+            // in front of the image
+            z_index: ZIndex::Global(1),
             ..default()
         },
     ));
 
     // bg image
     if let Some(atlas) = settings.atlas {
-        let (layout, animation, timer) = atlas.thingies();
         let texture: Handle<Image> = asset_server.load(atlas.asset_path());
 
-        cmd.spawn(Name::new("Loading screen image"))
-            .insert(LoadingImage)
-            // We store the handle so we can check if it's loaded.
-            // The same handle is used in a child entity for the actual image.
-            .insert(texture.clone())
-            .insert(SpatialBundle {
+        cmd.spawn(Name::new("Loading screen atlas bg"))
+            .insert((
+                LoadingImage,
+                // we use the same handle to check whether the image is loaded,
+                // but the actual image is rendered in the child entity
+                texture.clone(),
+                TargetCamera(camera),
+                RenderLayers::layer(render_layer::LOADING),
+            ))
+            .insert(NodeBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    ..default()
+                },
                 visibility: Visibility::Hidden,
+                background_color: BackgroundColor(PRIMARY_COLOR),
                 ..default()
             })
             .with_children(|parent| {
-                // always shows behind the image because images have
-                // transparency or don't fill the screen
-                parent.spawn((
-                    RenderLayers::layer(render_layer::LOADING),
-                    SpriteBundle {
-                        sprite: Sprite {
-                            color: PRIMARY_COLOR,
-                            // this is K-enough because the pixel zoom is set to
-                            // fit
-                            custom_size: Some(Vec2::new(
-                                PIXEL_VISIBLE_WIDTH,
-                                PIXEL_VISIBLE_HEIGHT,
-                            )),
+                let (layout, animation, timer) = atlas.thingies();
+
+                parent
+                    .spawn(Name::new("Loading screen atlas image"))
+                    .insert((
+                        animation,
+                        timer,
+                        RenderLayers::layer(render_layer::LOADING),
+                    ))
+                    .insert(AtlasImageBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            width: Val::Auto,
+                            height: Val::Auto,
+                            align_self: AlignSelf::Center,
+                            margin: UiRect {
+                                left: Val::Auto,
+                                right: Val::Auto,
+                                ..default()
+                            },
                             ..default()
                         },
-                        transform: Transform::from_translation(Vec3::new(
-                            0.0, 0.0, -1.0, // behind image
+                        texture_atlas: TextureAtlas {
+                            layout: atlas_layouts.add(layout),
+                            ..default()
+                        },
+                        image: UiImage::new(
+                            asset_server.load(atlas.asset_path()),
+                        ),
+                        transform: Transform::from_scale(vec3(
+                            PIXEL_ZOOM as f32,
+                            PIXEL_ZOOM as f32,
+                            1.0,
                         )),
                         ..default()
-                    },
-                ));
-
-                parent.spawn((
-                    RenderLayers::layer(render_layer::LOADING),
-                    SpriteBundle {
-                        texture: asset_server.load(atlas.asset_path()),
-                        ..default()
-                    },
-                    animation,
-                    timer,
-                    TextureAtlas {
-                        layout: atlas_layouts.add(layout),
-                        ..default()
-                    },
-                ));
+                    });
             });
     }
 
@@ -297,7 +304,7 @@ fn fade_in_quad_while_bg_loading(
     next_state: ResMut<NextState<LoadingScreenState>>,
     settings: Res<LoadingScreenSettings>,
 
-    query: Query<&mut Sprite, With<LoadingQuad>>,
+    query: Query<&mut BackgroundColor, With<LoadingQuad>>,
 ) {
     fade_quad(
         Fade::In,
@@ -339,7 +346,7 @@ fn fade_out_quad_to_show_atlas(
     next_state: ResMut<NextState<LoadingScreenState>>,
     settings: Res<LoadingScreenSettings>,
 
-    query: Query<&mut Sprite, With<LoadingQuad>>,
+    query: Query<&mut BackgroundColor, With<LoadingQuad>>,
 ) {
     fade_quad(
         Fade::Out,
@@ -376,7 +383,7 @@ fn fade_in_quad_that_hides_atlas(
     mut next_state: ResMut<NextState<LoadingScreenState>>,
     settings: Res<LoadingScreenSettings>,
 
-    query: Query<&mut Sprite, With<LoadingQuad>>,
+    query: Query<&mut BackgroundColor, With<LoadingQuad>>,
 ) {
     if settings.atlas.is_none() {
         next_state.set(LoadingScreenState::FadeOutQuadToShowGame);
@@ -413,7 +420,7 @@ fn fade_out_quad_to_show_game(
     next_state: ResMut<NextState<LoadingScreenState>>,
     settings: Res<LoadingScreenSettings>,
 
-    query: Query<&mut Sprite, With<LoadingQuad>>,
+    query: Query<&mut BackgroundColor, With<LoadingQuad>>,
 ) {
     fade_quad(
         Fade::Out,
@@ -455,11 +462,12 @@ fn fade_quad(
     time: Res<Time>,
     mut next_state: ResMut<NextState<LoadingScreenState>>,
 
-    mut query: Query<&mut Sprite, With<LoadingQuad>>,
+    mut query: Query<&mut BackgroundColor, With<LoadingQuad>>,
 ) {
-    let mut sprite = query.single_mut();
+    let mut bg_color = query.single_mut();
+    let BackgroundColor(ref mut color) = bg_color.as_mut();
 
-    let alpha = sprite.color.a();
+    let alpha = color.a();
     let dt = time.delta_seconds() / fade_duration.as_secs_f32();
 
     let new_alpha = match fade {
@@ -467,7 +475,7 @@ fn fade_quad(
         Fade::In => alpha + dt,
     };
 
-    sprite.color.set_a(new_alpha.clamp(0.0, 1.0));
+    color.set_a(new_alpha.clamp(0.0, 1.0));
 
     if !(0.0..=1.0).contains(&new_alpha) {
         trace!("Done quad {fade:?}, next {state_once_done:?}");

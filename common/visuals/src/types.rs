@@ -64,7 +64,7 @@ pub enum AtlasAnimationEnd {
 }
 
 /// Must be present for the systems to actually drive the animation.
-#[derive(Component, Deref, DerefMut)]
+#[derive(Component, Deref, DerefMut, Reflect)]
 pub struct AtlasAnimationTimer(pub(crate) Timer);
 
 /// Allows to start an animation at random.
