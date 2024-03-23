@@ -85,9 +85,9 @@ pub enum LoadingScreenState {
 #[derive(Resource, Debug, Reflect, Clone)]
 pub struct LoadingScreenSettings {
     /// If set to none:
-    /// - [`LoadingScreenState::WaitForBgToLoad`] goes straight to
+    /// - [`LoadingScreenState::WaitForAtlasToLoad`] goes straight to
     ///   [`LoadingScreenState::WaitForSignalToFinish`]
-    /// - [`LoadingScreenState::FadeInQuadToHideBg`] goes straight to
+    /// - [`LoadingScreenState::FadeInQuadToRemoveAtlas`] goes straight to
     ///   [`LoadingScreenState::FadeOutQuadToShowGame`]
     pub atlas: Option<LoadingScreenAtlas>,
     /// How long does it take to fade in the quad that hides the load out
