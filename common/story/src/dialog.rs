@@ -7,6 +7,14 @@
 //! game.
 //! It has no systems, only a resource that when coupled with a frontend
 //! advances the dialog state.
+//! See the [`fe`] module for frontends.
+//!
+//! Then there's the [`DialogRoot`] enum.
+//! It's auto generated from all dialog .toml files.
+//! Each file is represented as a variant of this enum by taking the file stem
+//! and converting it to PascalCase.
+//! You can use the specific variant to spawn dialog BE and FE which starts the
+//! dialog.
 
 mod deser;
 pub mod fe;
@@ -29,7 +37,8 @@ pub use list::DialogRoot;
 use self::guard::{GuardCmd, GuardKind, GuardSystem};
 use crate::Character;
 
-/// Can be used on components and resources to schedule commands.
+/// Use [`Dialog::on_finished`] to schedule commands to run when the dialog is
+/// finished.
 pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
 
 /// Namespace represents a dialog toml file with relative path from the root
@@ -38,20 +47,24 @@ pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
 pub type Namespace = DialogRoot;
 
 /// Dialog backend.
+///
 /// It is a state machine that can be advanced.
 /// It controls a fleet of guards that can read and write game state and allow
 /// the dialog logic to be stateful.
+///
+/// Spawn it via [`DialogRoot`], associate it with a frontend (see [`fe`]
+/// module.)
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
 pub struct Dialog {
-    pub(crate) graph: DialogGraph,
+    graph: DialogGraph,
     current_node: NodeName,
-    pub(crate) branching: Branching,
+    branching: Branching,
     #[reflect(ignore)]
-    pub(crate) guard_systems: HashMap<NodeName, GuardSystem>,
+    guard_systems: HashMap<NodeName, GuardSystem>,
     /// When dialog is finished, run these commands.
     #[reflect(ignore)]
-    pub(crate) when_finished: Vec<CmdFn>,
+    when_finished: Vec<CmdFn>,
 }
 
 /// Node name uniquely identifies a node across all dialogs.
@@ -89,20 +102,20 @@ pub enum NodeName {
 /// The state is managed by systems called guards.
 #[derive(Debug, Reflect, Default)]
 pub struct DialogGraph {
-    pub(crate) root: NodeName,
-    pub(crate) nodes: HashMap<NodeName, Node>,
+    root: NodeName,
+    nodes: HashMap<NodeName, Node>,
 }
 
 #[derive(Debug, Reflect)]
-pub(crate) struct Node {
-    pub(crate) name: NodeName,
-    pub(crate) who: Character,
-    pub(crate) kind: NodeKind,
-    pub(crate) next: Vec<NodeName>,
+struct Node {
+    name: NodeName,
+    who: Character,
+    kind: NodeKind,
+    next: Vec<NodeName>,
 }
 
 #[derive(Debug, Reflect)]
-pub(crate) enum NodeKind {
+enum NodeKind {
     Guard {
         /// Guard states are persisted across dialog sessions if
         /// - the node has a [`NodeName::Explicit`]
@@ -123,7 +136,7 @@ pub(crate) enum NodeKind {
 }
 
 #[derive(Reflect, Debug, Default)]
-pub(crate) enum Branching {
+enum Branching {
     #[default]
     None,
     Single(NodeName),
@@ -131,7 +144,7 @@ pub(crate) enum Branching {
 }
 
 #[derive(Reflect, Debug)]
-pub(crate) enum BranchStatus {
+enum BranchStatus {
     /// Guards can be async.
     /// They will eventually transition this status into another variant.
     Pending,
@@ -141,7 +154,7 @@ pub(crate) enum BranchStatus {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub(crate) enum AdvanceOutcome {
+enum AdvanceOutcome {
     /// Some operations are still pending, try again later.
     /// This will happen with guards.
     /// Most guards will be ready in the next tick, but an async guard could
@@ -168,13 +181,13 @@ impl Dialog {
         self
     }
 
-    pub(crate) fn current_node(&self) -> &NodeName {
+    fn current_node(&self) -> &NodeName {
         &self.current_node
     }
 
     /// This method should be called by FE repeatedly until a node changes or
     /// all choice branches are evaluated.
-    pub(crate) fn advance(
+    fn advance(
         &mut self,
         cmd: &mut Commands,
         store: &GlobalStore,
@@ -206,11 +219,11 @@ impl Dialog {
         }
     }
 
-    pub(crate) fn current_node_info(&self) -> &Node {
+    fn current_node_info(&self) -> &Node {
         self.graph.nodes.get(&self.current_node).unwrap()
     }
 
-    pub(crate) fn transition_to(
+    fn transition_to(
         &mut self,
         cmd: &mut Commands,
         store: &GlobalStore,
@@ -227,11 +240,11 @@ impl Dialog {
             Branching::new(cmd, &node_name, &self.graph, &self.guard_systems)
     }
 
-    pub(crate) fn spawn(self, cmd: &mut Commands) {
+    fn spawn(self, cmd: &mut Commands) {
         cmd.insert_resource(self);
     }
 
-    pub(crate) fn despawn(&mut self, cmd: &mut Commands) {
+    fn despawn(&mut self, cmd: &mut Commands) {
         for (node_name, guard_system) in self.guard_systems.drain() {
             cmd.run_system_with_input(
                 guard_system.entity,
@@ -557,18 +570,6 @@ impl DialogGraph {
 impl NodeName {
     const NAMESPACE_ROOT: &'static str = "_root";
 
-    fn from_namespace_and_node_name_str(
-        namespace: Namespace,
-        node_name: String,
-    ) -> Self {
-        match node_name.as_str() {
-            "_end_dialog" => Self::EndDialog,
-            "_emerge" => Self::Root,
-            Self::NAMESPACE_ROOT => Self::NamespaceRoot(namespace),
-            _ => Self::Explicit(namespace, node_name),
-        }
-    }
-
     /// Get the namespace and node name.
     /// Only works for [`NodeName::Explicit`] and [`NodeName::NamespaceRoot`].
     pub fn as_namespace_and_node_name_str(&self) -> Option<(Namespace, &str)> {
@@ -580,6 +581,18 @@ impl NodeName {
                 Some((*namespace, Self::NAMESPACE_ROOT))
             }
             _ => None,
+        }
+    }
+
+    fn from_namespace_and_node_name_str(
+        namespace: Namespace,
+        node_name: String,
+    ) -> Self {
+        match node_name.as_str() {
+            "_end_dialog" => Self::EndDialog,
+            "_emerge" => Self::Root,
+            Self::NAMESPACE_ROOT => Self::NamespaceRoot(namespace),
+            _ => Self::Explicit(namespace, node_name),
         }
     }
 }
