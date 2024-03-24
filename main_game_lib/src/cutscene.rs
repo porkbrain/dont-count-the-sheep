@@ -625,7 +625,7 @@ fn begin_portrait_dialog(
         .parse()
         .into_root_graph(None)
         .into_dialog_resource(&mut cmd_queue)
-        .spawn_with_portrait_ui(&mut cmd, &asset_server);
+        .spawn_with_portrait_fe(&mut cmd, &asset_server);
     cmd.append(&mut cmd_queue);
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);

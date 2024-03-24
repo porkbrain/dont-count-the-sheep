@@ -173,6 +173,9 @@ enum AdvanceOutcome {
     ScheduledDespawn,
 }
 
+#[derive(Debug)]
+struct BranchPending;
+
 impl Dialog {
     /// Schedule a command to run when the dialog is finished.
     /// As many commands as you want can be scheduled.
@@ -181,8 +184,41 @@ impl Dialog {
         self
     }
 
-    fn current_node(&self) -> &NodeName {
-        &self.current_node
+    /// If there are no choices to be made by the player, this method returns
+    /// [`None`]`. If there are choices, but not yet ready, this method
+    /// returns [`Some(Err(Pending))`].
+    fn get_choices(
+        &self,
+    ) -> Option<Result<Vec<(&NodeName, &str)>, BranchPending>> {
+        if let Branching::Choice(branches) = &self.branching {
+            let node = self.current_node_info();
+            let branches = branches
+                .iter()
+                .enumerate()
+                .filter_map(|(branch_index, status)| match status {
+                    BranchStatus::OfferAsChoice(text) => {
+                        let node_name = &node.next[branch_index];
+
+                        Some(Ok((node_name, text.as_str())))
+                    }
+                    BranchStatus::Stop => None,
+                    BranchStatus::Pending => Some(Err(BranchPending)),
+                })
+                .collect::<Result<Vec<_>, _>>();
+
+            if let Ok(branches) = branches {
+                if branches.len() > 1 {
+                    Some(Ok(branches))
+                } else {
+                    // zero or one branch is not a choice
+                    None
+                }
+            } else {
+                Some(Err(BranchPending))
+            }
+        } else {
+            None
+        }
     }
 
     /// This method should be called by FE repeatedly until a node changes or

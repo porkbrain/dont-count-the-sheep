@@ -354,7 +354,7 @@ pub(crate) fn begin_dialog(
                 .into_root_graph(None)
                 .into_dialog_resource(&mut cmd_queue)
                 .on_finished(when_finished)
-                .spawn_with_portrait_ui(&mut cmd, &asset_server);
+                .spawn_with_portrait_fe(&mut cmd, &asset_server);
             cmd.append(&mut cmd_queue);
         }
         _ => {

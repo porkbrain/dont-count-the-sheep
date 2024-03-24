@@ -1,8 +1,8 @@
 //! When a dialog is spawned, it's already loaded as it should look and does not
 //! require any additional actions.
 //!
-//! You first want to obtain the dialog be [`Dialog`] and then spawn the
-//! dialog UI with [`Dialog::spawn_with_portrait_ui`].
+//! You first want to obtain the dialog BE [`Dialog`] and then spawn the
+//! dialog FE with [`Dialog::spawn_with_portrait_fe`].
 
 use std::{collections::BTreeMap, time::Duration};
 
@@ -13,12 +13,9 @@ use bevy::{
 use common_action::{ActionState, GlobalAction};
 use common_store::GlobalStore;
 use common_visuals::camera::render_layer;
-use itertools::Itertools;
 
 use crate::{
-    dialog::{
-        AdvanceOutcome, BranchStatus, Branching, Dialog, NodeKind, NodeName,
-    },
+    dialog::{AdvanceOutcome, Dialog, NodeKind, NodeName},
     Character,
 };
 
@@ -49,7 +46,7 @@ pub struct PortraitDialog {
 
 impl Dialog {
     /// Spawns the dialog UI and inserts all necessary resources.
-    pub fn spawn_with_portrait_ui(
+    pub fn spawn_with_portrait_fe(
         self,
         cmd: &mut Commands,
         asset_server: &AssetServer,
@@ -75,20 +72,29 @@ enum PortraitDialogState {
     /// When in this state, we run system [`player_wishes_to_continue`] when
     /// the player presses the interact key.
     PlayerControl,
+    /// Sometimes the vocative line to render is short.
+    /// If there come choices after the vocative line, don't require the player
+    /// to press the interact key to see the choices.
+    /// Show them straight away.
+    ///
+    /// This state transitions to [`PortraitDialogState::PlayerControl`]
+    /// unless any choice still loading.
+    /// It renders the choices only if
+    /// - no more text to render (short line)
+    /// - there are choices to render
+    /// - no choices have been rendered yet
+    RenderChoicesIfNoMoreTextToRender,
 }
 
 /// Marks the dialog camera.
 #[derive(Component)]
 struct DialogCamera;
-
 /// The root entity of the dialog UI.
 #[derive(Component)]
 struct DialogUiRoot;
-
 /// A child of the root entity that contains the text.
 #[derive(Component)]
 struct DialogText;
-
 /// A child of the root entity that contains the portrait image.
 #[derive(Component)]
 struct DialogPortrait;
@@ -122,6 +128,12 @@ impl bevy::app::Plugin for Plugin {
             player_wishes_to_continue
                 .run_if(in_state(PortraitDialogState::PlayerControl))
                 .run_if(common_action::interaction_just_pressed()),
+        )
+        .add_systems(
+            Update,
+            render_choices_if_no_more_text_to_render.run_if(in_state(
+                PortraitDialogState::RenderChoicesIfNoMoreTextToRender,
+            )),
         )
         .add_systems(
             Update,
@@ -177,39 +189,15 @@ fn player_wishes_to_continue(
 
     let (mut text, layout) = text.single_mut();
 
-    // If we rendered some glyphs, we need to check whether we rendered all
-    // of the text.
-    // Empty rendered glyphs means there was no text to render.
-    let rendered_glyphs_count = layout.glyphs.len();
-    if rendered_glyphs_count > 0 {
-        // Since white spaces are not rendered by instead used to calculate the
-        // positions of the other glyphs, we need to skip those when calculating
-        // what is the portion of the text that has NOT been rendered yet.
-        let next_char_info = text.sections[0]
-            .value
-            .chars()
-            .enumerate()
-            .filter(|(_, c)| !c.is_whitespace())
-            .nth(rendered_glyphs_count); // the next char won't be a white space
+    if let Some(remaining_text) = get_more_text_to_render(&text, &layout) {
+        trace!("Rendering remaining text");
 
-        if let Some((next_char_index, next_char)) = next_char_info {
-            if let Some(remaining_text) =
-                text.sections[0].value.get(next_char_index..)
-            {
-                debug_assert_eq!(
-                    remaining_text.chars().next(),
-                    Some(next_char)
-                );
+        // if there's more text to render, set the remaining text to
+        // the text component value and wait for the player to continue
+        text.sections[0].value = remaining_text.to_string();
+        dialog_fe.last_frame_shown_at = Instant::now();
 
-                // if there's more text to render, set the remaining text to
-                // the text component value and wait for the player to continue
-                text.sections[0].value = remaining_text.to_string();
-                dialog_fe.last_frame_shown_at = Instant::now();
-
-                trace!("Rendering remaining text");
-                return;
-            }
-        }
+        return;
     }
 
     let next_state = advance_dialog(
@@ -280,6 +268,88 @@ fn await_portrait_async_ops(
 }
 
 #[allow(clippy::too_many_arguments)]
+fn render_choices_if_no_more_text_to_render(
+    mut cmd: Commands,
+    mut next_dialog_state: ResMut<NextState<PortraitDialogState>>,
+    dialog_be: ResMut<Dialog>,
+    asset_server: Res<AssetServer>,
+    mut controls: ResMut<ActionState<GlobalAction>>,
+
+    root: Query<Entity, With<DialogUiRoot>>,
+    text: Query<(&Text, &TextLayoutInfo), With<DialogText>>,
+    choices: Query<(Entity, &DialogChoice)>,
+) {
+    if !choices.is_empty() {
+        warn!(
+            "render_choices_if_no_more_text_to_render called but \
+            there are already choices displayed"
+        );
+        next_dialog_state.set(PortraitDialogState::PlayerControl);
+        return;
+    }
+
+    let (text, layout) = text.single();
+    if get_more_text_to_render(&text, &layout).is_some() {
+        next_dialog_state.set(PortraitDialogState::PlayerControl);
+        return;
+    }
+
+    match dialog_be.get_choices() {
+        None => {
+            next_dialog_state.set(PortraitDialogState::PlayerControl);
+        }
+        Some(Err(_)) => {
+            // choices are still loading, try again next tick
+        }
+        Some(Ok(branches)) => {
+            show_player_choices(
+                &mut cmd,
+                &asset_server,
+                &dialog_be,
+                root.single(),
+                &branches,
+            );
+
+            controls.consume_all();
+            next_dialog_state.set(PortraitDialogState::PlayerControl);
+        }
+    }
+}
+
+fn get_more_text_to_render(
+    text: &Text,
+    layout: &TextLayoutInfo,
+) -> Option<String> {
+    let rendered_glyphs_count = layout.glyphs.len();
+    if rendered_glyphs_count > 0 {
+        // Since white spaces are not rendered by instead used to calculate the
+        // positions of the other glyphs, we need to skip those when calculating
+        // what is the portion of the text that has NOT been rendered yet.
+        let next_char_info = text.sections[0]
+            .value
+            .chars()
+            .enumerate()
+            .filter(|(_, c)| !c.is_whitespace())
+            .nth(rendered_glyphs_count); // the next char won't be a white space
+
+        if let Some((next_char_index, next_char)) = next_char_info {
+            if let Some(remaining_text) =
+                text.sections[0].value.get(next_char_index..)
+            {
+                debug_assert_eq!(
+                    remaining_text.chars().next(),
+                    Some(next_char)
+                );
+
+                return Some(remaining_text.to_string());
+            }
+        }
+    }
+
+    None
+}
+
+#[allow(clippy::too_many_arguments)]
 fn advance_dialog(
     cmd: &mut Commands,
     store: &GlobalStore,
@@ -297,11 +367,10 @@ fn advance_dialog(
         let last_matches_be_current = dialog_fe
             .last_rendered_node
             .as_ref()
-            .is_some_and(|n| n == dialog_be.current_node());
+            .is_some_and(|n| n == &dialog_be.current_node);
 
         if !last_matches_be_current {
-            dialog_fe.last_rendered_node =
-                Some(dialog_be.current_node().clone());
+            dialog_fe.last_rendered_node = Some(dialog_be.current_node.clone());
 
             let node = dialog_be.current_node_info();
             if let NodeKind::Vocative { line } = &node.kind {
@@ -311,8 +380,10 @@ fn advance_dialog(
                 portrait.texture =
                     asset_server.load(node.who.portrait_asset_path());
 
-                // let the player read the text
-                break PortraitDialogState::PlayerControl;
+                // let the player read the text and perhaps show the choices
+                // if the text does not need the player to press the interact
+                // to scroll through it
+                break PortraitDialogState::RenderChoicesIfNoMoreTextToRender;
             }
         }
 
@@ -332,19 +403,15 @@ fn advance_dialog(
                 if choices.is_empty() {
                     trace!("Displaying player choices");
 
-                    let Branching::Choice(branches) = &dialog_be.branching
-                    else {
-                        panic!(
-                            "AwaitingPlayerChoice implies Branching::Choice"
-                        );
-                    };
-
                     show_player_choices(
                         cmd,
                         asset_server,
                         dialog_be,
                         root,
-                        branches,
+                        &dialog_be
+                            .get_choices()
+                            .expect("choices present on AwaitingPlayerChoice")
+                            .expect("choices loaded on AwaitingPlayerChoice"),
                     );
 
                     // let the player make a choice
@@ -640,27 +707,11 @@ fn show_player_choices(
     asset_server: &AssetServer,
     dialog_be: &Dialog,
     root: Entity,
-    branches: &[BranchStatus],
+    between: &[(&NodeName, &str)],
 ) {
     let node = dialog_be.current_node_info();
-    let between = branches
-        .iter()
-        .enumerate()
-        .filter_map(|(branch_index, status)| match status {
-            BranchStatus::OfferAsChoice(text) => {
-                let node_name = node.next[branch_index].clone();
 
-                Some((node_name, text))
-            }
-            BranchStatus::Stop => None,
-            BranchStatus::Pending => unreachable!(),
-        })
-        .collect_vec();
-
-    let total = between.len();
-    debug_assert_ne!(0, total);
-
-    let transform_manager = node.who.choice_transform_manager(total);
+    let transform_manager = node.who.choice_transform_manager(between.len());
 
     for (order, (node_name, choice_text)) in between.iter().enumerate() {
         let choice = spawn_choice(
@@ -769,6 +820,7 @@ impl Character {
     ) -> ChoicePositionManager {
         #[allow(clippy::match_single_binding)]
         let positions = match total_choices {
+            0 => panic!("0 choices is an oxymoron"),
             1 => match self {
                 _ => vec![vec2(240.0, 75.0)],
             },
