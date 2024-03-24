@@ -209,7 +209,7 @@ mod downtown {
 
 pub use dialog::DialogStore;
 mod dialog {
-    use std::fmt::Display;
+    use std::{fmt::Display, str::FromStr};
 
     use super::*;
 
@@ -239,6 +239,27 @@ mod dialog {
             guard_kind: impl Display,
             namespace_and_name: (impl Display, impl Display),
         ) -> Entry<'_, serde_json::Value>;
+
+        /// Next time dialog is started with this NPC, the player will get
+        /// an option to start from this dialog.
+        ///
+        /// Idempotent.
+        fn add_dialog_to_npc(&self, npc: impl Display, namespace: impl Display);
+
+        /// Remove the dialog from the NPC's list of dialogs.
+        ///
+        /// Idempotent.
+        fn remove_dialog_from_npc(
+            &self,
+            npc: impl Display,
+            namespace: impl Display,
+        );
+
+        /// List all the dialogs that the NPC has.
+        fn list_dialogs_for_npc<DialogRoot: FromStr<Err = strum::ParseError>>(
+            &self,
+            npc: impl Display,
+        ) -> Vec<DialogRoot>;
     }
 
     impl DialogStore for GlobalStore {
@@ -248,15 +269,20 @@ mod dialog {
         ) -> bool {
             let conn = self.conn.lock().unwrap();
 
+            let now = Instant::now();
             let value = conn
                 .query_row(
-                    "SELECT namespace, node_name FROM dialogs \
+                    "SELECT namespace, node_name FROM dialog_nodes_transitioned_to \
                     ORDER BY id DESC LIMIT 1",
                     [],
                     |row| Ok((row.get(0)?, row.get(1)?)),
                 )
                 .optional()
                 .expect("Cannot query SQLite");
+            let ms = now.elapsed().as_millis();
+            if ms > 1 {
+                warn!("was_this_the_last_dialog took {ms}ms");
+            }
 
             value
                 .map(|(last_namespace, last_node_name): (String, String)| {
@@ -271,8 +297,10 @@ mod dialog {
             (namespace, node_name): (impl Display, impl Display),
         ) {
             let conn = self.conn.lock().unwrap();
+
+            let now = Instant::now();
             conn.execute(
-                "INSERT INTO dialogs (namespace, node_name) \
+                "INSERT INTO dialog_nodes_transitioned_to (namespace, node_name) \
                 VALUES (:namespace, :node_name)",
                 named_params! {
                     ":namespace": namespace.to_string(),
@@ -280,6 +308,11 @@ mod dialog {
                 },
             )
             .expect("Cannot insert into SQLite");
+
+            let ms = now.elapsed().as_millis();
+            if ms > 1 {
+                warn!("insert_dialog took {ms}ms");
+            }
         }
 
         fn guard_state(
@@ -290,6 +323,92 @@ mod dialog {
             self.entry(format!(
                 "dialog.guard_state.{namespace}.{guard_kind}.{node_name}"
             ))
+        }
+
+        fn add_dialog_to_npc(
+            &self,
+            npc: impl Display,
+            namespace: impl Display,
+        ) {
+            let conn = self.conn.lock().unwrap();
+
+            let now = Instant::now();
+            conn.execute(
+                "INSERT OR IGNORE INTO npc_dialogs \
+                (npc, namespace) VALUES (:npc, :namespace)",
+                named_params! {
+                    ":npc": npc.to_string(),
+                    ":namespace": namespace.to_string(),
+                },
+            )
+            .expect("Cannot insert into SQLite");
+
+            let ms = now.elapsed().as_millis();
+            if ms > 1 {
+                warn!("add_dialog_to_npc took {ms}ms");
+            }
+        }
+
+        fn remove_dialog_from_npc(
+            &self,
+            npc: impl Display,
+            namespace: impl Display,
+        ) {
+            let conn = self.conn.lock().unwrap();
+
+            let now = Instant::now();
+            conn.execute(
+                "DELETE FROM npc_dialogs WHERE npc = :npc AND namespace = :namespace",
+                named_params! {
+                    ":npc": npc.to_string(),
+                    ":namespace": namespace.to_string(),
+                },
+            )
+            .expect("Cannot delete from SQLite");
+
+            let ms = now.elapsed().as_millis();
+            if ms > 1 {
+                warn!("remove_dialog_from_npc took {ms}ms");
+            }
+        }
+
+        fn list_dialogs_for_npc<
+            DialogRoot: FromStr<Err = strum::ParseError>,
+        >(
+            &self,
+            npc: impl Display,
+        ) -> Vec<DialogRoot> {
+            let conn = self.conn.lock().unwrap();
+
+            let now = Instant::now();
+            let mut stmt = conn
+                .prepare("SELECT namespace FROM npc_dialogs WHERE npc = :npc")
+                .expect("Cannot prepare SQLite");
+            let rows = stmt
+                .query_map(
+                    named_params! {
+                        ":npc": npc.to_string(),
+                    },
+                    |row| row.get(0),
+                )
+                .expect("Cannot query SQLite");
+
+            let ms = now.elapsed().as_millis();
+            if ms > 1 {
+                warn!("list_dialogs_for_npc took {ms}ms");
+            }
+
+            rows.filter_map(|row| {
+                let namespace: String = row.expect("Cannot get row");
+                match namespace.parse() {
+                    Ok(dialog_root) => Some(dialog_root),
+                    Err(err) => {
+                        error!("Cannot parse dialog root: {err}");
+                        None
+                    }
+                }
+            })
+            .collect()
         }
     }
 }
@@ -332,14 +451,16 @@ impl<'a, T> Entry<'a, T> {
 
 fn migrate(conn: &mut rusqlite::Connection) {
     let migrations = Migrations::new(vec![
+        // generic key value table
         M::up(
             "CREATE TABLE kv (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
             );",
         ),
+        // dialogs storage
         M::up(
-            "CREATE TABLE dialogs (
+            "CREATE TABLE dialog_nodes_transitioned_to (
                 id INTEGER PRIMARY KEY,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 namespace TEXT NOT NULL,
@@ -347,9 +468,20 @@ fn migrate(conn: &mut rusqlite::Connection) {
             );",
         ),
         M::up(
-            "CREATE INDEX idx_dialogs_namespace_node_name \
-            ON dialogs (namespace, node_name);",
+            "CREATE INDEX idx_dialog_nodes_transitioned_to_namespace_node_name \
+            ON dialog_nodes_transitioned_to (namespace, node_name);",
         ),
+        M::up(
+            "CREATE TABLE npc_dialogs (
+                npc TEXT NOT NULL,
+                namespace TEXT NOT NULL
+            );",
+        ),
+        M::up(
+            "CREATE INDEX idx_npc_dialogs_npc_namespace \
+            ON npc_dialogs (npc, namespace);",
+        ),
+        // what have the player already seen using the inspect ability
         M::up(
             "CREATE TABLE discovered_with_inspect_ability (
                 label TEXT PRIMARY KEY

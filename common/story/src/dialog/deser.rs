@@ -1,7 +1,7 @@
 //! We store dialogs in TOML files.
 //! Here we parse that into Rust representation.
 
-use std::{borrow::Cow, iter, str::FromStr};
+use std::{borrow::Cow, str::FromStr};
 
 use bevy::utils::hashbrown::HashMap;
 use serde::Deserialize;
@@ -60,7 +60,7 @@ fn from_toml(
     ParsedToml {
         dialog,
         mut root,
-        nodes,
+        mut nodes,
     }: ParsedToml,
 ) -> DialogGraph {
     // + root + end dialog
@@ -88,9 +88,10 @@ fn from_toml(
     } else {
         root.name = Some(NodeName::NAMESPACE_ROOT.to_owned());
     }
+    nodes.insert(0, root);
 
     let mut prev_who = Character::Winnie;
-    for (index, node) in nodes.iter().chain(iter::once(&root)).enumerate() {
+    for (index, node) in nodes.iter().enumerate() {
         let who = who_from_vars(&dialog.vars, node).unwrap_or(prev_who);
         let name = node
             .name
@@ -101,7 +102,8 @@ fn from_toml(
             .guard
             .as_ref()
             .map(|name| NodeKind::Guard {
-                kind: FromStr::from_str(name.as_str()).expect("Unknown guard"),
+                kind: FromStr::from_str(name.as_str())
+                    .unwrap_or_else(|_| panic!("Unknown guard {name:?}")),
                 params: params_from_vars(&dialog.vars, node),
             })
             .unwrap_or_else(|| NodeKind::Vocative {
@@ -132,7 +134,7 @@ fn from_toml(
     //
     // 2.
     //
-    for (index, node) in nodes.iter().chain(iter::once(&root)).enumerate() {
+    for (index, node) in nodes.iter().enumerate() {
         let name = node
             .name
             .clone()

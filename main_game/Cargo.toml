@@ -17,6 +17,8 @@ required-features = ["dev_playground"]
 [dependencies]
 bevy.workspace = true
 common_loading_screen.workspace = true
+common_store.workspace = true
+common_story.workspace = true
 main_game_lib.workspace = true
 scene_apartment.workspace = true
 scene_dev_playground = { workspace = true, optional = true }

@@ -1,3 +1,5 @@
+mod new_game;
+
 use bevy::prelude::*;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use main_game_lib::prelude::*;
@@ -39,9 +41,10 @@ fn main() {
         });
         next_loading_state.set(common_loading_screen::start_state());
 
-        next_state.set(GlobalGameState::ApartmentLoading);
+        next_state.set(GlobalGameState::NewGame);
     }
     app.add_systems(Update, start.run_if(in_state(GlobalGameState::Blank)));
+    app.add_systems(OnEnter(GlobalGameState::NewGame), new_game::on_enter);
 
     info!("Adding scenes");
 

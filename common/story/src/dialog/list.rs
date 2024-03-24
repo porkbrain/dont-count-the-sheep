@@ -3,6 +3,8 @@
 // Generates a `DialogRoot` enum where each toml file is a variant.
 // It derives `strum::EnumMessage` where the detailed message is the toml file
 // and regular message is the file name.
+//
+// TODO: This is terrible.
 common_story_macros::embed_dialogs!();
 
 impl DialogRoot {
@@ -34,9 +36,9 @@ mod tests {
 
     #[test]
     fn it_validates_dialogs() {
-        for dialog in DialogRoot::iter() {
-            println!("Validating {dialog:?}");
-            dialog.parse();
+        for namespace in DialogRoot::iter() {
+            println!("Validating {namespace:?}");
+            namespace.parse();
         }
     }
 }

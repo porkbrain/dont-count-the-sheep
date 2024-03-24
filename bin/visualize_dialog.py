@@ -40,7 +40,7 @@ def visualize_dialog(dialog_toml):
             dialog_data["node"] = []
 
         # add root object to the node list
-        dialog_data["node"].append(root)
+        dialog_data["node"].insert(0, root)
     except KeyError:
         raise KeyError("Root object is not present in dialog_data")
 
@@ -73,7 +73,7 @@ def visualize_dialog(dialog_toml):
 
         if "who" in node:
             # with respect to the script path
-            image_path = "../main_game/assets/characters/portraits/"
+            image_path = "main_game/assets/characters/portraits/"
             match node["who"]:
                 case "Redhead":
                     image_path += "redhead1.png"
@@ -81,6 +81,8 @@ def visualize_dialog(dialog_toml):
                     image_path += "winnie1.png"
                 case "Marie":
                     image_path += "marie1.png"
+                case "Bolt":
+                    image_path += "bolt1.png"
                 case _:
                     exit(f"Character {node['who']} not ready for visualization.")
 
@@ -88,7 +90,7 @@ def visualize_dialog(dialog_toml):
                 raise ValueError(f"Image {image_path} not found.")
 
             rows.append(
-                f"""<TD FIXEDSIZE="true" width="64" height="64"><IMG SRC="{image_path}" /></TD>"""
+                f"""<TD FIXEDSIZE="true" width="64" height="64"><IMG SRC="../{image_path}" /></TD>"""
             )
 
         if "en" in node:

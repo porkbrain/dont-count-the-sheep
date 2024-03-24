@@ -36,7 +36,14 @@ pub(crate) fn spawn(
         .insert::<Apartment>(asset_server, &mut unnamed);
     let unnamed = unnamed.id();
 
-    vec![marie, unnamed]
+    let mut bolt = cmd.spawn((RenderLayers::layer(render_layer::OBJ),));
+    common_story::Character::Bolt
+        .bundle_builder()
+        .with_initial_position(vec2(180.0, 35.0))
+        .insert::<Apartment>(asset_server, &mut bolt);
+    let bolt = bolt.id();
+
+    vec![marie, unnamed, bolt]
 }
 
 struct ExampleBehavior;

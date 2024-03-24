@@ -17,7 +17,7 @@ pub fn expand() -> proc_macro2::TokenStream {
         #[derive(
             PartialEq, Eq, Debug, Clone, Copy, Hash,
             bevy::prelude::Reflect,
-            strum::EnumIter, strum::EnumMessage,
+            strum::EnumIter, strum::EnumMessage, strum::EnumString,
         )]
         pub enum DialogRoot {
             #( #embedded_dialog_variants, )*

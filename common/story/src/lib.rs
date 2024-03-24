@@ -50,7 +50,6 @@ pub enum Character {
     Marie,
     /// The cult head
     Master,
-
     /// A character.
     Redhead,
     /// A character.
@@ -139,6 +138,7 @@ impl Character {
             Character::Winnie => WINNIE,
             Character::Marie => MARIE,
             Character::Unnamed => UNNAMED,
+            Character::Bolt => BOLT,
             _ => unimplemented!(),
         }
     }
@@ -181,6 +181,7 @@ impl Character {
             Character::Winnie => Some((STANDARD_SIZE, 12, 1, default())),
             Character::Marie => Some((STANDARD_SIZE, 15, 1, default())),
             Character::Unnamed => Some((STANDARD_SIZE, 15, 1, default())),
+            Character::Bolt => Some((STANDARD_SIZE, 12, 1, default())),
             _ => None,
         }
     }

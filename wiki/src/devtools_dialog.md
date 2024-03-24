@@ -166,6 +166,25 @@ next = "start"
 
 Similar to [`exhaustive_alternatives`](#exhaustive_alternatives), but once the last alternative is reached, it will always show the last alternative from that point onward.
 
+#### `add_dialog_to_npc`
+
+Accepts two parameters: `npc` and `file_path`:
+
+```toml
+params = { npc = "name of the NPC", file_path = "your_dialog_file.toml" }
+```
+
+The `npc` param is optional and defaults to the currently speaking NPC.
+Must be present if the player is currently speaking.
+
+Next time the player speaks to the NPC, the dialog from the specified file will be added to the NPC's dialog.
+
+#### `remove_dialog_from_npc`
+
+Same parameters as [`add_dialog_to_npc`](#add_dialog_to_npc).
+
+The dialog file will not be attached to the NPC anymore.
+
 ### Emerging
 
 TODO

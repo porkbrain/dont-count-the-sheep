@@ -1,3 +1,4 @@
+mod dialog_for_npc;
 mod exhaustive_alternatives;
 mod reach_last_alternative;
 
@@ -51,6 +52,9 @@ pub(crate) enum GuardCmd {
 pub(crate) enum GuardKind {
     ExhaustiveAlternatives,
     ReachLastAlternative,
+
+    AddDialogToNpc,
+    RemoveDialogFromNpc,
 }
 
 impl GuardKind {
@@ -65,6 +69,10 @@ impl GuardKind {
                 }
                 Self::ReachLastAlternative => {
                     w.register_system(reach_last_alternative::system)
+                }
+                Self::AddDialogToNpc => w.register_system(dialog_for_npc::add),
+                Self::RemoveDialogFromNpc => {
+                    w.register_system(dialog_for_npc::remove)
                 }
             };
             if let Some(mut dialog) = w.get_resource_mut::<Dialog>() {

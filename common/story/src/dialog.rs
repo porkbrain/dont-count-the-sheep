@@ -379,7 +379,13 @@ impl Branching {
         graph: &DialogGraph,
         guard_systems: &HashMap<NodeName, GuardSystem>,
     ) -> Self {
-        let next_nodes = &graph.nodes.get(from).unwrap().next;
+        let next_nodes = &graph
+            .nodes
+            .get(from)
+            .unwrap_or_else(|| {
+                panic!("Node {from:?} not found in graph {graph:#?}")
+            })
+            .next;
         trace!("Branching for {from:?}: {next_nodes:?}");
 
         if next_nodes.is_empty() {

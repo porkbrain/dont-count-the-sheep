@@ -111,6 +111,7 @@ pub mod character_atlases {
     pub const WINNIE: &str = "characters/atlases/winnie1.png";
     pub const MARIE: &str = "characters/atlases/marie1.png";
     pub const UNNAMED: &str = "characters/atlases/noname1.png";
+    pub const BOLT: &str = "characters/atlases/bolt1.png";
 }
 
 pub mod misc {

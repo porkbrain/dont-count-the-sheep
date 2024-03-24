@@ -1450,6 +1450,7 @@ dependencies = [
  "rusqlite_migration",
  "serde",
  "serde_json",
+ "strum",
 ]
 
 [[package]]
@@ -1463,6 +1464,7 @@ dependencies = [
  "common_store",
  "common_story_macros",
  "common_visuals",
+ "convert_case",
  "itertools",
  "serde",
  "serde_json",
@@ -2843,6 +2845,8 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "common_loading_screen",
+ "common_store",
+ "common_story",
  "main_game_lib",
  "scene_apartment",
  "scene_dev_playground",

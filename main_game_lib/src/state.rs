@@ -12,6 +12,10 @@ pub enum GlobalGameState {
     #[default]
     Blank,
 
+    /// When new game is started.
+    /// Populates the save log with the default values.
+    NewGame,
+
     /// Sets up the apartment game in the background.
     ApartmentLoading,
     /// Player is at apartment.
@@ -50,6 +54,9 @@ pub enum GlobalGameState {
 /// What are the allowed transitions between game states?
 #[derive(Debug, Reflect, Clone, Copy, Eq, PartialEq)]
 pub enum GlobalGameStateTransition {
+    /// New game starts in the apartment.
+    NewGameToApartmentLoading,
+
     /// Restart the game
     MeditationQuittingToMeditationLoading,
     /// Exit back to the apartment
@@ -117,6 +124,9 @@ impl GlobalGameStateTransitionStack {
             }
             (Some(ApartmentQuittingToDowntownLoading), ApartmentQuitting) => {
                 Some(DowntownLoading)
+            }
+            (Some(NewGameToApartmentLoading), NewGame) => {
+                Some(ApartmentLoading)
             }
 
             (Some(transition), state) => {
