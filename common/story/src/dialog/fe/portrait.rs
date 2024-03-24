@@ -189,7 +189,7 @@ fn player_wishes_to_continue(
 
     let (mut text, layout) = text.single_mut();
 
-    if let Some(remaining_text) = get_more_text_to_render(&text, &layout) {
+    if let Some(remaining_text) = get_more_text_to_render(&text, layout) {
         trace!("Rendering remaining text");
 
         // if there's more text to render, set the remaining text to
@@ -289,7 +289,7 @@ fn render_choices_if_no_more_text_to_render(
     }
 
     let (text, layout) = text.single();
-    if get_more_text_to_render(&text, &layout).is_some() {
+    if get_more_text_to_render(text, layout).is_some() {
         next_dialog_state.set(PortraitDialogState::PlayerControl);
         return;
     }
