@@ -66,6 +66,9 @@ pub(crate) enum SectionKey {
     FrameIndex(usize),
     /// Whether the atlas should autoplay the animation.
     Autoplay,
+    /// Whether the node is visible.
+    /// If false we add a `Visibility::Hidden` component to the node.
+    Visibility(bool),
 }
 
 #[derive(Debug, PartialEq, Eq)]

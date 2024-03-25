@@ -8,7 +8,7 @@ use bevy::{
     ecs::{entity::Entity, event::Event, system::Commands},
     hierarchy::BuildChildren,
     prelude::SpatialBundle,
-    render::texture::Image,
+    render::{texture::Image, view::Visibility},
     sprite::{Sprite, TextureAtlas, TextureAtlasLayout},
     time::TimerMode,
     transform::components::Transform,
@@ -110,9 +110,19 @@ fn node_to_entity<T: TscnSpawner>(
         texture,
     } = node.in_2d.expect("only 2D nodes represent entities");
 
-    if let Some(SpriteTexture { path, animation }) = texture {
+    let mut visibility = Visibility::default();
+    if let Some(SpriteTexture {
+        path,
+        animation,
+        visible,
+    }) = texture
+    {
         let texture = spawner.load_texture(&path);
         cmd.entity(entity).insert(texture).insert(Sprite::default());
+
+        if !visible {
+            visibility = Visibility::Hidden;
+        }
 
         if let Some(animation) = animation {
             let mut layout = TextureAtlasLayout::new_empty(animation.size);
@@ -242,6 +252,7 @@ fn node_to_entity<T: TscnSpawner>(
     );
     cmd.entity(entity).insert(SpatialBundle {
         transform,
+        visibility,
         ..default()
     });
 

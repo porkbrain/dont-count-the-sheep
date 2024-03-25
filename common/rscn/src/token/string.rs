@@ -38,6 +38,7 @@ pub(super) fn parse(
                 Expecting::SectionKey(SectionKeyBuilder::FrameProgress)
             }
             "autoplay" => Expecting::SectionKey(SectionKeyBuilder::Autoplay),
+            "visible" => Expecting::SectionKey(SectionKeyBuilder::Visibility),
             s if s.starts_with("metadata/") => {
                 Expecting::SectionKey(SectionKeyBuilder::StringMetadata(
                     s["metadata/".len()..].to_ascii_lowercase(),

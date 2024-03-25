@@ -10,18 +10,10 @@ use main_game_lib::{common_ext::QueryExt, cutscene::IntoCutscene};
 
 use super::{cutscenes, ApartmentAction};
 use crate::{
-    layout::{ApartmentTileKind, Elevator},
+    layout::{ApartmentTileKind, Elevator, MeditatingHint, SleepingHint},
     prelude::*,
     Apartment,
 };
-
-/// When the character gets closer to certain zones, show UI to make it easier
-/// to visually identify what's going on.
-///
-/// TODO: Load individual images and hide them. Then in layout add systems for
-/// displaying them when zone is entered and hiding them when zone is left.
-#[derive(Component, Reflect)]
-pub(crate) struct TransparentOverlay;
 
 pub(crate) fn spawn(
     cmd: &mut Commands,
@@ -55,27 +47,7 @@ pub(crate) fn spawn(
         .insert::<Apartment>(asset_server, &mut player);
     let player = player.id();
 
-    let overlay = cmd
-        .spawn((
-            Name::from("Transparent overlay"),
-            TransparentOverlay,
-            RenderLayers::layer(render_layer::OBJ),
-            SpriteBundle {
-                texture: asset_server.load(assets::WINNIE_MEDITATING),
-                transform: Transform::from_translation(Vec3::new(
-                    0.0, 0.0, 10.0,
-                )),
-                visibility: Visibility::Hidden,
-                sprite: Sprite {
-                    color: Color::WHITE.with_a(0.5),
-                    ..default()
-                },
-                ..default()
-            },
-        ))
-        .id();
-
-    vec![player, overlay]
+    vec![player]
 }
 
 /// Will change the game state to meditation minigame.
@@ -87,7 +59,6 @@ pub(super) fn start_meditation_minigame_if_near_chair(
     store: Res<GlobalStore>,
 
     player: Query<Entity, With<Player>>,
-    mut overlay: Query<&mut Sprite, With<TransparentOverlay>>,
 ) {
     let is_triggered = action_events
         .read()
@@ -104,7 +75,6 @@ pub(super) fn start_meditation_minigame_if_near_chair(
             .set(STEP_TIME_ONLOAD_FROM_MEDITATION);
 
         cmd.entity(entity).despawn_recursive();
-        overlay.single_mut().color.set_a(1.0);
 
         cmd.insert_resource(LoadingScreenSettings {
             atlas: Some(common_loading_screen::LoadingScreenAtlas::Space),
@@ -144,51 +114,42 @@ pub(super) fn enter_the_elevator(
     }
 }
 
-/// Zone overlay is a half transparent image that shows up when the character
-/// gets close to certain zones.
-/// We hide it if the character is not close to any zone.
-/// We change the image to the appropriate one based on the zone.
-pub(super) fn load_zone_overlay(
+/// Shows hint for bed or for meditating when player is in the zone to actually
+/// interact with those objects.
+pub(super) fn toggle_zone_hints(
     mut events: EventReader<
         ActorMovementEvent<<Apartment as TopDownScene>::LocalTileKind>,
     >,
 
-    mut overlay: Query<
-        (&mut Visibility, &mut Handle<Image>),
-        With<TransparentOverlay>,
+    mut sleeping: Query<
+        &mut Visibility,
+        (With<SleepingHint>, Without<MeditatingHint>),
     >,
-    asset_server: Res<AssetServer>,
+    mut meditating: Query<
+        &mut Visibility,
+        (With<MeditatingHint>, Without<SleepingHint>),
+    >,
 ) {
-    let Some(event) = events.read().filter(|event| event.is_player()).last()
-    else {
-        return;
-    };
-
-    // TODO: refactor
-    let (new_visibility, new_image) = match event {
-        ActorMovementEvent::ZoneEntered { zone, .. } => match *zone {
-            TileKind::Local(ApartmentTileKind::MeditationZone) => {
-                (Visibility::Visible, Some(assets::WINNIE_MEDITATING))
-            }
-            TileKind::Local(ApartmentTileKind::BedZone) => {
-                (Visibility::Visible, Some(assets::WINNIE_SLEEPING))
-            }
-            TileKind::Local(ApartmentTileKind::TeaZone) => {
-                // TODO
-                return;
-            }
-            _ => (Visibility::Hidden, None),
-        },
-        ActorMovementEvent::ZoneLeft { .. } => (Visibility::Hidden, None),
-    };
-
-    let (mut visibility, mut image) = overlay.single_mut();
-
-    *visibility = new_visibility;
-
-    if let Some(new_image) = new_image {
-        *image = asset_server
-            .get_handle(new_image)
-            .unwrap_or_else(|| asset_server.load(new_image));
+    for event in events.read().filter(|event| event.is_player()) {
+        match event {
+            ActorMovementEvent::ZoneEntered { zone, .. } => match *zone {
+                TileKind::Local(ApartmentTileKind::MeditationZone) => {
+                    *meditating.single_mut() = Visibility::Visible;
+                }
+                TileKind::Local(ApartmentTileKind::BedZone) => {
+                    *sleeping.single_mut() = Visibility::Visible;
+                }
+                _ => {}
+            },
+            ActorMovementEvent::ZoneLeft { zone, .. } => match *zone {
+                TileKind::Local(ApartmentTileKind::MeditationZone) => {
+                    *meditating.single_mut() = Visibility::Hidden;
+                }
+                TileKind::Local(ApartmentTileKind::BedZone) => {
+                    *sleeping.single_mut() = Visibility::Hidden;
+                }
+                _ => {}
+            },
+        }
     }
 }

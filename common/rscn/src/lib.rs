@@ -104,6 +104,8 @@ pub struct SpriteTexture {
     /// E.g. `apartment/cupboard.png`.
     /// The prefix is set in the [`Config`].
     pub path: String,
+    /// Whether the sprite is visible or hidden.
+    pub visible: bool,
     /// We only support sprite frames that are part of an atlas (single file
     /// texture.)
     pub animation: Option<SpriteFrames>,

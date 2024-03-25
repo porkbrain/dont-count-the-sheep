@@ -277,6 +277,17 @@ fn parse_with_state(
                     expecting: SingleAnimExpecting::ReadNextParamOrDone,
                 })
             }
+            Expecting::SectionKey(SectionKeyBuilder::Visibility) => {
+                let visible = matches!(token, TscnToken::True);
+                state
+                    .nodes
+                    .last_mut()
+                    .unwrap()
+                    .section_keys
+                    .push(SectionKey::Visibility(visible));
+
+                Expecting::HeadingOrSectionKey
+            }
             _ => panic!("Unexpected bool for {expecting:?}"),
         },
 
@@ -345,6 +356,8 @@ enum SectionKeyBuilder {
     ///
     /// The string is the key "zone" or "label" etc.
     StringMetadata(String),
+    /// true or false
+    Visibility,
 }
 
 /// e.g. `ExtResource("4_oy5kx")`

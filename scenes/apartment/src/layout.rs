@@ -88,17 +88,22 @@ impl bevy::app::Plugin for Plugin {
 /// We then recursively despawn it on scene leave.
 #[derive(Component)]
 pub(crate) struct LayoutEntity;
-
 /// Hallway is darkened when the player is in the apartment but once the player
 /// approaches the door or is in the hallway, it's lit up.
 #[derive(Component)]
 pub(crate) struct HallwayEntity;
-
 /// Elevator is a special entity that has a sprite sheet with several frames.
 /// It opens when an actor is near it and closes when the actor leaves or
 /// enters.
 #[derive(Component)]
 pub(crate) struct Elevator;
+/// Assigned to a sprite that shows Winnie meditating in the chair.
+/// This sprite is hidden by default.
+#[derive(Component)]
+pub(crate) struct MeditatingHint;
+/// Same as [`MeditatingHint`] but for the bed.
+#[derive(Component)]
+pub(crate) struct SleepingHint;
 
 struct ApartmentTscnSpawner<'a> {
     asset_server: &'a AssetServer,
@@ -193,6 +198,12 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
                     )
                     .build(self.tilemap);
                 cmd.entity(who).insert(door);
+            }
+            "WinnieSleeping" => {
+                cmd.entity(who).insert(SleepingHint);
+            }
+            "WinnieMeditating" => {
+                cmd.entity(who).insert(MeditatingHint);
             }
             _ => {}
         }

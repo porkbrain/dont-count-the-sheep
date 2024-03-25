@@ -67,6 +67,7 @@ pub(crate) fn from_state(
         let mut position = Vec2::ZERO;
         let mut path = None;
         let mut animation = None;
+        let mut visible = true;
 
         for section_key in parsed_node.section_keys {
             apply_section_key(
@@ -78,6 +79,7 @@ pub(crate) fn from_state(
                 &mut metadata,
                 &mut path,
                 &mut animation,
+                &mut visible,
             );
         }
 
@@ -87,6 +89,7 @@ pub(crate) fn from_state(
                 z_index,
                 texture: Some(SpriteTexture {
                     path: path.expect("AnimatedSprite2D should have a texture"),
+                    visible,
                     animation: {
                         assert!(animation.is_some());
                         animation
@@ -98,6 +101,7 @@ pub(crate) fn from_state(
                 z_index,
                 texture: Some(SpriteTexture {
                     path: path.expect("Sprite2D should have a texture"),
+                    visible,
                     animation: {
                         assert!(animation.is_none());
                         None
@@ -166,6 +170,7 @@ fn apply_section_key(
     metadata: &mut HashMap<String, String>,
     path: &mut Option<String>,
     animation: &mut Option<SpriteFrames>,
+    visibility: &mut bool,
 ) {
     use intermediate_repr::{Number, SectionKey, X};
 
@@ -180,6 +185,9 @@ fn apply_section_key(
             panic!("Node should not have an atlas section key")
         }
 
+        SectionKey::Visibility(visible) => {
+            *visibility = visible;
+        }
         SectionKey::ZIndex(Number(z)) => {
             assert!(
                 z_index.replace(z).is_none(),
