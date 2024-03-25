@@ -625,13 +625,14 @@ fn wait_for_portrait_dialog_to_end(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
     dialog: Option<Res<PortraitDialog>>,
+    loading: Option<Res<StartDialogWhenLoaded>>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
     let CutsceneStep::WaitForPortraitDialogToEnd = &step else {
         panic!("Expected WaitForPortraitDialogToEnd step, got {step}");
     };
 
-    if dialog.is_none() {
+    if dialog.is_none() && loading.is_none() {
         cutscene.schedule_next_step_or_despawn(&mut cmd);
     }
 }
