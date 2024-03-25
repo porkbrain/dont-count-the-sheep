@@ -128,15 +128,6 @@ impl<'a> TscnSpawner for DowntownTscnSpawner<'a> {
         trace!("Spawned {name:?} as {who:?} from scene file");
     }
 
-    fn ysort(&mut self, Vec2 { y, .. }: Vec2) -> f32 {
-        let (min, max) = Downtown::y_range().into_inner();
-        let size = max - min;
-        debug_assert!(size > 0.0, "{max} - {min} <= 0.0");
-
-        // we allow for a tiny leeway for positions outside of the bounding box
-        ((max - y) / size).clamp(-0.1, 1.1)
-    }
-
     fn add_texture_atlas(
         &mut self,
         layout: TextureAtlasLayout,

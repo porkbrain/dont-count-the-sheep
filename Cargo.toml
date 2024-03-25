@@ -18,7 +18,6 @@ members = [
     "main_game_lib",
     "main_game",
     "scenes/apartment",
-    "scenes/dev_playground",
     "scenes/downtown",
     "scenes/meditation",
 ]
@@ -56,7 +55,6 @@ leafwing-input-manager = "0.13"
 bevy_egui = "0.25"
 
 scene_apartment = { path = "scenes/apartment" }
-scene_dev_playground = { path = "scenes/dev_playground" }
 scene_downtown = { path = "scenes/downtown" }
 scene_meditation = { path = "scenes/meditation" }
 

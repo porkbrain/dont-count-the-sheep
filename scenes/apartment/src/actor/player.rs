@@ -2,7 +2,8 @@ use bevy::render::view::RenderLayers;
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{ApartmentStore, GlobalStore};
 use common_top_down::{
-    actor::CharacterExt, ActorMovementEvent, ActorTarget, TileKind,
+    actor::CharacterExt, layout::LAYOUT, ActorMovementEvent, ActorTarget,
+    TileKind,
 };
 use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{common_ext::QueryExt, cutscene::IntoCutscene};
@@ -36,7 +37,7 @@ pub(crate) fn spawn(
     let walking_to = store
         .walk_to_onload()
         .get()
-        .map(|pos| Apartment::layout().world_pos_to_square(pos))
+        .map(|pos| LAYOUT.world_pos_to_square(pos))
         .map(ActorTarget::new);
     store.walk_to_onload().remove();
 

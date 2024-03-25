@@ -115,7 +115,7 @@ pub(crate) fn visualize_map<T: TopDownScene>(
         .id();
 
     for square in bevy_grid_squared::shapes::rectangle(T::bounds()) {
-        let world_pos = T::layout().square_to_world_pos(square);
+        let world_pos = LAYOUT.square_to_world_pos(square);
 
         let kind = map
             .squares
@@ -130,7 +130,7 @@ pub(crate) fn visualize_map<T: TopDownScene>(
                 sprite: Sprite {
                     color: kind.color(),
                     // slightly smaller to show borders
-                    custom_size: Some(T::layout().square() - 0.25),
+                    custom_size: Some(LAYOUT.square() - 0.25),
                     ..default()
                 },
                 transform: Transform::from_translation(world_pos.extend(0.0)),
@@ -182,8 +182,7 @@ pub(crate) fn change_square_kind<T: TopDownScene>(
         return;
     }
 
-    let Some(clicked_at) = cursor_to_square(T::layout(), windows, cameras)
-    else {
+    let Some(clicked_at) = cursor_to_square(&LAYOUT, windows, cameras) else {
         return;
     };
 
@@ -244,7 +243,7 @@ pub(crate) fn recolor_squares<T: TopDownScene>(
 
     let squares_painted: Option<HashSet<_>> =
         toolbar.begin_rect_at.and_then(|begin_rect_at| {
-            let clicked_at = cursor_to_square(T::layout(), windows, camera)?;
+            let clicked_at = cursor_to_square(&LAYOUT, windows, camera)?;
 
             Some(selection_rect(begin_rect_at, clicked_at).collect())
         });

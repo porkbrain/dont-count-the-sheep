@@ -45,10 +45,6 @@ pub enum GlobalGameState {
 
     /// Performs all necessary cleanup and exits the game.
     Exit,
-
-    /// A state for development purposes.
-    #[cfg(feature = "dev-playground")]
-    InDevPlayground,
 }
 
 /// What are the allowed transitions between game states?

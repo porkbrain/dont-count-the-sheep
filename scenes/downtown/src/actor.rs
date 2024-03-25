@@ -2,7 +2,7 @@
 
 use bevy::render::view::RenderLayers;
 use common_store::GlobalStore;
-use common_top_down::{actor::CharacterExt, ActorTarget};
+use common_top_down::{actor::CharacterExt, layout::LAYOUT, ActorTarget};
 use common_visuals::camera::render_layer;
 
 use crate::{prelude::*, Downtown};
@@ -35,7 +35,7 @@ pub(crate) fn spawn_player(
     let walking_to = store
         .walk_to_onload()
         .get()
-        .map(|pos| Downtown::layout().world_pos_to_square(pos))
+        .map(|pos| LAYOUT.world_pos_to_square(pos))
         .map(ActorTarget::new);
     store.walk_to_onload().remove();
 

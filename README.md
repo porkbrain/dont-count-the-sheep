@@ -43,10 +43,3 @@ With every extra dependency that also depends on Bevy it potentially takes longe
 
 Some crates export `devtools` feature that enable additional debug and/or dev tooling functionality.
 For example, the [`common/top_down`](common/top_down/) crate has a `devtools` feature that spawns a grid of tiles to help with level design.
-
-There's also a whole dedicated scene for prototyping and testing: [`scenes/dev_playground`](scenes/dev_playground/).
-Run this scene with `$ ./bin/dev_playground`.
-
-We use Godot's editor to manage scenes.
-The exported `.tscn` files are then loaded and spawned by the game.
-See the wiki and [`common/rscn` crate](common/rscn/) for more information.

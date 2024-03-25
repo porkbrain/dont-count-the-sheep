@@ -8,12 +8,21 @@ mod build_pathfinding_graph;
 pub(crate) mod map_maker;
 pub(crate) mod systems;
 
-use std::{marker::PhantomData, ops::RangeInclusive};
+use std::marker::PhantomData;
 
 use bevy::{math::vec2, prelude::*, utils::hashbrown::HashMap};
-use bevy_grid_squared::{sq, Square, SquareLayout};
+use bevy_grid_squared::{Square, SquareLayout};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use smallvec::SmallVec;
+
+/// Each scene adheres to the same layout definition.
+/// That's because the amount of space the character takes in the tile grid
+/// is constant and tailored to the square size.
+pub const LAYOUT: SquareLayout = SquareLayout {
+    square_size: 4.0,
+    // an arbitrary origin
+    origin: vec2(36.0, 4.0),
+};
 
 /// A tile is uniquely identified by (`x`, `y`) of the square and a layer index.
 pub type TileIndex = (Square, usize);
@@ -37,44 +46,6 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     /// Path to the map .ron asset relative to the assets directory.
     fn asset_path() -> &'static str;
 
-    /// How large is a tile and how do we translate between world coordinates
-    /// and tile coordinates?
-    ///
-    /// TODO: Move out of this trait
-    fn layout() -> &'static SquareLayout {
-        const LAYOUT: SquareLayout = SquareLayout {
-            square_size: 4.0,
-            origin: vec2(36.0, 4.0),
-        };
-
-        &LAYOUT
-    }
-
-    /// Given a position on the map, add a z coordinate.
-    /// Will return a z-coordinate in the range of -0.1 to 1.1.
-    ///
-    /// TODO: Move out of this trait
-    #[inline]
-    fn extend_z(Vec2 { x, y }: Vec2) -> Vec3 {
-        let (min, max) = Self::y_range().into_inner();
-        let size = max - min;
-        debug_assert!(size > 0.0, "{max} - {min} <= 0.0");
-
-        // we allow for a tiny leeway for positions outside of the bounding box
-        let z = ((max - y) / size).clamp(-0.1, 1.1);
-
-        Vec3::new(x, y, z)
-    }
-
-    /// Given a position on the map, add a z coordinate as if the y coordinate
-    /// was offset by `offset`.
-    ///
-    /// TODO: Move out of this trait
-    fn extend_z_with_y_offset(Vec2 { x, y }: Vec2, offset: f32) -> Vec3 {
-        let z = Self::extend_z(Vec2 { x, y: y + offset }).z;
-        Vec3::new(x, y, z)
-    }
-
     /// Whether the given square is inside the map.
     #[inline]
     fn contains(square: Square) -> bool {
@@ -84,17 +55,6 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
             && square.x <= max_x
             && square.y >= min_y
             && square.y <= max_y
-    }
-
-    /// Range of y world pos coordinates.
-    ///
-    /// TODO: Move out of this trait
-    fn y_range() -> RangeInclusive<f32> {
-        let [_, _, bottom, top] = Self::bounds();
-        let min_y = Self::layout().square_to_world_pos(sq(0, bottom)).y;
-        let max_y = Self::layout().square_to_world_pos(sq(0, top)).y;
-
-        min_y..=max_y
     }
 }
 
@@ -245,35 +205,20 @@ pub enum TileWalkCost {
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct ZoneGroup(pub usize);
 
-/// Allow implementation for unit type for convenience.
-/// Maps can use this if they have no special tiles.
-impl Tile for () {
-    fn is_walkable(&self, _: Entity) -> bool {
-        true
-    }
+/// Helper function that exports z coordinate given y coordinate.
+///
+/// It's domain in pixels is from -100_000 to 100_000.
+///
+/// It's range is from -0.1 to 1.1.
+pub fn ysort(Vec2 { y, .. }: Vec2) -> f32 {
+    // it's easier to just hardcode the range than pass around values
+    //
+    // this gives us sufficient buffer for maps of all sizes
+    let (min, max) = (-100_000.0, 100_000.0);
+    let size = max - min;
 
-    fn is_zone(&self) -> bool {
-        false
-    }
-
-    fn zones_iter() -> impl Iterator<Item = Self> {
-        std::iter::empty()
-    }
-}
-impl ZoneTile for () {
-    fn zone_group(&self) -> Option<ZoneGroup> {
-        None
-    }
-
-    fn zone_size(&self) -> Option<usize> {
-        None
-    }
-
-    type Successors = Self;
-
-    fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
-        None
-    }
+    // we allow for a tiny leeway for positions outside of the bounding box
+    ((max - y) / size).clamp(-0.1, 1.1)
 }
 
 impl<L: Tile> Tile for TileKind<L> {
@@ -866,6 +811,37 @@ impl<L> From<L> for TileKind<L> {
     }
 }
 
+/// Allow implementation for unit type for convenience.
+/// Maps can use this if they have no special tiles.
+impl Tile for () {
+    fn is_walkable(&self, _: Entity) -> bool {
+        true
+    }
+
+    fn is_zone(&self) -> bool {
+        false
+    }
+
+    fn zones_iter() -> impl Iterator<Item = Self> {
+        std::iter::empty()
+    }
+}
+impl ZoneTile for () {
+    fn zone_group(&self) -> Option<ZoneGroup> {
+        None
+    }
+
+    fn zone_size(&self) -> Option<usize> {
+        None
+    }
+
+    type Successors = Self;
+
+    fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use smallvec::smallvec;
@@ -912,13 +888,6 @@ mod tests {
 
         fn bounds() -> [i32; 4] {
             [0, 10, 0, 10]
-        }
-
-        fn layout() -> &'static SquareLayout {
-            &SquareLayout {
-                square_size: 1.0,
-                origin: Vec2::ZERO,
-            }
         }
 
         fn asset_path() -> &'static str {
@@ -1096,13 +1065,6 @@ mod tests {
 
         fn bounds() -> [i32; 4] {
             [-11, 0, 15, 28]
-        }
-
-        fn layout() -> &'static SquareLayout {
-            &SquareLayout {
-                square_size: 1.0,
-                origin: Vec2::ZERO,
-            }
         }
 
         fn asset_path() -> &'static str {

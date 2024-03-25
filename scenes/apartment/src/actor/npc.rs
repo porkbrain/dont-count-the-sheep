@@ -1,6 +1,7 @@
 use bevy::render::view::RenderLayers;
 use common_top_down::{
     actor::CharacterExt,
+    layout::LAYOUT,
     npc::{behaviors::IdlyWaiting, BehaviorLeaf, BehaviorNode, BehaviorTree},
 };
 use common_visuals::camera::render_layer;
@@ -50,10 +51,10 @@ struct ExampleBehavior;
 
 impl From<ExampleBehavior> for BehaviorNode {
     fn from(_: ExampleBehavior) -> Self {
-        let from = Apartment::layout().world_pos_to_square(
+        let from = LAYOUT.world_pos_to_square(
             vec2(490.0, 280.0).as_top_left_into_centered(),
         );
-        let to = Apartment::layout().world_pos_to_square(
+        let to = LAYOUT.world_pos_to_square(
             vec2(470.0, 120.0).as_top_left_into_centered(),
         );
 
@@ -73,9 +74,9 @@ struct ExampleBehavior2;
 
 impl From<ExampleBehavior2> for BehaviorNode {
     fn from(_: ExampleBehavior2) -> Self {
-        let from = Apartment::layout()
+        let from = LAYOUT
             .world_pos_to_square(vec2(84.0, 274.0).as_top_left_into_centered());
-        let to = Apartment::layout().world_pos_to_square(
+        let to = LAYOUT.world_pos_to_square(
             vec2(160.0, 120.0).as_top_left_into_centered(),
         );
 

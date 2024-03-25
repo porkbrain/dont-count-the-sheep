@@ -7,7 +7,6 @@ use bevy::{
     core::Name,
     ecs::{entity::Entity, event::Event, system::Commands},
     hierarchy::BuildChildren,
-    math::Vec2,
     prelude::SpatialBundle,
     render::texture::Image,
     sprite::{Sprite, TextureAtlas, TextureAtlasLayout},
@@ -15,7 +14,7 @@ use bevy::{
     transform::components::Transform,
     utils::default,
 };
-use common_top_down::InspectLabelCategory;
+use common_top_down::{layout::ysort, InspectLabelCategory};
 use common_visuals::{AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer};
 
 use crate::{In2D, Node, NodeName, SpriteTexture, TscnTree};
@@ -37,12 +36,6 @@ pub trait TscnSpawner {
 
     /// The kind of zone that can be entered by the player.
     type LocalZoneKind: FromStr;
-
-    /// Given a position in 2D, add a z index to it.
-    /// This function is used for those nodes that don't have a z index set.
-    /// If a 2D node has a 2D node child called "YSort", then the position fed
-    /// to this function is the global position of that "YSort" node.
-    fn ysort(&mut self, position: Vec2) -> f32;
 
     /// Entity that has been spawned.
     /// Runs after all [`TscnSpawner::handle_plain_node`].
@@ -164,6 +157,10 @@ fn node_to_entity<T: TscnSpawner>(
 
     for (NodeName(child_name), mut child_node) in node.children {
         match (child_name.as_str(), child_node.in_2d.as_ref()) {
+            // > Given a position in 2D, add a z index to it.
+            // > This function is used for those nodes that don't have a z index set.
+            // > If a 2D node has a 2D node child called "YSort", then the position fed
+            // > to this function is the global position of that "YSort" node.
             (
                 "YSort",
                 Some(In2D {
@@ -177,7 +174,7 @@ fn node_to_entity<T: TscnSpawner>(
                     "YSort must child of a node with no zindex"
                 );
                 virtual_z_index =
-                    Some(spawner.ysort(position + *child_position));
+                    Some(ysort(position + *child_position));
             }
             ("YSort", None) => panic!("YSort must be a Node2D with no zindex"),
 
@@ -241,8 +238,7 @@ fn node_to_entity<T: TscnSpawner>(
     }
 
     let transform = Transform::from_translation(
-        position
-            .extend(virtual_z_index.unwrap_or_else(|| spawner.ysort(position))),
+        position.extend(virtual_z_index.unwrap_or_else(|| ysort(position))),
     );
     cmd.entity(entity).insert(SpatialBundle {
         transform,

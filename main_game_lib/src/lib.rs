@@ -41,7 +41,6 @@ pub fn windowed_app() -> App {
                 common_top_down::cameras=debug,\
                 common_top_down::layout=debug,\
                 common_visuals=trace,\
-                dev_playground=trace,\
                 downtown=trace,\
                 game=trace,\
                 main_game_lib=trace,\

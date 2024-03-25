@@ -23,7 +23,7 @@ use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    layout::{Tile, TileIndex, TopDownScene},
+    layout::{ysort, Tile, TileIndex, TopDownScene, LAYOUT},
     npc::NpcInTheMap,
     InspectLabelCategory, Player, TileKind, TileMap,
 };
@@ -356,14 +356,14 @@ fn animate_movement_for_actor<T: TopDownScene>(
         };
 
     // the world pos in pxs where we're walking to
-    let to = T::layout().square_to_world_pos(walking_to.square);
+    let to = LAYOUT.square_to_world_pos(walking_to.square);
 
     if lerp_factor >= 1.0 {
         // reached the target, wat else
 
         let new_from = walking_to.square;
 
-        transform.translation = T::extend_z(to);
+        transform.translation = to.extend(ysort(to));
 
         if let Some((new_square, new_direction)) = walking_to.planned.take() {
             // there's still next target to walk to, let's check whether it's
@@ -405,9 +405,9 @@ fn animate_movement_for_actor<T: TopDownScene>(
             Left | TopLeft | BottomLeft => 10 + extra,
         };
 
-        let from = T::layout().square_to_world_pos(actor.walking_from);
-
-        transform.translation = T::extend_z(from.lerp(to, lerp_factor));
+        let from = LAYOUT.square_to_world_pos(actor.walking_from);
+        let position = from.lerp(to, lerp_factor);
+        transform.translation = position.extend(ysort(position));
     }
 }
 
@@ -612,7 +612,7 @@ impl CharacterBundleBuilder {
                 character,
                 step_time,
                 direction: initial_direction,
-                walking_from: T::layout().world_pos_to_square(initial_position),
+                walking_from: LAYOUT.world_pos_to_square(initial_position),
                 walking_to,
                 // see the method docs
                 occupies: default(),
@@ -630,9 +630,9 @@ impl CharacterBundleBuilder {
                     color: color.unwrap_or_default(),
                     ..default()
                 },
-                transform: Transform::from_translation(T::extend_z(
-                    initial_position,
-                )),
+                transform: Transform::from_translation(
+                    initial_position.extend(ysort(initial_position)),
+                ),
                 ..default()
             },
         ));
@@ -761,7 +761,6 @@ impl<T: TopDownScene> TileMap<T> {
 #[cfg(test)]
 mod tests {
     use bevy::ecs::system::SystemId;
-    use bevy_grid_squared::SquareLayout;
     use rand::seq::IteratorRandom;
     use strum::IntoEnumIterator;
 
@@ -956,13 +955,6 @@ mod tests {
 
         fn bounds() -> [i32; 4] {
             [-1000, 1000, -1000, 1000]
-        }
-
-        fn layout() -> &'static SquareLayout {
-            &SquareLayout {
-                square_size: 1.0,
-                origin: Vec2::ZERO,
-            }
         }
 
         fn asset_path() -> &'static str {
