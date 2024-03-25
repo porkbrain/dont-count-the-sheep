@@ -39,6 +39,9 @@ pub(super) fn parse(
             }
             "autoplay" => Expecting::SectionKey(SectionKeyBuilder::Autoplay),
             "visible" => Expecting::SectionKey(SectionKeyBuilder::Visibility),
+            "self_modulate" => Expecting::SectionKey(
+                SectionKeyBuilder::SelfModulate(default()),
+            ),
             s if s.starts_with("metadata/") => {
                 Expecting::SectionKey(SectionKeyBuilder::StringMetadata(
                     s["metadata/".len()..].to_ascii_lowercase(),
@@ -127,6 +130,12 @@ pub(super) fn parse(
                 .push(SectionKey::StringMetadata(with_param, s.to_string()));
             Expecting::HeadingOrSectionKey
         }
+
+        Expecting::SectionKey(SectionKeyBuilder::SelfModulate(
+            ColorExpecting::Color,
+        )) => Expecting::SectionKey(SectionKeyBuilder::SelfModulate(
+            ColorExpecting::ParenOpen,
+        )),
 
         _ => {
             panic!("Unexpected string {s} for {expecting:?}")

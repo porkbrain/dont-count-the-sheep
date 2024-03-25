@@ -27,6 +27,11 @@ pub(super) fn parse_open(expecting: Expecting) -> Expecting {
         )) => Expecting::SectionKey(SectionKeyBuilder::SpriteFrames(
             SubResourceExpecting::String,
         )),
+        Expecting::SectionKey(SectionKeyBuilder::SelfModulate(
+            ColorExpecting::ParenOpen,
+        )) => Expecting::SectionKey(SectionKeyBuilder::SelfModulate(
+            ColorExpecting::R,
+        )),
         // just forward to the next token
         Expecting::SectionKey(SectionKeyBuilder::SingleAnim {
             state,
@@ -110,6 +115,19 @@ pub(super) fn parse_close(
             state,
             expecting: SingleAnimExpecting::FrameNextParamOrDone,
         }),
+
+        Expecting::SectionKey(SectionKeyBuilder::SelfModulate(
+            ColorExpecting::ParenClose(r, g, b, a),
+        )) => {
+            state
+                .nodes
+                .last_mut()
+                .expect("node to come before section key")
+                .section_keys
+                .push(SectionKey::SelfModulateColor(r, g, b, a));
+            Expecting::HeadingOrSectionKey
+        }
+
         _ => {
             panic!("Unexpected paren close for {expecting:?}")
         }

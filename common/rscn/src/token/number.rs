@@ -74,8 +74,30 @@ pub(super) fn parse(
         // we don't care about this value
         Sk(SkB::FrameProgress) => Expecting::HeadingOrSectionKey,
 
+        Sk(SkB::SelfModulate(ColorExpecting::R)) => Sk(SkB::SelfModulate(
+            ColorExpecting::G(Number(s.parse().unwrap())),
+        )),
+        Sk(SkB::SelfModulate(ColorExpecting::G(r))) => Sk(SkB::SelfModulate(
+            ColorExpecting::B(r, Number(s.parse().unwrap())),
+        )),
+        Sk(SkB::SelfModulate(ColorExpecting::B(r, g))) => {
+            Sk(SkB::SelfModulate(ColorExpecting::A(
+                r,
+                g,
+                Number(s.parse().unwrap()),
+            )))
+        }
+        Sk(SkB::SelfModulate(ColorExpecting::A(r, g, b))) => {
+            Sk(SkB::SelfModulate(ColorExpecting::ParenClose(
+                r,
+                g,
+                b,
+                Number(s.parse().unwrap()),
+            )))
+        }
+
         _ => {
-            panic!("Unexpected int {s} for {expecting:?}")
+            panic!("Unexpected number {s} for {expecting:?}")
         }
     }
 }

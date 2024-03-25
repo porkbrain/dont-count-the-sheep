@@ -58,6 +58,11 @@ It's a way to ensure that sprites are rendered in the correct order based on the
 To apply ysorting to a node, the y-index must be set to **0** on the sprite node (default) and a new child node of type `Node2D` named `YSort` must be added.
 Ysorting only works for sibling nodes.
 
+## Supported settings:
+
+- Visibility / Visible check box
+- Visibility / Self Modulate color
+
 ## Components
 
 The purpose of components is to enhance the functionality of sprites.

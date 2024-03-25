@@ -1,5 +1,6 @@
 use bevy::{
     math::{Rect, Vec2},
+    render::color::Color,
     utils::{default, HashMap},
 };
 
@@ -68,6 +69,7 @@ pub(crate) fn from_state(
         let mut path = None;
         let mut animation = None;
         let mut visible = true;
+        let mut color = None;
 
         for section_key in parsed_node.section_keys {
             apply_section_key(
@@ -80,6 +82,7 @@ pub(crate) fn from_state(
                 &mut path,
                 &mut animation,
                 &mut visible,
+                &mut color,
             );
         }
 
@@ -90,6 +93,7 @@ pub(crate) fn from_state(
                 texture: Some(SpriteTexture {
                     path: path.expect("AnimatedSprite2D should have a texture"),
                     visible,
+                    color,
                     animation: {
                         assert!(animation.is_some());
                         animation
@@ -102,6 +106,7 @@ pub(crate) fn from_state(
                 texture: Some(SpriteTexture {
                     path: path.expect("Sprite2D should have a texture"),
                     visible,
+                    color,
                     animation: {
                         assert!(animation.is_none());
                         None
@@ -171,6 +176,7 @@ fn apply_section_key(
     path: &mut Option<String>,
     animation: &mut Option<SpriteFrames>,
     visibility: &mut bool,
+    color: &mut Option<Color>,
 ) {
     use intermediate_repr::{Number, SectionKey, X};
 
@@ -185,6 +191,17 @@ fn apply_section_key(
             panic!("Node should not have an atlas section key")
         }
 
+        SectionKey::SelfModulateColor(
+            Number(r),
+            Number(g),
+            Number(b),
+            Number(a),
+        ) => {
+            assert!(
+                color.replace(Color::rgba(r, g, b, a)).is_none(),
+                "Node should not have more than one color"
+            );
+        }
         SectionKey::Visibility(visible) => {
             *visibility = visible;
         }

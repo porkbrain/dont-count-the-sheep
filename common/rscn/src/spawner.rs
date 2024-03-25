@@ -8,7 +8,7 @@ use bevy::{
     ecs::{entity::Entity, event::Event, system::Commands},
     hierarchy::BuildChildren,
     prelude::SpatialBundle,
-    render::{texture::Image, view::Visibility},
+    render::{color::Color, texture::Image, view::Visibility},
     sprite::{Sprite, TextureAtlas, TextureAtlasLayout},
     time::TimerMode,
     transform::components::Transform,
@@ -115,10 +115,14 @@ fn node_to_entity<T: TscnSpawner>(
         path,
         animation,
         visible,
+        color,
     }) = texture
     {
         let texture = spawner.load_texture(&path);
-        cmd.entity(entity).insert(texture).insert(Sprite::default());
+        cmd.entity(entity).insert(texture).insert(Sprite {
+            color: color.unwrap_or(Color::WHITE),
+            ..default()
+        });
 
         if !visible {
             visibility = Visibility::Hidden;

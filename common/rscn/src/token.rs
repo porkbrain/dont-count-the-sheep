@@ -358,6 +358,8 @@ enum SectionKeyBuilder {
     StringMetadata(String),
     /// true or false
     Visibility,
+    /// e.g. `self_modulate = Color(1, 1, 1, 0.823529)`
+    SelfModulate(ColorExpecting),
 }
 
 /// e.g. `ExtResource("4_oy5kx")`
@@ -422,4 +424,16 @@ enum SingleAnimExpecting {
     FrameNextParamValue(String), // the param in question
 
     EndSquareBracket,
+}
+
+#[derive(Default, Debug, PartialEq, Eq)]
+enum ColorExpecting {
+    #[default]
+    Color,
+    ParenOpen,
+    R,
+    G(Number),
+    B(Number, Number),
+    A(Number, Number, Number),
+    ParenClose(Number, Number, Number, Number),
 }

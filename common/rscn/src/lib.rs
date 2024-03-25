@@ -18,6 +18,7 @@ use bevy::{
     },
     math::{Rect, Vec2},
     reflect::TypePath,
+    render::color::Color,
     utils::HashMap,
 };
 use common_ext::QueryExt;
@@ -106,6 +107,8 @@ pub struct SpriteTexture {
     pub path: String,
     /// Whether the sprite is visible or hidden.
     pub visible: bool,
+    /// Changed by the Self Modulate property in Godot.
+    pub color: Option<Color>,
     /// We only support sprite frames that are part of an atlas (single file
     /// texture.)
     pub animation: Option<SpriteFrames>,
