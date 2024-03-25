@@ -1,10 +1,9 @@
 use std::str::FromStr;
 
 use bevy::log::warn;
-use convert_case::{Case, Casing};
 
 use super::*;
-use crate::{dialog::DialogRoot, Character};
+use crate::{dialog::list::Namespace, Character};
 
 pub(super) fn add(
     In(guard_cmd): In<GuardCmd>,
@@ -68,8 +67,7 @@ fn handle_guard_cmd_as(
             let namespace = params
                 .get("file_path")
                 .and_then(|file_path| file_path.as_str())
-                .map(|s| s.trim_end_matches(".toml").to_case(Case::Pascal))
-                .map(|s| DialogRoot::from_str(&s).expect("Invalid dialog root"))
+                .map(|s| Namespace::from(s.to_owned()))
                 .unwrap_or_else(|| {
                     panic!("No file_path string in params {params:#?}")
                 });

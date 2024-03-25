@@ -3,6 +3,7 @@
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
+from pathlib import Path
 import csv
 import graphviz
 import hashlib
@@ -12,8 +13,9 @@ import time
 import toml
 
 
-ASSET_DIR_PATH = "dialogs"
-CACHE_FILE_PATH = f"{ASSET_DIR_PATH}/cache.csv"
+ASSET_DIR_PATH = "main_game/assets/dialogs"
+OUTPUT_DIR_PATH = ".devtools/dialog_visualizations"
+CACHE_FILE_PATH = f"{OUTPUT_DIR_PATH}/cache.csv"
 
 
 def visualize_dialog(dialog_toml):
@@ -90,7 +92,7 @@ def visualize_dialog(dialog_toml):
                 raise ValueError(f"Image {image_path} not found.")
 
             rows.append(
-                f"""<TD FIXEDSIZE="true" width="64" height="64"><IMG SRC="../{image_path}" /></TD>"""
+                f"""<TD FIXEDSIZE="true" width="64" height="64"><IMG SRC="../../{image_path}" /></TD>"""
             )
 
         if "en" in node:
@@ -200,7 +202,8 @@ def render_dialog(file_path, dialog_toml):
     print(f"Visualizing {file_path}")
 
     graph = visualize_dialog(dialog_toml)
-    graph.render(filename=file_path.replace(".toml", ""), format="png", cleanup=True)
+    file_stem = Path(file_path).stem
+    graph.render(filename=f"{OUTPUT_DIR_PATH}/{file_stem}", format="png", cleanup=True)
 
 
 def catch_up_visualization(cache):

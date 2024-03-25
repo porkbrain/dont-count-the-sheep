@@ -1,7 +1,7 @@
 use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{DialogStore, GlobalStore};
-use common_story::dialog::DialogRoot;
+use common_story::dialog;
 use common_visuals::EASE_IN_OUT;
 use main_game_lib::{
     cutscene::{self, CutsceneStep, IntoCutscene},
@@ -59,7 +59,9 @@ impl IntoCutscene for EnterTheElevator {
             WaitUntilActorAtRest(player),
             Sleep(from_millis(300)),
             // ask player where to go
-            BeginPortraitDialog(DialogRoot::EnterTheApartmentElevator),
+            BeginPortraitDialog(
+                dialog::TypedNamespace::EnterTheApartmentElevator.into(),
+            ),
             WaitForPortraitDialogToEnd,
             Sleep(from_millis(300)),
             IfTrueThisElseThat(
@@ -118,23 +120,35 @@ const GROUND_FLOOR_NODE_NAME: &str = "ground_floor";
 
 fn did_choose_to_leave(store: &GlobalStore) -> bool {
     store.was_this_the_last_dialog((
-        DialogRoot::EnterTheApartmentElevator,
+        dialog::TypedNamespace::EnterTheApartmentElevator,
         GROUND_FLOOR_NODE_NAME,
     ))
 }
 
 #[cfg(test)]
 mod tests {
+    use common_story::dialog::DialogGraph;
+
     use super::*;
 
     #[test]
     fn it_has_ground_floor_node() {
-        let dialog = DialogRoot::EnterTheApartmentElevator.parse();
+        let namespace = dialog::TypedNamespace::EnterTheApartmentElevator;
+
+        let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let path = format!(
+            "{manifest}/../../main_game/assets/dialogs/{namespace}.toml"
+        );
+        let toml = std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("{path}: {e}"));
+
+        let dialog = DialogGraph::subgraph_from_raw(namespace.into(), &toml);
 
         dialog
             .node_names()
             .filter_map(|node| {
-                Some(node.as_namespace_and_node_name_str()?.1.to_owned())
+                let (_, name) = node.as_namespace_and_node_name_str()?;
+                Some(name.to_owned())
             })
             .find(|name| name.as_str() == GROUND_FLOOR_NODE_NAME)
             .expect("Ground floor not found");

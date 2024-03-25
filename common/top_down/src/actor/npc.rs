@@ -9,11 +9,11 @@ use std::{
     time::{Duration, Instant},
 };
 
-use bevy::{ecs::system::CommandQueue, prelude::*};
+use bevy::prelude::*;
 use bevy_grid_squared::Square;
 use common_ext::QueryExt;
 use common_store::{DialogStore, GlobalStore};
-use common_story::dialog::{DialogRoot, NodeName};
+use common_story::dialog::{self, StartDialogWhenLoaded};
 
 use super::BeginDialogEvent;
 use crate::{
@@ -305,7 +305,6 @@ pub(crate) fn mark_nearby_as_ready_for_interaction(
 pub(crate) fn begin_dialog(
     mut cmd: Commands,
     mut events: EventReader<BeginDialogEvent>,
-    asset_server: Res<AssetServer>,
     store: Res<GlobalStore>,
 
     mut player: Query<&mut Actor, With<Player>>,
@@ -328,23 +327,19 @@ pub(crate) fn begin_dialog(
 
     let character = actor.character;
 
-    let mut dialogs = store.list_dialogs_for_npc::<DialogRoot>(character);
+    let dialogs = store.list_dialogs_for_npc::<dialog::Namespace>(character);
 
-    let Some(some_dialog) = dialogs.pop() else {
+    if dialogs.is_empty() {
         return;
-    };
-    let dialog = {
-        // any dialog can be the root
-        let mut some_dialog = some_dialog.parse().into_root_graph({
-            // TODO: we can optionally add some initial line, useful if there
-            // are multiple dialogs in the root
-            None
-        });
-        for another_dialog in dialogs {
-            some_dialog.attach(another_dialog.parse(), NodeName::Root);
-        }
-        some_dialog
-    };
+    }
+
+    let start_dialog = StartDialogWhenLoaded::portrait()
+        .on_finished(Box::new(move |cmd: &mut Commands| {
+            trace!("Removing BehaviorPaused from {character}");
+            cmd.entity(entity).remove::<BehaviorPaused>();
+        }))
+        .add_namespaces(dialogs);
+    cmd.insert_resource(start_dialog);
 
     {
         // stops the NPC from moving
@@ -360,16 +355,6 @@ pub(crate) fn begin_dialog(
         player.remove_planned_step();
         player.direction = actor.direction.opposite();
     }
-
-    let mut cmd_queue = CommandQueue::default();
-    dialog
-        .into_dialog_resource(&mut cmd_queue)
-        .on_finished(Box::new(move |cmd: &mut Commands| {
-            trace!("Removing BehaviorPaused from {character}");
-            cmd.entity(entity).remove::<BehaviorPaused>();
-        }))
-        .spawn_with_portrait_fe(&mut cmd, &asset_server);
-    cmd.append(&mut cmd_queue);
 }
 
 impl BehaviorLeaf {

@@ -2,7 +2,7 @@
 //! require any additional actions.
 //!
 //! You first want to obtain the dialog BE [`Dialog`] and then spawn the
-//! dialog FE with [`Dialog::spawn_with_portrait_fe`].
+//! dialog FE with [`StartDialogWhenLoaded::portrait`].
 
 use std::{collections::BTreeMap, time::Duration};
 
@@ -14,8 +14,12 @@ use common_action::{ActionState, GlobalAction};
 use common_store::GlobalStore;
 use common_visuals::camera::render_layer;
 
+use super::DialogFrontend;
 use crate::{
-    dialog::{AdvanceOutcome, Branching, Dialog, NodeKind, NodeName},
+    dialog::{
+        AdvanceOutcome, Branching, Dialog, NodeKind, NodeName,
+        StartDialogWhenLoaded,
+    },
     Character,
 };
 
@@ -28,8 +32,16 @@ const CHOICE_TEXT_BOUNDS: Vec2 = vec2(250.0, 50.0);
 const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 
 /// Will be true if in a dialog that takes away player control.
-pub fn in_portrait_dialog() -> impl FnMut(Option<Res<PortraitDialog>>) -> bool {
-    move |dialog| dialog.is_some()
+pub fn in_portrait_dialog() -> impl FnMut(
+    Option<Res<PortraitDialog>>,
+    Option<Res<StartDialogWhenLoaded>>,
+) -> bool {
+    move |dialog, loading| {
+        dialog.is_some()
+            || loading.is_some_and(|loading| {
+                matches!(loading.fe, DialogFrontend::Portrait)
+            })
+    }
 }
 
 /// If inserted, then the game is in the dialog UI.
@@ -46,7 +58,7 @@ pub struct PortraitDialog {
 
 impl Dialog {
     /// Spawns the dialog UI and inserts all necessary resources.
-    pub fn spawn_with_portrait_fe(
+    pub(crate) fn spawn_with_portrait_fe(
         self,
         cmd: &mut Commands,
         asset_server: &AssetServer,

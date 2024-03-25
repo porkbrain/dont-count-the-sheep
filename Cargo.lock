@@ -1462,25 +1462,13 @@ dependencies = [
  "common_action",
  "common_assets",
  "common_store",
- "common_story_macros",
  "common_visuals",
- "convert_case",
  "itertools",
  "serde",
  "serde_json",
  "serde_with",
  "strum",
- "toml",
-]
-
-[[package]]
-name = "common_story_macros"
-version = "0.1.0"
-dependencies = [
- "convert_case",
- "proc-macro2",
- "quote",
- "serde",
+ "thiserror",
  "toml",
 ]
 
@@ -1572,15 +1560,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "edd23e864550e6dafc1e41ac78ce4f1ccddc8672b40c403524a04ff3f0518420"
 dependencies = [
  "const_soft_float",
-]
-
-[[package]]
-name = "convert_case"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
-dependencies = [
- "unicode-segmentation",
 ]
 
 [[package]]
