@@ -579,11 +579,7 @@ impl CharacterBundleBuilder {
     /// tilemap. This will be immediately remedied in the
     /// [`animate_movement`] system, where the actor's tiles are recalculated
     /// when they stand still or when they do their first step.
-    pub fn insert<T: TopDownScene>(
-        self,
-        asset_server: &AssetServer,
-        cmd: &mut EntityCommands,
-    ) {
+    pub fn insert(self, asset_server: &AssetServer, cmd: &mut EntityCommands) {
         let id = cmd.id();
 
         let Self {
@@ -663,11 +659,11 @@ lazy_static! {
     /// must be subtracted from each square before checking `contains`.
     static ref ACTOR_ZONE_AT_ORIGIN: Vec<Square> = {
         let tiles_setup = vec![
-                        sq(-1, 2),sq(0, 2),sq(1, 2),sq(2, 2),
-                sq(-2,1),                            sq(2,1), sq(3,1),
-       sq(-3,0),sq(-2,0),          /*O_UP*/          sq(2,0), sq(3,0),sq(4,0),
-                sq(-2,-1),                           sq(2,-1),sq(3,-1),
-                        sq(-1,-2),sq(0,-2),sq(1,-2),sq(2, -2),
+                        sq(-1, 2),sq(0, 2),sq(1, 2),
+                sq(-2,1),                            sq(2,1),
+                sq(-2,0),          /*O_UP*/          sq(2,0),
+                sq(-2,-1),                           sq(2,-1),
+                        sq(-1,-2),sq(0,-2),sq(1,-2),
         ];
 
         iter::once(O_UP).chain(O_UP.neighbors_with_diagonal())

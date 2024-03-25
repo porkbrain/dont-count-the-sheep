@@ -138,10 +138,8 @@ struct ExitAnimation {
     loading_screen_started: bool,
 }
 
-// TODO: this can be done easier in a new version of bevy where delay timers
-// exist
 fn smooth_exit(
-    mut stack: ResMut<GlobalGameStateTransitionStack>,
+    transition: Res<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
@@ -176,13 +174,16 @@ fn smooth_exit(
         // be a good guy and don't invade other game loops with our controls
         controls.consume_all();
 
-        match stack.pop_next_for(GlobalGameState::ApartmentQuitting) {
-            // possible restart or change of game loop
-            Some(next) => next_state.set(next),
-            None => {
-                unreachable!(
-                    "There's nowhere to transition from ApartmentQuitting"
-                );
+        use GlobalGameStateTransition::*;
+        match *transition {
+            ApartmentToMeditation => {
+                next_state.set(GlobalGameState::MeditationLoading);
+            }
+            ApartmentToDowntown => {
+                next_state.set(GlobalGameState::DowntownLoading);
+            }
+            _ => {
+                unreachable!("Invalid apartment transition {transition:?}");
             }
         }
     }

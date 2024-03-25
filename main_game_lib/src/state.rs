@@ -5,7 +5,8 @@ use crate::prelude::*;
 /// Provides control for the game states.
 /// Each scene can add whatever state it needs to this enum.
 /// Transitions between states are controlled by the
-/// [`GlobalGameStateTransitionStack`]. It defines what transitions are allowed.
+/// [`GlobalGameStateTransition`].
+/// It defines what transitions are allowed.
 #[derive(States, Default, Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
 pub enum GlobalGameState {
     /// Dummy state so that we can do loading transitions.
@@ -48,89 +49,19 @@ pub enum GlobalGameState {
 }
 
 /// What are the allowed transitions between game states?
-#[derive(Debug, Reflect, Clone, Copy, Eq, PartialEq)]
+#[allow(missing_docs)]
+#[derive(Resource, Debug, Default, Reflect, Clone, Copy, Eq, PartialEq)]
+#[reflect(Resource)]
 pub enum GlobalGameStateTransition {
-    /// New game starts in the apartment.
-    NewGameToApartmentLoading,
+    #[default]
+    BlankToNewGame,
+    NewGameToApartment,
 
-    /// Restart the game
-    MeditationQuittingToMeditationLoading,
-    /// Exit back to the apartment
-    MeditationQuittingToApartment,
+    RestartMeditation,
+    MeditationToApartment,
 
-    /// Play the meditation minigame
-    ApartmentQuittingToMeditationLoading,
-    /// Quit the game
-    ApartmentQuittingToExit,
-    /// Go to downtown
-    ApartmentQuittingToDowntownLoading,
-}
+    ApartmentToMeditation,
+    ApartmentToDowntown,
 
-/// Typical scene have several states with repeating semantics.
-pub struct StateSemantics<S> {
-    /// The state when the scene is loading.
-    /// Setups up resources.
-    pub loading: S,
-    /// The state when the scene is running.
-    /// Runs the necessary systems.
-    pub running: S,
-    /// The state when the scene is quitting.
-    /// Cleans up resources.
-    pub quitting: S,
-    /// Some scenes have a paused state.
-    pub paused: Option<S>,
-}
-
-/// Certain states have multiple allowed transitions.
-/// The tip of the stack must always match the current state.
-#[derive(Resource, Debug, Default, Reflect)]
-pub struct GlobalGameStateTransitionStack {
-    stack: Vec<GlobalGameStateTransition>,
-}
-
-impl GlobalGameStateTransitionStack {
-    /// Expect a transition.
-    pub fn push(&mut self, transition: GlobalGameStateTransition) {
-        self.stack.push(transition);
-    }
-
-    /// Given state that's ready to transition, where should we go next?
-    pub fn pop_next_for(
-        &mut self,
-        state: GlobalGameState,
-    ) -> Option<GlobalGameState> {
-        use GlobalGameState::*;
-        use GlobalGameStateTransition::*;
-
-        match (self.stack.pop(), state) {
-            (None, state) => {
-                debug!("There's nowhere to transition from {state:?}");
-                None
-            }
-            (
-                Some(MeditationQuittingToMeditationLoading),
-                MeditationQuitting,
-            ) => Some(MeditationLoading),
-            (Some(MeditationQuittingToApartment), MeditationQuitting) => {
-                Some(ApartmentLoading)
-            }
-            (Some(ApartmentQuittingToExit), ApartmentQuitting) => Some(Exit),
-            (Some(ApartmentQuittingToMeditationLoading), ApartmentQuitting) => {
-                Some(MeditationLoading)
-            }
-            (Some(ApartmentQuittingToDowntownLoading), ApartmentQuitting) => {
-                Some(DowntownLoading)
-            }
-            (Some(NewGameToApartmentLoading), NewGame) => {
-                Some(ApartmentLoading)
-            }
-
-            (Some(transition), state) => {
-                error!(
-                    "Next transition {transition:?} does not match {state:?}"
-                );
-                None
-            }
-        }
-    }
+    DowntownToApartment,
 }

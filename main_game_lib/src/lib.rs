@@ -69,14 +69,14 @@ pub fn windowed_app() -> App {
 
     app.init_state::<GlobalGameState>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
-        .insert_resource(GlobalGameStateTransitionStack::default())
+        .init_resource::<GlobalGameStateTransition>()
         .init_asset::<common_rscn::TscnTree>()
         .init_asset_loader::<common_rscn::TscnLoader>()
         .init_asset_loader::<common_assets::ignore_loader::Loader>();
 
     #[cfg(feature = "devtools")]
     {
-        app.register_type::<GlobalGameStateTransitionStack>()
+        app.register_type::<GlobalGameStateTransition>()
             .register_type::<GlobalGameState>();
 
         use bevy_inspector_egui::quick::{

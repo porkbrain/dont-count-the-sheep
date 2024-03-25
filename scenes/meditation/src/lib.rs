@@ -162,7 +162,7 @@ fn enter_the_game(mut next_state: ResMut<NextState<GlobalGameState>>) {
 }
 
 fn all_cleaned_up(
-    mut stack: ResMut<GlobalGameStateTransitionStack>,
+    transition: Res<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
     settings: Res<LoadingScreenSettings>,
@@ -183,13 +183,16 @@ fn all_cleaned_up(
     // be a good guy and don't invade other game loops with our controls
     controls.consume_all();
 
-    match stack.pop_next_for(GlobalGameState::MeditationQuitting) {
-        // possible restart or change of game loop
-        Some(next) => next_state.set(next),
-        None => {
-            unreachable!(
-                "There's nowhere to transition from MeditationQuitting"
-            );
+    use GlobalGameStateTransition::*;
+    match *transition {
+        RestartMeditation => {
+            next_state.set(GlobalGameState::MeditationLoading);
+        }
+        MeditationToApartment => {
+            next_state.set(GlobalGameState::ApartmentLoading);
+        }
+        _ => {
+            unreachable!("Invalid meditation transition {transition:?}");
         }
     }
 }

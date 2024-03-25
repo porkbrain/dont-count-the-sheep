@@ -44,7 +44,7 @@ pub(crate) fn spawn(
         .with_initial_position(initial_position)
         .with_walking_to(walking_to)
         .with_initial_step_time(step_time)
-        .insert::<Apartment>(asset_server, &mut player);
+        .insert(asset_server, &mut player);
     let player = player.id();
 
     vec![player]
@@ -54,7 +54,7 @@ pub(crate) fn spawn(
 pub(super) fn start_meditation_minigame_if_near_chair(
     mut cmd: Commands,
     mut action_events: EventReader<ApartmentAction>,
-    mut stack: ResMut<GlobalGameStateTransitionStack>,
+    mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     store: Res<GlobalStore>,
 
@@ -84,9 +84,7 @@ pub(super) fn start_meditation_minigame_if_near_chair(
             ..default()
         });
 
-        stack.push(
-            GlobalGameStateTransition::ApartmentQuittingToMeditationLoading,
-        );
+        *transition = GlobalGameStateTransition::ApartmentToMeditation;
         next_state.set(GlobalGameState::ApartmentQuitting);
     }
 }

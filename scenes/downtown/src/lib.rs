@@ -128,7 +128,7 @@ fn enter_the_downtown(mut next_state: ResMut<NextState<GlobalGameState>>) {
 }
 
 fn exit(
-    mut stack: ResMut<GlobalGameStateTransitionStack>,
+    transition: Res<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 ) {
@@ -137,11 +137,13 @@ fn exit(
     // be a good guy and don't invade other game loops with our controls
     controls.consume_all();
 
-    match stack.pop_next_for(GlobalGameState::DowntownQuitting) {
-        // possible restart or change of game loop
-        Some(next) => next_state.set(next),
-        None => {
-            unreachable!("There's nowhere to transition from DowntownQuitting");
+    use GlobalGameStateTransition::*;
+    match *transition {
+        DowntownToApartment => {
+            next_state.set(GlobalGameState::ApartmentLoading);
+        }
+        _ => {
+            unreachable!("Invalid Downtown transition {transition:?}");
         }
     }
 }

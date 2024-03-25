@@ -5,7 +5,7 @@ use common_store::GlobalStore;
 use common_top_down::{actor::CharacterExt, layout::LAYOUT, ActorTarget};
 use common_visuals::camera::render_layer;
 
-use crate::{prelude::*, Downtown};
+use crate::prelude::*;
 
 /// When the downtown is loaded, the character is spawned at this square.
 const DEFAULT_INITIAL_POSITION: Vec2 = vec2(-15.0, 15.0);
@@ -50,7 +50,7 @@ pub(crate) fn spawn_player(
         .with_walking_to(walking_to)
         .with_initial_step_time(step_time)
         .is_player(true)
-        .insert::<Downtown>(asset_server, &mut player);
+        .insert(asset_server, &mut player);
     let player = player.id();
 
     vec![player]

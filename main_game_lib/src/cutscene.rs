@@ -530,7 +530,7 @@ fn change_global_state(
     mut cutscene: ResMut<Cutscene>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
-    mut transition: ResMut<GlobalGameStateTransitionStack>,
+    mut transition: ResMut<GlobalGameStateTransition>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
     let CutsceneStep::ChangeGlobalState {
@@ -554,7 +554,7 @@ fn change_global_state(
     }
 
     next_state.set(*to);
-    transition.push(*with);
+    *transition = *with;
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }

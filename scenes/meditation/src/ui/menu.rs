@@ -118,7 +118,7 @@ pub(super) fn change_selection(
 /// So we need to select before we close.
 pub(super) fn select(
     mut cmd: Commands,
-    mut stack: ResMut<GlobalGameStateTransitionStack>,
+    mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
@@ -142,7 +142,7 @@ pub(super) fn select(
             });
             next_loading_state.set(common_loading_screen::start_state());
 
-            stack.push(GlobalGameStateTransition::MeditationQuittingToMeditationLoading);
+            *transition = GlobalGameStateTransition::RestartMeditation;
             next_state.set(GlobalGameState::MeditationQuitting);
         }
         Selection::Quit => {
@@ -157,8 +157,7 @@ pub(super) fn select(
             });
             next_loading_state.set(common_loading_screen::start_state());
 
-            stack
-                .push(GlobalGameStateTransition::MeditationQuittingToApartment);
+            *transition = GlobalGameStateTransition::MeditationToApartment;
             next_state.set(GlobalGameState::MeditationQuitting);
         }
     }
