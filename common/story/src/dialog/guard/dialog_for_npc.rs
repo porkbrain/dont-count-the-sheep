@@ -4,7 +4,7 @@ use bevy::log::warn;
 use convert_case::{Case, Casing};
 
 use super::*;
-use crate::{dialog::DialogRoot, Character};
+use crate::{dialog::list::Namespace, Character};
 
 pub(super) fn add(
     In(guard_cmd): In<GuardCmd>,
@@ -69,7 +69,7 @@ fn handle_guard_cmd_as(
                 .get("file_path")
                 .and_then(|file_path| file_path.as_str())
                 .map(|s| s.trim_end_matches(".toml").to_case(Case::Pascal))
-                .map(|s| DialogRoot::from_str(&s).expect("Invalid dialog root"))
+                .map(Namespace::from)
                 .unwrap_or_else(|| {
                     panic!("No file_path string in params {params:#?}")
                 });

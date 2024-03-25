@@ -46,11 +46,19 @@ struct ParsedNode {
     next: Vec<String>,
 }
 
-pub(super) fn subgraph_from_toml(
-    namespace: Namespace,
-    toml: ParsedToml,
-) -> DialogGraph {
-    from_toml(namespace, toml)
+impl DialogGraph {
+    /// Typically you don't need to use this directly outside of testing.
+    /// Panics if the TOML is invalid.
+    pub fn subgraph_from_raw(namespace: Namespace, toml: &str) -> Self {
+        from_toml(namespace, toml::from_str(toml).unwrap())
+    }
+
+    pub(super) fn subgraph_from_toml(
+        namespace: Namespace,
+        toml: ParsedToml,
+    ) -> Self {
+        from_toml(namespace, toml)
+    }
 }
 
 /// 1. Create a map of nodes, where the key is the node name.
@@ -96,8 +104,10 @@ fn from_toml(
         let name = node
             .name
             .clone()
-            .map(|s| NodeName::from_namespace_and_node_name_str(namespace, s))
-            .unwrap_or(NodeName::Auto(namespace, index));
+            .map(|s| {
+                NodeName::from_namespace_and_node_name_str(namespace.clone(), s)
+            })
+            .unwrap_or(NodeName::Auto(namespace.clone(), index));
         let kind = node
             .guard
             .as_ref()
@@ -138,8 +148,10 @@ fn from_toml(
         let name = node
             .name
             .clone()
-            .map(|s| NodeName::from_namespace_and_node_name_str(namespace, s))
-            .unwrap_or(NodeName::Auto(namespace, index));
+            .map(|s| {
+                NodeName::from_namespace_and_node_name_str(namespace.clone(), s)
+            })
+            .unwrap_or(NodeName::Auto(namespace.clone(), index));
 
         if node.next.is_empty() {
             // if no next node is specified, that implies that the next node
@@ -152,10 +164,11 @@ fn from_toml(
                         .clone()
                         .map(|s| {
                             NodeName::from_namespace_and_node_name_str(
-                                namespace, s,
+                                namespace.clone(),
+                                s,
                             )
                         })
-                        .unwrap_or(NodeName::Auto(namespace, index + 1))
+                        .unwrap_or(NodeName::Auto(namespace.clone(), index + 1))
                 })
                 .unwrap_or_else(|| panic!("Node '{name:?}' has no next node"));
 
@@ -166,7 +179,7 @@ fn from_toml(
 
         for next in &node.next {
             let next_name = NodeName::from_namespace_and_node_name_str(
-                namespace,
+                namespace.clone(),
                 next.clone(),
             );
             // asserts node exists

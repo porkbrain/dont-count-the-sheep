@@ -5,26 +5,26 @@
 //!
 //! This module exports a backend that can be used to implement dialog in a
 //! game.
-//! It has no systems, only a resource that when coupled with a frontend
-//! advances the dialog state.
+//! It has no systems for running the dialog, only a resource that when coupled
+//! with a frontend advances the dialog state.
 //! See the [`fe`] module for frontends.
 //!
-//! Then there's the [`DialogRoot`] enum.
-//! It's auto generated from all dialog .toml files.
-//! Each file is represented as a variant of this enum by taking the file stem
-//! and converting it to PascalCase.
-//! You can use the specific variant to spawn dialog BE and FE which starts the
-//! dialog.
+//! # Loading
+//! Use the [`StartDialogWhenLoaded`] resource to load dialog files.
+//! Choose the frontend and add the dialog namespaces to load.
+//! A namespace is the [`DialogRoot`] enum.
 
 mod deser;
 pub mod fe;
 mod guard;
 mod list;
+pub(crate) mod loader;
 
 use bevy::{
+    asset::{Asset, AssetServer, Assets, Handle},
     ecs::{
         reflect::ReflectResource,
-        system::{CommandQueue, Commands, Resource},
+        system::{CommandQueue, Commands, Res, ResMut, Resource},
         world::World,
     },
     log::{error, trace, warn},
@@ -32,7 +32,7 @@ use bevy::{
     utils::{default, hashbrown::HashMap},
 };
 use common_store::{DialogStore, GlobalStore};
-pub use list::DialogRoot;
+pub use list::{Namespace, TypedNamespace};
 
 use self::guard::{GuardCmd, GuardKind, GuardSystem};
 use crate::Character;
@@ -40,11 +40,6 @@ use crate::Character;
 /// Use [`Dialog::on_finished`] to schedule commands to run when the dialog is
 /// finished.
 pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
-
-/// Namespace represents a dialog toml file with relative path from the root
-/// of the dialog directory.
-/// Each dialog file has a unique name.
-pub type Namespace = DialogRoot;
 
 /// Dialog backend.
 ///
@@ -65,6 +60,26 @@ pub struct Dialog {
     /// When dialog is finished, run these commands.
     #[reflect(ignore)]
     when_finished: Vec<CmdFn>,
+}
+
+/// Because dialog toml files are assets, loading them is an async process.
+/// For that reason, in this resource we store handles to the relevant
+/// [`DialogGraph`] and only spawn the dialog when all handles are loaded.
+///
+/// Conditions such as [`fe::portrait::in_portrait_dialog`] will take this into
+/// account and when you spawn this resource with the relevant frontend, it will
+/// report `true`.
+#[derive(Resource)]
+pub struct StartDialogWhenLoaded {
+    fe: fe::DialogFrontend,
+    /// Add namespaces to load to this vector.
+    namespaces: Vec<Namespace>,
+    /// The namespaces will be taken and loaded into handles.
+    /// The handles will then be awaited.
+    /// When all handles are loaded, the dialog will be spawned.
+    handles: Vec<Handle<DialogGraph>>,
+    when_finished: Vec<CmdFn>,
+    root_line: Option<String>,
 }
 
 /// Node name uniquely identifies a node across all dialogs.
@@ -100,7 +115,7 @@ pub enum NodeName {
 /// The dialog asset that can be started.
 /// Since dialogs can be stateful, state is lazy loaded.
 /// The state is managed by systems called guards.
-#[derive(Debug, Reflect, Default)]
+#[derive(Asset, Debug, Reflect, Default)]
 pub struct DialogGraph {
     root: NodeName,
     nodes: HashMap<NodeName, Node>,
@@ -176,12 +191,116 @@ enum AdvanceOutcome {
 #[derive(Debug)]
 struct BranchPending;
 
-impl Dialog {
-    /// Schedule a command to run when the dialog is finished.
-    /// As many commands as you want can be scheduled.
+pub(crate) fn wait_for_dialog_graphs_then_spawn_dialog(
+    mut cmd: Commands,
+    mut start_when_loaded: ResMut<StartDialogWhenLoaded>,
+    asset_server: Res<AssetServer>,
+    mut dialog_graphs: ResMut<Assets<DialogGraph>>,
+) {
+    let mut namespaces = vec![];
+    std::mem::swap(&mut namespaces, &mut start_when_loaded.namespaces);
+    start_when_loaded
+        .handles
+        .extend(namespaces.into_iter().map(|namespace| {
+            asset_server.load(format!("dialogs/{}.toml", namespace))
+        }));
+
+    if start_when_loaded.handles.is_empty() {
+        cmd.remove_resource::<StartDialogWhenLoaded>();
+        return;
+    }
+
+    let all_ready = start_when_loaded
+        .handles
+        .iter()
+        .all(|handle| asset_server.is_loaded_with_dependencies(handle));
+
+    if !all_ready {
+        return;
+    }
+
+    let root_line = start_when_loaded.root_line.take();
+    let mut graphs = start_when_loaded
+        .handles
+        .iter()
+        .filter_map(|handle| dialog_graphs.remove(handle));
+
+    if let Some(some_graph) = graphs.next() {
+        let mut cmd_queue = CommandQueue::default();
+        let mut dialog = some_graph
+            .into_root_graph(root_line)
+            .into_dialog_resource(&mut cmd_queue);
+
+        for graph in graphs {
+            dialog.graph.attach(graph, NodeName::Root);
+        }
+
+        for when_finished in start_when_loaded.when_finished.drain(..) {
+            dialog.on_finished(when_finished);
+        }
+
+        match start_when_loaded.fe {
+            fe::DialogFrontend::Portrait => {
+                dialog.spawn_with_portrait_fe(&mut cmd, &asset_server);
+            }
+        }
+    }
+
+    cmd.remove_resource::<StartDialogWhenLoaded>();
+}
+
+impl StartDialogWhenLoaded {
+    /// THe portrait frontend.
+    pub fn portrait() -> Self {
+        Self {
+            fe: fe::DialogFrontend::Portrait,
+            namespaces: default(),
+            handles: default(),
+            when_finished: default(),
+            root_line: None,
+        }
+    }
+
+    /// Useful if multiple dialog graphs are loaded.
+    /// When the player choice from the [`NodeName::Root`] is shown, this is
+    /// going to be the accompanying line.
+    /// Could be something like "What's up, Winnie?"
+    pub fn add_root_line(mut self, line: String) -> Self {
+        self.root_line = Some(line);
+        self
+    }
+
+    /// Same as [`Self::add_namespace`] but many.
+    pub fn add_namespaces(
+        mut self,
+        namespaces: impl IntoIterator<Item = Namespace>,
+    ) -> Self {
+        self.namespaces.extend(namespaces);
+        self
+    }
+
+    /// Add [`Namespace`] to load.
+    /// Basically a .toml asset with the dialog that will be loaded from fs,
+    /// parsed into a graph and then spawned as part of the dialog.
+    /// The root node will point to the root of the namespace graph.
+    pub fn add_namespace(mut self, namespace: Namespace) -> Self {
+        self.namespaces.push(namespace);
+        self
+    }
+
+    /// Fns to run when the dialog is finished.
+    /// Can be called many times.
     pub fn on_finished(mut self, fun: CmdFn) -> Self {
         self.when_finished.push(fun);
         self
+    }
+}
+
+impl Dialog {
+    /// Schedule a command to run when the dialog is finished.
+    /// As many commands as you want can be scheduled.
+    fn on_finished(&mut self, fun: CmdFn) {
+        self.when_finished.push(fun);
     }
 
     /// If there are no choices to be made by the player, this method returns
@@ -528,6 +647,17 @@ impl BranchStatus {
 }
 
 impl DialogGraph {
+    /// A subgraph is not ready to be spawned as a dialog.
+    /// Either call [] or attach it to an existing root graph with []
+    pub fn is_subgraph(&self) -> bool {
+        self.root != NodeName::Root
+    }
+
+    /// What node names are present in the graph.
+    pub fn node_names(&self) -> impl Iterator<Item = &NodeName> {
+        self.nodes.keys()
+    }
+
     /// Create a new dialog resource.
     /// It can then be associated with a FE to spawn the dialog.
     ///
@@ -542,7 +672,7 @@ impl DialogGraph {
     /// The dialog panics if it's not a root graph.
     /// Run [`DialogGraph::into_root_graph`].
     #[must_use]
-    pub fn into_dialog_resource(self, cmd: &mut CommandQueue) -> Dialog {
+    fn into_dialog_resource(self, cmd: &mut CommandQueue) -> Dialog {
         assert!(!self.is_subgraph());
         let branching = Branching::init(cmd, &self);
         Dialog {
@@ -554,17 +684,6 @@ impl DialogGraph {
         }
     }
 
-    /// A subgraph is not ready to be spawned as a dialog.
-    /// Either call [] or attach it to an existing root graph with []
-    pub fn is_subgraph(&self) -> bool {
-        self.root != NodeName::Root
-    }
-
-    /// What node names are present in the graph.
-    pub fn node_names(&self) -> impl Iterator<Item = &NodeName> {
-        self.nodes.keys()
-    }
-
     /// Convert a subgraph into a root graph by inserting the root node and
     /// pointing the root to this subgraph's root.
     ///
@@ -573,7 +692,7 @@ impl DialogGraph {
     /// That might look awkward if there are two or more subgraphs attached to
     /// the root.
     #[must_use]
-    pub fn into_root_graph(mut self, root_line: Option<String>) -> Self {
+    fn into_root_graph(mut self, root_line: Option<String>) -> Self {
         assert!(self.is_subgraph());
         let namespace_root = self.root;
         let who = self.nodes.get(&namespace_root).unwrap().who;
@@ -598,7 +717,7 @@ impl DialogGraph {
 
     /// Attach a subgraph to a node in the graph.
     /// The subgraph will be added to the next nodes of the `to` arg node.
-    pub fn attach(&mut self, other: Self, to: NodeName) {
+    fn attach(&mut self, other: Self, to: NodeName) {
         assert!(other.is_subgraph());
         assert!(!self.nodes.contains_key(&other.root));
         assert!(self.nodes.contains_key(&to));
@@ -614,13 +733,13 @@ impl NodeName {
 
     /// Get the namespace and node name.
     /// Only works for [`NodeName::Explicit`] and [`NodeName::NamespaceRoot`].
-    pub fn as_namespace_and_node_name_str(&self) -> Option<(Namespace, &str)> {
+    pub fn as_namespace_and_node_name_str(&self) -> Option<(&Namespace, &str)> {
         match self {
             Self::Explicit(namespace, node_name) => {
-                Some((*namespace, node_name))
+                Some((namespace, node_name))
             }
             Self::NamespaceRoot(namespace) => {
-                Some((*namespace, Self::NAMESPACE_ROOT))
+                Some((namespace, Self::NAMESPACE_ROOT))
             }
             _ => None,
         }

@@ -1462,7 +1462,6 @@ dependencies = [
  "common_action",
  "common_assets",
  "common_store",
- "common_story_macros",
  "common_visuals",
  "convert_case",
  "itertools",
@@ -1470,17 +1469,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "strum",
- "toml",
-]
-
-[[package]]
-name = "common_story_macros"
-version = "0.1.0"
-dependencies = [
- "convert_case",
- "proc-macro2",
- "quote",
- "serde",
+ "thiserror",
  "toml",
 ]
 

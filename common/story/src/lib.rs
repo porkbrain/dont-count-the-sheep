@@ -74,7 +74,16 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(dialog::fe::portrait::Plugin);
+        app.add_plugins(dialog::fe::portrait::Plugin)
+            .init_asset_loader::<dialog::loader::Loader>()
+            .init_asset::<dialog::DialogGraph>();
+
+        app.add_systems(
+            Update,
+            dialog::wait_for_dialog_graphs_then_spawn_dialog
+                .run_if(resource_exists::<dialog::StartDialogWhenLoaded>)
+                .run_if(not(resource_exists::<dialog::Dialog>)),
+        );
 
         #[cfg(feature = "devtools")]
         {

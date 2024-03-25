@@ -3,6 +3,7 @@
 
 use std::{
     borrow::{Borrow, Cow},
+    fmt::Display,
     marker::PhantomData,
     sync::{Arc, Mutex},
 };
@@ -209,8 +210,6 @@ mod downtown {
 
 pub use dialog::DialogStore;
 mod dialog {
-    use std::{fmt::Display, str::FromStr};
-
     use super::*;
 
     /// Store anything that's related to dialogs.
@@ -256,10 +255,10 @@ mod dialog {
         );
 
         /// List all the dialogs that the NPC has.
-        fn list_dialogs_for_npc<DialogRoot: FromStr<Err = strum::ParseError>>(
+        fn list_dialogs_for_npc<T: From<String>>(
             &self,
             npc: impl Display,
-        ) -> Vec<DialogRoot>;
+        ) -> Vec<T>;
     }
 
     impl DialogStore for GlobalStore {
@@ -372,12 +371,10 @@ mod dialog {
             }
         }
 
-        fn list_dialogs_for_npc<
-            DialogRoot: FromStr<Err = strum::ParseError>,
-        >(
+        fn list_dialogs_for_npc<T: From<String>>(
             &self,
             npc: impl Display,
-        ) -> Vec<DialogRoot> {
+        ) -> Vec<T> {
             let conn = self.conn.lock().unwrap();
 
             let now = Instant::now();
@@ -398,17 +395,8 @@ mod dialog {
                 warn!("list_dialogs_for_npc took {ms}ms");
             }
 
-            rows.filter_map(|row| {
-                let namespace: String = row.expect("Cannot get row");
-                match namespace.parse() {
-                    Ok(dialog_root) => Some(dialog_root),
-                    Err(err) => {
-                        error!("Cannot parse dialog root: {err}");
-                        None
-                    }
-                }
-            })
-            .collect()
+            rows.map(|row| String::into(row.expect("Cannot get row")))
+                .collect()
         }
     }
 }

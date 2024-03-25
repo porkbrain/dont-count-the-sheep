@@ -1,0 +1,51 @@
+[root]
+who = "Marie"
+en = "My husband, he was one beautiful eucaryote."
+next = ["sorry_for_your_loss", "what_happened"]
+
+[[node]]
+name = "sorry_for_your_loss"
+who = "Winnie"
+en = "I'm sorry for your loss."
+[[node]]
+who = "Marie"
+en = "And I am sorry for yours child."
+next = "walk_away"
+
+[[node]]
+name = "what_happened"
+who = "Winnie"
+guard = "exhaustive_alternatives"
+next = ["first_time_what_happened", "second_time_what_happened"]
+
+[[node]]
+name = "first_time_what_happened"
+who = "Winnie"
+en = "Was? What happened to him?"
+[[node]]
+who = "Marie"
+en = "He was eaten by a pack of wild trucks."
+[[node]]
+# next time you speak with Bolt
+guard = "add_dialog_to_npc"
+params = { npc = "Bolt", file_path = "bolt_tells_you_about_marie.toml" }
+[[node]]
+# in case winnie did not talk to bolt yet, don't show this dialog
+guard = "remove_dialog_from_npc"
+params = { npc = "Bolt", file_path = "bolt_is_mean.toml" }
+next = "walk_away"
+
+[[node]]
+name = "second_time_what_happened"
+who = "Winnie"
+en = "Did you say he was eaten by a pack of wild trucks?"
+[[node]]
+who = "Marie"
+en = "Yeah, bitch, I said what I said"
+next = "walk_away"
+
+[[node]]
+name = "walk_away"
+who = "Winnie"
+en = "Uhm... ok?"
+next = "_end_dialog"

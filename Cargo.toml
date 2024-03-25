@@ -13,7 +13,6 @@ members = [
     "common/rscn",
     "common/store",
     "common/story",
-    "common/story/macros",
     "common/top_down",
     "common/visuals",
     "main_game_lib",
@@ -81,8 +80,6 @@ itertools = "0.12"
 lazy_static = "1.4"
 logos = "0.14"
 pathfinding = "4.8"
-proc-macro2 = "1.0"
-quote = "1.0"
 rand = "0.8"
 ron = "0.8"
 rusqlite = { version = "0.30", features = ["bundled", "chrono"] }
