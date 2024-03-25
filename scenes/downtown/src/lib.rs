@@ -10,7 +10,9 @@ mod prelude;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::LoadingScreenState;
 use common_rscn::TscnInBevy;
+use common_story::dialog::fe::portrait::in_portrait_dialog;
 use layout::DowntownTileKind;
+use main_game_lib::cutscene::in_cutscene;
 use prelude::*;
 
 /// Important scene struct.
@@ -54,7 +56,9 @@ pub fn add(app: &mut App) {
         Update,
         common_top_down::cameras::track_player_with_main_camera
             .after(common_top_down::actor::animate_movement::<Downtown>)
-            .run_if(in_state(GlobalGameState::AtDowntown)),
+            .run_if(in_state(GlobalGameState::AtDowntown))
+            .run_if(not(in_cutscene()))
+            .run_if(not(in_portrait_dialog())),
     );
 
     debug!("Adding assets");

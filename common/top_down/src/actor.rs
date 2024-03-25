@@ -17,6 +17,7 @@ use bevy::{
 use bevy_grid_squared::{sq, GridDirection, Square};
 use common_ext::QueryExt;
 use common_story::Character;
+use common_visuals::camera::PIXEL_ZOOM;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use rand::{seq::SliceRandom, thread_rng};
@@ -264,7 +265,7 @@ pub fn emit_movement_events<T: TopDownScene>(
 /// Other systems will only edit the `Actor` component to plan the movement.
 ///
 /// The z is based off y.
-/// See the [`TopDownScene::extend_z`] for more info.
+/// See the [`ysort`] for more info.
 pub fn animate_movement<T: TopDownScene>(
     time: Res<Time>,
     mut tilemap: ResMut<TileMap<T>>,
@@ -363,7 +364,9 @@ fn animate_movement_for_actor<T: TopDownScene>(
 
         let new_from = walking_to.square;
 
-        transform.translation = to.extend(ysort(to));
+        let rounded = (to * PIXEL_ZOOM as f32).round() / PIXEL_ZOOM as f32;
+        // prevents fractions if camera would want to follow the player
+        transform.translation = rounded.extend(ysort(rounded));
 
         if let Some((new_square, new_direction)) = walking_to.planned.take() {
             // there's still next target to walk to, let's check whether it's
@@ -406,8 +409,10 @@ fn animate_movement_for_actor<T: TopDownScene>(
         };
 
         let from = LAYOUT.square_to_world_pos(actor.walking_from);
-        let position = from.lerp(to, lerp_factor);
-        transform.translation = position.extend(ysort(position));
+        let precise = from.lerp(to, lerp_factor);
+        // prevents fractions if camera would want to follow the player
+        let rounded = (precise * PIXEL_ZOOM as f32).round() / PIXEL_ZOOM as f32;
+        transform.translation = rounded.extend(ysort(rounded));
     }
 }
 
@@ -418,7 +423,7 @@ fn animation_step_secs(step_secs: f32, dir: GridDirection) -> f32 {
         GridDirection::Top | GridDirection::Bottom => step_secs * 5.0,
         _ => step_secs * 3.5,
     }
-    .clamp(0.1, 0.5)
+    .clamp(0.2, 0.5)
 }
 
 impl<T> ActorMovementEvent<T> {
@@ -513,7 +518,7 @@ impl CharacterBundleBuilder {
     }
 
     /// Where to spawn the character.
-    /// Converted into the square by [`TopDownScene::layout`] (see
+    /// Converted into the square by [`LAYOUT`] (see
     /// the `common_layout` crate).
     /// The specific layout is provided in the
     /// [`CharacterBundleBuilder::insert`] method's `T`.

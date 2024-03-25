@@ -13,7 +13,9 @@ use bevy::utils::Instant;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_rscn::TscnInBevy;
+use common_story::dialog::fe::portrait::in_portrait_dialog;
 use layout::ApartmentTileKind;
+use main_game_lib::cutscene::in_cutscene;
 use prelude::*;
 
 use crate::layout::LayoutEntity;
@@ -54,6 +56,14 @@ pub fn add(app: &mut App) {
     .add_systems(
         OnExit(GlobalGameState::ApartmentQuitting),
         common_visuals::camera::despawn,
+    )
+    .add_systems(
+        FixedUpdate,
+        common_top_down::cameras::track_player_with_main_camera
+            .after(common_top_down::actor::animate_movement::<Apartment>)
+            .run_if(in_state(GlobalGameState::InApartment))
+            .run_if(not(in_cutscene()))
+            .run_if(not(in_portrait_dialog())),
     );
 
     debug!("Adding assets");

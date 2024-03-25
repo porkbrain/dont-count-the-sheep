@@ -844,6 +844,7 @@ impl ZoneTile for () {
 
 #[cfg(test)]
 mod tests {
+    use bevy_grid_squared::sq;
     use smallvec::smallvec;
     use strum::{EnumIter, IntoEnumIterator};
 

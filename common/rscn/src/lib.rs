@@ -89,9 +89,9 @@ pub struct In2D {
     pub position: Vec2,
     /// Or calculated from position if missing.
     /// If a 2D node has a 2D node child called "YSort", then the position
-    /// fed to the [`TscnSpawner::ysort`] function is the global position of
-    /// that "YSort", i.e. the position of the 2D node plus the position of
-    /// the "YSort".
+    /// fed to the [`common_top_down::layout::ysort`] function is the global
+    /// position of that "YSort", i.e. the position of the 2D node plus the
+    /// position of the "YSort".
     pub z_index: Option<f32>,
     /// for images and animations
     pub texture: Option<SpriteTexture>,

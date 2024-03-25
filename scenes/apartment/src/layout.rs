@@ -168,10 +168,6 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
             "Apartment" => {
                 cmd.entity(who).insert(LayoutEntity);
 
-                // spawn the NPCs and the player to the root node for YSort
-                let npcs = crate::actor::spawn_npcs(cmd, self.asset_server);
-                cmd.entity(who).push_children(&npcs);
-
                 let player = crate::actor::spawn_player(
                     cmd,
                     self.asset_server,
