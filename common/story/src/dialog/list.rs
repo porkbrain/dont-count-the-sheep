@@ -1,4 +1,5 @@
 //! Namespace represents a unique toml file in the `assets/dialogs` directory.
+//! Namespace does not contain the `dialogs/` prefix nor the `.toml` extension.
 
 use bevy::{asset::AssetPath, reflect::Reflect};
 
@@ -22,9 +23,9 @@ impl AsRef<str> for TypedNamespace {
     fn as_ref(&self) -> &str {
         use TypedNamespace::*;
         match self {
-            EnterTheApartmentElevator => "enter_the_apartment_elevator.toml",
-            BoltIsMean => "bolt_is_mean.toml",
-            MarieBlabbering => "marie_blabbering.toml",
+            EnterTheApartmentElevator => "enter_the_apartment_elevator",
+            BoltIsMean => "bolt_is_mean",
+            MarieBlabbering => "marie_blabbering",
         }
     }
 }
@@ -51,15 +52,21 @@ impl From<&AssetPath<'static>> for Namespace {
     fn from(asset_path: &AssetPath<'static>) -> Self {
         let path = asset_path.to_string();
         assert!(path.starts_with("dialogs/"));
-        Namespace::from(path["dialogs/".len()..].to_string())
+        assert!(path.ends_with(".toml"));
+        Namespace::from(
+            path["dialogs/".len()..(path.len() - ".toml".len())].to_string(),
+        )
     }
 }
 
 impl From<String> for Namespace {
     fn from(file_path: String) -> Self {
-        assert!(file_path.ends_with(".toml"));
-        assert!(!file_path.starts_with("dialogs/"));
-        Namespace { file_path }
+        Namespace {
+            file_path: file_path
+                .trim_end_matches(".toml")
+                .trim_start_matches("dialogs/")
+                .to_string(),
+        }
     }
 }
 
@@ -77,7 +84,7 @@ mod tests {
 
             let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
             let path = format!(
-                "{manifest}/../../main_game/assets/dialogs/{namespace}"
+                "{manifest}/../../main_game/assets/dialogs/{namespace}.toml"
             );
             let toml = std::fs::read_to_string(&path)
                 .unwrap_or_else(|e| panic!("{path}: {e}"));

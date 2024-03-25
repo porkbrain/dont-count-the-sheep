@@ -74,7 +74,6 @@ common_top_down = { path = "common/top_down" }
 common_visuals = { path = "common/visuals" }
 main_game_lib = { path = "main_game_lib" }
 
-convert_case = "0.6"
 graphviz-rust = "0.7"
 itertools = "0.12"
 lazy_static = "1.4"

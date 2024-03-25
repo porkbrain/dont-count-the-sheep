@@ -11,8 +11,7 @@
 //!
 //! # Loading
 //! Use the [`StartDialogWhenLoaded`] resource to load dialog files.
-//! Choose the frontend and add the dialog namespaces to load.
-//! A namespace is the [`DialogRoot`] enum.
+//! Choose the frontend and add the dialog [`Namespace`]s to load.
 
 mod deser;
 pub mod fe;
@@ -37,8 +36,8 @@ pub use list::{Namespace, TypedNamespace};
 use self::guard::{GuardCmd, GuardKind, GuardSystem};
 use crate::Character;
 
-/// Use [`Dialog::on_finished`] to schedule commands to run when the dialog is
-/// finished.
+/// Use [`StartDialogWhenLoaded::on_finished`] to schedule commands to run when
+/// the dialog is finished.
 pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
 
 /// Dialog backend.
@@ -47,8 +46,7 @@ pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
 /// It controls a fleet of guards that can read and write game state and allow
 /// the dialog logic to be stateful.
 ///
-/// Spawn it via [`DialogRoot`], associate it with a frontend (see [`fe`]
-/// module.)
+/// Spawn it via [`StartDialogWhenLoaded`].
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
 pub struct Dialog {
@@ -191,7 +189,7 @@ enum AdvanceOutcome {
 #[derive(Debug)]
 struct BranchPending;
 
-pub(crate) fn wait_for_dialog_graphs_then_spawn_dialog(
+pub(crate) fn wait_for_assets_then_spawn_dialog(
     mut cmd: Commands,
     mut start_when_loaded: ResMut<StartDialogWhenLoaded>,
     asset_server: Res<AssetServer>,
@@ -202,7 +200,7 @@ pub(crate) fn wait_for_dialog_graphs_then_spawn_dialog(
     start_when_loaded
         .handles
         .extend(namespaces.into_iter().map(|namespace| {
-            asset_server.load(format!("dialogs/{}.toml", namespace))
+            asset_server.load(format!("dialogs/{namespace}.toml"))
         }));
 
     if start_when_loaded.handles.is_empty() {

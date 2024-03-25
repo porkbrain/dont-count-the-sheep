@@ -80,7 +80,7 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             Update,
-            dialog::wait_for_dialog_graphs_then_spawn_dialog
+            dialog::wait_for_assets_then_spawn_dialog
                 .run_if(resource_exists::<dialog::StartDialogWhenLoaded>)
                 .run_if(not(resource_exists::<dialog::Dialog>)),
         );

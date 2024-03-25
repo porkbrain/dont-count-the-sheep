@@ -136,8 +136,9 @@ mod tests {
         let namespace = dialog::TypedNamespace::EnterTheApartmentElevator;
 
         let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-        let path =
-            format!("{manifest}/../../main_game/assets/dialogs/{namespace}");
+        let path = format!(
+            "{manifest}/../../main_game/assets/dialogs/{namespace}.toml"
+        );
         let toml = std::fs::read_to_string(&path)
             .unwrap_or_else(|e| panic!("{path}: {e}"));
 

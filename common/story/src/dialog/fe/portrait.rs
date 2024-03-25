@@ -2,7 +2,7 @@
 //! require any additional actions.
 //!
 //! You first want to obtain the dialog BE [`Dialog`] and then spawn the
-//! dialog FE with [`Dialog::spawn_with_portrait_fe`].
+//! dialog FE with [`StartDialogWhenLoaded::portrait`].
 
 use std::{collections::BTreeMap, time::Duration};
 
