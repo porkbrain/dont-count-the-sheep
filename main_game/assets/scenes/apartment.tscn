@@ -583,3 +583,25 @@ self_modulate = Color(1, 1, 1, 0.823529)
 z_index = -1
 position = Vector2(-70, -67.5)
 texture = ExtResource("23_elrp7")
+
+[node name="Points" type="Node2D" parent="."]
+
+[node name="MeditationSpawn" type="Node2D" parent="Points"]
+position = Vector2(25, -60)
+
+[node name="Point" type="Node" parent="Points/MeditationSpawn"]
+
+[node name="MeditationSpawnWalkTarget" type="Node2D" parent="Points"]
+position = Vector2(25, -40)
+
+[node name="Point" type="Node" parent="Points/MeditationSpawnWalkTarget"]
+
+[node name="NewGameSpawn" type="Node2D" parent="Points"]
+position = Vector2(-15, -15)
+
+[node name="Point" type="Node" parent="Points/NewGameSpawn"]
+
+[node name="InElevator" type="Node2D" parent="Points"]
+position = Vector2(-192, 76)
+
+[node name="Point" type="Node" parent="Points/InElevator"]

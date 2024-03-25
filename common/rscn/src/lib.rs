@@ -29,6 +29,23 @@ pub use crate::{
     spawner::TscnSpawner,
 };
 
+/// A helper component that is always in an entity with
+/// [`bevy::prelude::SpatialBundle`].
+/// Translated a simple point from Godot.
+/// To add this component, add a child Godot `Node` named `Point` to a parent
+/// Godot `Node2D`.
+#[derive(
+    Component,
+    Clone,
+    Copy,
+    Debug,
+    Deserialize,
+    PartialEq,
+    bevy::reflect::Reflect,
+    Serialize,
+)]
+pub struct Point(pub Vec2);
+
 /// Configure how the scene is converted from godot to bevy.
 #[derive(Serialize, Deserialize)]
 pub struct Config {

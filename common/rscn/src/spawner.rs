@@ -17,7 +17,7 @@ use bevy::{
 use common_top_down::{layout::ysort, InspectLabelCategory};
 use common_visuals::{AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer};
 
-use crate::{In2D, Node, NodeName, SpriteTexture, TscnTree};
+use crate::{In2D, Node, NodeName, Point, SpriteTexture, TscnTree};
 
 /// Guides the spawning process of a scene.
 /// Use the [`TscnTree::spawn_into`] method to spawn the scene into a world.
@@ -171,10 +171,11 @@ fn node_to_entity<T: TscnSpawner>(
 
     for (NodeName(child_name), mut child_node) in node.children {
         match (child_name.as_str(), child_node.in_2d.as_ref()) {
-            // > Given a position in 2D, add a z index to it.
-            // > This function is used for those nodes that don't have a z index set.
-            // > If a 2D node has a 2D node child called "YSort", then the position fed
-            // > to this function is the global position of that "YSort" node.
+            // Given a position in 2D, add a z index to it.
+            // This function is used for those nodes that don't have a z index
+            // set. If a 2D node has a 2D node child called "YSort",
+            // then the position fed to this function is the global
+            // position of that "YSort" node.
             (
                 "YSort",
                 Some(In2D {
@@ -187,10 +188,12 @@ fn node_to_entity<T: TscnSpawner>(
                     virtual_z_index.is_none(),
                     "YSort must child of a node with no zindex"
                 );
-                virtual_z_index =
-                    Some(ysort(position + *child_position));
+                virtual_z_index = Some(ysort(position + *child_position));
             }
             ("YSort", None) => panic!("YSort must be a Node2D with no zindex"),
+
+            ("Point", None) => cmd.entity(entity).insert(Point(position)),
+            ("Point", _) => panic!("Point must be a plain node"),
 
             (_, Some(_)) => {
                 // recursively spawn children

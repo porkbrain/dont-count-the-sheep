@@ -97,6 +97,7 @@ pub(super) fn enter_the_elevator(
     player: Query<Entity, With<Player>>,
     elevator: Query<Entity, With<Elevator>>,
     camera: Query<Entity, With<MainCamera>>,
+    points: Query<(&Name, &common_rscn::Point)>,
 ) {
     let is_triggered = action_events
         .read()
@@ -107,6 +108,14 @@ pub(super) fn enter_the_elevator(
             player: entity,
             elevator: elevator.single(),
             camera: camera.single(),
+            point_in_elevator: {
+                let (_, common_rscn::Point(pos)) = points
+                    .iter()
+                    .find(|(name, _)| **name == Name::new("InElevator"))
+                    .expect("InElevator point not found");
+
+                *pos
+            },
         }
         .spawn(&mut cmd);
     }

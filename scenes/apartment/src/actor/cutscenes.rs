@@ -2,6 +2,7 @@ use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{DialogStore, GlobalStore};
 use common_story::dialog;
+use common_top_down::layout::LAYOUT;
 use common_visuals::EASE_IN_OUT;
 use main_game_lib::{
     cutscene::{self, CutsceneStep, IntoCutscene},
@@ -16,6 +17,9 @@ pub(super) struct EnterTheElevator {
     pub(super) player: Entity,
     pub(super) elevator: Entity,
     pub(super) camera: Entity,
+    /// Get position of entity with [`Point`] component and [`Name`] that
+    /// matches "InElevator"
+    pub(super) point_in_elevator: Vec2,
 }
 
 impl IntoCutscene for EnterTheElevator {
@@ -30,7 +34,10 @@ impl IntoCutscene for EnterTheElevator {
             // has atlas animation component, see layout where it's spawned
             elevator,
             camera,
+            point_in_elevator,
         } = self;
+
+        let in_elevator = LAYOUT.world_pos_to_square(point_in_elevator);
 
         vec![
             TakeAwayPlayerControl(player),
@@ -52,8 +59,10 @@ impl IntoCutscene for EnterTheElevator {
             // jump into the elevator
             BeginSimpleWalkTo {
                 with: player,
-                square: Square::new(-57, -19),
-                planned: Some((Square::new(-57, -20), GridDirection::Bottom)),
+                // hop up
+                square: in_elevator + Square::new(0, 1),
+                // and down
+                planned: Some((in_elevator, GridDirection::Bottom)),
                 step_time: None,
             },
             WaitUntilActorAtRest(player),
@@ -86,7 +95,7 @@ impl IntoCutscene for EnterTheElevator {
                 Box::new(vec![
                     BeginSimpleWalkTo {
                         with: player,
-                        square: Square::new(-57, -22),
+                        square: in_elevator - Square::new(0, 2),
                         step_time: Some(STEP_TIME_ON_EXIT_ELEVATOR),
                         planned: None,
                     },
