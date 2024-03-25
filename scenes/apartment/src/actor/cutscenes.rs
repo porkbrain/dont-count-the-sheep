@@ -133,20 +133,21 @@ mod tests {
 
     #[test]
     fn it_has_ground_floor_node() {
-        let dialog = dialog::TypedNamespace::EnterTheApartmentElevator;
+        let namespace = dialog::TypedNamespace::EnterTheApartmentElevator;
 
         let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
         let path =
-            format!("{manifest}/../../main_game/assets/dialogs/{dialog}");
+            format!("{manifest}/../../main_game/assets/dialogs/{namespace}");
         let toml = std::fs::read_to_string(&path)
             .unwrap_or_else(|e| panic!("{path}: {e}"));
 
-        let dialog = DialogGraph::subgraph_from_raw(dialog.into(), &toml);
+        let dialog = DialogGraph::subgraph_from_raw(namespace.into(), &toml);
 
         dialog
             .node_names()
             .filter_map(|node| {
-                Some(node.as_namespace_and_node_name_str()?.1.to_owned())
+                let (_, name) = node.as_namespace_and_node_name_str()?;
+                Some(name.to_owned())
             })
             .find(|name| name.as_str() == GROUND_FLOOR_NODE_NAME)
             .expect("Ground floor not found");

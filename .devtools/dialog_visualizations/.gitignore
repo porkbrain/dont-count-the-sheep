@@ -1,3 +1,3 @@
 *
-!*.toml
 !.gitignore
+!README.md

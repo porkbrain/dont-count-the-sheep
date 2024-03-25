@@ -68,19 +68,41 @@ mod tests {
     use strum::IntoEnumIterator;
 
     use super::*;
+    use crate::dialog::DialogGraph;
 
     #[test]
-    fn it_validates_dialogs() {
+    fn it_validates_typed_dialogs() {
         for namespace in TypedNamespace::iter() {
             println!("Validating {namespace:?}");
 
             let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-            let path =
-                format!("{manifest}/../../main_game/assets/dialogs/{dialog}");
+            let path = format!(
+                "{manifest}/../../main_game/assets/dialogs/{namespace}"
+            );
             let toml = std::fs::read_to_string(&path)
                 .unwrap_or_else(|e| panic!("{path}: {e}"));
 
-            DialogGraph::subgraph_from_raw(dialog.into(), &toml);
+            DialogGraph::subgraph_from_raw(namespace.into(), &toml);
+        }
+    }
+
+    #[test]
+    fn it_validates_all_dialog_assets() {
+        // load all toml files in the dialog directory
+
+        let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let path = format!("{manifest}/../../main_game/assets/dialogs");
+        let paths = std::fs::read_dir(&path)
+            .unwrap_or_else(|e| panic!("{path}: {e}"))
+            .map(|entry| entry.unwrap().path())
+            .filter(|path| path.extension().unwrap_or_default() == "toml");
+
+        for path in paths {
+            let toml = std::fs::read_to_string(&path)
+                .unwrap_or_else(|e| panic!("{path:?}: {e}"));
+
+            let namespace = Namespace::from(path.to_string_lossy().to_string());
+            DialogGraph::subgraph_from_raw(namespace, &toml);
         }
     }
 }
