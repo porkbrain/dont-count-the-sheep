@@ -2787,7 +2787,7 @@ dependencies = [
  "common_store",
  "common_story",
  "main_game_lib",
- "scene_apartment",
+ "scene_building1_player_floor",
  "scene_downtown",
  "scene_meditation",
 ]
@@ -3637,7 +3637,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "scene_apartment"
+name = "scene_building1_player_floor"
 version = "0.1.0"
 dependencies = [
  "bevy",

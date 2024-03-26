@@ -1,5 +1,5 @@
 [package]
-name = "scene_apartment"
+name = "scene_building1_player_floor"
 version.workspace = true
 edition.workspace = true
 

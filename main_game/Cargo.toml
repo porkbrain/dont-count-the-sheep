@@ -14,7 +14,7 @@ path = "src/main.rs"
 devtools = [
     "main_game_lib/devtools",
     "scene_meditation/devtools",
-    "scene_apartment/devtools",
+    "scene_building1_player_floor/devtools",
     "scene_downtown/devtools",
 ]
 
@@ -25,6 +25,6 @@ common_loading_screen.workspace = true
 common_store.workspace = true
 common_story.workspace = true
 main_game_lib.workspace = true
-scene_apartment.workspace = true
+scene_building1_player_floor.workspace = true
 scene_downtown.workspace = true
 scene_meditation.workspace = true
