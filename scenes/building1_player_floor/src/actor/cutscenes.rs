@@ -77,8 +77,8 @@ impl IntoCutscene for EnterTheElevator {
                 did_choose_to_leave,
                 // then transition to downtown
                 Box::new(vec![ChangeGlobalState {
-                    to: GlobalGameState::ApartmentQuitting,
-                    with: Ggst::ApartmentToDowntown,
+                    to: GlobalGameState::QuittingBuilding1PlayerFloor,
+                    with: Ggst::Building1PlayerFloorToDowntown,
                     loading_screen: Some(LoadingScreenSettings {
                         atlas: Some(
                             common_loading_screen::LoadingScreenAtlas::random(),

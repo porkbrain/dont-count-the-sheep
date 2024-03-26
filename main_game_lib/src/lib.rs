@@ -26,29 +26,25 @@ pub fn windowed_app() -> App {
     app.add_plugins(
         DefaultPlugins
             .set(bevy::log::LogPlugin {
-                level: bevy::log::Level::WARN,
+                level: bevy::log::Level::INFO,
                 filter: "\
-                warn,\
-                apartment=trace,\
+                info,\
+                game=trace,\
                 bevy_magic_light_2d=trace,\
                 common_action=trace,\
                 common_assets=trace,\
                 common_loading_screen=trace,\
                 common_physics=trace,\
                 common_store=trace,\
+                common_visuals=trace,\
                 common_story=trace,\
+                main_game_lib=trace,\
                 main_game_lib::top_down=trace,\
                 main_game_lib::top_down::actor::npc=debug,\
                 main_game_lib::top_down::actor=debug,\
                 main_game_lib::top_down::environmental_objects::door=debug,\
                 main_game_lib::top_down::cameras=debug,\
                 main_game_lib::top_down::layout=debug,\
-                common_visuals=trace,\
-                downtown=trace,\
-                game=trace,\
-                main_game_lib=trace,\
-                meditation=trace,\
-                meditation::hoshi::sprite=debug,\
                 "
                 .to_string(),
                 ..default()

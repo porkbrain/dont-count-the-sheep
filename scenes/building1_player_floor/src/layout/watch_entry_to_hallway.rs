@@ -2,8 +2,8 @@ use common_visuals::BeginInterpolationEvent;
 use main_game_lib::common_ext::QueryExt;
 use top_down::{actor::Who, Actor, ActorMovementEvent, TileKind, TileMap};
 
-use super::{ApartmentTileKind, HallwayEntity};
-use crate::{prelude::*, Apartment};
+use super::{Building1PlayerFloorTileKind, HallwayEntity};
+use crate::{prelude::*, Building1PlayerFloor};
 
 /// How long does it take to give hallway its full color.
 const HALLWAY_FADE_IN_TRANSITION_DURATION: Duration = from_millis(500);
@@ -21,9 +21,11 @@ const HALLWAY_FADE_OUT_TRANSITION_DURATION: Duration = from_millis(1500);
 /// When an NPC leaves the hallway, remove the hallway component.
 pub(super) fn system(
     mut cmd: Commands,
-    tilemap: Res<TileMap<Apartment>>,
+    tilemap: Res<TileMap<Building1PlayerFloor>>,
     mut movement_events: EventReader<
-        ActorMovementEvent<<Apartment as TopDownScene>::LocalTileKind>,
+        ActorMovementEvent<
+            <Building1PlayerFloor as TopDownScene>::LocalTileKind,
+        >,
     >,
     mut lerp_event: EventWriter<BeginInterpolationEvent>,
 
@@ -39,14 +41,15 @@ pub(super) fn system(
                     Who {
                         is_player: true, ..
                     },
-                zone: TileKind::Local(ApartmentTileKind::HallwayZone),
+                zone: TileKind::Local(Building1PlayerFloorTileKind::HallwayZone),
             }
             | ActorMovementEvent::ZoneEntered {
                 who:
                     Who {
                         is_player: true, ..
                     },
-                zone: TileKind::Local(ApartmentTileKind::PlayerDoorZone),
+                zone:
+                    TileKind::Local(Building1PlayerFloorTileKind::PlayerDoorZone),
             } => {
                 trace!("Player entered hallway");
                 hallway_entities.iter().for_each(|entity| {
@@ -66,7 +69,7 @@ pub(super) fn system(
                     Who {
                         is_player: true, ..
                     },
-                zone: TileKind::Local(ApartmentTileKind::HallwayZone),
+                zone: TileKind::Local(Building1PlayerFloorTileKind::HallwayZone),
             } => {
                 trace!("Player left hallway");
                 hallway_entities.iter().for_each(|entity| {
@@ -90,10 +93,11 @@ pub(super) fn system(
                         is_player: true,
                         ..
                     },
-                zone: TileKind::Local(ApartmentTileKind::PlayerDoorZone),
+                zone:
+                    TileKind::Local(Building1PlayerFloorTileKind::PlayerDoorZone),
             } if !tilemap.is_on(
                 *sq,
-                TileKind::Local(ApartmentTileKind::HallwayZone),
+                TileKind::Local(Building1PlayerFloorTileKind::HallwayZone),
             ) =>
             {
                 // b)
@@ -117,7 +121,7 @@ pub(super) fn system(
                         entity,
                         ..
                     },
-                zone: TileKind::Local(ApartmentTileKind::HallwayZone),
+                zone: TileKind::Local(Building1PlayerFloorTileKind::HallwayZone),
             } => {
                 trace!("NPC entered hallway");
                 cmd.entity(*entity).insert(HallwayEntity);
@@ -127,7 +131,7 @@ pub(super) fn system(
                     .map(|player| {
                         tilemap.is_on(
                             player.walking_from,
-                            ApartmentTileKind::HallwayZone,
+                            Building1PlayerFloorTileKind::HallwayZone,
                         )
                     })
                     .unwrap_or(false);
@@ -153,7 +157,7 @@ pub(super) fn system(
                         entity,
                         ..
                     },
-                zone: TileKind::Local(ApartmentTileKind::HallwayZone),
+                zone: TileKind::Local(Building1PlayerFloorTileKind::HallwayZone),
             } => {
                 trace!("NPC left hallway");
                 cmd.entity(*entity).remove::<HallwayEntity>();

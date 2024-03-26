@@ -49,19 +49,19 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(GlobalGameState::MeditationLoading),
+            OnEnter(GlobalGameState::LoadingMeditation),
             score::spawn,
         )
         .add_systems(OnEnter(GlobalGameState::MeditationInMenu), menu::spawn)
         .add_systems(OnExit(GlobalGameState::MeditationInMenu), menu::despawn)
         .add_systems(
             Update,
-            score::update.run_if(in_state(GlobalGameState::MeditationInGame)),
+            score::update.run_if(in_state(GlobalGameState::InGameMeditation)),
         )
         .add_systems(
             Update,
             menu::open
-                .run_if(in_state(GlobalGameState::MeditationInGame))
+                .run_if(in_state(GlobalGameState::InGameMeditation))
                 .run_if(action_just_pressed(GlobalAction::Cancel)),
         )
         .add_systems(
@@ -86,7 +86,7 @@ impl bevy::app::Plugin for Plugin {
                 .run_if(action_just_pressed(GlobalAction::Cancel)),
         )
         .add_systems(
-            OnExit(GlobalGameState::MeditationQuitting),
+            OnExit(GlobalGameState::QuittingMeditation),
             score::despawn,
         );
     }

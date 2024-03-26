@@ -66,7 +66,7 @@ pub(super) fn close(
     // prevent accidental immediate pausing
     controls.consume(&GlobalAction::Cancel);
 
-    next_state.set(GlobalGameState::MeditationInGame);
+    next_state.set(GlobalGameState::InGameMeditation);
 }
 
 pub(super) fn change_selection(
@@ -143,7 +143,7 @@ pub(super) fn select(
             next_loading_state.set(common_loading_screen::start_state());
 
             *transition = GlobalGameStateTransition::RestartMeditation;
-            next_state.set(GlobalGameState::MeditationQuitting);
+            next_state.set(GlobalGameState::QuittingMeditation);
         }
         Selection::Quit => {
             // just a quick loading screen, no bg
@@ -151,14 +151,14 @@ pub(super) fn select(
                 atlas: None,
                 fade_loading_screen_in:
                     ON_RESTART_OR_EXIT_FADE_LOADING_SCREEN_IN,
-                fade_loading_screen_out:
-                    ON_EXIT_TO_APARTMENT_FADE_LOADING_SCREEN_OUT,
+                fade_loading_screen_out: ON_EXIT_FADE_LOADING_SCREEN_OUT,
                 ..default()
             });
             next_loading_state.set(common_loading_screen::start_state());
 
-            *transition = GlobalGameStateTransition::MeditationToApartment;
-            next_state.set(GlobalGameState::MeditationQuitting);
+            *transition =
+                GlobalGameStateTransition::MeditationToBuilding1PlayerFloor;
+            next_state.set(GlobalGameState::QuittingMeditation);
         }
     }
 }

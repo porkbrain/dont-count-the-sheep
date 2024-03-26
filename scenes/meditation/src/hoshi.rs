@@ -48,10 +48,10 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ActionEvent>()
             .add_systems(
-                OnEnter(GlobalGameState::MeditationLoading),
+                OnEnter(GlobalGameState::LoadingMeditation),
                 (spawn, arrow::spawn),
             )
-            .add_systems(OnExit(GlobalGameState::MeditationQuitting), despawn)
+            .add_systems(OnExit(GlobalGameState::QuittingMeditation), despawn)
             .add_systems(
                 Update,
                 (
@@ -65,7 +65,7 @@ impl bevy::app::Plugin for Plugin {
                         .after(controls::normal)
                         .after(controls::loading_special),
                 )
-                    .run_if(in_state(GlobalGameState::MeditationInGame)),
+                    .run_if(in_state(GlobalGameState::InGameMeditation)),
             );
     }
 }

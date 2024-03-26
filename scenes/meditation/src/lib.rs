@@ -45,11 +45,11 @@ pub fn add(app: &mut App) {
     debug!("Adding assets");
 
     app.add_systems(
-        OnEnter(GlobalGameState::MeditationLoading),
+        OnEnter(GlobalGameState::LoadingMeditation),
         common_assets::store::insert_as_resource::<Meditation>,
     );
     app.add_systems(
-        OnExit(GlobalGameState::MeditationQuitting),
+        OnExit(GlobalGameState::QuittingMeditation),
         common_assets::store::remove_as_resource::<Meditation>,
     );
 
@@ -63,7 +63,7 @@ pub fn add(app: &mut App) {
             bevy_webp_anim::systems::start_loaded_videos::<()>,
             bevy_webp_anim::systems::load_next_frame,
         )
-            .run_if(in_state(GlobalGameState::MeditationInGame)),
+            .run_if(in_state(GlobalGameState::InGameMeditation)),
     );
     app.add_systems(
         Update,
@@ -76,35 +76,35 @@ pub fn add(app: &mut App) {
     app.add_systems(
         FixedUpdate,
         common_physics::systems::apply_velocity
-            .run_if(in_state(GlobalGameState::MeditationInGame)),
+            .run_if(in_state(GlobalGameState::InGameMeditation)),
     );
     common_physics::poissons_equation::register::<gravity::Gravity, _>(
         app,
-        GlobalGameState::MeditationInGame,
+        GlobalGameState::InGameMeditation,
     );
 
     debug!("Adding game loop");
 
     // 1. start the spawning process (the loading screen is already started)
-    app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn);
+    app.add_systems(OnEnter(GlobalGameState::LoadingMeditation), spawn);
     // 2. when everything is loaded, finish the loading process by transitioning
     //    to the next loading state (this will also spawn the camera)
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(in_state(GlobalGameState::MeditationLoading))
+            .run_if(in_state(GlobalGameState::LoadingMeditation))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // 3. ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_game.run_if(in_state(GlobalGameState::MeditationLoading)),
+        enter_the_game.run_if(in_state(GlobalGameState::LoadingMeditation)),
     );
 
-    app.add_systems(OnExit(GlobalGameState::MeditationQuitting), despawn);
+    app.add_systems(OnExit(GlobalGameState::QuittingMeditation), despawn);
     app.add_systems(
         Last,
-        all_cleaned_up.run_if(in_state(GlobalGameState::MeditationQuitting)),
+        all_cleaned_up.run_if(in_state(GlobalGameState::QuittingMeditation)),
     );
 
     #[cfg(feature = "devtools")]
@@ -113,7 +113,7 @@ pub fn add(app: &mut App) {
 
         app.add_systems(
             Last,
-            path::visualize.run_if(in_state(GlobalGameState::MeditationInGame)),
+            path::visualize.run_if(in_state(GlobalGameState::InGameMeditation)),
         );
 
         #[cfg(feature = "devtools-poissons")]
@@ -122,7 +122,7 @@ pub fn add(app: &mut App) {
             gravity::ChangeOfBasis,
             gravity::ChangeOfBasis,
             _,
-        >(app, GlobalGameState::MeditationInGame);
+        >(app, GlobalGameState::InGameMeditation);
     }
 
     info!("Added meditation to app");
@@ -158,7 +158,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_game(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering meditation game");
-    next_state.set(GlobalGameState::MeditationInGame);
+    next_state.set(GlobalGameState::InGameMeditation);
 }
 
 fn all_cleaned_up(
@@ -186,10 +186,10 @@ fn all_cleaned_up(
     use GlobalGameStateTransition::*;
     match *transition {
         RestartMeditation => {
-            next_state.set(GlobalGameState::MeditationLoading);
+            next_state.set(GlobalGameState::LoadingMeditation);
         }
-        MeditationToApartment => {
-            next_state.set(GlobalGameState::ApartmentLoading);
+        MeditationToBuilding1PlayerFloor => {
+            next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
         }
         _ => {
             unreachable!("Invalid meditation transition {transition:?}");

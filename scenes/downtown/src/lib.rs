@@ -34,16 +34,16 @@ pub fn add(app: &mut App) {
 
     top_down::default_setup_for_scene::<Downtown, _>(
         app,
-        GlobalGameState::DowntownLoading,
+        GlobalGameState::LoadingDowntown,
         GlobalGameState::AtDowntown,
-        GlobalGameState::DowntownQuitting,
+        GlobalGameState::QuittingDowntown,
     );
 
     #[cfg(feature = "devtools")]
     top_down::dev_default_setup_for_scene::<Downtown, _>(
         app,
         GlobalGameState::AtDowntown,
-        GlobalGameState::DowntownQuitting,
+        GlobalGameState::QuittingDowntown,
     );
 
     debug!("Adding plugins");
@@ -57,13 +57,13 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(in_state(GlobalGameState::DowntownLoading))
+            .run_if(in_state(GlobalGameState::LoadingDowntown))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_downtown.run_if(in_state(GlobalGameState::DowntownLoading)),
+        enter_the_downtown.run_if(in_state(GlobalGameState::LoadingDowntown)),
     );
 
     app.add_systems(
@@ -75,7 +75,7 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         Update,
-        exit.run_if(in_state(GlobalGameState::DowntownQuitting)),
+        exit.run_if(in_state(GlobalGameState::QuittingDowntown)),
     );
 
     info!("Added downtown to app");
@@ -111,8 +111,8 @@ fn exit(
 
     use GlobalGameStateTransition::*;
     match *transition {
-        DowntownToApartment => {
-            next_state.set(GlobalGameState::ApartmentLoading);
+        DowntownToBuilding1PlayerFloor => {
+            next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
         }
         _ => {
             unreachable!("Invalid Downtown transition {transition:?}");

@@ -19,7 +19,9 @@ use top_down::{
     ActorTarget, TileMap,
 };
 
-use crate::{actor::ApartmentAction, prelude::*, Apartment};
+use crate::{
+    actor::Building1PlayerFloorAction, prelude::*, Building1PlayerFloor,
+};
 
 /// We arbitrarily derive the [`Default`] to allow reflection.
 /// It does not have a meaningful default value.
@@ -42,7 +44,7 @@ use crate::{actor::ApartmentAction, prelude::*, Apartment};
 )]
 #[reflect(Default)]
 #[allow(clippy::enum_variant_names)]
-pub enum ApartmentTileKind {
+pub enum Building1PlayerFloorTileKind {
     /// We want to darken the hallway when the player is in the apartment.
     HallwayZone,
     /// Everything that's in the player's apartment.
@@ -60,31 +62,36 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(GlobalGameState::ApartmentLoading),
-            rscn::start_loading_tscn::<Apartment>,
+            OnEnter(GlobalGameState::LoadingBuilding1PlayerFloor),
+            rscn::start_loading_tscn::<Building1PlayerFloor>,
         )
         .add_systems(
             Update,
             spawn
-                .run_if(in_state(GlobalGameState::ApartmentLoading))
-                .run_if(resource_exists::<TileMap<Apartment>>)
-                .run_if(rscn::tscn_loaded_but_not_spawned::<Apartment>()),
+                .run_if(in_state(GlobalGameState::LoadingBuilding1PlayerFloor))
+                .run_if(resource_exists::<TileMap<Building1PlayerFloor>>)
+                .run_if(rscn::tscn_loaded_but_not_spawned::<
+                    Building1PlayerFloor,
+                >()),
         )
-        .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn)
+        .add_systems(
+            OnExit(GlobalGameState::QuittingBuilding1PlayerFloor),
+            despawn,
+        )
         .add_systems(
             Update,
             (
                 watch_entry_to_hallway::system,
-                environmental_objects::door::toggle::<Apartment>,
+                environmental_objects::door::toggle::<Building1PlayerFloor>,
             )
-                .run_if(in_state(GlobalGameState::InApartment))
-                .run_if(movement_event_emitted::<Apartment>())
-                .after(actor::emit_movement_events::<Apartment>),
+                .run_if(in_state(GlobalGameState::AtBuilding1PlayerFloor))
+                .run_if(movement_event_emitted::<Building1PlayerFloor>())
+                .after(actor::emit_movement_events::<Building1PlayerFloor>),
         );
     }
 }
 
-/// Assigned to the root of the apartment scene.
+/// Assigned to the root of the scene.
 /// We then recursively despawn it on scene leave.
 #[derive(Component)]
 pub(crate) struct LayoutEntity;
@@ -105,30 +112,30 @@ pub(crate) struct MeditatingHint;
 #[derive(Component)]
 pub(crate) struct SleepingHint;
 
-struct ApartmentTscnSpawner<'a> {
+struct Building1PlayerFloorTscnSpawner<'a> {
     transition: GlobalGameStateTransition,
     player_entity: Entity,
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
-    tilemap: &'a mut TileMap<Apartment>,
+    tilemap: &'a mut TileMap<Building1PlayerFloor>,
     zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<ApartmentTileKind>,
+        &'a mut ZoneToInspectLabelEntity<Building1PlayerFloorTileKind>,
 }
 
 /// The names are stored in the scene file.
-/// See the [`Apartment`] implementation of [`SpriteScene`].
+/// See the [`Building1PlayerFloor`] implementation of [`SpriteScene`].
 fn spawn(
     mut cmd: Commands,
     transition: Res<GlobalGameStateTransition>,
     asset_server: Res<AssetServer>,
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-    mut tilemap: ResMut<TileMap<Apartment>>,
+    mut tilemap: ResMut<TileMap<Building1PlayerFloor>>,
 
-    mut q: Query<&mut TscnTreeHandle<Apartment>>,
+    mut q: Query<&mut TscnTreeHandle<Building1PlayerFloor>>,
 ) {
-    info!("Spawning apartment scene");
+    info!("Spawning Building1PlayerFloor scene");
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
@@ -137,7 +144,7 @@ fn spawn(
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
     tscn.spawn_into(
-        &mut ApartmentTscnSpawner {
+        &mut Building1PlayerFloorTscnSpawner {
             transition: *transition,
             player_entity: player,
             player_builder: &mut player_builder,
@@ -161,13 +168,13 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.entity(root).despawn_recursive();
 
     cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <Apartment as TopDownScene>::LocalTileKind,
+        <Building1PlayerFloor as TopDownScene>::LocalTileKind,
     >>();
 }
 
-impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
-    type LocalActionKind = ApartmentAction;
-    type LocalZoneKind = ApartmentTileKind;
+impl<'a> TscnSpawner for Building1PlayerFloorTscnSpawner<'a> {
+    type LocalActionKind = Building1PlayerFloorAction;
+    type LocalZoneKind = Building1PlayerFloorTileKind;
 
     fn on_spawned(
         &mut self,
@@ -190,19 +197,18 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
                 cmd.entity(who).insert(Elevator);
             }
             "PlayerApartmentDoor" => {
-                let door = DoorBuilder::new(ApartmentTileKind::PlayerDoorZone)
-                    .add_open_criteria(DoorOpenCriteria::Character(
-                        common_story::Character::Winnie,
-                    ))
-                    .add_open_criteria(DoorOpenCriteria::Character(
-                        common_story::Character::Unnamed,
-                    ))
-                    .with_initial_state(DoorState::Closed)
-                    .with_obstacle_when_closed_between(
-                        sq(-40, -21),
-                        sq(-31, -21),
-                    )
-                    .build(self.tilemap);
+                let door = DoorBuilder::new(
+                    Building1PlayerFloorTileKind::PlayerDoorZone,
+                )
+                .add_open_criteria(DoorOpenCriteria::Character(
+                    common_story::Character::Winnie,
+                ))
+                .add_open_criteria(DoorOpenCriteria::Character(
+                    common_story::Character::Unnamed,
+                ))
+                .with_initial_state(DoorState::Closed)
+                .with_obstacle_when_closed_between(sq(-40, -21), sq(-31, -21))
+                .build(self.tilemap);
                 cmd.entity(who).insert(door);
             }
             "WinnieSleeping" => {
@@ -211,7 +217,9 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
             "WinnieMeditating" => {
                 cmd.entity(who).insert(MeditatingHint);
             }
-            "MeditationSpawn" if self.transition == MeditationToApartment => {
+            "MeditationSpawn"
+                if self.transition == MeditationToBuilding1PlayerFloor =>
+            {
                 self.player_builder.initial_position(translation.truncate());
                 self.player_builder.walking_to(ActorTarget::new(
                     LAYOUT.world_pos_to_square(
@@ -221,10 +229,14 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
                 self.player_builder
                     .initial_step_time(STEP_TIME_ONLOAD_FROM_MEDITATION);
             }
-            "NewGameSpawn" if self.transition == NewGameToApartment => {
+            "NewGameSpawn"
+                if self.transition == NewGameToBuilding1PlayerFloor =>
+            {
                 self.player_builder.initial_position(translation.truncate());
             }
-            "InElevator" if self.transition == DowntownToApartment => {
+            "InElevator"
+                if self.transition == DowntownToBuilding1PlayerFloor =>
+            {
                 self.player_builder.initial_position(translation.truncate());
                 self.player_builder.walking_to(ActorTarget::new(
                     LAYOUT.world_pos_to_square(translation.truncate())
@@ -280,7 +292,7 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
     }
 }
 
-impl top_down::layout::Tile for ApartmentTileKind {
+impl top_down::layout::Tile for Building1PlayerFloorTileKind {
     #[inline]
     fn is_walkable(&self, _: Entity) -> bool {
         true

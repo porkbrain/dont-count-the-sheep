@@ -44,21 +44,21 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(GlobalGameState::DowntownLoading),
+            OnEnter(GlobalGameState::LoadingDowntown),
             rscn::start_loading_tscn::<Downtown>,
         )
         .add_systems(
             Update,
             spawn
-                .run_if(in_state(GlobalGameState::DowntownLoading))
+                .run_if(in_state(GlobalGameState::LoadingDowntown))
                 .run_if(resource_exists::<TileMap<Downtown>>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Downtown>()),
         )
-        .add_systems(OnExit(GlobalGameState::DowntownQuitting), despawn);
+        .add_systems(OnExit(GlobalGameState::QuittingDowntown), despawn);
     }
 }
 
-/// Assigned to the root of the apartment scene.
+/// Assigned to the root of the scene.
 /// We then recursively despawn it on scene leave.
 #[derive(Component)]
 pub(crate) struct LayoutEntity;
@@ -132,7 +132,7 @@ impl<'a> TscnSpawner for DowntownTscnSpawner<'a> {
                 cmd.entity(who).add_child(self.player_entity);
             }
             "PlayerApartmentBuildingEntrance"
-                if self.transition == ApartmentToDowntown =>
+                if self.transition == Building1PlayerFloorToDowntown =>
             {
                 self.player_builder.initial_position(translation.truncate());
                 self.player_builder.walking_to(top_down::ActorTarget::new(

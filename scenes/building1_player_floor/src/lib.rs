@@ -11,7 +11,7 @@ mod prelude;
 
 use bevy::utils::Instant;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use layout::ApartmentTileKind;
+use layout::Building1PlayerFloorTileKind;
 use prelude::*;
 
 use crate::layout::LayoutEntity;
@@ -19,10 +19,10 @@ use crate::layout::LayoutEntity;
 /// Important scene struct.
 /// We use it as identifiable generic in common logic.
 #[derive(TypePath, Default)]
-pub struct Apartment;
+pub struct Building1PlayerFloor;
 
-impl TopDownScene for Apartment {
-    type LocalTileKind = ApartmentTileKind;
+impl TopDownScene for Building1PlayerFloor {
+    type LocalTileKind = Building1PlayerFloorTileKind;
 
     fn name() -> &'static str {
         "building1_player_floor"
@@ -34,20 +34,20 @@ impl TopDownScene for Apartment {
 }
 
 pub fn add(app: &mut App) {
-    info!("Adding apartment to app");
+    info!("Adding Building1PlayerFloor to app");
 
-    top_down::default_setup_for_scene::<Apartment, _>(
+    top_down::default_setup_for_scene::<Building1PlayerFloor, _>(
         app,
-        GlobalGameState::ApartmentLoading,
-        GlobalGameState::InApartment,
-        GlobalGameState::ApartmentQuitting,
+        GlobalGameState::LoadingBuilding1PlayerFloor,
+        GlobalGameState::AtBuilding1PlayerFloor,
+        GlobalGameState::QuittingBuilding1PlayerFloor,
     );
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Apartment, _>(
+    top_down::dev_default_setup_for_scene::<Building1PlayerFloor, _>(
         app,
-        GlobalGameState::InApartment,
-        GlobalGameState::ApartmentQuitting,
+        GlobalGameState::AtBuilding1PlayerFloor,
+        GlobalGameState::QuittingBuilding1PlayerFloor,
     );
 
     debug!("Adding plugins");
@@ -61,34 +61,36 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(in_state(GlobalGameState::ApartmentLoading))
+            .run_if(in_state(GlobalGameState::LoadingBuilding1PlayerFloor))
             .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_apartment.run_if(in_state(GlobalGameState::ApartmentLoading)),
+        enter_the_scene
+            .run_if(in_state(GlobalGameState::LoadingBuilding1PlayerFloor)),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(in_state(GlobalGameState::InApartment))
+            .run_if(in_state(GlobalGameState::AtBuilding1PlayerFloor))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
     app.add_systems(
         Update,
-        smooth_exit.run_if(in_state(GlobalGameState::ApartmentQuitting)),
+        smooth_exit
+            .run_if(in_state(GlobalGameState::QuittingBuilding1PlayerFloor)),
     );
 
-    info!("Added apartment to app");
+    info!("Added Building1PlayerFloor to app");
 }
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<top_down::TileMap<Apartment>>>,
+    map: Option<Res<top_down::TileMap<Building1PlayerFloor>>>,
 ) {
     if map.is_none() {
         return;
@@ -99,9 +101,9 @@ fn finish_when_everything_loaded(
     next_loading_state.set(common_loading_screen::finish_state());
 }
 
-fn enter_the_apartment(mut next_state: ResMut<NextState<GlobalGameState>>) {
-    info!("Entering apartment");
-    next_state.set(GlobalGameState::InApartment);
+fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
+    info!("Entering Building1PlayerFloor");
+    next_state.set(GlobalGameState::AtBuilding1PlayerFloor);
 }
 
 struct ExitAnimation {
@@ -137,7 +139,7 @@ fn smooth_exit(
     if since.elapsed()
         > START_LOADING_SCREEN_AFTER + settings.fade_loading_screen_in * 2
     {
-        info!("Leaving apartment");
+        info!("Leaving Building1PlayerFloor");
 
         // reset local state for next time
         *exit_animation = None;
@@ -147,14 +149,16 @@ fn smooth_exit(
 
         use GlobalGameStateTransition::*;
         match *transition {
-            ApartmentToMeditation => {
-                next_state.set(GlobalGameState::MeditationLoading);
+            Building1PlayerFloorToMeditation => {
+                next_state.set(GlobalGameState::LoadingMeditation);
             }
-            ApartmentToDowntown => {
-                next_state.set(GlobalGameState::DowntownLoading);
+            Building1PlayerFloorToDowntown => {
+                next_state.set(GlobalGameState::LoadingDowntown);
             }
             _ => {
-                unreachable!("Invalid apartment transition {transition:?}");
+                unreachable!(
+                    "Invalid Building1PlayerFloor transition {transition:?}"
+                );
             }
         }
     }

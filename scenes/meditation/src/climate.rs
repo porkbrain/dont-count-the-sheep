@@ -82,7 +82,7 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn)
+        app.add_systems(OnEnter(GlobalGameState::LoadingMeditation), spawn)
             .add_systems(
                 Update,
                 (
@@ -92,12 +92,12 @@ impl bevy::app::Plugin for Plugin {
                     smoothly_transition_light_color,
                     move_occluders,
                 )
-                    .run_if(in_state(GlobalGameState::MeditationInGame)),
+                    .run_if(in_state(GlobalGameState::InGameMeditation)),
             )
             .add_systems(
                 FixedUpdate,
                 follow_curve
-                    .run_if(in_state(GlobalGameState::MeditationInGame)),
+                    .run_if(in_state(GlobalGameState::InGameMeditation)),
             )
             .add_systems(
                 Update,
@@ -112,10 +112,10 @@ impl bevy::app::Plugin for Plugin {
         app.add_systems(
             Update,
             visualize_raypoints
-                .run_if(in_state(GlobalGameState::MeditationInGame)),
+                .run_if(in_state(GlobalGameState::InGameMeditation)),
         )
         .add_systems(
-            OnExit(GlobalGameState::MeditationQuitting),
+            OnExit(GlobalGameState::QuittingMeditation),
             despawn_raypoints,
         );
     }

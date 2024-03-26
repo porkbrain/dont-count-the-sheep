@@ -91,7 +91,7 @@ Here's an exhaustive list of components (defined as `Node` type with their names
 - `Point`: A component with no metadata.
   It's used to define a point in the scene, such as a waypoint or a spawn point.
 
-- `HallwayEntity`: A component with no metadata in the `Apartment` scene.
+- `HallwayEntity`: A component with no metadata in the `Building1PlayerFloor` scene.
 
 <!-- List of References -->
 

@@ -25,7 +25,7 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(GlobalGameState::MeditationLoading),
+            OnEnter(GlobalGameState::LoadingMeditation),
             (
                 BackgroundLightScene::setup_post_processing_quad_system(),
                 spawn_bg_render_camera
@@ -34,9 +34,9 @@ impl bevy::app::Plugin for Plugin {
         );
         app.add_systems(
             OnExit(LoadingScreenState::WaitForSignalToFinish),
-            spawn_cameras.run_if(in_state(GlobalGameState::MeditationLoading)),
+            spawn_cameras.run_if(in_state(GlobalGameState::LoadingMeditation)),
         );
-        app.add_systems(OnExit(GlobalGameState::MeditationQuitting), despawn);
+        app.add_systems(OnExit(GlobalGameState::QuittingMeditation), despawn);
 
         BackgroundLightScene::build(app);
     }

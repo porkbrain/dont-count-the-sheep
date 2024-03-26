@@ -8,6 +8,7 @@ use crate::prelude::*;
 /// [`GlobalGameStateTransition`].
 /// It defines what transitions are allowed.
 #[derive(States, Default, Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
+#[allow(missing_docs)]
 pub enum GlobalGameState {
     /// Dummy state so that we can do loading transitions.
     #[default]
@@ -17,32 +18,27 @@ pub enum GlobalGameState {
     /// Populates the save log with the default values.
     NewGame,
 
-    /// Sets up the apartment game in the background.
-    ApartmentLoading,
-    /// Player is at apartment.
-    InApartment,
-    /// Despawn apartment game resources.
-    ApartmentQuitting,
+    /// Sets up the floor with player's first apartment
+    LoadingBuilding1PlayerFloor,
+    AtBuilding1PlayerFloor,
+    QuittingBuilding1PlayerFloor,
 
     /// Change the game state to this state to run systems that setup the
     /// meditation game in the background.
     /// Nothing is shown to the player yet.
-    MeditationLoading,
+    LoadingMeditation,
     /// Game is being played.
-    MeditationInGame,
+    InGameMeditation,
     /// Game is paused and menu is spawned.
     /// Menu is always spawned and destroyed, unlike the game resources.
     MeditationInMenu,
     /// Change the game state to this state to run systems that clean up the
     /// meditation game in the background.
-    MeditationQuitting,
+    QuittingMeditation,
 
-    /// Sets up the downtown scene in the background.
-    DowntownLoading,
-    /// Player is at downtown.
+    LoadingDowntown,
     AtDowntown,
-    /// Despawn downtown game resources.
-    DowntownQuitting,
+    QuittingDowntown,
 
     /// Performs all necessary cleanup and exits the game.
     Exit,
@@ -55,13 +51,13 @@ pub enum GlobalGameState {
 pub enum GlobalGameStateTransition {
     #[default]
     BlankToNewGame,
-    NewGameToApartment,
+    NewGameToBuilding1PlayerFloor,
 
     RestartMeditation,
-    MeditationToApartment,
+    MeditationToBuilding1PlayerFloor,
 
-    ApartmentToMeditation,
-    ApartmentToDowntown,
+    Building1PlayerFloorToMeditation,
+    Building1PlayerFloorToDowntown,
 
-    DowntownToApartment,
+    DowntownToBuilding1PlayerFloor,
 }
