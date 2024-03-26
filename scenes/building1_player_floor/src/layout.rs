@@ -3,9 +3,9 @@ mod watch_entry_to_hallway;
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_visuals::camera::render_layer;
+use main_game_lib::cutscene::enter_an_elevator::STEP_TIME_ON_EXIT_ELEVATOR;
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use serde::{Deserialize, Serialize};
-use strum::{EnumIter, IntoEnumIterator};
+use strum::IntoEnumIterator;
 use top_down::{
     actor::{
         self, movement_event_emitted, CharacterBundleBuilder, CharacterExt,
@@ -19,43 +19,7 @@ use top_down::{
     ActorTarget, TileMap,
 };
 
-use crate::{
-    actor::Building1PlayerFloorAction, prelude::*, Building1PlayerFloor,
-};
-
-/// We arbitrarily derive the [`Default`] to allow reflection.
-/// It does not have a meaningful default value.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Default,
-    Deserialize,
-    EnumIter,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    Reflect,
-    Serialize,
-    strum::Display,
-    strum::EnumString,
-)]
-#[reflect(Default)]
-#[allow(clippy::enum_variant_names)]
-pub enum Building1PlayerFloorTileKind {
-    /// We want to darken the hallway when the player is in the apartment.
-    HallwayZone,
-    /// Everything that's in the player's apartment.
-    PlayerApartmentZone,
-    #[default]
-    BedZone,
-    ElevatorZone,
-    PlayerDoorZone,
-    MeditationZone,
-    TeaZone,
-}
+use crate::prelude::*;
 
 pub(crate) struct Plugin;
 
@@ -112,7 +76,7 @@ pub(crate) struct MeditatingHint;
 #[derive(Component)]
 pub(crate) struct SleepingHint;
 
-struct Building1PlayerFloorTscnSpawner<'a> {
+struct Spawner<'a> {
     transition: GlobalGameStateTransition,
     player_entity: Entity,
     player_builder: &'a mut CharacterBundleBuilder,
@@ -144,7 +108,7 @@ fn spawn(
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
     tscn.spawn_into(
-        &mut Building1PlayerFloorTscnSpawner {
+        &mut Spawner {
             transition: *transition,
             player_entity: player,
             player_builder: &mut player_builder,
@@ -172,7 +136,7 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     >>();
 }
 
-impl<'a> TscnSpawner for Building1PlayerFloorTscnSpawner<'a> {
+impl<'a> TscnSpawner for Spawner<'a> {
     type LocalActionKind = Building1PlayerFloorAction;
     type LocalZoneKind = Building1PlayerFloorTileKind;
 
@@ -235,7 +199,11 @@ impl<'a> TscnSpawner for Building1PlayerFloorTscnSpawner<'a> {
                 self.player_builder.initial_position(translation.truncate());
             }
             "InElevator"
-                if self.transition == DowntownToBuilding1PlayerFloor =>
+                if matches!(
+                    self.transition,
+                    DowntownToBuilding1PlayerFloor
+                        | Building1Basement1ToPlayerFloor
+                ) =>
             {
                 self.player_builder.initial_position(translation.truncate());
                 self.player_builder.walking_to(ActorTarget::new(

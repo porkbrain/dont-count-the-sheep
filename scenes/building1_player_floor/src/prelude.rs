@@ -1,5 +1,10 @@
 pub(crate) use main_game_lib::prelude::*;
 
+pub(crate) use crate::{
+    Building1PlayerFloor, Building1PlayerFloorAction,
+    Building1PlayerFloorTileKind,
+};
+
 /// For a bit, show Winnie just doing the activity such as meditating or
 /// sleeping before the loading screen appears and the next phase of the game
 /// starts.
@@ -13,6 +18,3 @@ pub(crate) const WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST:
 
 /// Walk down slowly otherwise it'll happen before the player even sees it.
 pub(crate) const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(750);
-/// For the animation of stepping out of the elevator.
-pub(crate) const STEP_TIME_ON_EXIT_ELEVATOR: Duration =
-    STEP_TIME_ONLOAD_FROM_MEDITATION;

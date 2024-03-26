@@ -15,21 +15,12 @@ use top_down::{
 };
 
 use crate::{
-    layout::{
-        Building1PlayerFloorTileKind, Elevator, MeditatingHint, SleepingHint,
-    },
+    layout::{Elevator, MeditatingHint, SleepingHint},
     prelude::*,
-    Building1PlayerFloor,
 };
 
 const EXIT_ELEVATOR_NODE_NAME: &str = "exit_elevator";
 const GO_TO_DOWNTOWN_NODE_NAME: &str = "go_to_downtown";
-
-#[derive(Event, Reflect, Clone, strum::EnumString)]
-pub enum Building1PlayerFloorAction {
-    EnterElevator,
-    StartMeditation,
-}
 
 pub(crate) struct Plugin;
 

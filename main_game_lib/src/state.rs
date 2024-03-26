@@ -23,6 +23,10 @@ pub enum GlobalGameState {
     AtBuilding1PlayerFloor,
     QuittingBuilding1PlayerFloor,
 
+    LoadingBuilding1Basement1,
+    AtBuilding1Basement1,
+    QuittingBuilding1Basement1,
+
     /// Change the game state to this state to run systems that setup the
     /// meditation game in the background.
     /// Nothing is shown to the player yet.
@@ -59,6 +63,9 @@ pub enum GlobalGameStateTransition {
     Building1PlayerFloorToMeditation,
     Building1PlayerFloorToDowntown,
     Building1PlayerFloorToBuilding1Basement1,
+
+    Building1Basement1ToPlayerFloor,
+    Building1Basement1ToDowntown,
 
     DowntownToBuilding1PlayerFloor,
 }

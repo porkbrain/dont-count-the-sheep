@@ -2,8 +2,8 @@ use common_visuals::BeginInterpolationEvent;
 use main_game_lib::common_ext::QueryExt;
 use top_down::{actor::Who, Actor, ActorMovementEvent, TileKind, TileMap};
 
-use super::{Building1PlayerFloorTileKind, HallwayEntity};
-use crate::{prelude::*, Building1PlayerFloor};
+use super::HallwayEntity;
+use crate::prelude::*;
 
 /// How long does it take to give hallway its full color.
 const HALLWAY_FADE_IN_TRANSITION_DURATION: Duration = from_millis(500);

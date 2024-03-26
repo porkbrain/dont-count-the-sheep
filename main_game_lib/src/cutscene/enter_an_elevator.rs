@@ -13,7 +13,7 @@ use crate::{
 };
 
 /// For the animation of stepping out of the elevator.
-const STEP_TIME_ON_EXIT_ELEVATOR: Duration = from_millis(750);
+pub const STEP_TIME_ON_EXIT_ELEVATOR: Duration = from_millis(750);
 
 /// Typically started when player near the elevator and presses the interaction
 /// button.

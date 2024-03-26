@@ -4,7 +4,6 @@
 #![feature(trivial_bounds)]
 #![feature(let_chains)]
 
-mod actor;
 mod autogen;
 mod layout;
 mod prelude;
@@ -19,13 +18,13 @@ use crate::layout::LayoutEntity;
 /// Important scene struct.
 /// We use it as identifiable generic in common logic.
 #[derive(TypePath, Default)]
-pub struct Building1PlayerFloor;
+pub struct Building1Basement1;
 
-impl TopDownScene for Building1PlayerFloor {
-    type LocalTileKind = Building1PlayerFloorTileKind;
+impl TopDownScene for Building1Basement1 {
+    type LocalTileKind = Building1Basement1TileKind;
 
     fn name() -> &'static str {
-        "building1_player_floor"
+        "building1_basement1"
     }
 
     fn bounds() -> [i32; 4] {
@@ -54,45 +53,38 @@ impl TopDownScene for Building1PlayerFloor {
 )]
 #[reflect(Default)]
 #[allow(clippy::enum_variant_names)]
-pub enum Building1PlayerFloorTileKind {
-    /// We want to darken the hallway when the player is in the apartment.
-    HallwayZone,
-    /// Everything that's in the player's apartment.
-    PlayerApartmentZone,
+pub enum Building1Basement1TileKind {
     #[default]
-    BedZone,
     ElevatorZone,
-    PlayerDoorZone,
-    MeditationZone,
-    TeaZone,
+    BasementDoorZone,
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString)]
-pub enum Building1PlayerFloorAction {
+pub enum Building1Basement1Action {
     EnterElevator,
-    StartMeditation,
+    EnterBasement,
 }
 
 pub fn add(app: &mut App) {
-    info!("Adding Building1PlayerFloor to app");
+    info!("Adding Building1Basement1 to app");
 
-    top_down::default_setup_for_scene::<Building1PlayerFloor, _>(
+    top_down::default_setup_for_scene::<Building1Basement1, _>(
         app,
-        GlobalGameState::LoadingBuilding1PlayerFloor,
-        GlobalGameState::AtBuilding1PlayerFloor,
-        GlobalGameState::QuittingBuilding1PlayerFloor,
+        GlobalGameState::LoadingBuilding1Basement1,
+        GlobalGameState::AtBuilding1Basement1,
+        GlobalGameState::QuittingBuilding1Basement1,
     );
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Building1PlayerFloor, _>(
+    top_down::dev_default_setup_for_scene::<Building1Basement1, _>(
         app,
-        GlobalGameState::AtBuilding1PlayerFloor,
-        GlobalGameState::QuittingBuilding1PlayerFloor,
+        GlobalGameState::AtBuilding1Basement1,
+        GlobalGameState::QuittingBuilding1Basement1,
     );
 
     debug!("Adding plugins");
 
-    app.add_plugins((layout::Plugin, actor::Plugin));
+    app.add_plugins(layout::Plugin);
 
     debug!("Adding game loop");
 
@@ -101,7 +93,7 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(in_state(GlobalGameState::LoadingBuilding1PlayerFloor))
+            .run_if(in_state(GlobalGameState::LoadingBuilding1Basement1))
             .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
@@ -109,28 +101,28 @@ pub fn add(app: &mut App) {
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
         enter_the_scene
-            .run_if(in_state(GlobalGameState::LoadingBuilding1PlayerFloor)),
+            .run_if(in_state(GlobalGameState::LoadingBuilding1Basement1)),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(in_state(GlobalGameState::AtBuilding1PlayerFloor))
+            .run_if(in_state(GlobalGameState::AtBuilding1Basement1))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
     app.add_systems(
         Update,
         smooth_exit
-            .run_if(in_state(GlobalGameState::QuittingBuilding1PlayerFloor)),
+            .run_if(in_state(GlobalGameState::QuittingBuilding1Basement1)),
     );
 
-    info!("Added Building1PlayerFloor to app");
+    info!("Added Building1Basement1 to app");
 }
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<top_down::TileMap<Building1PlayerFloor>>>,
+    map: Option<Res<top_down::TileMap<Building1Basement1>>>,
 ) {
     if map.is_none() {
         return;
@@ -142,8 +134,8 @@ fn finish_when_everything_loaded(
 }
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
-    info!("Entering Building1PlayerFloor");
-    next_state.set(GlobalGameState::AtBuilding1PlayerFloor);
+    info!("Entering Building1Basement1");
+    next_state.set(GlobalGameState::AtBuilding1Basement1);
 }
 
 struct ExitAnimation {
@@ -179,7 +171,7 @@ fn smooth_exit(
     if since.elapsed()
         > START_LOADING_SCREEN_AFTER + settings.fade_loading_screen_in * 2
     {
-        info!("Leaving Building1PlayerFloor");
+        info!("Leaving Building1Basement1");
 
         // reset local state for next time
         *exit_animation = None;
@@ -189,18 +181,15 @@ fn smooth_exit(
 
         use GlobalGameStateTransition::*;
         match *transition {
-            Building1PlayerFloorToBuilding1Basement1 => {
-                next_state.set(GlobalGameState::LoadingBuilding1Basement1);
+            Building1Basement1ToPlayerFloor => {
+                next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
             }
-            Building1PlayerFloorToMeditation => {
-                next_state.set(GlobalGameState::LoadingMeditation);
-            }
-            Building1PlayerFloorToDowntown => {
+            Building1Basement1ToDowntown => {
                 next_state.set(GlobalGameState::LoadingDowntown);
             }
             _ => {
                 unreachable!(
-                    "Invalid Building1PlayerFloor transition {transition:?}"
+                    "Invalid Building1Basement1 transition {transition:?}"
                 );
             }
         }
@@ -214,7 +203,7 @@ mod tests {
     #[test]
     fn it_has_valid_tscn_scene() {
         const TSCN: &str = include_str!(
-            "../../../main_game/assets/scenes/building1_player_floor.tscn",
+            "../../../main_game/assets/scenes/building1_basement1.tscn",
         );
         rscn::parse(TSCN, &default());
     }
