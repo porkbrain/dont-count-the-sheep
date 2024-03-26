@@ -2,9 +2,6 @@
 
 use crate::prelude::*;
 
-#[derive(Event, Reflect, Clone, strum::EnumString)]
-pub enum DowntownAction {}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {

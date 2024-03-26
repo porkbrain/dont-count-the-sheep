@@ -8,8 +8,8 @@ mod layout;
 mod prelude;
 
 use common_loading_screen::LoadingScreenState;
-use layout::DowntownTileKind;
 use prelude::*;
+use serde::{Deserialize, Serialize};
 
 /// Important scene struct.
 /// We use it as identifiable generic in some common logic such as layout or
@@ -25,9 +25,39 @@ impl TopDownScene for Downtown {
     }
 
     fn bounds() -> [i32; 4] {
-        [-200, 200, -200, 200]
+        [-250, 250, -300, 300]
     }
 }
+
+/// We arbitrarily derive the [`Default`] to allow reflection.
+/// It does not have a meaningful default value.
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    Deserialize,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+    Reflect,
+    Serialize,
+    strum::Display,
+    strum::EnumIter,
+    strum::EnumString,
+)]
+#[reflect(Default)]
+#[allow(clippy::enum_variant_names)]
+pub enum DowntownTileKind {
+    #[default]
+    PlayerHouseEntrance,
+    MallEntrance,
+}
+
+#[derive(Event, Reflect, Clone, strum::EnumString)]
+pub enum DowntownAction {}
 
 pub fn add(app: &mut App) {
     info!("Adding downtown to app");

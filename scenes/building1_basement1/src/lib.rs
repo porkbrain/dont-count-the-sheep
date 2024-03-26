@@ -28,7 +28,7 @@ impl TopDownScene for Building1Basement1 {
     }
 
     fn bounds() -> [i32; 4] {
-        [-80, 40, -30, 20]
+        [-90, 40, -30, 0]
     }
 }
 

@@ -2,42 +2,14 @@ use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_visuals::camera::render_layer;
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use serde::{Deserialize, Serialize};
-use strum::{EnumIter, IntoEnumIterator};
+use strum::IntoEnumIterator;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     layout::LAYOUT,
     TileMap,
 };
 
-use crate::{actor::DowntownAction, prelude::*, Downtown};
-
-/// We arbitrarily derive the [`Default`] to allow reflection.
-/// It does not have a meaningful default value.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Default,
-    Deserialize,
-    EnumIter,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    Reflect,
-    Serialize,
-    strum::Display,
-    strum::EnumString,
-)]
-#[reflect(Default)]
-#[allow(clippy::enum_variant_names)]
-pub enum DowntownTileKind {
-    #[default]
-    PlayerHouseEntrance,
-    MallEntrance,
-}
+use crate::prelude::*;
 
 pub(crate) struct Plugin;
 
