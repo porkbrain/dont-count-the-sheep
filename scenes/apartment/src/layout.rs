@@ -3,15 +3,17 @@ mod watch_entry_to_hallway;
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use common_store::GlobalStore;
 use common_top_down::{
-    actor::{self, movement_event_emitted},
+    actor::{
+        self, movement_event_emitted, CharacterBundleBuilder, CharacterExt,
+    },
     environmental_objects::{
         self,
         door::{DoorBuilder, DoorOpenCriteria, DoorState},
     },
     inspect_and_interact::ZoneToInspectLabelEntity,
-    TileMap,
+    layout::LAYOUT,
+    ActorTarget, TileMap,
 };
 use common_visuals::camera::render_layer;
 use serde::{Deserialize, Serialize};
@@ -106,8 +108,10 @@ pub(crate) struct MeditatingHint;
 pub(crate) struct SleepingHint;
 
 struct ApartmentTscnSpawner<'a> {
+    transition: GlobalGameStateTransition,
+    player_entity: Entity,
+    player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
-    store: &'a GlobalStore,
     atlases: &'a mut Assets<TextureAtlasLayout>,
     tilemap: &'a mut TileMap<Apartment>,
     zone_to_inspect_label_entity:
@@ -118,11 +122,11 @@ struct ApartmentTscnSpawner<'a> {
 /// See the [`Apartment`] implementation of [`SpriteScene`].
 fn spawn(
     mut cmd: Commands,
+    transition: Res<GlobalGameStateTransition>,
     asset_server: Res<AssetServer>,
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut tilemap: ResMut<TileMap<Apartment>>,
-    store: Res<GlobalStore>,
 
     mut q: Query<&mut TscnTreeHandle<Apartment>>,
 ) {
@@ -131,16 +135,24 @@ fn spawn(
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
 
+    let player = cmd.spawn_empty().id();
+    let mut player_builder =
+        common_story::Character::Winnie.bundle_builder().is_player();
+
     tscn.spawn_into(
         &mut ApartmentTscnSpawner {
+            transition: *transition,
+            player_entity: player,
+            player_builder: &mut player_builder,
             asset_server: &asset_server,
             atlases: &mut atlas_layouts,
             tilemap: &mut tilemap,
             zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
-            store: &store,
         },
         &mut cmd,
     );
+
+    player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
 
     cmd.insert_resource(zone_to_inspect_label_entity);
 }
@@ -165,20 +177,17 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
         cmd: &mut Commands,
         who: Entity,
         NodeName(name): NodeName,
+        translation: Vec3,
     ) {
+        use GlobalGameStateTransition::*;
+
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
 
         match name.as_str() {
             "Apartment" => {
                 cmd.entity(who).insert(LayoutEntity);
-
-                let player = crate::actor::spawn_player(
-                    cmd,
-                    self.asset_server,
-                    self.store,
-                );
-                cmd.entity(who).push_children(&player);
+                cmd.entity(who).add_child(self.player_entity);
             }
             "Elevator" => {
                 cmd.entity(who).insert(Elevator);
@@ -204,6 +213,31 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
             }
             "WinnieMeditating" => {
                 cmd.entity(who).insert(MeditatingHint);
+            }
+            "MeditationSpawn" if self.transition == MeditationToApartment => {
+                self.player_builder
+                    .with_initial_position(translation.truncate());
+                self.player_builder.with_walking_to(ActorTarget::new(
+                    LAYOUT.world_pos_to_square(
+                        translation.truncate() + vec2(0.0, -20.0),
+                    ),
+                ));
+                self.player_builder
+                    .with_initial_step_time(STEP_TIME_ONLOAD_FROM_MEDITATION);
+            }
+            "NewGameSpawn" if self.transition == NewGameToApartment => {
+                self.player_builder
+                    .with_initial_position(translation.truncate());
+            }
+            "InElevator" if self.transition == DowntownToApartment => {
+                self.player_builder
+                    .with_initial_position(translation.truncate());
+                self.player_builder.with_walking_to(ActorTarget::new(
+                    LAYOUT.world_pos_to_square(translation.truncate())
+                        + sq(0, -2),
+                ));
+                self.player_builder
+                    .with_initial_step_time(STEP_TIME_ON_EXIT_ELEVATOR);
             }
             _ => {}
         }

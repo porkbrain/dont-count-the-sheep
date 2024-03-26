@@ -7,6 +7,7 @@ use bevy::{
     core::Name,
     ecs::{entity::Entity, event::Event, system::Commands},
     hierarchy::BuildChildren,
+    math::Vec3,
     prelude::SpatialBundle,
     render::{color::Color, texture::Image, view::Visibility},
     sprite::{Sprite, TextureAtlas, TextureAtlasLayout},
@@ -41,7 +42,13 @@ pub trait TscnSpawner {
     /// Runs after all [`TscnSpawner::handle_plain_node`].
     /// The entity already has [`Name`], [`SpatialBundle`] and possibly
     /// [`Sprite`] and [`TextureAtlas`] components.
-    fn on_spawned(&mut self, cmd: &mut Commands, who: Entity, name: NodeName);
+    fn on_spawned(
+        &mut self,
+        cmd: &mut Commands,
+        who: Entity,
+        name: NodeName,
+        translation: Vec3,
+    );
 
     /// Any plan node (no 2D info) that is not handled by the default
     /// implementation will be passed to this function.
@@ -192,7 +199,9 @@ fn node_to_entity<T: TscnSpawner>(
             }
             ("YSort", None) => panic!("YSort must be a Node2D with no zindex"),
 
-            ("Point", None) => cmd.entity(entity).insert(Point(position)),
+            ("Point", None) => {
+                cmd.entity(entity).insert(Point(position));
+            }
             ("Point", _) => panic!("Point must be a plain node"),
 
             (_, Some(_)) => {
@@ -254,14 +263,14 @@ fn node_to_entity<T: TscnSpawner>(
         }
     }
 
-    let transform = Transform::from_translation(
-        position.extend(virtual_z_index.unwrap_or_else(|| ysort(position))),
-    );
+    let translation =
+        position.extend(virtual_z_index.unwrap_or_else(|| ysort(position)));
+    let transform = Transform::from_translation(translation);
     cmd.entity(entity).insert(SpatialBundle {
         transform,
         visibility,
         ..default()
     });
 
-    spawner.on_spawned(cmd, entity, name);
+    spawner.on_spawned(cmd, entity, name, translation);
 }

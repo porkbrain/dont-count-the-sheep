@@ -591,11 +591,6 @@ position = Vector2(25, -60)
 
 [node name="Point" type="Node" parent="Points/MeditationSpawn"]
 
-[node name="MeditationSpawnWalkTarget" type="Node2D" parent="Points"]
-position = Vector2(25, -40)
-
-[node name="Point" type="Node" parent="Points/MeditationSpawnWalkTarget"]
-
 [node name="NewGameSpawn" type="Node2D" parent="Points"]
 position = Vector2(-15, -15)
 

@@ -11,13 +11,14 @@ use bevy::{
         system::EntityCommands,
     },
     prelude::*,
+    render::view::RenderLayers,
     time::Stopwatch,
     utils::HashSet,
 };
 use bevy_grid_squared::{sq, GridDirection, Square};
 use common_ext::QueryExt;
 use common_story::Character;
-use common_visuals::camera::PIXEL_ZOOM;
+use common_visuals::camera::{render_layer, PIXEL_ZOOM};
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use rand::{seq::SliceRandom, thread_rng};
@@ -509,11 +510,10 @@ impl CharacterBundleBuilder {
         }
     }
 
-    /// Whether the actor is a player.
+    /// Sets the actor as a player.
     #[must_use]
-    pub fn is_player(mut self, is_player: bool) -> Self {
-        self.is_player = is_player;
-
+    pub fn is_player(mut self) -> Self {
+        self.is_player = true;
         self
     }
 
@@ -522,50 +522,24 @@ impl CharacterBundleBuilder {
     /// the `common_layout` crate).
     /// The specific layout is provided in the
     /// [`CharacterBundleBuilder::insert`] method's `T`.
-    #[must_use]
-    pub fn with_initial_position(mut self, initial_position: Vec2) -> Self {
+    pub fn with_initial_position(&mut self, initial_position: Vec2) {
         self.initial_position = initial_position;
-
-        self
     }
 
     /// When the map is loaded, the character is spawned facing this
     /// direction.
-    #[must_use]
-    pub fn with_initial_direction(
-        mut self,
-        initial_direction: GridDirection,
-    ) -> Self {
+    pub fn with_initial_direction(&mut self, initial_direction: GridDirection) {
         self.initial_direction = initial_direction;
-
-        self
     }
 
     /// Where to walk to initially.
-    #[must_use]
-    pub fn with_walking_to(mut self, walking_to: Option<ActorTarget>) -> Self {
-        self.walking_to = walking_to;
-
-        self
+    pub fn with_walking_to(&mut self, walking_to: ActorTarget) {
+        self.walking_to = Some(walking_to);
     }
 
     /// How long does it take to move one square.
-    #[must_use]
-    pub fn with_initial_step_time(
-        mut self,
-        step_time: Option<Duration>,
-    ) -> Self {
-        self.initial_step_time = step_time;
-
-        self
-    }
-
-    /// Sets the color of the sprite.
-    #[must_use]
-    pub fn with_sprite_color(mut self, color: Option<Color>) -> Self {
-        self.color = color;
-
-        self
+    pub fn with_initial_step_time(&mut self, step_time: Duration) {
+        self.initial_step_time = Some(step_time);
     }
 
     /// Returns a bundle that can be spawned.
@@ -579,7 +553,11 @@ impl CharacterBundleBuilder {
     /// tilemap. This will be immediately remedied in the
     /// [`animate_movement`] system, where the actor's tiles are recalculated
     /// when they stand still or when they do their first step.
-    pub fn insert(self, asset_server: &AssetServer, cmd: &mut EntityCommands) {
+    pub fn insert_bundle_into(
+        self,
+        asset_server: &AssetServer,
+        cmd: &mut EntityCommands,
+    ) {
         let id = cmd.id();
 
         let Self {
@@ -605,10 +583,13 @@ impl CharacterBundleBuilder {
                     .into_label(character.name())
                     .with_emit_event_on_interacted(BeginDialogEvent(id)),
             ));
+        } else {
+            cmd.insert(Player);
         }
 
         cmd.insert((
             Name::from(character.name()),
+            RenderLayers::layer(render_layer::OBJ),
             Actor {
                 character,
                 step_time,

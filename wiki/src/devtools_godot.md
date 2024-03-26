@@ -88,6 +88,9 @@ Here's an exhaustive list of components (defined as `Node` type with their names
   - `zone`: An optional name of a local tile kind that the player must be in to interact with the object.
   - `category`: Optional. See [_Inspecting the World: Categories_](ability_to_inspect.md#categories).
 
+- `Point`: A component with no metadata.
+  It's used to define a point in the scene, such as a waypoint or a spawn point.
+
 - `HallwayEntity`: A component with no metadata in the `Apartment` scene.
 
 <!-- List of References -->

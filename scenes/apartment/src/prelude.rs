@@ -12,13 +12,6 @@ pub(crate) const START_LOADING_SCREEN_AFTER: Duration = from_millis(500);
 pub(crate) const WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST:
     Duration = from_millis(1500);
 
-/// When the apartment is loaded, the character is spawned at this square.
-pub(crate) const DEFAULT_INITIAL_POSITION: Vec2 = vec2(-15.0, 15.0);
-/// Upon going to the meditation minigame we set this value so that once the
-/// game is closed, the character is spawned next to the meditation chair.
-pub(crate) const POSITION_ON_LOAD_FROM_MEDITATION: Vec2 = vec2(25.0, 60.0);
-/// And it does a little animation of walking down.
-pub(crate) const WALK_TO_ONLOAD_FROM_MEDITATION: Vec2 = vec2(25.0, 40.0);
 /// Walk down slowly otherwise it'll happen before the player even sees it.
 pub(crate) const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(750);
 /// For the animation of stepping out of the elevator.

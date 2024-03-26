@@ -1,7 +1,11 @@
 use bevy::render::view::RenderLayers;
+use bevy_grid_squared::sq;
 use common_rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use common_store::GlobalStore;
-use common_top_down::TileMap;
+use common_top_down::{
+    actor::{CharacterBundleBuilder, CharacterExt},
+    layout::LAYOUT,
+    TileMap,
+};
 use common_visuals::camera::render_layer;
 use serde::{Deserialize, Serialize};
 use strum::{EnumIter, IntoEnumIterator};
@@ -62,7 +66,9 @@ pub(crate) struct LayoutEntity;
 struct DowntownTscnSpawner<'a> {
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
-    store: &'a GlobalStore,
+    player_builder: &'a mut CharacterBundleBuilder,
+    player_entity: Entity,
+    transition: GlobalGameStateTransition,
 }
 
 /// The names are stored in the scene file.
@@ -72,7 +78,7 @@ fn spawn(
     asset_server: Res<AssetServer>,
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-    store: Res<GlobalStore>,
+    transition: Res<GlobalGameStateTransition>,
 
     mut q: Query<&mut TscnTreeHandle<Downtown>>,
 ) {
@@ -80,14 +86,22 @@ fn spawn(
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
 
+    let player = cmd.spawn_empty().id();
+    let mut player_builder =
+        common_story::Character::Winnie.bundle_builder().is_player();
+
     tscn.spawn_into(
         &mut DowntownTscnSpawner {
             asset_server: &asset_server,
+            transition: *transition,
             atlases: &mut atlas_layouts,
-            store: &store,
+            player_entity: player,
+            player_builder: &mut player_builder,
         },
         &mut cmd,
     );
+
+    player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
 }
 
 fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
@@ -106,7 +120,9 @@ impl<'a> TscnSpawner for DowntownTscnSpawner<'a> {
         cmd: &mut Commands,
         who: Entity,
         NodeName(name): NodeName,
+        translation: Vec3,
     ) {
+        use GlobalGameStateTransition::*;
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
 
@@ -114,13 +130,19 @@ impl<'a> TscnSpawner for DowntownTscnSpawner<'a> {
         match name.as_str() {
             "Downtown" => {
                 cmd.entity(who).insert(LayoutEntity);
-
-                let player = crate::actor::spawn_player(
-                    cmd,
-                    self.asset_server,
-                    self.store,
+                cmd.entity(who).add_child(self.player_entity);
+            }
+            "PlayerApartmentBuildingEntrance"
+                if self.transition == ApartmentToDowntown =>
+            {
+                self.player_builder
+                    .with_initial_position(translation.truncate());
+                self.player_builder.with_walking_to(
+                    common_top_down::ActorTarget::new(
+                        LAYOUT.world_pos_to_square(translation.truncate())
+                            + sq(0, -2),
+                    ),
                 );
-                cmd.entity(who).push_children(&player);
             }
             _ => {}
         }

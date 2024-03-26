@@ -1,11 +1,6 @@
-use bevy::render::view::RenderLayers;
 use common_loading_screen::LoadingScreenSettings;
-use common_store::{ApartmentStore, GlobalStore};
-use common_top_down::{
-    actor::CharacterExt, layout::LAYOUT, ActorMovementEvent, ActorTarget,
-    TileKind,
-};
-use common_visuals::camera::{render_layer, MainCamera};
+use common_top_down::{ActorMovementEvent, TileKind};
+use common_visuals::camera::MainCamera;
 use main_game_lib::{common_ext::QueryExt, cutscene::IntoCutscene};
 
 use super::{cutscenes, ApartmentAction};
@@ -15,48 +10,12 @@ use crate::{
     Apartment,
 };
 
-pub(crate) fn spawn(
-    cmd: &mut Commands,
-    asset_server: &AssetServer,
-    store: &GlobalStore,
-) -> Vec<Entity> {
-    let initial_position = store
-        .position_on_load()
-        .get()
-        .unwrap_or(DEFAULT_INITIAL_POSITION);
-    store.position_on_load().remove();
-
-    let walking_to = store
-        .walk_to_onload()
-        .get()
-        .map(|pos| LAYOUT.world_pos_to_square(pos))
-        .map(ActorTarget::new);
-    store.walk_to_onload().remove();
-
-    let step_time = store.step_time_onload().get();
-    store.step_time_onload().remove();
-
-    let mut player =
-        cmd.spawn((Player, RenderLayers::layer(render_layer::OBJ)));
-    common_story::Character::Winnie
-        .bundle_builder()
-        .is_player(true)
-        .with_initial_position(initial_position)
-        .with_walking_to(walking_to)
-        .with_initial_step_time(step_time)
-        .insert(asset_server, &mut player);
-    let player = player.id();
-
-    vec![player]
-}
-
 /// Will change the game state to meditation minigame.
 pub(super) fn start_meditation_minigame_if_near_chair(
     mut cmd: Commands,
     mut action_events: EventReader<ApartmentAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    store: Res<GlobalStore>,
 
     player: Query<Entity, With<Player>>,
 ) {
@@ -65,15 +24,6 @@ pub(super) fn start_meditation_minigame_if_near_chair(
         .any(|action| matches!(action, ApartmentAction::StartMeditation));
 
     if is_triggered && let Some(entity) = player.get_single_or_none() {
-        // when we come back, we want to be next to the chair
-        store
-            .position_on_load()
-            .set(POSITION_ON_LOAD_FROM_MEDITATION);
-        store.walk_to_onload().set(WALK_TO_ONLOAD_FROM_MEDITATION);
-        store
-            .step_time_onload()
-            .set(STEP_TIME_ONLOAD_FROM_MEDITATION);
-
         cmd.entity(entity).despawn_recursive();
 
         cmd.insert_resource(LoadingScreenSettings {
