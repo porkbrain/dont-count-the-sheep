@@ -4,6 +4,14 @@ version.workspace = true
 edition.workspace = true
 
 
+[features]
+devtools = [
+    "main_game_lib/devtools",
+    "common_story/devtools",
+    "common_visuals/devtools",
+]
+
+
 [dependencies]
 bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true

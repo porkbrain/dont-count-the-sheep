@@ -25,7 +25,7 @@ impl TopDownScene for Apartment {
     type LocalTileKind = ApartmentTileKind;
 
     fn name() -> &'static str {
-        "apartment"
+        "building1_player_floor"
     }
 
     fn bounds() -> [i32; 4] {
