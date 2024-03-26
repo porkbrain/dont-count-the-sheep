@@ -19,6 +19,18 @@ use prelude::*;
 #[derive(TypePath, Default)]
 pub(crate) struct Downtown;
 
+impl TopDownScene for Downtown {
+    type LocalTileKind = DowntownTileKind;
+
+    fn name() -> &'static str {
+        "downtown"
+    }
+
+    fn bounds() -> [i32; 4] {
+        [-200, 200, -200, 200]
+    }
+}
+
 pub fn add(app: &mut App) {
     info!("Adding downtown to app");
 
@@ -39,25 +51,6 @@ pub fn add(app: &mut App) {
     debug!("Adding plugins");
 
     app.add_plugins((layout::Plugin, actor::Plugin));
-
-    debug!("Adding camera");
-
-    app.add_systems(
-        OnEnter(GlobalGameState::DowntownLoading),
-        common_visuals::camera::spawn,
-    )
-    .add_systems(
-        OnExit(GlobalGameState::DowntownQuitting),
-        common_visuals::camera::despawn,
-    )
-    .add_systems(
-        Update,
-        common_top_down::cameras::track_player_with_main_camera
-            .after(common_top_down::actor::animate_movement::<Downtown>)
-            .run_if(in_state(GlobalGameState::AtDowntown))
-            .run_if(not(in_cutscene()))
-            .run_if(not(in_portrait_dialog())),
-    );
 
     debug!("Adding game loop");
 
@@ -126,17 +119,5 @@ fn exit(
         _ => {
             unreachable!("Invalid Downtown transition {transition:?}");
         }
-    }
-}
-
-impl TopDownScene for Downtown {
-    type LocalTileKind = DowntownTileKind;
-
-    fn name() -> &'static str {
-        "downtown"
-    }
-
-    fn bounds() -> [i32; 4] {
-        [-200, 200, -200, 200]
     }
 }

@@ -180,6 +180,21 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
             )
             .after(emit_movement_events::<T>),
     );
+
+    debug!("Adding camera");
+
+    app.add_systems(OnEnter(loading), common_visuals::camera::spawn)
+        .add_systems(OnExit(quitting), common_visuals::camera::despawn)
+        .add_systems(
+            FixedUpdate,
+            crate::cameras::track_player_with_main_camera
+                .after(crate::actor::animate_movement::<T>)
+                .run_if(in_state(running))
+                .run_if(not(in_cutscene()))
+                .run_if(not(
+                    common_story::dialog::fe::portrait::in_portrait_dialog(),
+                )),
+        );
 }
 
 /// You can press `Enter` to export the map.

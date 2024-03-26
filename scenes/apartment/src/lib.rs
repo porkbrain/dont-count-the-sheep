@@ -19,10 +19,21 @@ use prelude::*;
 use crate::layout::LayoutEntity;
 
 /// Important scene struct.
-/// We use it as identifiable generic in some common logic such as layout or
-/// asset.
+/// We use it as identifiable generic in common logic.
 #[derive(TypePath, Default)]
 pub struct Apartment;
+
+impl TopDownScene for Apartment {
+    type LocalTileKind = ApartmentTileKind;
+
+    fn name() -> &'static str {
+        "apartment"
+    }
+
+    fn bounds() -> [i32; 4] {
+        [-80, 40, -30, 20]
+    }
+}
 
 pub fn add(app: &mut App) {
     info!("Adding apartment to app");
@@ -44,25 +55,6 @@ pub fn add(app: &mut App) {
     debug!("Adding plugins");
 
     app.add_plugins((layout::Plugin, actor::Plugin));
-
-    debug!("Adding camera");
-
-    app.add_systems(
-        OnEnter(GlobalGameState::ApartmentLoading),
-        common_visuals::camera::spawn,
-    )
-    .add_systems(
-        OnExit(GlobalGameState::ApartmentQuitting),
-        common_visuals::camera::despawn,
-    )
-    .add_systems(
-        FixedUpdate,
-        common_top_down::cameras::track_player_with_main_camera
-            .after(common_top_down::actor::animate_movement::<Apartment>)
-            .run_if(in_state(GlobalGameState::InApartment))
-            .run_if(not(in_cutscene()))
-            .run_if(not(in_portrait_dialog())),
-    );
 
     debug!("Adding game loop");
 
@@ -167,24 +159,6 @@ fn smooth_exit(
                 unreachable!("Invalid apartment transition {transition:?}");
             }
         }
-    }
-}
-
-impl TopDownScene for Apartment {
-    type LocalTileKind = ApartmentTileKind;
-
-    fn name() -> &'static str {
-        "apartment"
-    }
-
-    fn bounds() -> [i32; 4] {
-        [-80, 40, -30, 20]
-    }
-}
-
-impl std::fmt::Display for Apartment {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", Apartment::name())
     }
 }
 
