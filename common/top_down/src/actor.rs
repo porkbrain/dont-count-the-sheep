@@ -71,9 +71,6 @@ pub struct Actor {
     /// It's necessary therefore to check the index before mutating it to
     /// confirm the escape hatch did not change it.
     occupies: Vec<TileIndex>,
-    /// This information is duplicated.
-    /// We also have a player component that's assigned to the player entity.
-    is_player: bool,
 }
 
 /// Target for an actor to walk towards.
@@ -151,7 +148,6 @@ pub struct CharacterBundleBuilder {
     walking_to: Option<ActorTarget>,
     initial_step_time: Option<Duration>,
     color: Option<Color>,
-    is_player: bool,
 }
 
 /// Event that's emitted when the player clicks interaction near an NPC.
@@ -182,7 +178,7 @@ pub fn emit_movement_events<T: TopDownScene>(
             zone,
             who: Who {
                 at: Some(at),
-                is_player: actor.is_player,
+                is_player: actor.is_player(),
                 entity,
                 character,
             },
@@ -190,7 +186,7 @@ pub fn emit_movement_events<T: TopDownScene>(
 
         let (_, _, active_zones) =
             actor_zone_map.map.entry(entity).or_insert_with(|| {
-                (actor.character, actor.is_player, HashSet::new())
+                (actor.character, actor.is_player(), HashSet::new())
             });
 
         let Some(tiles) = tilemap.get(at) else {
@@ -227,7 +223,7 @@ pub fn emit_movement_events<T: TopDownScene>(
                 zone: *tile,
                 who: Who {
                     at: Some(at),
-                    is_player: actor.is_player,
+                    is_player: actor.is_player(),
                     entity,
                     character,
                 },
@@ -281,7 +277,7 @@ pub fn animate_movement<T: TopDownScene>(
     >,
 ) {
     for (entity, mut actor, sprite, transform) in actors.iter_mut() {
-        debug_assert!(!actor.is_player);
+        debug_assert!(!actor.is_player());
 
         animate_movement_for_actor::<T>(
             &time,
@@ -299,7 +295,7 @@ pub fn animate_movement<T: TopDownScene>(
     if let Some((entity, mut actor, sprite, transform)) =
         player.get_single_mut_or_none()
     {
-        debug_assert!(actor.is_player);
+        debug_assert!(actor.is_player());
         animate_movement_for_actor::<T>(
             &time,
             &mut tilemap,
@@ -450,11 +446,10 @@ impl Actor {
     }
 
     /// Whether the actor is a player.
-    /// Set it with the [`CharacterBundleBuilder::is_player`] method.
     ///
     /// This information is duplicated by the [`Player`] component.
     pub fn is_player(&self) -> bool {
-        self.is_player
+        matches!(self.character, Character::Winnie)
     }
 
     /// Lets actor finish walking to the current target, but doesn't let them
@@ -506,39 +501,31 @@ impl CharacterBundleBuilder {
             walking_to: default(),
             initial_step_time: default(),
             color: default(),
-            is_player: false,
         }
-    }
-
-    /// Sets the actor as a player.
-    #[must_use]
-    pub fn is_player(mut self) -> Self {
-        self.is_player = true;
-        self
     }
 
     /// Where to spawn the character.
     /// Converted into the square by [`LAYOUT`] (see
     /// the `common_layout` crate).
     /// The specific layout is provided in the
-    /// [`CharacterBundleBuilder::insert`] method's `T`.
-    pub fn with_initial_position(&mut self, initial_position: Vec2) {
+    /// [`CharacterBundleBuilder::insert_bundle_into`] method's `T`.
+    pub fn initial_position(&mut self, initial_position: Vec2) {
         self.initial_position = initial_position;
     }
 
     /// When the map is loaded, the character is spawned facing this
     /// direction.
-    pub fn with_initial_direction(&mut self, initial_direction: GridDirection) {
+    pub fn initial_direction(&mut self, initial_direction: GridDirection) {
         self.initial_direction = initial_direction;
     }
 
     /// Where to walk to initially.
-    pub fn with_walking_to(&mut self, walking_to: ActorTarget) {
+    pub fn walking_to(&mut self, walking_to: ActorTarget) {
         self.walking_to = Some(walking_to);
     }
 
     /// How long does it take to move one square.
-    pub fn with_initial_step_time(&mut self, step_time: Duration) {
+    pub fn initial_step_time(&mut self, step_time: Duration) {
         self.initial_step_time = Some(step_time);
     }
 
@@ -567,24 +554,19 @@ impl CharacterBundleBuilder {
             walking_to,
             initial_step_time: step_time,
             color,
-            is_player,
         } = self;
 
         let step_time = step_time.unwrap_or(character.default_step_time());
 
-        if !is_player {
-            // for the time being, player is always winnie, so let's squash any
-            // bugs during development until this needs to change
-            debug_assert_ne!(character, Character::Winnie);
-
+        if matches!(character, Character::Winnie) {
+            cmd.insert(Player);
+        } else {
             cmd.insert((
                 NpcInTheMap::default(),
                 InspectLabelCategory::Npc
                     .into_label(character.name())
                     .with_emit_event_on_interacted(BeginDialogEvent(id)),
             ));
-        } else {
-            cmd.insert(Player);
         }
 
         cmd.insert((
@@ -598,7 +580,6 @@ impl CharacterBundleBuilder {
                 walking_to,
                 // see the method docs
                 occupies: default(),
-                is_player,
             },
             SpriteSheetBundle {
                 texture: asset_server
@@ -673,7 +654,7 @@ impl<T: TopDownScene> TileMap<T> {
 
         // If the actor cannot move (rare but possible), we have following
         // strategies:
-        if !can_move && actor.is_player {
+        if !can_move && actor.is_player() {
             // a) A player
             //    - Clear the way for the player by evicting all non-player
             //      actors from [top down left right]
@@ -690,7 +671,7 @@ impl<T: TopDownScene> TileMap<T> {
                     tile
                 });
             }
-        } else if !can_move && !actor.is_player {
+        } else if !can_move && !actor.is_player() {
             // b) An NPC
             //    - Collect all tiles that have an actor OR are walkable
             //    - Pick one at random to set the walking_to target
@@ -960,18 +941,17 @@ mod tests {
 
         let winnie = w
             .spawn(Actor {
-                character: Character::Winnie,
+                character: Character::Bolt,
                 step_time: STEP_TIME,
                 direction: GridDirection::Bottom,
                 walking_from: sq(0, 0),
                 walking_to: None, // we get them moving later
                 occupies: vec![],
-                is_player: false,
             })
             .insert(SpatialBundle::default())
             .insert(TextureAtlas {
                 index: 0,
-                layout: Character::Winnie.sprite_atlas_layout_handle(),
+                layout: Character::Bolt.sprite_atlas_layout_handle(),
             })
             .id();
         let marie = w
@@ -982,7 +962,6 @@ mod tests {
                 walking_from: sq(0, 0),
                 walking_to: None, // we get them moving later
                 occupies: vec![],
-                is_player: false,
             })
             .insert(SpatialBundle::default())
             .insert(TextureAtlas {

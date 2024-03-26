@@ -87,8 +87,7 @@ fn spawn(
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
 
     let player = cmd.spawn_empty().id();
-    let mut player_builder =
-        common_story::Character::Winnie.bundle_builder().is_player();
+    let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
     tscn.spawn_into(
         &mut DowntownTscnSpawner {
@@ -135,9 +134,8 @@ impl<'a> TscnSpawner for DowntownTscnSpawner<'a> {
             "PlayerApartmentBuildingEntrance"
                 if self.transition == ApartmentToDowntown =>
             {
-                self.player_builder
-                    .with_initial_position(translation.truncate());
-                self.player_builder.with_walking_to(
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(
                     common_top_down::ActorTarget::new(
                         LAYOUT.world_pos_to_square(translation.truncate())
                             + sq(0, -2),

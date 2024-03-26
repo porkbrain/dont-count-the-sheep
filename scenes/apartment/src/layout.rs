@@ -136,8 +136,7 @@ fn spawn(
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
 
     let player = cmd.spawn_empty().id();
-    let mut player_builder =
-        common_story::Character::Winnie.bundle_builder().is_player();
+    let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
     tscn.spawn_into(
         &mut ApartmentTscnSpawner {
@@ -215,29 +214,26 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
                 cmd.entity(who).insert(MeditatingHint);
             }
             "MeditationSpawn" if self.transition == MeditationToApartment => {
-                self.player_builder
-                    .with_initial_position(translation.truncate());
-                self.player_builder.with_walking_to(ActorTarget::new(
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(ActorTarget::new(
                     LAYOUT.world_pos_to_square(
                         translation.truncate() + vec2(0.0, -20.0),
                     ),
                 ));
                 self.player_builder
-                    .with_initial_step_time(STEP_TIME_ONLOAD_FROM_MEDITATION);
+                    .initial_step_time(STEP_TIME_ONLOAD_FROM_MEDITATION);
             }
             "NewGameSpawn" if self.transition == NewGameToApartment => {
-                self.player_builder
-                    .with_initial_position(translation.truncate());
+                self.player_builder.initial_position(translation.truncate());
             }
             "InElevator" if self.transition == DowntownToApartment => {
-                self.player_builder
-                    .with_initial_position(translation.truncate());
-                self.player_builder.with_walking_to(ActorTarget::new(
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(ActorTarget::new(
                     LAYOUT.world_pos_to_square(translation.truncate())
                         + sq(0, -2),
                 ));
                 self.player_builder
-                    .with_initial_step_time(STEP_TIME_ON_EXIT_ELEVATOR);
+                    .initial_step_time(STEP_TIME_ON_EXIT_ELEVATOR);
             }
             _ => {}
         }
