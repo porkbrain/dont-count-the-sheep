@@ -184,7 +184,7 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
             .insert(RenderLayers::layer(render_layer::BG));
 
         match name.as_str() {
-            "Apartment" => {
+            "Building1PlayerFloor" => {
                 cmd.entity(who).insert(LayoutEntity);
                 cmd.entity(who).add_child(self.player_entity);
             }

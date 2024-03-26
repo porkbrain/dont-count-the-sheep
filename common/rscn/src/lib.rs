@@ -22,6 +22,7 @@ use bevy::{
     utils::HashMap,
 };
 use common_ext::QueryExt;
+use common_top_down::TopDownScene;
 use serde::{Deserialize, Serialize};
 
 pub use crate::{
@@ -151,9 +152,11 @@ pub struct SpriteFrames {
 }
 
 /// Marks scene as "can be loaded from .tscn".
+///
+/// Autoimplemented for [`TopDownScene`]s.
 pub trait TscnInBevy: Send + Sync + 'static {
     /// Asset path of the `.tscn` file associated with this scene.
-    fn tscn_asset_path() -> &'static str;
+    fn tscn_asset_path() -> String;
 }
 
 /// Used for loading of [`TscnTree`] from a .tscn file.
@@ -165,6 +168,12 @@ pub struct TscnTreeHandle<T> {
     /// Will be set to [`None`] once the scene is spawned.
     handle: Option<Handle<TscnTree>>,
     _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T: TopDownScene> TscnInBevy for T {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", T::name())
+    }
 }
 
 /// Parses Godot's .tscn file with very strict requirements on the content.

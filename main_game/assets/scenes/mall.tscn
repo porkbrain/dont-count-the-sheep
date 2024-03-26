@@ -1,7 +1,7 @@
 [gd_scene load_steps=13 format=3 uid="uid://drnrtwjeis0wl"]
 
 [ext_resource type="Texture2D" uid="uid://butuw555fooa1" path="res://assets/mall/mall.png" id="1_py6kn"]
-[ext_resource type="Texture2D" uid="uid://cqsdb5tp644w6" path="res://assets/apartment/vending_machine_atlas.png" id="2_83cf2"]
+[ext_resource type="Texture2D" uid="uid://cqsdb5tp644w6" path="res://assets/environment/vending_machine_atlas.png" id="2_83cf2"]
 [ext_resource type="Texture2D" uid="uid://bit4syffi4073" path="res://assets/mall/mallisles.png" id="3_7qiwu"]
 [ext_resource type="Texture2D" uid="uid://ctql8gvld5oyf" path="res://assets/mall/salebox.png" id="4_uvq87"]
 [ext_resource type="Texture2D" uid="uid://qs3pmngv2da2" path="res://assets/mall/selfcheckout.png" id="5_g377o"]

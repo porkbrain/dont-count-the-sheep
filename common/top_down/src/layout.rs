@@ -43,9 +43,6 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     /// `[left, right, bottom, top]`
     fn bounds() -> [i32; 4];
 
-    /// Path to the map .ron asset relative to the assets directory.
-    fn asset_path() -> &'static str;
-
     /// Whether the given square is inside the map.
     #[inline]
     fn contains(square: Square) -> bool {
@@ -891,10 +888,6 @@ mod tests {
             [0, 10, 0, 10]
         }
 
-        fn asset_path() -> &'static str {
-            unreachable!()
-        }
-
         fn name() -> &'static str {
             unreachable!()
         }
@@ -1066,10 +1059,6 @@ mod tests {
 
         fn bounds() -> [i32; 4] {
             [-11, 0, 15, 28]
-        }
-
-        fn asset_path() -> &'static str {
-            unreachable!()
         }
 
         fn name() -> &'static str {

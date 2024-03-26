@@ -326,7 +326,7 @@ fn export_map<T: TopDownScene>(
 
     // for internal use only so who cares about unwraps and paths
     std::fs::write(
-        format!("main_game/assets/{}", T::asset_path()),
+        format!("main_game/assets/maps/{}.ron", T::name()),
         ron::ser::to_string_pretty(
             &tilemap_but_sorted,
             PrettyConfig::default()

@@ -7,9 +7,7 @@ mod autogen;
 mod layout;
 mod prelude;
 
-use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::LoadingScreenState;
-use common_rscn::TscnInBevy;
 use common_story::dialog::fe::portrait::in_portrait_dialog;
 use layout::DowntownTileKind;
 use main_game_lib::cutscene::in_cutscene;
@@ -61,17 +59,6 @@ pub fn add(app: &mut App) {
             .run_if(not(in_portrait_dialog())),
     );
 
-    debug!("Adding assets");
-
-    app.add_systems(
-        OnEnter(GlobalGameState::DowntownLoading),
-        common_assets::store::insert_as_resource::<Downtown>,
-    );
-    app.add_systems(
-        OnExit(GlobalGameState::DowntownQuitting),
-        common_assets::store::remove_as_resource::<Downtown>,
-    );
-
     debug!("Adding game loop");
 
     // when everything is loaded, finish the loading process by transitioning
@@ -106,14 +93,8 @@ pub fn add(app: &mut App) {
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
     map: Option<Res<common_top_down::TileMap<Downtown>>>,
-    asset_server: Res<AssetServer>,
-    asset_store: Res<AssetStore<Downtown>>,
 ) {
     if map.is_none() {
-        return;
-    }
-
-    if !asset_store.are_all_loaded(&asset_server) {
         return;
     }
 
@@ -157,21 +138,5 @@ impl TopDownScene for Downtown {
 
     fn bounds() -> [i32; 4] {
         [-200, 200, -200, 200]
-    }
-
-    fn asset_path() -> &'static str {
-        "maps/downtown.ron"
-    }
-}
-
-impl TscnInBevy for Downtown {
-    fn tscn_asset_path() -> &'static str {
-        "scenes/downtown.tscn"
-    }
-}
-
-impl AssetList for Downtown {
-    fn folders() -> &'static [&'static str] {
-        &["downtown"]
     }
 }

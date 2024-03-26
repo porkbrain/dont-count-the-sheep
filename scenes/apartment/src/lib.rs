@@ -10,9 +10,7 @@ mod layout;
 mod prelude;
 
 use bevy::utils::Instant;
-use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_rscn::TscnInBevy;
 use common_story::dialog::fe::portrait::in_portrait_dialog;
 use layout::ApartmentTileKind;
 use main_game_lib::cutscene::in_cutscene;
@@ -66,17 +64,6 @@ pub fn add(app: &mut App) {
             .run_if(not(in_portrait_dialog())),
     );
 
-    debug!("Adding assets");
-
-    app.add_systems(
-        OnEnter(GlobalGameState::ApartmentLoading),
-        common_assets::store::insert_as_resource::<Apartment>,
-    );
-    app.add_systems(
-        OnExit(GlobalGameState::ApartmentQuitting),
-        common_assets::store::remove_as_resource::<Apartment>,
-    );
-
     debug!("Adding game loop");
 
     // when everything is loaded, finish the loading process by transitioning
@@ -112,14 +99,8 @@ pub fn add(app: &mut App) {
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
     map: Option<Res<common_top_down::TileMap<Apartment>>>,
-    asset_server: Res<AssetServer>,
-    asset_store: Res<AssetStore<Apartment>>,
 ) {
     if map.is_none() {
-        return;
-    }
-
-    if !asset_store.are_all_loaded(&asset_server) {
         return;
     }
 
@@ -199,22 +180,6 @@ impl TopDownScene for Apartment {
     fn bounds() -> [i32; 4] {
         [-80, 40, -30, 20]
     }
-
-    fn asset_path() -> &'static str {
-        "maps/apartment.ron"
-    }
-}
-
-impl TscnInBevy for Apartment {
-    fn tscn_asset_path() -> &'static str {
-        "scenes/apartment.tscn"
-    }
-}
-
-impl AssetList for Apartment {
-    fn folders() -> &'static [&'static str] {
-        &["apartment"]
-    }
 }
 
 impl std::fmt::Display for Apartment {
@@ -229,8 +194,9 @@ mod tests {
 
     #[test]
     fn it_has_valid_tscn_scene() {
-        const TSCN: &str =
-            include_str!("../../../main_game/assets/scenes/apartment.tscn");
+        const TSCN: &str = include_str!(
+            "../../../main_game/assets/scenes/building1_player_floor.tscn",
+        );
         common_rscn::parse(TSCN, &default());
     }
 }

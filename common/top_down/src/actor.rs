@@ -920,10 +920,6 @@ mod tests {
             [-1000, 1000, -1000, 1000]
         }
 
-        fn asset_path() -> &'static str {
-            unreachable!()
-        }
-
         fn name() -> &'static str {
             unreachable!()
         }

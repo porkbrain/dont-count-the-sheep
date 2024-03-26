@@ -12,8 +12,9 @@ pub(crate) fn start_loading_map<T: TopDownScene>(
     mut cmd: Commands,
     assets: Res<AssetServer>,
 ) {
-    debug!("Loading map {} from {}", T::type_path(), T::asset_path());
-    let handle: Handle<TileMap<T>> = assets.load(T::asset_path());
+    let asset_path = format!("maps/{}.ron", T::name());
+    debug!("Loading map {} from {}", T::type_path(), asset_path);
+    let handle: Handle<TileMap<T>> = assets.load(asset_path);
     cmd.spawn(handle);
 }
 
