@@ -1,6 +1,6 @@
 //! Player and NPCs.
 
-mod cutscenes;
+// mod cutscenes;
 mod player;
 
 use bevy::ecs::event::event_update_condition;

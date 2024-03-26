@@ -58,6 +58,7 @@ pub enum GlobalGameStateTransition {
 
     Building1PlayerFloorToMeditation,
     Building1PlayerFloorToDowntown,
+    Building1PlayerFloorToBuilding1Basement1,
 
     DowntownToBuilding1PlayerFloor,
 }
