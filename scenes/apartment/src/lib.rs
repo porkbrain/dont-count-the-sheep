@@ -201,7 +201,7 @@ impl TopDownScene for Apartment {
     }
 
     fn asset_path() -> &'static str {
-        assets::MAP
+        "maps/apartment.ron"
     }
 }
 
@@ -213,7 +213,7 @@ impl TscnInBevy for Apartment {
 
 impl AssetList for Apartment {
     fn folders() -> &'static [&'static str] {
-        &[assets::FOLDER]
+        &["apartment"]
     }
 }
 

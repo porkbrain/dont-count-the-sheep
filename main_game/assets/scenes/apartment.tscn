@@ -16,11 +16,11 @@
 [ext_resource type="Texture2D" uid="uid://cqsdb5tp644w6" path="res://assets/apartment/vending_machine_atlas.png" id="14_1rrw2"]
 [ext_resource type="Texture2D" uid="uid://3212443mchtu" path="res://assets/apartment/brown_dark_door_atlas.png" id="15_uv0h5"]
 [ext_resource type="Texture2D" uid="uid://p6o4g707hml2" path="res://assets/apartment/package.png" id="16_xbi0t"]
-[ext_resource type="Texture2D" uid="uid://cgv4cowr33sy2" path="res://assets/downtown/water_bottle_empty.png" id="17_je4lx"]
+[ext_resource type="Texture2D" uid="uid://cgv4cowr33sy2" path="res://assets/environment/water_bottle_empty.png" id="17_je4lx"]
 [ext_resource type="Texture2D" uid="uid://cyup11yq6ir8q" path="res://assets/apartment/extra_room.png" id="18_yvoas"]
 [ext_resource type="Texture2D" uid="uid://bkv7f7wxjfce5" path="res://assets/apartment/policka_kocka.png" id="19_u2nxq"]
 [ext_resource type="Texture2D" uid="uid://cut0xsw6oogl2" path="res://assets/apartment/skrabadlo.png" id="20_v30ey"]
-[ext_resource type="Texture2D" uid="uid://cs2tcnoaxbeyx" path="res://assets/apartment/can.png" id="21_4e0f2"]
+[ext_resource type="Texture2D" uid="uid://cs2tcnoaxbeyx" path="res://assets/environment/can.png" id="21_4e0f2"]
 [ext_resource type="Texture2D" uid="uid://c44rfsmy150fo" path="res://assets/apartment/winnie_meditating.png" id="22_seqms"]
 [ext_resource type="Texture2D" uid="uid://2irnfvapged1" path="res://assets/apartment/winnie_sleeping.png" id="23_elrp7"]
 

@@ -160,7 +160,7 @@ impl TopDownScene for Downtown {
     }
 
     fn asset_path() -> &'static str {
-        assets::MAP
+        "maps/downtown.ron"
     }
 }
 
@@ -172,6 +172,6 @@ impl TscnInBevy for Downtown {
 
 impl AssetList for Downtown {
     fn folders() -> &'static [&'static str] {
-        &[assets::FOLDER]
+        &["downtown"]
     }
 }

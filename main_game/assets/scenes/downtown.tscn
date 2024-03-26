@@ -10,7 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://d1y5l8pmrdloy" path="res://assets/downtown/robot.png" id="8_s4pbl"]
 [ext_resource type="Texture2D" uid="uid://dlc054120cn8l" path="res://assets/downtown/swing.png" id="9_gwh2v"]
 [ext_resource type="Texture2D" uid="uid://b75yq8snj53yw" path="res://assets/downtown/trashcan_tables.png" id="10_nyc25"]
-[ext_resource type="Texture2D" uid="uid://d2v4j1m6u8ek1" path="res://assets/downtown/beer.png" id="11_e3pff"]
+[ext_resource type="Texture2D" uid="uid://d2v4j1m6u8ek1" path="res://assets/environment/beer.png" id="11_e3pff"]
 [ext_resource type="Texture2D" uid="uid://djc7g7t6dy3wa" path="res://assets/downtown/truck.png" id="12_mwj3x"]
 [ext_resource type="Texture2D" uid="uid://dh2sjhvbvlj0y" path="res://assets/downtown/tree.png" id="13_7q235"]
 [ext_resource type="Texture2D" uid="uid://b54rhfp4mdr1d" path="res://assets/downtown/lamp.png" id="14_8uy80"]
@@ -20,7 +20,7 @@
 [ext_resource type="Texture2D" uid="uid://deq70sixg36ra" path="res://assets/downtown/house_plantshoptrio.png" id="19_fdu3c"]
 [ext_resource type="Texture2D" uid="uid://dj4h0df73poo0" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
 [ext_resource type="Texture2D" uid="uid://c3jrebwaemnlt" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]
-[ext_resource type="Texture2D" uid="uid://dpj7jnsvxyfvt" path="res://assets/downtown/water_bottle_half.png" id="21_8m32a"]
+[ext_resource type="Texture2D" uid="uid://dpj7jnsvxyfvt" path="res://assets/environment/water_bottle_half.png" id="21_8m32a"]
 [ext_resource type="Texture2D" uid="uid://dm414iyf3bdnr" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
 [ext_resource type="Texture2D" uid="uid://cvpb63r4tafm8" path="res://assets/downtown/tower.png" id="23_7ng4s"]
 
@@ -312,3 +312,8 @@ texture = ExtResource("23_7ng4s")
 position = Vector2(284, 107)
 
 [node name="Point" type="Node" parent="Points/PlayerApartmentBuildingEntrance"]
+
+[node name="MallEntrance" type="Node2D" parent="Points"]
+position = Vector2(-149, 342)
+
+[node name="Point" type="Node" parent="Points/MallEntrance"]

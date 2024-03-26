@@ -1,16 +1,16 @@
 [gd_scene load_steps=20 format=3 uid="uid://b4jfxrl5rqnne"]
 
-[ext_resource type="Texture2D" uid="uid://dlcvynlwo2q02" path="res://assets/apartment/hallway2.png" id="1_qvhxd"]
-[ext_resource type="Texture2D" uid="uid://bysxl6vneopup" path="res://assets/apartment/elevator_atlas.png" id="2_xfh4m"]
-[ext_resource type="Texture2D" uid="uid://cr11n5q0emwcs" path="res://assets/apartment/brown_dark_door_atlas.png" id="3_kqg41"]
-[ext_resource type="Texture2D" uid="uid://bil2jg7iigaq1" path="res://assets/apartment/utility_door_atlas.png" id="4_ekau8"]
+[ext_resource type="Texture2D" uid="uid://cbouvwlgc3k01" path="res://assets/apartment/hallway2.png" id="1_lkskl"]
+[ext_resource type="Texture2D" uid="uid://3212443mchtu" path="res://assets/apartment/brown_dark_door_atlas.png" id="2_j8svf"]
+[ext_resource type="Texture2D" uid="uid://cq4dga042qxr" path="res://assets/apartment/elevator_atlas.png" id="3_m73pn"]
+[ext_resource type="Texture2D" uid="uid://dnj0hlb6fb6yh" path="res://assets/apartment/utility_door_atlas.png" id="4_kq4km"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0m8kt"]
-atlas = ExtResource("3_kqg41")
+atlas = ExtResource("2_j8svf")
 region = Rect2(0, 0, 27, 52)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_cv1n4"]
-atlas = ExtResource("3_kqg41")
+atlas = ExtResource("2_j8svf")
 region = Rect2(28, 0, 27, 52)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_c3prb"]
@@ -28,35 +28,35 @@ animations = [{
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_n0t2h"]
-atlas = ExtResource("2_xfh4m")
+atlas = ExtResource("3_m73pn")
 region = Rect2(0, 0, 51, 57)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_s6ur5"]
-atlas = ExtResource("2_xfh4m")
+atlas = ExtResource("3_m73pn")
 region = Rect2(55, 0, 51, 57)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_75jdg"]
-atlas = ExtResource("2_xfh4m")
+atlas = ExtResource("3_m73pn")
 region = Rect2(110, 0, 51, 57)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4gfy3"]
-atlas = ExtResource("2_xfh4m")
+atlas = ExtResource("3_m73pn")
 region = Rect2(165, 0, 51, 57)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jhc0q"]
-atlas = ExtResource("2_xfh4m")
+atlas = ExtResource("3_m73pn")
 region = Rect2(220, 0, 51, 57)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_npugd"]
-atlas = ExtResource("2_xfh4m")
+atlas = ExtResource("3_m73pn")
 region = Rect2(275, 0, 51, 57)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1nea5"]
-atlas = ExtResource("2_xfh4m")
+atlas = ExtResource("3_m73pn")
 region = Rect2(330, 0, 51, 57)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2slx6"]
-atlas = ExtResource("2_xfh4m")
+atlas = ExtResource("3_m73pn")
 region = Rect2(385, 0, 51, 57)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_yt0x5"]
@@ -92,11 +92,11 @@ animations = [{
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_rnymp"]
-atlas = ExtResource("4_ekau8")
+atlas = ExtResource("4_kq4km")
 region = Rect2(0, 0, 27, 52)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_r4c07"]
-atlas = ExtResource("4_ekau8")
+atlas = ExtResource("4_kq4km")
 region = Rect2(27, 0, 27, 52)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_lgcyy"]
@@ -113,13 +113,11 @@ animations = [{
 "speed": 1.0
 }]
 
-[node name="Node2D" type="Node2D"]
+[node name="Basement1" type="Node2D"]
 
 [node name="HallwayBg" type="Sprite2D" parent="."]
 z_index = -2
-texture = ExtResource("1_qvhxd")
-
-[node name="HallwayEntity" type="Node" parent="HallwayBg"]
+texture = ExtResource("1_lkskl")
 
 [node name="HallwayDoor2" type="AnimatedSprite2D" parent="HallwayBg"]
 position = Vector2(51, 109)
@@ -128,14 +126,10 @@ sprite_frames = SubResource("SpriteFrames_c3prb")
 [node name="YSort" type="Node2D" parent="HallwayBg/HallwayDoor2"]
 position = Vector2(0, 18)
 
-[node name="HallwayEntity" type="Node" parent="HallwayBg/HallwayDoor2"]
-
 [node name="Elevator" type="AnimatedSprite2D" parent="."]
 z_index = -1
 position = Vector2(-201.5, 49.5)
 sprite_frames = SubResource("SpriteFrames_yt0x5")
-
-[node name="HallwayEntity" type="Node" parent="Elevator"]
 
 [node name="InspectLabel" type="Node" parent="Elevator"]
 metadata/zone = "ElevatorZone"
@@ -144,10 +138,19 @@ metadata/label = "Elevator"
 metadata/category = "Default"
 
 [node name="BasementDoor" type="AnimatedSprite2D" parent="."]
+z_index = -1
 position = Vector2(-280, 55)
 sprite_frames = SubResource("SpriteFrames_lgcyy")
 
-[node name="YSort" type="Node2D" parent="BasementDoor"]
-position = Vector2(0, 18)
+[node name="InspectLabel" type="Node" parent="BasementDoor"]
+metadata/zone = "BasementDoorZone"
+metadata/action = "EnterBasement"
+metadata/label = "Basement"
+metadata/category = "Default"
 
-[node name="HallwayEntity" type="Node" parent="BasementDoor"]
+[node name="Points" type="Node2D" parent="."]
+
+[node name="InElevator" type="Node2D" parent="Points"]
+position = Vector2(-192, 76)
+
+[node name="Point" type="Node" parent="Points/InElevator"]

@@ -1,12 +1,12 @@
 [gd_scene load_steps=13 format=3 uid="uid://drnrtwjeis0wl"]
 
-[ext_resource type="Texture2D" uid="uid://cgvnw3xu0g55c" path="res://assets/mall/mall.png" id="1_py6kn"]
-[ext_resource type="Texture2D" uid="uid://ci14c8skwcj7l" path="res://assets/apartment/vending_machine_atlas.png" id="2_83cf2"]
-[ext_resource type="Texture2D" uid="uid://ckr3s6a6pkgh8" path="res://assets/mall/mallisles.png" id="3_7qiwu"]
-[ext_resource type="Texture2D" uid="uid://ctx6632qwroaa" path="res://assets/mall/salebox.png" id="4_uvq87"]
-[ext_resource type="Texture2D" uid="uid://kk1gkcrurjt8" path="res://assets/mall/selfcheckout.png" id="5_g377o"]
-[ext_resource type="Texture2D" uid="uid://b8xjoqkbaiqyp" path="res://assets/mall/storage.png" id="6_egw2s"]
-[ext_resource type="Texture2D" uid="uid://b3kynf8hs73" path="res://assets/mall/mall_gate.png" id="7_34v1c"]
+[ext_resource type="Texture2D" uid="uid://butuw555fooa1" path="res://assets/mall/mall.png" id="1_py6kn"]
+[ext_resource type="Texture2D" uid="uid://cqsdb5tp644w6" path="res://assets/apartment/vending_machine_atlas.png" id="2_83cf2"]
+[ext_resource type="Texture2D" uid="uid://bit4syffi4073" path="res://assets/mall/mallisles.png" id="3_7qiwu"]
+[ext_resource type="Texture2D" uid="uid://ctql8gvld5oyf" path="res://assets/mall/salebox.png" id="4_uvq87"]
+[ext_resource type="Texture2D" uid="uid://qs3pmngv2da2" path="res://assets/mall/selfcheckout.png" id="5_g377o"]
+[ext_resource type="Texture2D" uid="uid://bqc21ow6lrmh" path="res://assets/mall/storage.png" id="6_egw2s"]
+[ext_resource type="Texture2D" uid="uid://b8qjuqrx7mxvg" path="res://assets/mall/mall_gate.png" id="7_34v1c"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("2_83cf2")
@@ -74,4 +74,4 @@ texture = ExtResource("6_egw2s")
 position = Vector2(140, 114)
 texture = ExtResource("7_34v1c")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="Points" type="Node2D" parent="."]
