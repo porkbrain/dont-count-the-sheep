@@ -8,12 +8,12 @@ Run `$ ./bin/wiki` to open the game's [wiki](wiki/README.md) locally in your bro
 
 # Repo organization
 
-There are crates in the [`common`](common/) directory that help with [animation](common/visuals/), [input handling](common/action/), [loading screen](common/loading_screen/), [map layout, npc and player control](common/top_down/) and more.
+There are crates in the [`common`](common/) directory that help with [animation](common/visuals/), [input handling](common/action/), [loading screen](common/loading_screen/), and more.
 These crates typically either export plugins or systems that one has to register themselves.
 
 Then there's the [main game lib](main_game_lib/).
 This crate exports logic that did not fit into the common crates.
-For example, the `GlobalGameState` enum that directs the game flow lives here.
+For example, the `GlobalGameState` enum that directs the game flow lives here, or map layout, npc and player control.
 It also sets up default plugins and alike.
 
 Then we have the [scenes](scenes/).

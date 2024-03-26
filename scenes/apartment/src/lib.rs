@@ -11,9 +11,7 @@ mod prelude;
 
 use bevy::utils::Instant;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_story::dialog::fe::portrait::in_portrait_dialog;
 use layout::ApartmentTileKind;
-use main_game_lib::cutscene::in_cutscene;
 use prelude::*;
 
 use crate::layout::LayoutEntity;
@@ -38,7 +36,7 @@ impl TopDownScene for Apartment {
 pub fn add(app: &mut App) {
     info!("Adding apartment to app");
 
-    common_top_down::default_setup_for_scene::<Apartment, _>(
+    top_down::default_setup_for_scene::<Apartment, _>(
         app,
         GlobalGameState::ApartmentLoading,
         GlobalGameState::InApartment,
@@ -46,7 +44,7 @@ pub fn add(app: &mut App) {
     );
 
     #[cfg(feature = "devtools")]
-    common_top_down::dev_default_setup_for_scene::<Apartment, _>(
+    top_down::dev_default_setup_for_scene::<Apartment, _>(
         app,
         GlobalGameState::InApartment,
         GlobalGameState::ApartmentQuitting,
@@ -90,7 +88,7 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<common_top_down::TileMap<Apartment>>>,
+    map: Option<Res<top_down::TileMap<Apartment>>>,
 ) {
     if map.is_none() {
         return;
@@ -171,6 +169,6 @@ mod tests {
         const TSCN: &str = include_str!(
             "../../../main_game/assets/scenes/building1_player_floor.tscn",
         );
-        common_rscn::parse(TSCN, &default());
+        rscn::parse(TSCN, &default());
     }
 }

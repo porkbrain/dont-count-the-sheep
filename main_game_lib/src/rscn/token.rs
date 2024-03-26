@@ -8,7 +8,7 @@ mod string_attribute;
 
 use logos::Logos;
 
-use crate::intermediate_repr::*;
+use crate::rscn::intermediate_repr::*;
 
 pub(crate) fn parse(tscn: &str) -> State {
     let mut lex = TscnToken::lexer(tscn);

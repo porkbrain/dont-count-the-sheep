@@ -27,7 +27,7 @@ use common_visuals::{
 };
 use strum::EnumString;
 
-use crate::{ActorMovementEvent, Player, TileKind, TopDownScene};
+use crate::top_down::{ActorMovementEvent, Player, TileKind, TopDownScene};
 
 /// The label's bg is a rect with a half transparent color.
 const HALF_TRANSPARENT: Color = Color::rgba(0.0, 0.0, 0.0, 0.5);
@@ -151,7 +151,7 @@ pub(crate) fn match_interact_label_with_action_event<T: TopDownScene>(
     }
 }
 
-/// This is registered in [`crate::default_setup_for_scene`].
+/// This is registered in [`crate::top_down::default_setup_for_scene`].
 ///
 /// Any logic that listens to [`ActionEvent`]s should be ordered _after_ this.
 pub fn interact(

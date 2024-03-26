@@ -24,7 +24,7 @@ use lazy_static::lazy_static;
 use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
 
-use crate::{
+use crate::top_down::{
     layout::{ysort, Tile, TileIndex, TopDownScene, LAYOUT},
     npc::NpcInTheMap,
     InspectLabelCategory, Player, TileKind, TileMap,
@@ -155,7 +155,8 @@ pub struct CharacterBundleBuilder {
 pub(crate) struct BeginDialogEvent(Entity);
 
 /// Sends events when an actor does something interesting.
-/// This system is registered on call to [`crate::default_setup_for_scene`].
+/// This system is registered on call to
+/// [`crate::top_down::default_setup_for_scene`].
 ///
 /// If you listen to this event then condition your system to run on
 /// `run_if(event_update_condition::<ActorMovementEvent>)` and

@@ -22,9 +22,4 @@ scene_meditation.workspace = true
 
 
 [features]
-devtools = [
-    "main_game_lib/devtools",
-    "scene_meditation/devtools",
-    "scene_downtown/devtools",
-    "scene_apartment/devtools",
-]
+devtools = ["main_game_lib/devtools", "scene_meditation/devtools"]

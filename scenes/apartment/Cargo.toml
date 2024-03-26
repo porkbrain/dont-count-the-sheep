@@ -4,10 +4,6 @@ version.workspace = true
 edition.workspace = true
 
 
-[features]
-devtools = ["common_top_down/devtools"]
-
-
 [dependencies]
 bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true
@@ -15,10 +11,8 @@ bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
 common_loading_screen.workspace = true
-common_rscn.workspace = true
 common_store.workspace = true
 common_story.workspace = true
-common_top_down.workspace = true
 common_visuals.workspace = true
 itertools.workspace = true
 lazy_static.workspace = true

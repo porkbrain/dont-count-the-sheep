@@ -12,7 +12,7 @@ use common_visuals::{
 };
 use lazy_static::lazy_static;
 
-use crate::Player;
+use crate::top_down::Player;
 
 lazy_static! {
     /// If the player leaves this bounding box, the camera follows her.
@@ -56,7 +56,7 @@ pub struct SyncWithPlayer {
 ///
 /// ```rust,ignore
 /// track_player_with_main_camera.after(
-///     common_top_down::actor::animate_movement::<MyScene>,
+///     main_game_lib::top_down::actor::animate_movement::<MyScene>,
 /// )
 /// ```
 ///

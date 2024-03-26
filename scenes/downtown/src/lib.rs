@@ -8,9 +8,7 @@ mod layout;
 mod prelude;
 
 use common_loading_screen::LoadingScreenState;
-use common_story::dialog::fe::portrait::in_portrait_dialog;
 use layout::DowntownTileKind;
-use main_game_lib::cutscene::in_cutscene;
 use prelude::*;
 
 /// Important scene struct.
@@ -34,7 +32,7 @@ impl TopDownScene for Downtown {
 pub fn add(app: &mut App) {
     info!("Adding downtown to app");
 
-    common_top_down::default_setup_for_scene::<Downtown, _>(
+    top_down::default_setup_for_scene::<Downtown, _>(
         app,
         GlobalGameState::DowntownLoading,
         GlobalGameState::AtDowntown,
@@ -42,7 +40,7 @@ pub fn add(app: &mut App) {
     );
 
     #[cfg(feature = "devtools")]
-    common_top_down::dev_default_setup_for_scene::<Downtown, _>(
+    top_down::dev_default_setup_for_scene::<Downtown, _>(
         app,
         GlobalGameState::AtDowntown,
         GlobalGameState::DowntownQuitting,
@@ -85,7 +83,7 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<common_top_down::TileMap<Downtown>>>,
+    map: Option<Res<top_down::TileMap<Downtown>>>,
 ) {
     if map.is_none() {
         return;

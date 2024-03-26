@@ -10,10 +10,8 @@ members = [
     "common/assets",
     "common/loading_screen",
     "common/physics",
-    "common/rscn",
     "common/store",
     "common/story",
-    "common/top_down",
     "common/visuals",
     "main_game_lib",
     "main_game",
@@ -65,10 +63,8 @@ common_assets = { path = "common/assets" }
 common_ext = { path = "common/ext" }
 common_loading_screen = { path = "common/loading_screen" }
 common_physics = { path = "common/physics" }
-common_rscn = { path = "common/rscn" }
 common_store = { path = "common/store" }
 common_story = { path = "common/story" }
-common_top_down = { path = "common/top_down" }
 common_visuals = { path = "common/visuals" }
 main_game_lib = { path = "main_game_lib" }
 

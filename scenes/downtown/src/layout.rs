@@ -1,14 +1,14 @@
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
-use common_rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use common_top_down::{
+use common_visuals::camera::render_layer;
+use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
+use serde::{Deserialize, Serialize};
+use strum::{EnumIter, IntoEnumIterator};
+use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     layout::LAYOUT,
     TileMap,
 };
-use common_visuals::camera::render_layer;
-use serde::{Deserialize, Serialize};
-use strum::{EnumIter, IntoEnumIterator};
 
 use crate::{actor::DowntownAction, prelude::*, Downtown};
 
@@ -45,14 +45,14 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(GlobalGameState::DowntownLoading),
-            common_rscn::start_loading_tscn::<Downtown>,
+            rscn::start_loading_tscn::<Downtown>,
         )
         .add_systems(
             Update,
             spawn
                 .run_if(in_state(GlobalGameState::DowntownLoading))
                 .run_if(resource_exists::<TileMap<Downtown>>)
-                .run_if(common_rscn::tscn_loaded_but_not_spawned::<Downtown>()),
+                .run_if(rscn::tscn_loaded_but_not_spawned::<Downtown>()),
         )
         .add_systems(OnExit(GlobalGameState::DowntownQuitting), despawn);
     }
@@ -135,12 +135,10 @@ impl<'a> TscnSpawner for DowntownTscnSpawner<'a> {
                 if self.transition == ApartmentToDowntown =>
             {
                 self.player_builder.initial_position(translation.truncate());
-                self.player_builder.walking_to(
-                    common_top_down::ActorTarget::new(
-                        LAYOUT.world_pos_to_square(translation.truncate())
-                            + sq(0, -2),
-                    ),
-                );
+                self.player_builder.walking_to(top_down::ActorTarget::new(
+                    LAYOUT.world_pos_to_square(translation.truncate())
+                        + sq(0, -2),
+                ));
             }
             _ => {}
         }
@@ -160,7 +158,7 @@ impl<'a> TscnSpawner for DowntownTscnSpawner<'a> {
     }
 }
 
-impl common_top_down::layout::Tile for DowntownTileKind {
+impl top_down::layout::Tile for DowntownTileKind {
     #[inline]
     fn is_walkable(&self, _: Entity) -> bool {
         true

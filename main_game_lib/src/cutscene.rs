@@ -19,15 +19,15 @@ use common_store::GlobalStore;
 use common_story::dialog::{
     self, fe::portrait::PortraitDialog, StartDialogWhenLoaded,
 };
-use common_top_down::{
-    actor::player::TakeAwayPlayerControl, Actor, ActorTarget,
-};
 use common_visuals::{
     camera::{order, render_layer},
     AtlasAnimation, AtlasAnimationTimer, BeginInterpolationEvent,
 };
 
-use crate::prelude::*;
+use crate::{
+    prelude::*,
+    top_down::{actor::player::TakeAwayPlayerControl, Actor, ActorTarget},
+};
 
 const LETTERBOXING_FADE_IN_DURATION: Duration = from_millis(500);
 const LETTERBOXING_FADE_OUT_DURATION: Duration = from_millis(250);

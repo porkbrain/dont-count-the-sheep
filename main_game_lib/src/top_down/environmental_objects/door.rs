@@ -8,7 +8,7 @@ use bevy_grid_squared::Square;
 use itertools::Itertools;
 use smallvec::SmallVec;
 
-use crate::{ActorMovementEvent, TileKind, TileMap, TopDownScene};
+use crate::top_down::{ActorMovementEvent, TileKind, TileMap, TopDownScene};
 
 /// For [`Door`]
 pub struct DoorBuilder<L> {
@@ -71,8 +71,8 @@ pub enum DoorOpenCriteria {
 
 /// When player gets near the door, the door opens.
 ///
-/// Run this after the [`crate::actor::emit_movement_events`] system and only
-/// if there are events.
+/// Run this after the [`crate::top_down::actor::emit_movement_events`] system
+/// and only if there are events.
 pub fn toggle<T: TopDownScene>(
     mut tilemap: ResMut<TileMap<T>>,
     mut events: EventReader<ActorMovementEvent<T::LocalTileKind>>,

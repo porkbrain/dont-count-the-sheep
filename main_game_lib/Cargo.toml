@@ -4,6 +4,18 @@ edition.workspace = true
 version.workspace = true
 
 
+[features]
+devtools = [
+    "bevy_egui",
+    "bevy-inspector-egui",
+    "bevy/glam_assert",
+    "common_story/devtools",
+    "common_visuals/devtools",
+    "graphviz-rust",
+    "leafwing-input-manager/egui",
+]
+
+
 [dependencies]
 bevy_egui = { workspace = true, optional = true }
 bevy_grid_squared.workspace = true
@@ -16,24 +28,22 @@ common_action.workspace = true
 common_assets.workspace = true
 common_ext.workspace = true
 common_loading_screen.workspace = true
-common_rscn.workspace = true
 common_store.workspace = true
 common_story.workspace = true
-common_top_down.workspace = true
 common_visuals.workspace = true
+graphviz-rust = { workspace = true, optional = true }
+itertools.workspace = true
+lazy_static.workspace = true
 leafwing-input-manager.workspace = true
-ron = { workspace = true, optional = true }
+logos.workspace = true
+pathfinding.workspace = true
+rand.workspace = true
+ron.workspace = true
 serde.workspace = true
+smallvec.workspace = true
 strum.workspace = true
+thiserror.workspace = true
 
-[features]
-devtools = [
-    "bevy_egui",
-    "bevy-inspector-egui",
-    "bevy/glam_assert",
-    "common_story/devtools",
-    "common_top_down/devtools",
-    "common_visuals/devtools",
-    "leafwing-input-manager/egui",
-    "ron",
-]
+
+[dev-dependencies]
+rand.workspace = true

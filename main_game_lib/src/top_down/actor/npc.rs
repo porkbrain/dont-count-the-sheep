@@ -16,7 +16,7 @@ use common_store::{DialogStore, GlobalStore};
 use common_story::dialog::{self, StartDialogWhenLoaded};
 
 use super::BeginDialogEvent;
-use crate::{
+use crate::top_down::{
     inspect_and_interact::ReadyForInteraction, layout::ZoneTile, Actor,
     ActorTarget, Player, TileMap, TopDownScene,
 };

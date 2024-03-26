@@ -1,8 +1,6 @@
-use common_top_down::{
-    actor::Who, Actor, ActorMovementEvent, TileKind, TileMap,
-};
 use common_visuals::BeginInterpolationEvent;
 use main_game_lib::common_ext::QueryExt;
+use top_down::{actor::Who, Actor, ActorMovementEvent, TileKind, TileMap};
 
 use super::{ApartmentTileKind, HallwayEntity};
 use crate::{prelude::*, Apartment};

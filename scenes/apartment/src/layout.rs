@@ -2,8 +2,11 @@ mod watch_entry_to_hallway;
 
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
-use common_rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use common_top_down::{
+use common_visuals::camera::render_layer;
+use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
+use serde::{Deserialize, Serialize};
+use strum::{EnumIter, IntoEnumIterator};
+use top_down::{
     actor::{
         self, movement_event_emitted, CharacterBundleBuilder, CharacterExt,
     },
@@ -15,9 +18,6 @@ use common_top_down::{
     layout::LAYOUT,
     ActorTarget, TileMap,
 };
-use common_visuals::camera::render_layer;
-use serde::{Deserialize, Serialize};
-use strum::{EnumIter, IntoEnumIterator};
 
 use crate::{actor::ApartmentAction, prelude::*, Apartment};
 
@@ -61,16 +61,14 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(GlobalGameState::ApartmentLoading),
-            common_rscn::start_loading_tscn::<Apartment>,
+            rscn::start_loading_tscn::<Apartment>,
         )
         .add_systems(
             Update,
             spawn
                 .run_if(in_state(GlobalGameState::ApartmentLoading))
                 .run_if(resource_exists::<TileMap<Apartment>>)
-                .run_if(common_rscn::tscn_loaded_but_not_spawned::<
-                    Apartment,
-                >()),
+                .run_if(rscn::tscn_loaded_but_not_spawned::<Apartment>()),
         )
         .add_systems(OnExit(GlobalGameState::ApartmentQuitting), despawn)
         .add_systems(
@@ -246,7 +244,7 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
         cmd: &mut Commands,
         parent: Entity,
         name: String,
-        _: common_rscn::Node,
+        _: rscn::Node,
     ) {
         match name.as_str() {
             "HallwayEntity" => {
@@ -282,7 +280,7 @@ impl<'a> TscnSpawner for ApartmentTscnSpawner<'a> {
     }
 }
 
-impl common_top_down::layout::Tile for ApartmentTileKind {
+impl top_down::layout::Tile for ApartmentTileKind {
     #[inline]
     fn is_walkable(&self, _: Entity) -> bool {
         true

@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use common_ext::QueryExt;
 
 #[cfg(feature = "devtools")]
-use crate::layout::map_maker;
-use crate::{TileMap, TopDownScene};
+use crate::top_down::layout::map_maker;
+use crate::top_down::{TileMap, TopDownScene};
 
 /// Tells the game to start loading the map.
 /// We need to keep checking for this to be done by calling
@@ -51,14 +51,14 @@ pub(crate) fn try_insert_map_as_resource<T: TopDownScene>(
         }
 
         cmd.insert_resource(loaded_map);
-        cmd.init_resource::<crate::actor::ActorZoneMap<T::LocalTileKind>>();
+        cmd.init_resource::<crate::top_down::actor::ActorZoneMap<T::LocalTileKind>>();
         cmd.entity(entity).despawn();
     }
 }
 
 pub(crate) fn remove_resources<T: TopDownScene>(mut cmd: Commands) {
     cmd.remove_resource::<TileMap<T>>();
-    cmd.remove_resource::<crate::actor::ActorZoneMap<T::LocalTileKind>>();
+    cmd.remove_resource::<crate::top_down::actor::ActorZoneMap<T::LocalTileKind>>();
 
     #[cfg(feature = "devtools")]
     {

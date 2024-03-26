@@ -1,5 +1,20 @@
-#![doc = include_str!("../README.md")]
-#![deny(missing_docs)]
+//! As of now, bevy has no built-in editor.
+//! Plugins are available with very simple implementations.
+//! After experimenting with Godot, I ended up liking the editor a lot.
+//!
+//! The decision has been made to use Godot for the editor and bevy for the game
+//! engine. This crate parses `.tscn` files and provides a way to load them into
+//! bevy.
+//!
+//! Everything aggressively panics.
+//! We support very limited subset of what Godot supports, only things that are
+//! relevant to our use case.
+//!
+//! The tree structure is parsed and converted into bevy entities.
+//! 2D nodes are entities (with relevant components) and child-parent
+//! relationships are preserved. Plain nodes are typically components.
+//! See the wiki for current status of what's supported and what custom nodes
+//! are available.
 
 mod intermediate_repr;
 mod loader;
@@ -22,13 +37,11 @@ use bevy::{
     utils::HashMap,
 };
 use common_ext::QueryExt;
-use common_top_down::TopDownScene;
+pub use loader::{LoaderError, TscnLoader};
 use serde::{Deserialize, Serialize};
+pub use spawner::TscnSpawner;
 
-pub use crate::{
-    loader::{LoaderError, TscnLoader},
-    spawner::TscnSpawner,
-};
+use crate::top_down::TopDownScene;
 
 /// A helper component that is always in an entity with
 /// [`bevy::prelude::SpatialBundle`].
@@ -108,7 +121,7 @@ pub struct In2D {
     pub position: Vec2,
     /// Or calculated from position if missing.
     /// If a 2D node has a 2D node child called "YSort", then the position
-    /// fed to the [`common_top_down::layout::ysort`] function is the global
+    /// fed to the [`crate::top_down::layout::ysort`] function is the global
     /// position of that "YSort", i.e. the position of the 2D node plus the
     /// position of the "YSort".
     pub z_index: Option<f32>,

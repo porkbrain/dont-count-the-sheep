@@ -15,15 +15,17 @@ use bevy::{
     transform::components::Transform,
     utils::default,
 };
-use common_top_down::{layout::ysort, InspectLabelCategory};
 use common_visuals::{AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer};
 
-use crate::{In2D, Node, NodeName, Point, SpriteTexture, TscnTree};
+use crate::{
+    rscn::{In2D, Node, NodeName, Point, SpriteTexture, TscnTree},
+    top_down::{layout::ysort, InspectLabelCategory},
+};
 
 /// Guides the spawning process of a scene.
 /// Use the [`TscnTree::spawn_into`] method to spawn the scene into a world.
 /// The implementation has some knowledge of bevy and top down scenes to provide
-/// default implementations for things like [`common_top_down::InspectLabel`]
+/// default implementations for things like [`crate::top_down::InspectLabel`]
 /// and Y sorting.
 ///
 /// For scene dependent behavior, the implementation defer to the user by
@@ -81,7 +83,7 @@ pub trait TscnSpawner {
     }
 
     /// When a player enters a zone, the entity with can be interacted with.
-    /// See also [`common_top_down::inspect_and_interact::ZoneToInspectLabelEntity`].
+    /// See also [`crate::top_down::inspect_and_interact::ZoneToInspectLabelEntity`].
     fn map_zone_to_inspect_label_entity(
         &mut self,
         _zone: Self::LocalZoneKind,

@@ -1,7 +1,7 @@
 use common_loading_screen::LoadingScreenSettings;
-use common_top_down::{ActorMovementEvent, TileKind};
 use common_visuals::camera::MainCamera;
 use main_game_lib::{common_ext::QueryExt, cutscene::IntoCutscene};
+use top_down::{ActorMovementEvent, TileKind};
 
 use super::{cutscenes, ApartmentAction};
 use crate::{
@@ -47,7 +47,7 @@ pub(super) fn enter_the_elevator(
     player: Query<Entity, With<Player>>,
     elevator: Query<Entity, With<Elevator>>,
     camera: Query<Entity, With<MainCamera>>,
-    points: Query<(&Name, &common_rscn::Point)>,
+    points: Query<(&Name, &rscn::Point)>,
 ) {
     let is_triggered = action_events
         .read()
@@ -59,7 +59,7 @@ pub(super) fn enter_the_elevator(
             elevator: elevator.single(),
             camera: camera.single(),
             point_in_elevator: {
-                let (_, common_rscn::Point(pos)) = points
+                let (_, rscn::Point(pos)) = points
                     .iter()
                     .find(|(name, _)| **name == Name::new("InElevator"))
                     .expect("InElevator point not found");

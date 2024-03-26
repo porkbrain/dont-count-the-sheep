@@ -2,12 +2,12 @@ use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::LoadingScreenSettings;
 use common_store::{DialogStore, GlobalStore};
 use common_story::dialog;
-use common_top_down::layout::LAYOUT;
 use common_visuals::EASE_IN_OUT;
 use main_game_lib::{
     cutscene::{self, CutsceneStep, IntoCutscene},
     state::GlobalGameStateTransition as Ggst,
 };
+use top_down::layout::LAYOUT;
 
 use crate::prelude::*;
 

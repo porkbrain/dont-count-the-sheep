@@ -1,8 +1,16 @@
-#![doc = include_str!("../README.md")]
-#![deny(missing_docs)]
-#![feature(trivial_bounds)]
-#![feature(let_chains)]
-#![allow(clippy::type_complexity)]
+//! Deals with the most common view in the game: the top down.
+//! It contains logic for layout of the scenes, and the actors in them.
+//!
+//! ## `layout`
+//!
+//! What kind of different tiles are there. There can be multiple tiles assigned
+//! to a single square. Squares are coordinates and tiles dictate what happens
+//! on a square. A tile is uniquely identified by `x` and `y` of the square and
+//! a layer index.
+//!
+//! ## `actor`
+//!
+//! Moving around the pixel world, managing NPCs and the player character.
 
 pub mod actor;
 pub mod cameras;
@@ -10,13 +18,14 @@ pub mod environmental_objects;
 pub mod inspect_and_interact;
 pub mod layout;
 
+use actor::{emit_movement_events, BeginDialogEvent};
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::{ecs::event::event_update_condition, prelude::*};
 pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, TopDownScene};
 use leafwing_input_manager::plugin::InputManagerSystem;
 
-use crate::actor::{emit_movement_events, BeginDialogEvent};
+use crate::cutscene::in_cutscene;
 
 /// Does not add any systems, only registers generic-less types.
 pub struct Plugin;
@@ -41,12 +50,12 @@ impl bevy::app::Plugin for Plugin {
 /// including from other packages:
 /// - [`common_assets::store::insert_as_resource`]
 /// - [`common_assets::store::remove_as_resource`]
-/// - [`crate::actor::animate_movement`]
-/// - [`crate::actor::emit_movement_events`]
-/// - [`crate::actor::npc::drive_behavior`]
-/// - [`crate::actor::npc::plan_path`]
-/// - [`crate::actor::npc::run_path`]
-/// - [`crate::actor::player::move_around`]
+/// - [`crate::top_down::actor::animate_movement`]
+/// - [`crate::top_down::actor::emit_movement_events`]
+/// - [`crate::top_down::actor::npc::drive_behavior`]
+/// - [`crate::top_down::actor::npc::plan_path`]
+/// - [`crate::top_down::actor::npc::run_path`]
+/// - [`crate::top_down::actor::player::move_around`]
 pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
     app: &mut App,
     loading: S,
@@ -187,8 +196,8 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
         .add_systems(OnExit(quitting), common_visuals::camera::despawn)
         .add_systems(
             FixedUpdate,
-            crate::cameras::track_player_with_main_camera
-                .after(crate::actor::animate_movement::<T>)
+            cameras::track_player_with_main_camera
+                .after(actor::animate_movement::<T>)
                 .run_if(in_state(running))
                 .run_if(not(in_cutscene()))
                 .run_if(not(

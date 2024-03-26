@@ -7,7 +7,7 @@ use common_ext::QueryExt;
 use leafwing_input_manager::action_state::ActionState;
 
 use super::{Actor, ActorTarget};
-use crate::layout::{TileMap, TopDownScene};
+use crate::top_down::layout::{TileMap, TopDownScene};
 
 /// The entity that the player controls.
 /// Bound it with [`Actor`] to allow movement.

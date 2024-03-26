@@ -1,7 +1,7 @@
 use bevy::asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext};
 use thiserror::Error;
 
-use crate::{Config, TscnTree};
+use crate::rscn::{Config, TscnTree};
 
 /// Loads .tscn files into [`TscnTree`] representation.
 #[derive(Default)]
@@ -35,7 +35,7 @@ impl AssetLoader for TscnLoader {
             reader.read_to_end(&mut bytes).await?;
             let tscn = std::str::from_utf8(&bytes)?;
 
-            Ok(crate::parse(tscn, settings))
+            Ok(crate::rscn::parse(tscn, settings))
         })
     }
 

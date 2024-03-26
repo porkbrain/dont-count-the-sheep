@@ -4,7 +4,7 @@ use bevy::{
     utils::{default, HashMap},
 };
 
-use crate::{
+use crate::rscn::{
     intermediate_repr::{self, ParsedNodeKind, Y},
     Config, In2D, Node, NodeName, SpriteFrames, SpriteTexture, TscnTree,
 };

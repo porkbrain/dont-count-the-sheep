@@ -4,8 +4,8 @@ mod cutscenes;
 mod player;
 
 use bevy::ecs::event::event_update_condition;
-use common_top_down::actor::{emit_movement_events, movement_event_emitted};
 use main_game_lib::cutscene::in_cutscene;
+use top_down::actor::{emit_movement_events, movement_event_emitted};
 
 use crate::{prelude::*, Apartment};
 
