@@ -1,44 +1,20 @@
 [root]
 who = "Winnie"
 en = "Let's see, I'm going to ..."
-next = ["ground_floor", "first_floor", "exit_elevator"]
+# DO NOT RENAME ANY, elevator cutscene depends on this
+next = ["go_to_downtown", "go_to_basement1", "exit_elevator"]
 
 [[node]]
-name = "ground_floor"   # DO NOT RENAME, elevator cutscene depends on this
-en = "the ground floor"
+name = "go_to_downtown"
+en = "go outside"
+next = "_end_dialog"
+
+[[node]]
+name = "go_to_basement1"
+en = "the basement"
 next = "_end_dialog"
 
 [[node]]
 name = "exit_elevator"
 en = "exit the elevator"
 next = "_end_dialog"
-
-[[node]]
-name = "first_floor"
-en = "the first floor"
-[[node]]
-guard = "reach_last_alternative"
-next = [
-    "learned_elevator_not_working",
-    "one_more_time",
-    "knows_elevator_not_working",
-]
-
-[[node]]
-name = "learned_elevator_not_working"
-en = "... can't ... just ...\ncan you work you ..."
-[[node]]
-en = "Arrgh!"
-[[node]]
-en = "Yep, that one is definitely not working."
-next = "_root"
-
-[[node]]
-name = "one_more_time"
-en = "Let's try again.\nNah, still not working."
-next = "_root"
-
-[[node]]
-name = "knows_elevator_not_working"
-en = "Still broken."
-next = "_root"

@@ -6,10 +6,13 @@ pub use bevy::{math::vec2, prelude::*, time::Stopwatch};
 pub use common_action::{
     leafwing_input_manager::action_state::ActionState, GlobalAction,
 };
-pub use common_top_down::{Player, TopDownScene};
 pub use common_visuals::PRIMARY_COLOR;
 
-pub use crate::state::*;
+pub use crate::{
+    rscn,
+    state::*,
+    top_down::{self, Player, TopDownScene},
+};
 
 /// A convenience function to create a [`Duration`] from milliseconds.
 pub const fn from_millis(millis: u64) -> Duration {

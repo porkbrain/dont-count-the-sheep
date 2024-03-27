@@ -10,6 +10,8 @@
 //! another.
 //! Specifically, those systems that don't wait for anything.
 
+pub mod enter_an_elevator;
+
 use std::sync::OnceLock;
 
 use bevy::{ecs::system::SystemId, prelude::*, render::view::RenderLayers};
@@ -19,15 +21,15 @@ use common_store::GlobalStore;
 use common_story::dialog::{
     self, fe::portrait::PortraitDialog, StartDialogWhenLoaded,
 };
-use common_top_down::{
-    actor::player::TakeAwayPlayerControl, Actor, ActorTarget,
-};
 use common_visuals::{
     camera::{order, render_layer},
     AtlasAnimation, AtlasAnimationTimer, BeginInterpolationEvent,
 };
 
-use crate::prelude::*;
+use crate::{
+    prelude::*,
+    top_down::{actor::player::TakeAwayPlayerControl, Actor, ActorTarget},
+};
 
 const LETTERBOXING_FADE_IN_DURATION: Duration = from_millis(500);
 const LETTERBOXING_FADE_OUT_DURATION: Duration = from_millis(250);
@@ -104,6 +106,9 @@ pub enum CutsceneStep {
         Box<Vec<CutsceneStep>>,
     ),
 
+    /// Gets access to commands, can schedule some, and then immediately
+    /// transitions to the next step.
+    ScheduleCommands(fn(&mut Commands, &GlobalStore)),
     /// Simple await until this duration passes.
     Sleep(Duration),
     /// Inserts the [`TakeAwayPlayerControl`] component to the player entity.
@@ -417,6 +422,7 @@ struct CutsceneSystems {
     wait_until_atlas_animation_ends: SystemId,
     begin_moving_entity: SystemId,
     set_actor_facing_direction: SystemId,
+    schedule_commands: SystemId,
 }
 
 impl CutsceneSystems {
@@ -442,6 +448,7 @@ impl CutsceneSystems {
             begin_moving_entity: w.register_system(begin_moving_entity),
             set_actor_facing_direction: w
                 .register_system(set_actor_facing_direction),
+            schedule_commands: w.register_system(schedule_commands),
         }
     }
 }
@@ -470,6 +477,7 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         WaitUntilAtlasAnimationEnds(_) => s.wait_until_atlas_animation_ends,
         BeginMovingEntity { .. } => s.begin_moving_entity,
         SetActorFacingDirection(_, _) => s.set_actor_facing_direction,
+        ScheduleCommands(_) => s.schedule_commands,
     }
 }
 
@@ -530,7 +538,7 @@ fn change_global_state(
     mut cutscene: ResMut<Cutscene>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
-    mut transition: ResMut<GlobalGameStateTransitionStack>,
+    mut transition: ResMut<GlobalGameStateTransition>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
     let CutsceneStep::ChangeGlobalState {
@@ -554,7 +562,7 @@ fn change_global_state(
     }
 
     next_state.set(*to);
-    transition.push(*with);
+    *transition = *with;
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }
@@ -748,6 +756,21 @@ fn set_actor_facing_direction(
     if let Ok(mut actor) = actors.get_mut(*entity) {
         actor.direction = *direction;
     }
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn schedule_commands(
+    mut cmd: Commands,
+    store: Res<GlobalStore>,
+    mut cutscene: ResMut<Cutscene>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::ScheduleCommands(f) = &step else {
+        panic!("Expected ScheduleCommands step, got {step}");
+    };
+
+    f(&mut cmd, &store);
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }

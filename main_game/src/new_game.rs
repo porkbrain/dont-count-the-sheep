@@ -17,5 +17,5 @@ pub(crate) fn on_enter(
     store
         .add_dialog_to_npc(Character::Bolt, dialog::TypedNamespace::BoltIsMean);
 
-    next_state.set(GlobalGameState::ApartmentLoading);
+    next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
 }

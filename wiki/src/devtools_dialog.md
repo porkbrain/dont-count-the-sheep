@@ -187,7 +187,16 @@ The dialog file will not be attached to the NPC anymore.
 
 ### Emerging
 
-TODO
+NPCs can have multiple dialog files attached to them.
+When the player initiates dialog with them, they are presented with choices, each representing one of the dialog files.
+Each node in a dialog file must transition to another node.
+
+Two special nodes serve this purpose:
+
+- `_end_dialog`, which closes the dialog frontend (e.g., a dialog box).
+- `_emerge`, which simulates the dialog being closed and immediately reopened.
+
+In essence, "emerging" simply means returning to the beginning.
 
 ### Variables
 

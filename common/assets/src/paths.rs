@@ -9,21 +9,6 @@ pub mod fonts {
     pub const TINY_PIXEL1: &str = "fonts/tiny_pixel.ttf";
 }
 
-pub mod apartment {
-    pub const FOLDER: &str = "apartment";
-    pub const MAP: &str = "maps/apartment.ron";
-    pub const SCENE: &str = "scenes/apartment.ron";
-
-    pub const WINNIE_SLEEPING: &str = "apartment/sleeping.png";
-    pub const WINNIE_MEDITATING: &str = "apartment/meditating.png";
-}
-
-pub mod downtown {
-    pub const FOLDER: &str = "downtown";
-    pub const BG: &str = "downtown/bg.png";
-    pub const MAP: &str = "maps/downtown.ron";
-}
-
 pub mod meditation {
     pub const FOLDER: &str = "meditation";
 

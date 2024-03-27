@@ -10,17 +10,15 @@ members = [
     "common/assets",
     "common/loading_screen",
     "common/physics",
-    "common/rscn",
     "common/store",
     "common/story",
-    "common/top_down",
     "common/visuals",
     "main_game_lib",
     "main_game",
-    "scenes/apartment",
-    "scenes/dev_playground",
+    "scenes/building1_player_floor",
     "scenes/downtown",
     "scenes/meditation",
+    "scenes/building1_basement1",
 ]
 
 
@@ -55,8 +53,8 @@ leafwing-input-manager = "0.13"
 # > Error adding plugin bevy_egui::EguiPlugin: : plugin was already added in application
 bevy_egui = "0.25"
 
-scene_apartment = { path = "scenes/apartment" }
-scene_dev_playground = { path = "scenes/dev_playground" }
+scene_building1_basement1 = { path = "scenes/building1_basement1" }
+scene_building1_player_floor = { path = "scenes/building1_player_floor" }
 scene_downtown = { path = "scenes/downtown" }
 scene_meditation = { path = "scenes/meditation" }
 
@@ -67,10 +65,8 @@ common_assets = { path = "common/assets" }
 common_ext = { path = "common/ext" }
 common_loading_screen = { path = "common/loading_screen" }
 common_physics = { path = "common/physics" }
-common_rscn = { path = "common/rscn" }
 common_store = { path = "common/store" }
 common_story = { path = "common/story" }
-common_top_down = { path = "common/top_down" }
 common_visuals = { path = "common/visuals" }
 main_game_lib = { path = "main_game_lib" }
 

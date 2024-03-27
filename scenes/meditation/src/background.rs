@@ -31,8 +31,8 @@ struct BackgroundEntity;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GlobalGameState::MeditationLoading), spawn)
-            .add_systems(OnExit(GlobalGameState::MeditationQuitting), despawn);
+        app.add_systems(OnEnter(GlobalGameState::LoadingMeditation), spawn)
+            .add_systems(OnExit(GlobalGameState::QuittingMeditation), despawn);
     }
 }
 

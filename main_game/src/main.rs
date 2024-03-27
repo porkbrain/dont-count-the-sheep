@@ -48,7 +48,8 @@ fn main() {
 
     info!("Adding scenes");
 
-    scene_apartment::add(&mut app);
+    scene_building1_player_floor::add(&mut app);
+    scene_building1_basement1::add(&mut app);
     scene_meditation::add(&mut app);
     scene_downtown::add(&mut app);
 

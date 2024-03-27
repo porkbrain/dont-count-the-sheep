@@ -5,8 +5,10 @@ use crate::prelude::*;
 /// Provides control for the game states.
 /// Each scene can add whatever state it needs to this enum.
 /// Transitions between states are controlled by the
-/// [`GlobalGameStateTransitionStack`]. It defines what transitions are allowed.
+/// [`GlobalGameStateTransition`].
+/// It defines what transitions are allowed.
 #[derive(States, Default, Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
+#[allow(missing_docs)]
 pub enum GlobalGameState {
     /// Dummy state so that we can do loading transitions.
     #[default]
@@ -16,125 +18,111 @@ pub enum GlobalGameState {
     /// Populates the save log with the default values.
     NewGame,
 
-    /// Sets up the apartment game in the background.
-    ApartmentLoading,
-    /// Player is at apartment.
-    InApartment,
-    /// Despawn apartment game resources.
-    ApartmentQuitting,
+    /// Sets up the floor with player's first apartment
+    LoadingBuilding1PlayerFloor,
+    AtBuilding1PlayerFloor,
+    QuittingBuilding1PlayerFloor,
+
+    LoadingBuilding1Basement1,
+    AtBuilding1Basement1,
+    QuittingBuilding1Basement1,
 
     /// Change the game state to this state to run systems that setup the
     /// meditation game in the background.
     /// Nothing is shown to the player yet.
-    MeditationLoading,
+    LoadingMeditation,
     /// Game is being played.
-    MeditationInGame,
+    InGameMeditation,
     /// Game is paused and menu is spawned.
     /// Menu is always spawned and destroyed, unlike the game resources.
     MeditationInMenu,
     /// Change the game state to this state to run systems that clean up the
     /// meditation game in the background.
-    MeditationQuitting,
+    QuittingMeditation,
 
-    /// Sets up the downtown scene in the background.
-    DowntownLoading,
-    /// Player is at downtown.
+    LoadingDowntown,
     AtDowntown,
-    /// Despawn downtown game resources.
-    DowntownQuitting,
+    QuittingDowntown,
 
     /// Performs all necessary cleanup and exits the game.
     Exit,
-
-    /// A state for development purposes.
-    #[cfg(feature = "dev-playground")]
-    InDevPlayground,
 }
 
 /// What are the allowed transitions between game states?
-#[derive(Debug, Reflect, Clone, Copy, Eq, PartialEq)]
+#[allow(missing_docs)]
+#[derive(Resource, Debug, Default, Reflect, Clone, Copy, Eq, PartialEq)]
+#[reflect(Resource)]
 pub enum GlobalGameStateTransition {
-    /// New game starts in the apartment.
-    NewGameToApartmentLoading,
+    #[default]
+    BlankToNewGame,
+    NewGameToBuilding1PlayerFloor,
 
-    /// Restart the game
-    MeditationQuittingToMeditationLoading,
-    /// Exit back to the apartment
-    MeditationQuittingToApartment,
+    RestartMeditation,
+    MeditationToBuilding1PlayerFloor,
 
-    /// Play the meditation minigame
-    ApartmentQuittingToMeditationLoading,
-    /// Quit the game
-    ApartmentQuittingToExit,
-    /// Go to downtown
-    ApartmentQuittingToDowntownLoading,
+    Building1PlayerFloorToMeditation,
+    Building1PlayerFloorToDowntown,
+    Building1PlayerFloorToBuilding1Basement1,
+
+    Building1Basement1ToPlayerFloor,
+    Building1Basement1ToDowntown,
+
+    DowntownToBuilding1PlayerFloor,
 }
 
-/// Typical scene have several states with repeating semantics.
-pub struct StateSemantics<S> {
+/// Typical scene has several states with standard semantics.
+pub struct StandardStateSemantics {
     /// The state when the scene is loading.
     /// Setups up resources.
-    pub loading: S,
+    pub loading: GlobalGameState,
     /// The state when the scene is running.
-    /// Runs the necessary systems.
-    pub running: S,
+    pub running: GlobalGameState,
     /// The state when the scene is quitting.
     /// Cleans up resources.
-    pub quitting: S,
+    pub quitting: GlobalGameState,
     /// Some scenes have a paused state.
-    pub paused: Option<S>,
+    pub paused: Option<GlobalGameState>,
 }
 
-/// Certain states have multiple allowed transitions.
-/// The tip of the stack must always match the current state.
-#[derive(Resource, Debug, Default, Reflect)]
-pub struct GlobalGameStateTransitionStack {
-    stack: Vec<GlobalGameStateTransition>,
-}
+/// Typical scene has several states with standard semantics.
+pub trait WithStandardStateSemantics {
+    /// The state when the scene is loading.
+    fn loading() -> GlobalGameState;
+    /// The state when the scene is running.
+    fn running() -> GlobalGameState;
+    /// The state when the scene is quitting.
+    fn quitting() -> GlobalGameState;
 
-impl GlobalGameStateTransitionStack {
-    /// Expect a transition.
-    pub fn push(&mut self, transition: GlobalGameStateTransition) {
-        self.stack.push(transition);
+    /// Some scenes have a paused state.
+    fn paused() -> Option<GlobalGameState> {
+        None
     }
 
-    /// Given state that's ready to transition, where should we go next?
-    pub fn pop_next_for(
-        &mut self,
-        state: GlobalGameState,
-    ) -> Option<GlobalGameState> {
-        use GlobalGameState::*;
-        use GlobalGameStateTransition::*;
-
-        match (self.stack.pop(), state) {
-            (None, state) => {
-                debug!("There's nowhere to transition from {state:?}");
-                None
-            }
-            (
-                Some(MeditationQuittingToMeditationLoading),
-                MeditationQuitting,
-            ) => Some(MeditationLoading),
-            (Some(MeditationQuittingToApartment), MeditationQuitting) => {
-                Some(ApartmentLoading)
-            }
-            (Some(ApartmentQuittingToExit), ApartmentQuitting) => Some(Exit),
-            (Some(ApartmentQuittingToMeditationLoading), ApartmentQuitting) => {
-                Some(MeditationLoading)
-            }
-            (Some(ApartmentQuittingToDowntownLoading), ApartmentQuitting) => {
-                Some(DowntownLoading)
-            }
-            (Some(NewGameToApartmentLoading), NewGame) => {
-                Some(ApartmentLoading)
-            }
-
-            (Some(transition), state) => {
-                error!(
-                    "Next transition {transition:?} does not match {state:?}"
-                );
-                None
-            }
+    /// Converts these methods into a struct
+    fn semantics() -> StandardStateSemantics {
+        StandardStateSemantics {
+            loading: Self::loading(),
+            running: Self::running(),
+            quitting: Self::quitting(),
+            paused: Self::paused(),
         }
+    }
+
+    /// Helper to check if the state is in the loading state.
+    fn in_loading_state(
+    ) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
+        in_state(Self::loading())
+    }
+
+    /// Helper to check if the state is in the running state.
+    fn in_running_state(
+    ) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
+        in_state(Self::running())
+    }
+
+    /// Helper to check if the state is in the quitting state.
+    fn in_quitting_state(
+    ) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
+        in_state(Self::quitting())
     }
 }

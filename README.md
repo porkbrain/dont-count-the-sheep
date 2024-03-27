@@ -8,12 +8,12 @@ Run `$ ./bin/wiki` to open the game's [wiki](wiki/README.md) locally in your bro
 
 # Repo organization
 
-There are crates in the [`common`](common/) directory that help with [animation](common/visuals/), [input handling](common/action/), [loading screen](common/loading_screen/), [map layout, npc and player control](common/top_down/) and more.
+There are crates in the [`common`](common/) directory that help with [animation](common/visuals/), [input handling](common/action/), [loading screen](common/loading_screen/), and more.
 These crates typically either export plugins or systems that one has to register themselves.
 
 Then there's the [main game lib](main_game_lib/).
 This crate exports logic that did not fit into the common crates.
-For example, the `GlobalGameState` enum that directs the game flow lives here.
+For example, the `GlobalGameState` enum that directs the game flow lives here, or map layout, npc and player control.
 It also sets up default plugins and alike.
 
 Then we have the [scenes](scenes/).
@@ -43,10 +43,3 @@ With every extra dependency that also depends on Bevy it potentially takes longe
 
 Some crates export `devtools` feature that enable additional debug and/or dev tooling functionality.
 For example, the [`common/top_down`](common/top_down/) crate has a `devtools` feature that spawns a grid of tiles to help with level design.
-
-There's also a whole dedicated scene for prototyping and testing: [`scenes/dev_playground`](scenes/dev_playground/).
-Run this scene with `$ ./bin/dev_playground`.
-
-We use Godot's editor to manage scenes.
-The exported `.tscn` files are then loaded and spawned by the game.
-See the wiki and [`common/rscn` crate](common/rscn/) for more information.

@@ -2,10 +2,13 @@
 #![feature(trivial_bounds)]
 #![feature(let_chains)]
 #![deny(missing_docs)]
+#![allow(clippy::type_complexity)]
 
 pub mod cutscene;
 pub mod prelude;
+pub mod rscn;
 pub mod state;
+pub mod top_down;
 pub mod vec2_ext;
 
 use bevy::{app::AppExit, prelude::*};
@@ -23,30 +26,25 @@ pub fn windowed_app() -> App {
     app.add_plugins(
         DefaultPlugins
             .set(bevy::log::LogPlugin {
-                level: bevy::log::Level::WARN,
+                level: bevy::log::Level::INFO,
                 filter: "\
-                warn,\
-                apartment=trace,\
+                info,\
+                game=trace,\
                 bevy_magic_light_2d=trace,\
                 common_action=trace,\
                 common_assets=trace,\
                 common_loading_screen=trace,\
                 common_physics=trace,\
                 common_store=trace,\
-                common_story=trace,\
-                common_top_down=trace,\
-                common_top_down::actor::npc=debug,\
-                common_top_down::actor=debug,\
-                common_top_down::environmental_objects::door=debug,\
-                common_top_down::cameras=debug,\
-                common_top_down::layout=debug,\
                 common_visuals=trace,\
-                dev_playground=trace,\
-                downtown=trace,\
-                game=trace,\
+                common_story=trace,\
                 main_game_lib=trace,\
-                meditation=trace,\
-                meditation::hoshi::sprite=debug,\
+                main_game_lib::top_down=trace,\
+                main_game_lib::top_down::actor::npc=debug,\
+                main_game_lib::top_down::actor=debug,\
+                main_game_lib::top_down::environmental_objects::door=debug,\
+                main_game_lib::top_down::cameras=debug,\
+                main_game_lib::top_down::layout=debug,\
                 "
                 .to_string(),
                 ..default()
@@ -70,14 +68,14 @@ pub fn windowed_app() -> App {
 
     app.init_state::<GlobalGameState>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
-        .insert_resource(GlobalGameStateTransitionStack::default())
-        .init_asset::<common_rscn::TscnTree>()
-        .init_asset_loader::<common_rscn::TscnLoader>()
+        .init_resource::<GlobalGameStateTransition>()
+        .init_asset::<crate::rscn::TscnTree>()
+        .init_asset_loader::<crate::rscn::TscnLoader>()
         .init_asset_loader::<common_assets::ignore_loader::Loader>();
 
     #[cfg(feature = "devtools")]
     {
-        app.register_type::<GlobalGameStateTransitionStack>()
+        app.register_type::<GlobalGameStateTransition>()
             .register_type::<GlobalGameState>();
 
         use bevy_inspector_egui::quick::{
@@ -97,7 +95,7 @@ pub fn windowed_app() -> App {
         common_loading_screen::Plugin,
         common_store::Plugin,
         common_story::Plugin,
-        common_top_down::Plugin,
+        crate::top_down::Plugin,
         common_visuals::Plugin,
         cutscene::Plugin,
         PixelCameraPlugin,

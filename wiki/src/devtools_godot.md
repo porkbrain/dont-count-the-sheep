@@ -58,6 +58,11 @@ It's a way to ensure that sprites are rendered in the correct order based on the
 To apply ysorting to a node, the y-index must be set to **0** on the sprite node (default) and a new child node of type `Node2D` named `YSort` must be added.
 Ysorting only works for sibling nodes.
 
+## Supported settings:
+
+- Visibility / Visible check box
+- Visibility / Self Modulate color
+
 ## Components
 
 The purpose of components is to enhance the functionality of sprites.
@@ -83,7 +88,10 @@ Here's an exhaustive list of components (defined as `Node` type with their names
   - `zone`: An optional name of a local tile kind that the player must be in to interact with the object.
   - `category`: Optional. See [_Inspecting the World: Categories_](ability_to_inspect.md#categories).
 
-- `HallwayEntity`: A component with no metadata in the `Apartment` scene.
+- `Point`: A component with no metadata.
+  It's used to define a point in the scene, such as a waypoint or a spawn point.
+
+- `HallwayEntity`: A component with no metadata in the `Building1PlayerFloor` scene.
 
 <!-- List of References -->
 

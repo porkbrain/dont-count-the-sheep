@@ -4,22 +4,24 @@ version.workspace = true
 edition.workspace = true
 
 
+[features]
+devtools = [
+    "main_game_lib/devtools",
+    "common_story/devtools",
+    "common_visuals/devtools",
+]
+
+
 [dependencies]
 bevy_grid_squared.workspace = true
 bevy_pixel_camera.workspace = true
 bevy.workspace = true
 common_assets.workspace = true
 common_loading_screen.workspace = true
-common_rscn.workspace = true
 common_store.workspace = true
 common_story.workspace = true
-common_top_down.workspace = true
 common_visuals.workspace = true
 lazy_static.workspace = true
 main_game_lib.workspace = true
 serde.workspace = true
 strum.workspace = true
-
-
-[features]
-devtools = ["common_top_down/devtools"]
