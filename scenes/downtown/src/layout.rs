@@ -16,17 +16,17 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(GlobalGameState::LoadingDowntown),
+            OnEnter(Downtown::loading()),
             rscn::start_loading_tscn::<Downtown>,
         )
         .add_systems(
             Update,
             spawn
-                .run_if(in_state(GlobalGameState::LoadingDowntown))
+                .run_if(Downtown::in_loading_state())
                 .run_if(resource_exists::<TileMap<Downtown>>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Downtown>()),
         )
-        .add_systems(OnExit(GlobalGameState::QuittingDowntown), despawn);
+        .add_systems(OnExit(Downtown::quitting()), despawn);
     }
 }
 
@@ -35,7 +35,7 @@ impl bevy::app::Plugin for Plugin {
 #[derive(Component)]
 pub(crate) struct LayoutEntity;
 
-struct DowntownTscnSpawner<'a> {
+struct Spawner<'a> {
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
     player_builder: &'a mut CharacterBundleBuilder,
@@ -62,7 +62,7 @@ fn spawn(
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
     tscn.spawn_into(
-        &mut DowntownTscnSpawner {
+        &mut Spawner {
             asset_server: &asset_server,
             transition: *transition,
             atlases: &mut atlas_layouts,
@@ -82,7 +82,7 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.entity(root).despawn_recursive();
 }
 
-impl<'a> TscnSpawner for DowntownTscnSpawner<'a> {
+impl<'a> TscnSpawner for Spawner<'a> {
     type LocalActionKind = DowntownAction;
     type LocalZoneKind = DowntownTileKind;
 

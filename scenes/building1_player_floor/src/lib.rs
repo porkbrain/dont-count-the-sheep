@@ -106,28 +106,26 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(in_state(GlobalGameState::LoadingBuilding1PlayerFloor))
+            .run_if(Building1PlayerFloor::in_loading_state())
             .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_scene
-            .run_if(in_state(GlobalGameState::LoadingBuilding1PlayerFloor)),
+        enter_the_scene.run_if(Building1PlayerFloor::in_loading_state()),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(in_state(GlobalGameState::AtBuilding1PlayerFloor))
+            .run_if(Building1PlayerFloor::in_running_state())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
     app.add_systems(
         Update,
-        smooth_exit
-            .run_if(in_state(GlobalGameState::QuittingBuilding1PlayerFloor)),
+        smooth_exit.run_if(Building1PlayerFloor::in_quitting_state()),
     );
 
     info!("Added Building1PlayerFloor to app");
@@ -148,7 +146,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering Building1PlayerFloor");
-    next_state.set(GlobalGameState::AtBuilding1PlayerFloor);
+    next_state.set(Building1PlayerFloor::running());
 }
 
 struct ExitAnimation {

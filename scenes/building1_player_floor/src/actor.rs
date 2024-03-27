@@ -35,7 +35,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             (start_meditation_minigame_if_near_chair, enter_the_elevator)
                 .run_if(event_update_condition::<Building1PlayerFloorAction>)
-                .run_if(in_state(GlobalGameState::AtBuilding1PlayerFloor))
+                .run_if(Building1PlayerFloor::in_running_state())
                 .run_if(not(in_cutscene())),
         );
 
@@ -43,7 +43,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             toggle_zone_hints
                 .run_if(movement_event_emitted::<Building1PlayerFloor>())
-                .run_if(in_state(GlobalGameState::AtBuilding1PlayerFloor))
+                .run_if(Building1PlayerFloor::in_running_state())
                 .after(emit_movement_events::<Building1PlayerFloor>),
         );
     }
@@ -75,7 +75,7 @@ fn start_meditation_minigame_if_near_chair(
 
         *transition =
             GlobalGameStateTransition::Building1PlayerFloorToMeditation;
-        next_state.set(GlobalGameState::QuittingBuilding1PlayerFloor);
+        next_state.set(Building1PlayerFloor::quitting());
     }
 }
 

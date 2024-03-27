@@ -92,26 +92,23 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(in_state(GlobalGameState::LoadingDowntown))
+            .run_if(Downtown::in_loading_state())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_downtown.run_if(in_state(GlobalGameState::LoadingDowntown)),
+        enter_the_scene.run_if(Downtown::in_loading_state()),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(in_state(GlobalGameState::AtDowntown))
+            .run_if(Downtown::in_running_state())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
-    app.add_systems(
-        Update,
-        exit.run_if(in_state(GlobalGameState::QuittingDowntown)),
-    );
+    app.add_systems(Update, exit.run_if(Downtown::in_quitting_state()));
 
     info!("Added downtown to app");
 }
@@ -129,9 +126,9 @@ fn finish_when_everything_loaded(
     next_loading_state.set(common_loading_screen::finish_state());
 }
 
-fn enter_the_downtown(mut next_state: ResMut<NextState<GlobalGameState>>) {
+fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering downtown");
-    next_state.set(GlobalGameState::AtDowntown);
+    next_state.set(Downtown::running());
 }
 
 fn exit(
