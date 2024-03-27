@@ -25,7 +25,9 @@ pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, TopDownScene};
 use leafwing_input_manager::plugin::InputManagerSystem;
 
-use crate::cutscene::in_cutscene;
+use crate::{
+    cutscene::in_cutscene, StandardStateSemantics, WithStandardStateSemantics,
+};
 
 /// Does not add any systems, only registers generic-less types.
 pub struct Plugin;
@@ -56,15 +58,19 @@ impl bevy::app::Plugin for Plugin {
 /// - [`crate::top_down::actor::npc::plan_path`]
 /// - [`crate::top_down::actor::npc::run_path`]
 /// - [`crate::top_down::actor::player::move_around`]
-pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
-    app: &mut App,
-    loading: S,
-    running: S,
-    quitting: S,
-) where
+pub fn default_setup_for_scene<T>(app: &mut App)
+where
+    T: TopDownScene + WithStandardStateSemantics,
     T::LocalTileKind: layout::ZoneTile<Successors = T::LocalTileKind>,
 {
     debug!("Adding assets for {}", T::type_path());
+
+    let StandardStateSemantics {
+        running,
+        loading,
+        quitting,
+        ..
+    } = T::semantics();
 
     app.add_systems(
         OnEnter(loading),
@@ -211,15 +217,17 @@ pub fn default_setup_for_scene<T: TopDownScene, S: States + Copy>(
 /// We draw an overlay with tiles that you can edit with left and right mouse
 /// buttons.
 #[cfg(feature = "devtools")]
-pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
-    app: &mut App,
-    running: S,
-    quitting: S,
-) where
+pub fn dev_default_setup_for_scene<T>(app: &mut App)
+where
+    T: TopDownScene + WithStandardStateSemantics,
     T::LocalTileKind: Ord + bevy::reflect::GetTypeRegistration,
 {
     use bevy_inspector_egui::quick::ResourceInspectorPlugin;
     use layout::map_maker::TileMapMakerToolbar as Toolbar;
+
+    let StandardStateSemantics {
+        running, quitting, ..
+    } = T::semantics();
 
     app.register_type::<T::LocalTileKind>();
 
@@ -230,22 +238,16 @@ pub fn dev_default_setup_for_scene<T: TopDownScene, S: States>(
                 .run_if(resource_exists::<Toolbar<T::LocalTileKind>>),
         );
 
-    app.add_systems(
-        OnEnter(running.clone()),
-        layout::map_maker::visualize_map::<T>,
-    )
-    .add_systems(
-        Update,
-        (
-            layout::map_maker::change_square_kind::<T>,
-            layout::map_maker::recolor_squares::<T>,
-            layout::map_maker::update_ui::<T>,
+    app.add_systems(OnEnter(running), layout::map_maker::visualize_map::<T>)
+        .add_systems(
+            Update,
+            (
+                layout::map_maker::change_square_kind::<T>,
+                layout::map_maker::recolor_squares::<T>,
+                layout::map_maker::update_ui::<T>,
+            )
+                .run_if(in_state(running))
+                .chain(),
         )
-            .run_if(in_state(running.clone()))
-            .chain(),
-    )
-    .add_systems(
-        OnExit(quitting.clone()),
-        layout::map_maker::destroy_map::<T>,
-    );
+        .add_systems(OnExit(quitting), layout::map_maker::destroy_map::<T>);
 }

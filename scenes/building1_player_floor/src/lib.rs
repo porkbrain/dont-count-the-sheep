@@ -33,6 +33,20 @@ impl TopDownScene for Building1PlayerFloor {
     }
 }
 
+impl WithStandardStateSemantics for Building1PlayerFloor {
+    fn loading() -> GlobalGameState {
+        GlobalGameState::LoadingBuilding1PlayerFloor
+    }
+
+    fn running() -> GlobalGameState {
+        GlobalGameState::AtBuilding1PlayerFloor
+    }
+
+    fn quitting() -> GlobalGameState {
+        GlobalGameState::QuittingBuilding1PlayerFloor
+    }
+}
+
 /// We arbitrarily derive the [`Default`] to allow reflection.
 /// It does not have a meaningful default value.
 #[derive(
@@ -76,19 +90,10 @@ pub enum Building1PlayerFloorAction {
 pub fn add(app: &mut App) {
     info!("Adding Building1PlayerFloor to app");
 
-    top_down::default_setup_for_scene::<Building1PlayerFloor, _>(
-        app,
-        GlobalGameState::LoadingBuilding1PlayerFloor,
-        GlobalGameState::AtBuilding1PlayerFloor,
-        GlobalGameState::QuittingBuilding1PlayerFloor,
-    );
+    top_down::default_setup_for_scene::<Building1PlayerFloor>(app);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Building1PlayerFloor, _>(
-        app,
-        GlobalGameState::AtBuilding1PlayerFloor,
-        GlobalGameState::QuittingBuilding1PlayerFloor,
-    );
+    top_down::dev_default_setup_for_scene::<Building1PlayerFloor>(app);
 
     debug!("Adding plugins");
 

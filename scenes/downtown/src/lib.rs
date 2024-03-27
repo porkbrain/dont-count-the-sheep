@@ -29,6 +29,20 @@ impl TopDownScene for Downtown {
     }
 }
 
+impl WithStandardStateSemantics for Downtown {
+    fn loading() -> GlobalGameState {
+        GlobalGameState::LoadingDowntown
+    }
+
+    fn running() -> GlobalGameState {
+        GlobalGameState::AtDowntown
+    }
+
+    fn quitting() -> GlobalGameState {
+        GlobalGameState::QuittingDowntown
+    }
+}
+
 /// We arbitrarily derive the [`Default`] to allow reflection.
 /// It does not have a meaningful default value.
 #[derive(
@@ -62,19 +76,10 @@ pub enum DowntownAction {}
 pub fn add(app: &mut App) {
     info!("Adding downtown to app");
 
-    top_down::default_setup_for_scene::<Downtown, _>(
-        app,
-        GlobalGameState::LoadingDowntown,
-        GlobalGameState::AtDowntown,
-        GlobalGameState::QuittingDowntown,
-    );
+    top_down::default_setup_for_scene::<Downtown>(app);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Downtown, _>(
-        app,
-        GlobalGameState::AtDowntown,
-        GlobalGameState::QuittingDowntown,
-    );
+    top_down::dev_default_setup_for_scene::<Downtown>(app);
 
     debug!("Adding plugins");
 

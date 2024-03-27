@@ -32,6 +32,20 @@ impl TopDownScene for Building1Basement1 {
     }
 }
 
+impl WithStandardStateSemantics for Building1Basement1 {
+    fn loading() -> GlobalGameState {
+        GlobalGameState::LoadingBuilding1Basement1
+    }
+
+    fn running() -> GlobalGameState {
+        GlobalGameState::AtBuilding1Basement1
+    }
+
+    fn quitting() -> GlobalGameState {
+        GlobalGameState::QuittingBuilding1Basement1
+    }
+}
+
 /// We arbitrarily derive the [`Default`] to allow reflection.
 /// It does not have a meaningful default value.
 #[derive(
@@ -68,19 +82,10 @@ pub enum Building1Basement1Action {
 pub fn add(app: &mut App) {
     info!("Adding Building1Basement1 to app");
 
-    top_down::default_setup_for_scene::<Building1Basement1, _>(
-        app,
-        GlobalGameState::LoadingBuilding1Basement1,
-        GlobalGameState::AtBuilding1Basement1,
-        GlobalGameState::QuittingBuilding1Basement1,
-    );
+    top_down::default_setup_for_scene::<Building1Basement1>(app);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Building1Basement1, _>(
-        app,
-        GlobalGameState::AtBuilding1Basement1,
-        GlobalGameState::QuittingBuilding1Basement1,
-    );
+    top_down::dev_default_setup_for_scene::<Building1Basement1>(app);
 
     debug!("Adding plugins");
 
@@ -93,28 +98,26 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(in_state(GlobalGameState::LoadingBuilding1Basement1))
+            .run_if(Building1Basement1::in_loading_state())
             .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_scene
-            .run_if(in_state(GlobalGameState::LoadingBuilding1Basement1)),
+        enter_the_scene.run_if(Building1Basement1::in_loading_state()),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(in_state(GlobalGameState::AtBuilding1Basement1))
+            .run_if(Building1Basement1::in_running_state())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
     app.add_systems(
         Update,
-        smooth_exit
-            .run_if(in_state(GlobalGameState::QuittingBuilding1Basement1)),
+        smooth_exit.run_if(Building1Basement1::in_quitting_state()),
     );
 
     info!("Added Building1Basement1 to app");
@@ -135,7 +138,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering Building1Basement1");
-    next_state.set(GlobalGameState::AtBuilding1Basement1);
+    next_state.set(Building1Basement1::running());
 }
 
 struct ExitAnimation {
