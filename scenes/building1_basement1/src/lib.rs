@@ -82,6 +82,8 @@ pub enum Building1Basement1Action {
 pub fn add(app: &mut App) {
     info!("Adding Building1Basement1 to app");
 
+    app.add_event::<Building1Basement1Action>();
+
     top_down::default_setup_for_scene::<Building1Basement1>(app);
 
     #[cfg(feature = "devtools")]

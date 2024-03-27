@@ -31,7 +31,7 @@ impl bevy::app::Plugin for Plugin {
         // despawned when the scene is despawned
         // we do this to leverage ysorting
 
-        app.add_event::<Building1PlayerFloorAction>().add_systems(
+        app.add_systems(
             Update,
             (start_meditation_minigame_if_near_chair, enter_the_elevator)
                 .run_if(event_update_condition::<Building1PlayerFloorAction>)

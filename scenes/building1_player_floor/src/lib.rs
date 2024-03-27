@@ -90,6 +90,8 @@ pub enum Building1PlayerFloorAction {
 pub fn add(app: &mut App) {
     info!("Adding Building1PlayerFloor to app");
 
+    app.add_event::<Building1PlayerFloorAction>();
+
     top_down::default_setup_for_scene::<Building1PlayerFloor>(app);
 
     #[cfg(feature = "devtools")]
