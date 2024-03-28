@@ -90,8 +90,16 @@ impl IntoCutscene for EnterAnElevator {
                 with: player,
                 // hop up
                 square: in_elevator + Square::new(0, 1),
+                planned: None,
+                step_time: None,
+            },
+            WaitUntilActorAtRest(player),
+            SetActorFacingDirection(player, GridDirection::Bottom),
+            BeginSimpleWalkTo {
+                with: player,
                 // and down
-                planned: Some((in_elevator, GridDirection::Bottom)),
+                square: in_elevator,
+                planned: None,
                 step_time: None,
             },
             WaitUntilActorAtRest(player),
@@ -122,13 +130,6 @@ impl IntoCutscene for EnterAnElevator {
                     // get it ready for the next time this scene runs
                     ReverseAtlasAnimation(elevator),
                     WaitUntilActorAtRest(player),
-                    // reset the camera
-                    BeginMovingEntity {
-                        who: camera,
-                        to: cutscene::Destination::Position(default()),
-                        over: from_millis(1000),
-                        animation_curve: Some(EASE_IN_OUT.clone()),
-                    },
                     ReturnPlayerControl(player),
                 ]),
                 // else transition
@@ -296,14 +297,15 @@ pub fn start_with_open_elevator_and_close_it(
         .get_resource::<Assets<TextureAtlasLayout>>()
         .unwrap();
     let last_frame = layouts.get(layout).unwrap().textures.len() - 1;
-    trace!("Setting elevator frame to {last_frame}");
+    trace!("Setting elevator to last frame");
     // set the last frame as the current index
     elevator.get_mut::<TextureAtlas>().unwrap().index = last_frame;
     // start the animation asap
     elevator.insert(BeginAtlasAnimationAtRandom {
         chance_per_second: 1.0,
         frame_time: from_millis(150),
-        with_min_delay: Some((from_millis(1500), Stopwatch::new())),
+        // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/111
+        with_min_delay: Some((from_millis(1750), Stopwatch::new())),
     });
 
     let mut a = elevator.get_mut::<AtlasAnimation>().unwrap();
@@ -319,9 +321,10 @@ pub fn start_with_open_elevator_and_close_it(
             cmd.entity(player).remove::<TakeAwayPlayerControl>();
 
             cmd.entity(who).add(|mut e: EntityWorldMut| {
-                trace!("Elevator animation back to normal");
+                trace!("Setting elevator animation back to normal");
                 // no anim running
                 e.remove::<AtlasAnimationTimer>();
+                e.remove::<BeginAtlasAnimationAtRandom>();
 
                 let mut a = e.get_mut::<AtlasAnimation>().unwrap();
                 // back to normal
