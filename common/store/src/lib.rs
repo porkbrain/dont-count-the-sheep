@@ -453,20 +453,28 @@ mod tests {
         let store = GlobalStore { conn };
 
         store.insert_dialog(("ok/dialog.toml", "node1"));
-        assert!(
-            store.was_this_the_last_dialog::<&str>(("ok/dialog.toml", "node1"))
-        );
-        assert!(!store
-            .was_this_the_last_dialog::<&str>(("ok/dialog.toml", "node2")));
-        assert!(!store
-            .was_this_the_last_dialog::<&str>(("no/dialog.toml", "node1")));
+        assert!(store.was_this_the_last_dialog::<String>((
+            "ok/dialog.toml".to_owned(),
+            "node1"
+        )));
+        assert!(!store.was_this_the_last_dialog::<String>((
+            "ok/dialog.toml".to_owned(),
+            "node2"
+        )));
+        assert!(!store.was_this_the_last_dialog::<String>((
+            "no/dialog.toml".to_owned(),
+            "node1"
+        )));
 
         store.insert_dialog(("ok/dialog.toml", "node2"));
-        assert!(
-            store.was_this_the_last_dialog::<&str>(("ok/dialog.toml", "node2"))
-        );
-        assert!(!store
-            .was_this_the_last_dialog::<&str>(("ok/dialog.toml", "node1")));
+        assert!(store.was_this_the_last_dialog::<String>((
+            "ok/dialog.toml".to_owned(),
+            "node2"
+        )));
+        assert!(!store.was_this_the_last_dialog::<String>((
+            "ok/dialog.toml".to_owned(),
+            "node1"
+        )));
     }
 
     fn new_conn() -> Arc<Mutex<rusqlite::Connection>> {

@@ -29,6 +29,7 @@ pub struct Namespace {
     file_path: String,
 }
 
+/// Typed dialogs are either files or runtime created dialogs.
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, strum::EnumIter)]
 pub enum TypedNamespace {
@@ -118,26 +119,7 @@ impl From<Handle<DialogGraph>> for DialogRef {
 
 #[cfg(test)]
 mod tests {
-    use strum::IntoEnumIterator;
-
     use super::*;
-    use crate::dialog::DialogGraph;
-
-    #[test]
-    fn it_validates_typed_dialogs() {
-        for namespace in TypedNamespace::iter() {
-            println!("Validating {namespace:?}");
-
-            let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-            let path = format!(
-                "{manifest}/../../main_game/assets/dialogs/{namespace}.toml"
-            );
-            let toml = std::fs::read_to_string(&path)
-                .unwrap_or_else(|e| panic!("{path}: {e}"));
-
-            DialogGraph::subgraph_from_raw(namespace.into(), &toml);
-        }
-    }
 
     #[test]
     fn it_validates_all_dialog_assets() {
