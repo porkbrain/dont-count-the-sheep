@@ -10,12 +10,16 @@ use common_story::{
     dialog::{self, DialogGraph},
     Character,
 };
-use common_visuals::EASE_IN_OUT;
+use common_visuals::{
+    AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer,
+    BeginAtlasAnimationAtRandom, EASE_IN_OUT,
+};
 use top_down::layout::LAYOUT;
 
 use crate::{
     cutscene::{self, CutsceneStep, IntoCutscene},
     prelude::*,
+    top_down::actor::player::TakeAwayPlayerControl,
 };
 
 /// For the animation of stepping out of the elevator.
@@ -127,7 +131,7 @@ impl IntoCutscene for EnterAnElevator {
                     },
                     ReturnPlayerControl(player),
                 ]),
-                // else transition to downtown
+                // else transition
                 Box::new(vec![ScheduleCommands(change_global_state)]),
             ),
         ]
@@ -146,9 +150,13 @@ pub fn spawn(
     // LOCALIZATION
     choices: &[(GlobalGameStateTransition, &str)],
 ) {
+    assert!(!choices.is_empty());
+
     const NAMESPACE: dialog::TypedNamespace =
         dialog::TypedNamespace::InElevator;
     const EXIT_ELEVATOR_NODE_NAME: &str = "exit_elevator";
+
+    trace!("Enter an elevator with choices: {choices:?}");
 
     // Runtime dialog, we can be certain there is not going to be a memory leak
     // because new strong handle is allocated when inserting the dialog.
@@ -208,11 +216,12 @@ pub fn spawn(
     let dialog_strong_handle = dialogs.add(dialog_graph);
 
     fn did_choose_to_cancel_and_exit_the_elevator(store: &GlobalStore) -> bool {
-        // always the same name
-        store.was_this_the_last_dialog((
-            dialog::Namespace::from(NAMESPACE),
-            EXIT_ELEVATOR_NODE_NAME,
-        ))
+        match store.get_last_dialog::<dialog::Namespace>() {
+            None => true,
+            Some((_, node)) => {
+                GlobalGameStateTransition::from_str(&node).is_err()
+            }
+        }
     }
 
     fn on_took_the_elevator(cmd: &mut Commands, store: &GlobalStore) {
@@ -243,6 +252,7 @@ pub fn spawn(
             .map(|(_, node)| GlobalGameStateTransition::from_str(&node))
         {
             Some(Ok(transition)) => {
+                trace!("Enter an elevator transition: {transition}");
                 cmd.insert_resource(transition);
             }
             Some(Err(e)) => {
@@ -264,4 +274,59 @@ pub fn spawn(
         on_took_the_elevator,
     }
     .spawn(cmd);
+}
+
+/// A helper that can be ran when the elevator is spawned.
+///
+/// It sets the current frame of the elevator to the open state (last frame)
+/// and scheduled a close animation.
+///
+/// Then, when finished, it sets the elevator back to normal.
+/// Also, removes player's [`TakeAwayPlayerControl`] component.
+/// Make sure to insert it, otherwise the player could interact with the
+/// elevator and it'd be a mess.
+pub fn start_with_open_elevator_and_close_it(
+    player: Entity,
+    mut elevator: EntityWorldMut,
+) {
+    // get the last frame index
+    let layout = elevator.get::<TextureAtlas>().unwrap().layout.clone();
+    let layouts = elevator
+        .world()
+        .get_resource::<Assets<TextureAtlasLayout>>()
+        .unwrap();
+    let last_frame = layouts.get(layout).unwrap().textures.len() - 1;
+    trace!("Setting elevator frame to {last_frame}");
+    // set the last frame as the current index
+    elevator.get_mut::<TextureAtlas>().unwrap().index = last_frame;
+    // start the animation asap
+    elevator.insert(BeginAtlasAnimationAtRandom {
+        chance_per_second: 1.0,
+        frame_time: from_millis(150),
+        with_min_delay: Some((from_millis(1500), Stopwatch::new())),
+    });
+
+    let mut a = elevator.get_mut::<AtlasAnimation>().unwrap();
+    // animation runs in reverse
+    a.reversed = true;
+    // on last frame, put everything back to normal
+    a.on_last_frame =
+        AtlasAnimationEnd::run(Box::new(move |who, atlas, _, cmd| {
+            // animation finished in reverse
+            debug_assert_eq!(0, atlas.index);
+
+            // allow the player to move again
+            cmd.entity(player).remove::<TakeAwayPlayerControl>();
+
+            cmd.entity(who).add(|mut e: EntityWorldMut| {
+                trace!("Elevator animation back to normal");
+                // no anim running
+                e.remove::<AtlasAnimationTimer>();
+
+                let mut a = e.get_mut::<AtlasAnimation>().unwrap();
+                // back to normal
+                a.on_last_frame = AtlasAnimationEnd::RemoveTimer;
+                a.reversed = false;
+            });
+        }));
 }

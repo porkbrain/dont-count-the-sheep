@@ -220,10 +220,12 @@ pub(crate) fn wait_for_assets_then_spawn_dialog(
         return;
     }
 
+    // we check within assets and not with asset loader because some handles
+    // might've been inserted as runtime dialogs and not with asset server
     let all_ready = start_when_loaded
         .handles
         .iter()
-        .all(|handle| asset_server.is_loaded_with_dependencies(handle));
+        .all(|handle| dialog_graphs.contains(handle));
 
     if !all_ready {
         return;
@@ -756,6 +758,15 @@ impl DialogGraph {
         assert!(self.is_subgraph());
         let namespace_root = self.root;
         let who = self.nodes.get(&namespace_root).unwrap().who;
+
+        self.nodes
+            .entry(NodeName::EndDialog)
+            .or_insert_with(|| Node {
+                name: NodeName::EndDialog,
+                who,
+                kind: NodeKind::Blank,
+                next: default(),
+            });
 
         self.nodes.insert(
             NodeName::Root,

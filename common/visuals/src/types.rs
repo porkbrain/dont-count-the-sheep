@@ -27,15 +27,8 @@ pub struct AtlasAnimation {
 /// reached.
 #[allow(clippy::type_complexity)]
 pub type CustomAtlasAnimationEndFn = Box<
-    dyn Fn(
-            Entity,
-            &AtlasAnimation,
-            &mut AtlasAnimationTimer,
-            &mut TextureAtlas,
-            &mut Visibility,
-            &mut Commands,
-            &Time,
-        ) + Send
+    dyn Fn(Entity, &mut TextureAtlas, &mut Visibility, &mut Commands)
+        + Send
         + Sync,
 >;
 
@@ -72,6 +65,7 @@ pub struct AtlasAnimationTimer(pub(crate) Timer);
 pub struct BeginAtlasAnimationAtRandom {
     /// We roll a dice every delta seconds.
     /// This scales that delta.
+    /// Between 0 and 1.
     pub chance_per_second: f32,
     /// Once the animation is started, how long should each frame be shown?
     pub frame_time: Duration,
@@ -87,6 +81,7 @@ pub struct Flicker {
     /// When did the flicker ran last?
     pub last: Instant,
     /// How likely is it to flicker every second?
+    /// Between 0 and 1.
     pub chance_per_second: f32,
     /// How long should the entity be shown before it's hidden again?
     pub shown_for: Duration,

@@ -22,11 +22,6 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        // the entities are spawned into the root entity
-        // this means we don't need to despawn them manually as they will be
-        // despawned when the scene is despawned
-        // we do this to leverage ysorting
-
         app.add_systems(
             Update,
             (start_meditation_minigame_if_near_chair, enter_the_elevator)

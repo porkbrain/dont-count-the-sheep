@@ -104,7 +104,11 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 cmd.entity(who).add_child(self.player_entity);
             }
             "PlayerApartmentBuildingEntrance"
-                if self.transition == Building1PlayerFloorToDowntown =>
+                if matches!(
+                    self.transition,
+                    Building1Basement1ToDowntown
+                        | Building1PlayerFloorToDowntown
+                ) =>
             {
                 self.player_builder.initial_position(translation.truncate());
                 self.player_builder.walking_to(top_down::ActorTarget::new(

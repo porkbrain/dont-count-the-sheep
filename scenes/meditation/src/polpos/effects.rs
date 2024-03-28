@@ -109,13 +109,7 @@ pub(crate) mod black_hole {
         // the reason why black hole does not despawn while game is paused is
         // that we don't run the system while game is paused
         let on_last_frame = AtlasAnimationEnd::run(Box::new(
-            move |entity,
-                  _animation,
-                  _timer,
-                  _atlas,
-                  _visibility,
-                  commands,
-                  _time| {
+            move |entity, _atlas, _visibility, commands| {
                 debug!("Despawning black hole ({entity:?})");
 
                 commands.entity(entity).despawn_recursive();

@@ -159,13 +159,7 @@ fn spawn(
         RenderLayers::layer(render_layer::OBJ),
         AtlasAnimation {
             on_last_frame: AtlasAnimationEnd::run(Box::new(
-                |entity,
-                 _animation,
-                 _timer,
-                 atlas,
-                 visibility,
-                 commands,
-                 _time| {
+                |entity, atlas, visibility, commands| {
                     *visibility = Visibility::Hidden;
                     commands.entity(entity).remove::<AtlasAnimationTimer>();
                     atlas.index = 0;

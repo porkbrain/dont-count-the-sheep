@@ -26,7 +26,8 @@ pub enum DialogRef {
 /// Each dialog file has a unique name.
 #[derive(PartialEq, Eq, Debug, Clone, Hash, Reflect)]
 pub struct Namespace {
-    file_path: String,
+    /// This can be a file path or a runtime created dialog name.
+    unique_name: String,
 }
 
 /// Typed dialogs are either files or runtime created dialogs.
@@ -73,7 +74,7 @@ impl From<TypedNamespace> for Namespace {
 
 impl std::fmt::Display for Namespace {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.file_path)
+        write!(f, "{}", self.unique_name)
     }
 }
 
@@ -91,7 +92,7 @@ impl From<&AssetPath<'static>> for Namespace {
 impl From<String> for Namespace {
     fn from(file_path: String) -> Self {
         Namespace {
-            file_path: file_path
+            unique_name: file_path
                 .trim_end_matches(".toml")
                 .trim_start_matches("dialogs/")
                 .to_string(),

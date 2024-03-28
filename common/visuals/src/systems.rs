@@ -44,15 +44,7 @@ pub fn advance_atlas_animation(
                         cmd.entity(entity).remove::<AtlasAnimationTimer>();
                     }
                     AtlasAnimationEnd::Custom { with_fn: Some(fun) } => {
-                        fun(
-                            entity,
-                            animation,
-                            &mut timer,
-                            &mut atlas,
-                            &mut visibility,
-                            &mut cmd,
-                            &time,
-                        );
+                        fun(entity, &mut atlas, &mut visibility, &mut cmd);
                     }
                     AtlasAnimationEnd::Custom { with_fn: None } => {
                         // nothing happens

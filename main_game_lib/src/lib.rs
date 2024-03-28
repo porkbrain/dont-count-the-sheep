@@ -45,6 +45,7 @@ pub fn windowed_app() -> App {
                 main_game_lib::top_down::environmental_objects::door=debug,\
                 main_game_lib::top_down::cameras=debug,\
                 main_game_lib::top_down::layout=debug,\
+                scene_building1_player_floor=trace,\
                 "
                 .to_string(),
                 ..default()
