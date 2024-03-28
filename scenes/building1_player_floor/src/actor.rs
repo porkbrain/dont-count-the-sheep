@@ -2,12 +2,11 @@
 
 use bevy::ecs::event::event_update_condition;
 use common_loading_screen::LoadingScreenSettings;
-use common_store::{DialogStore, GlobalStore};
-use common_story::dialog;
+use common_story::dialog::DialogGraph;
 use common_visuals::camera::MainCamera;
 use main_game_lib::{
     common_ext::QueryExt,
-    cutscene::{self, in_cutscene, IntoCutscene},
+    cutscene::{self, in_cutscene},
 };
 use top_down::{
     actor::{emit_movement_events, movement_event_emitted},
@@ -18,9 +17,6 @@ use crate::{
     layout::{Elevator, MeditatingHint, SleepingHint},
     prelude::*,
 };
-
-const EXIT_ELEVATOR_NODE_NAME: &str = "exit_elevator";
-const GO_TO_DOWNTOWN_NODE_NAME: &str = "go_to_downtown";
 
 pub(crate) struct Plugin;
 
@@ -83,66 +79,45 @@ fn start_meditation_minigame_if_near_chair(
 fn enter_the_elevator(
     mut cmd: Commands,
     mut action_events: EventReader<Building1PlayerFloorAction>,
+    mut assets: ResMut<Assets<DialogGraph>>,
 
     player: Query<Entity, With<Player>>,
     elevator: Query<Entity, With<Elevator>>,
     camera: Query<Entity, With<MainCamera>>,
     points: Query<(&Name, &rscn::Point)>,
 ) {
-    fn did_choose_to_cancel_and_exit_the_elevator(store: &GlobalStore) -> bool {
-        store.was_this_the_last_dialog((
-            dialog::TypedNamespace::EnterTheApartmentElevator,
-            EXIT_ELEVATOR_NODE_NAME,
-        ))
-    }
-
-    fn on_took_the_elevator(cmd: &mut Commands, store: &GlobalStore) {
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(2000)),
-            ..default()
-        });
-        cmd.insert_resource(NextState(Some(
-            GlobalGameState::QuittingBuilding1PlayerFloor,
-        )));
-
-        let go_to_downtown = store.was_this_the_last_dialog((
-            dialog::TypedNamespace::EnterTheApartmentElevator,
-            GO_TO_DOWNTOWN_NODE_NAME,
-        ));
-
-        let transition = if go_to_downtown {
-            GlobalGameStateTransition::Building1PlayerFloorToDowntown
-        } else {
-            // only other possible transition
-            GlobalGameStateTransition::Building1PlayerFloorToBuilding1Basement1
-        };
-
-        cmd.insert_resource(transition);
-    }
-
     let is_triggered = action_events.read().any(|action| {
         matches!(action, Building1PlayerFloorAction::EnterElevator)
     });
 
-    if is_triggered && let Some(entity) = player.get_single_or_none() {
-        cutscene::enter_an_elevator::EnterAnElevator {
-            player: entity,
-            elevator: elevator.single(),
-            camera: camera.single(),
-            dialog: dialog::TypedNamespace::EnterTheApartmentElevator,
-            is_cancelled: did_choose_to_cancel_and_exit_the_elevator,
-            on_took_the_elevator,
-            point_in_elevator: {
-                let (_, rscn::Point(pos)) = points
-                    .iter()
-                    .find(|(name, _)| **name == Name::new("InElevator"))
-                    .expect("InElevator point not found");
+    if is_triggered && let Some(player) = player.get_single_or_none() {
+        let point_in_elevator = {
+            let (_, rscn::Point(pos)) = points
+                .iter()
+                .find(|(name, _)| **name == Name::new("InElevator"))
+                .expect("InElevator point not found");
 
-                *pos
-            },
-        }
-        .spawn(&mut cmd);
+            *pos
+        };
+
+        cutscene::enter_an_elevator::spawn(
+            &mut cmd,
+            &mut assets,
+            player,
+            elevator.single(),
+            camera.single(),
+            point_in_elevator,
+            &[
+                (
+                    GlobalGameStateTransition::Building1PlayerFloorToDowntown,
+                    "go to downtown",
+                ),
+                (
+                    GlobalGameStateTransition::Building1PlayerFloorToBuilding1Basement1,
+                    "go to basement",
+                ),
+            ],
+        );
     }
 }
 

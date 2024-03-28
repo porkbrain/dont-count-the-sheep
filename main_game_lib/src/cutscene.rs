@@ -173,7 +173,7 @@ pub enum CutsceneStep {
     /// Wait till [`Actor`] entity has `walking_to` set to [`None`].
     WaitUntilActorAtRest(Entity),
     /// Starts given dialog.
-    BeginPortraitDialog(dialog::Namespace),
+    BeginPortraitDialog(dialog::DialogRef),
     /// Waits until there is no portrait dialog resource.
     WaitForPortraitDialogToEnd,
     /// Inserts [`common_visuals::TranslationInterpolation`] to the
@@ -623,7 +623,7 @@ fn begin_portrait_dialog(mut cmd: Commands, mut cutscene: ResMut<Cutscene>) {
     };
 
     cmd.insert_resource(
-        StartDialogWhenLoaded::portrait().add_namespace(dialog.clone()),
+        StartDialogWhenLoaded::portrait().add_ref(dialog.clone()),
     );
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);

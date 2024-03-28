@@ -1,7 +1,25 @@
 //! Namespace represents a unique toml file in the `assets/dialogs` directory.
 //! Namespace does not contain the `dialogs/` prefix nor the `.toml` extension.
 
-use bevy::{asset::AssetPath, reflect::Reflect};
+use bevy::{
+    asset::{AssetPath, Handle},
+    reflect::Reflect,
+};
+
+use super::DialogGraph;
+
+/// References the dialog in some way.
+#[derive(Clone)]
+pub enum DialogRef {
+    /// Most generic reference.
+    /// Path to the asset file.
+    Namespace(Namespace),
+    /// Reference to a dialog that is used somewhere in the codebase and
+    /// therefore has a name.
+    TypedNamespace(TypedNamespace),
+    /// Strong handle to a dialog already loaded in assets.
+    Handle(Handle<DialogGraph>),
+}
 
 /// Namespace represents a dialog toml file with relative path from the root
 /// of the dialog directory.
@@ -14,18 +32,28 @@ pub struct Namespace {
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, strum::EnumIter)]
 pub enum TypedNamespace {
-    EnterTheApartmentElevator,
     BoltIsMean,
     MarieBlabbering,
+
+    // --------------------------------------------------------------
+    //
+    //
+    // These don't reference actual dialog files, but runtime created dialogs
+    //
+    //
+    // --------------------------------------------------------------
+    /// This is a special dialog that is created at runtime when the player
+    /// enters the elevator.
+    InElevator,
 }
 
 impl AsRef<str> for TypedNamespace {
     fn as_ref(&self) -> &str {
         use TypedNamespace::*;
         match self {
-            EnterTheApartmentElevator => "enter_the_apartment_elevator",
             BoltIsMean => "bolt_is_mean",
             MarieBlabbering => "marie_blabbering",
+            InElevator => "in_elevator",
         }
     }
 }
@@ -67,6 +95,24 @@ impl From<String> for Namespace {
                 .trim_start_matches("dialogs/")
                 .to_string(),
         }
+    }
+}
+
+impl From<Namespace> for DialogRef {
+    fn from(namespace: Namespace) -> Self {
+        DialogRef::Namespace(namespace)
+    }
+}
+
+impl From<TypedNamespace> for DialogRef {
+    fn from(typed: TypedNamespace) -> Self {
+        DialogRef::TypedNamespace(typed)
+    }
+}
+
+impl From<Handle<DialogGraph>> for DialogRef {
+    fn from(handle: Handle<DialogGraph>) -> Self {
+        DialogRef::Handle(handle)
     }
 }
 

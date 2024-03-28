@@ -49,7 +49,8 @@ pub(crate) enum GuardCmd {
 
 #[derive(Debug, Reflect, strum::EnumString, strum::Display, Clone, Copy)]
 #[strum(serialize_all = "snake_case")]
-pub(crate) enum GuardKind {
+#[allow(missing_docs)]
+pub enum GuardKind {
     ExhaustiveAlternatives,
     ReachLastAlternative,
 
