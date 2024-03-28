@@ -3,7 +3,10 @@ mod watch_entry_to_hallway;
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_visuals::camera::render_layer;
-use main_game_lib::cutscene::enter_an_elevator::STEP_TIME_ON_EXIT_ELEVATOR;
+use main_game_lib::{
+    cutscene::{self, enter_an_elevator::STEP_TIME_ON_EXIT_ELEVATOR},
+    top_down::actor::player::TakeAwayPlayerControl,
+};
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use strum::IntoEnumIterator;
 use top_down::{
@@ -100,7 +103,6 @@ fn spawn(
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
-
     let player = cmd.spawn_empty().id();
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
@@ -118,7 +120,6 @@ fn spawn(
     );
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
-
     cmd.insert_resource(zone_to_inspect_label_entity);
 }
 
@@ -156,6 +157,17 @@ impl<'a> TscnSpawner for Spawner<'a> {
             }
             "Elevator" => {
                 cmd.entity(who).insert(Elevator);
+
+                if self.transition == Building1Basement1ToPlayerFloor {
+                    let player = self.player_entity;
+
+                    // take away player control for a moment to prevent them
+                    // from interacting with the elevator while it's closing
+                    cmd.entity(player).insert(TakeAwayPlayerControl);
+                    cmd.entity(who).add(move |e: EntityWorldMut| {
+                        cutscene::enter_an_elevator::start_with_open_elevator_and_close_it(player, e)
+                    });
+                }
             }
             "PlayerApartmentDoor" => {
                 let door = DoorBuilder::new(

@@ -1,31 +1,61 @@
 //! Namespace represents a unique toml file in the `assets/dialogs` directory.
 //! Namespace does not contain the `dialogs/` prefix nor the `.toml` extension.
 
-use bevy::{asset::AssetPath, reflect::Reflect};
+use bevy::{
+    asset::{AssetPath, Handle},
+    reflect::Reflect,
+};
+
+use super::DialogGraph;
+
+/// References the dialog in some way.
+#[derive(Clone)]
+pub enum DialogRef {
+    /// Most generic reference.
+    /// Path to the asset file.
+    Namespace(Namespace),
+    /// Reference to a dialog that is used somewhere in the codebase and
+    /// therefore has a name.
+    TypedNamespace(TypedNamespace),
+    /// Strong handle to a dialog already loaded in assets.
+    Handle(Handle<DialogGraph>),
+}
 
 /// Namespace represents a dialog toml file with relative path from the root
 /// of the dialog directory.
 /// Each dialog file has a unique name.
 #[derive(PartialEq, Eq, Debug, Clone, Hash, Reflect)]
 pub struct Namespace {
-    file_path: String,
+    /// This can be a file path or a runtime created dialog name.
+    unique_name: String,
 }
 
+/// Typed dialogs are either files or runtime created dialogs.
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy, strum::EnumIter)]
 pub enum TypedNamespace {
-    EnterTheApartmentElevator,
     BoltIsMean,
     MarieBlabbering,
+
+    // --------------------------------------------------------------
+    //
+    //
+    // These don't reference actual dialog files, but runtime created dialogs
+    //
+    //
+    // --------------------------------------------------------------
+    /// This is a special dialog that is created at runtime when the player
+    /// enters the elevator.
+    InElevator,
 }
 
 impl AsRef<str> for TypedNamespace {
     fn as_ref(&self) -> &str {
         use TypedNamespace::*;
         match self {
-            EnterTheApartmentElevator => "enter_the_apartment_elevator",
             BoltIsMean => "bolt_is_mean",
             MarieBlabbering => "marie_blabbering",
+            InElevator => "in_elevator",
         }
     }
 }
@@ -44,7 +74,7 @@ impl From<TypedNamespace> for Namespace {
 
 impl std::fmt::Display for Namespace {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.file_path)
+        write!(f, "{}", self.unique_name)
     }
 }
 
@@ -62,7 +92,7 @@ impl From<&AssetPath<'static>> for Namespace {
 impl From<String> for Namespace {
     fn from(file_path: String) -> Self {
         Namespace {
-            file_path: file_path
+            unique_name: file_path
                 .trim_end_matches(".toml")
                 .trim_start_matches("dialogs/")
                 .to_string(),
@@ -70,28 +100,27 @@ impl From<String> for Namespace {
     }
 }
 
+impl From<Namespace> for DialogRef {
+    fn from(namespace: Namespace) -> Self {
+        DialogRef::Namespace(namespace)
+    }
+}
+
+impl From<TypedNamespace> for DialogRef {
+    fn from(typed: TypedNamespace) -> Self {
+        DialogRef::TypedNamespace(typed)
+    }
+}
+
+impl From<Handle<DialogGraph>> for DialogRef {
+    fn from(handle: Handle<DialogGraph>) -> Self {
+        DialogRef::Handle(handle)
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use strum::IntoEnumIterator;
-
     use super::*;
-    use crate::dialog::DialogGraph;
-
-    #[test]
-    fn it_validates_typed_dialogs() {
-        for namespace in TypedNamespace::iter() {
-            println!("Validating {namespace:?}");
-
-            let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-            let path = format!(
-                "{manifest}/../../main_game/assets/dialogs/{namespace}.toml"
-            );
-            let toml = std::fs::read_to_string(&path)
-                .unwrap_or_else(|e| panic!("{path}: {e}"));
-
-            DialogGraph::subgraph_from_raw(namespace.into(), &toml);
-        }
-    }
 
     #[test]
     fn it_validates_all_dialog_assets() {

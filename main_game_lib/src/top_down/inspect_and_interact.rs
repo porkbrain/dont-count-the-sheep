@@ -27,6 +27,7 @@ use common_visuals::{
 };
 use strum::EnumString;
 
+use super::actor::player::TakeAwayPlayerControl;
 use crate::top_down::{ActorMovementEvent, Player, TileKind, TopDownScene};
 
 /// The label's bg is a rect with a half transparent color.
@@ -157,7 +158,10 @@ pub(crate) fn match_interact_label_with_action_event<T: TopDownScene>(
 pub fn interact(
     mut cmd: Commands,
 
-    player: Query<&GlobalTransform, With<Player>>,
+    player: Query<
+        &GlobalTransform,
+        (With<Player>, Without<TakeAwayPlayerControl>),
+    >,
     inspectable_objects: Query<
         (&InspectLabel, &GlobalTransform),
         With<ReadyForInteraction>,

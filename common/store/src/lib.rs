@@ -147,11 +147,8 @@ mod dialog {
     /// Store anything that's related to dialogs.
     /// History and choices, etc.
     pub trait DialogStore {
-        /// Get the last dialog entry's type path.
-        fn was_this_the_last_dialog(
-            &self,
-            namespace_and_name: (impl Display, impl Display),
-        ) -> bool;
+        /// Get the last dialog entry's namespace and node name.
+        fn get_last_dialog<T: From<String>>(&self) -> Option<(T, String)>;
 
         /// New dialog entry.
         fn insert_dialog(
@@ -191,13 +188,22 @@ mod dialog {
             &self,
             npc: impl Display,
         ) -> Vec<T>;
+
+        /// Get the last dialog entry's type path.
+        fn was_this_the_last_dialog<T: Eq + From<String>>(
+            &self,
+            (expected_namespace, expected_name): (T, impl Display),
+        ) -> bool {
+            self.get_last_dialog::<T>()
+                .is_some_and(|(namespace, name)| {
+                    namespace == expected_namespace
+                        && name == expected_name.to_string()
+                })
+        }
     }
 
     impl DialogStore for GlobalStore {
-        fn was_this_the_last_dialog(
-            &self,
-            (namespace, node_name): (impl Display, impl Display),
-        ) -> bool {
+        fn get_last_dialog<T: From<String>>(&self) -> Option<(T, String)> {
             let conn = self.conn.lock().unwrap();
 
             let now = Instant::now();
@@ -212,15 +218,12 @@ mod dialog {
                 .expect("Cannot query SQLite");
             let ms = now.elapsed().as_millis();
             if ms > 1 {
-                warn!("was_this_the_last_dialog took {ms}ms");
+                warn!("get_last_dialog took {ms}ms");
             }
 
-            value
-                .map(|(last_namespace, last_node_name): (String, String)| {
-                    last_namespace == namespace.to_string()
-                        && last_node_name == node_name.to_string()
-                })
-                .unwrap_or(false)
+            value.map(|(namespace, node_name): (String, String)| {
+                (namespace.into(), node_name)
+            })
         }
 
         fn insert_dialog(
@@ -450,13 +453,28 @@ mod tests {
         let store = GlobalStore { conn };
 
         store.insert_dialog(("ok/dialog.toml", "node1"));
-        assert!(store.was_this_the_last_dialog(("ok/dialog.toml", "node1")));
-        assert!(!store.was_this_the_last_dialog(("ok/dialog.toml", "node2")));
-        assert!(!store.was_this_the_last_dialog(("no/dialog.toml", "node1")));
+        assert!(store.was_this_the_last_dialog::<String>((
+            "ok/dialog.toml".to_owned(),
+            "node1"
+        )));
+        assert!(!store.was_this_the_last_dialog::<String>((
+            "ok/dialog.toml".to_owned(),
+            "node2"
+        )));
+        assert!(!store.was_this_the_last_dialog::<String>((
+            "no/dialog.toml".to_owned(),
+            "node1"
+        )));
 
         store.insert_dialog(("ok/dialog.toml", "node2"));
-        assert!(store.was_this_the_last_dialog(("ok/dialog.toml", "node2")));
-        assert!(!store.was_this_the_last_dialog(("ok/dialog.toml", "node1")));
+        assert!(store.was_this_the_last_dialog::<String>((
+            "ok/dialog.toml".to_owned(),
+            "node2"
+        )));
+        assert!(!store.was_this_the_last_dialog::<String>((
+            "ok/dialog.toml".to_owned(),
+            "node1"
+        )));
     }
 
     fn new_conn() -> Arc<Mutex<rusqlite::Connection>> {

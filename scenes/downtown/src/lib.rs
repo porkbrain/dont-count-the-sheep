@@ -66,15 +66,20 @@ impl WithStandardStateSemantics for Downtown {
 #[allow(clippy::enum_variant_names)]
 pub enum DowntownTileKind {
     #[default]
-    PlayerHouseEntrance,
+    Building1Entrance,
     MallEntrance,
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString)]
-pub enum DowntownAction {}
+pub enum DowntownAction {
+    EnterMall,
+    EnterBuilding1,
+}
 
 pub fn add(app: &mut App) {
     info!("Adding downtown to app");
+
+    app.add_event::<DowntownAction>();
 
     top_down::default_setup_for_scene::<Downtown>(app);
 

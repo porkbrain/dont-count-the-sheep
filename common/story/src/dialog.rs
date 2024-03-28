@@ -31,9 +31,10 @@ use bevy::{
     utils::{default, hashbrown::HashMap},
 };
 use common_store::{DialogStore, GlobalStore};
-pub use list::{Namespace, TypedNamespace};
+pub use guard::GuardKind;
+pub use list::{DialogRef, Namespace, TypedNamespace};
 
-use self::guard::{GuardCmd, GuardKind, GuardSystem};
+use self::guard::{GuardCmd, GuardSystem};
 use crate::Character;
 
 /// Use [`StartDialogWhenLoaded::on_finished`] to schedule commands to run when
@@ -119,29 +120,40 @@ pub struct DialogGraph {
     nodes: HashMap<NodeName, Node>,
 }
 
+/// A node in a dialog graph.
+/// Either has some functionality or is a dialog line, that's decided
+/// by the [`NodeKind`].
 #[derive(Debug, Reflect)]
-struct Node {
-    name: NodeName,
-    who: Character,
-    kind: NodeKind,
-    next: Vec<NodeName>,
+pub struct Node {
+    /// Unique name of the node.
+    pub name: NodeName,
+    /// Who is speaking or acting in this node.
+    pub who: Character,
+    /// What this node does.
+    pub kind: NodeKind,
+    /// Next nodes to go to.
+    pub next: Vec<NodeName>,
 }
 
+/// What a node does.
 #[derive(Debug, Reflect)]
-enum NodeKind {
+pub enum NodeKind {
+    /// A node that invokes some game logic.
     Guard {
         /// Guard states are persisted across dialog sessions if
         /// - the node has a [`NodeName::Explicit`]
         ///
         /// Otherwise the state is discarded after the dialog is over.
         kind: GuardKind,
+        /// Some nodes have parameters.
         #[allow(dead_code)]
         #[reflect(ignore)]
         params: HashMap<String, toml::Value>,
     },
+    /// A node that prints a line of dialog.
     Vocative {
         /// The dialog line to print.
-        /// TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/95
+        /// TODO: <https://github.com/porkbrain/dont-count-the-sheep/issues/95>
         line: String,
     },
     /// A node that does nothing.
@@ -208,10 +220,12 @@ pub(crate) fn wait_for_assets_then_spawn_dialog(
         return;
     }
 
+    // we check within assets and not with asset loader because some handles
+    // might've been inserted as runtime dialogs and not with asset server
     let all_ready = start_when_loaded
         .handles
         .iter()
-        .all(|handle| asset_server.is_loaded_with_dependencies(handle));
+        .all(|handle| dialog_graphs.contains(handle));
 
     if !all_ready {
         return;
@@ -283,6 +297,31 @@ impl StartDialogWhenLoaded {
     /// The root node will point to the root of the namespace graph.
     pub fn add_namespace(mut self, namespace: Namespace) -> Self {
         self.namespaces.push(namespace);
+        self
+    }
+
+    /// If [`DialogRef::Namespace`] or [`DialogRef::TypedNamespace`] is used,
+    /// the dialog will be loaded from the asset server.
+    /// If [`DialogRef::Handle`] is used, the dialog will be added to
+    /// the dialog graph directly.
+    /// It's important that the dialog exists in asset.
+    ///
+    /// # Panics
+    /// If the dialog is not a strong handle
+    pub fn add_ref(mut self, dialog_ref: DialogRef) -> Self {
+        match dialog_ref {
+            DialogRef::Handle(handle) => {
+                assert!(handle.is_strong());
+                self.handles.push(handle);
+            }
+            DialogRef::Namespace(namespace) => {
+                self.namespaces.push(namespace);
+            }
+            DialogRef::TypedNamespace(typed) => {
+                self.namespaces.push(typed.into());
+            }
+        }
+
         self
     }
 
@@ -645,6 +684,31 @@ impl BranchStatus {
 }
 
 impl DialogGraph {
+    /// Creates an empty graph with given namespace as
+    /// [`NodeName::NamespaceRoot`].
+    ///
+    /// # Panics
+    /// If the node is not a namespace root.
+    pub fn new_subgraph(node: Node) -> Self {
+        assert!(matches!(node.name, NodeName::NamespaceRoot(_)));
+        Self {
+            root: node.name.clone(),
+            nodes: {
+                let mut nodes = HashMap::with_capacity(1);
+                nodes.insert(node.name.clone(), node);
+                nodes
+            },
+        }
+    }
+
+    /// Insert a node into the graph.
+    ///
+    /// # Panics
+    /// If a node with the same name already exists.
+    pub fn insert_node(&mut self, node: Node) {
+        debug_assert!(self.nodes.insert(node.name.clone(), node).is_none());
+    }
+
     /// A subgraph is not ready to be spawned as a dialog.
     /// Either call [] or attach it to an existing root graph with []
     pub fn is_subgraph(&self) -> bool {
@@ -694,6 +758,15 @@ impl DialogGraph {
         assert!(self.is_subgraph());
         let namespace_root = self.root;
         let who = self.nodes.get(&namespace_root).unwrap().who;
+
+        self.nodes
+            .entry(NodeName::EndDialog)
+            .or_insert_with(|| Node {
+                name: NodeName::EndDialog,
+                who,
+                kind: NodeKind::Blank,
+                next: default(),
+            });
 
         self.nodes.insert(
             NodeName::Root,

@@ -50,7 +50,18 @@ pub enum GlobalGameState {
 
 /// What are the allowed transitions between game states?
 #[allow(missing_docs)]
-#[derive(Resource, Debug, Default, Reflect, Clone, Copy, Eq, PartialEq)]
+#[derive(
+    Resource,
+    Debug,
+    Default,
+    Reflect,
+    Clone,
+    Copy,
+    Eq,
+    PartialEq,
+    strum::EnumString,
+    strum::Display,
+)]
 #[reflect(Resource)]
 pub enum GlobalGameStateTransition {
     #[default]
@@ -124,5 +135,54 @@ pub trait WithStandardStateSemantics {
     fn in_quitting_state(
     ) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
         in_state(Self::quitting())
+    }
+}
+
+impl GlobalGameState {
+    /// Many scenes have a standard state semantics: loading, running, quitting
+    /// and paused.
+    pub fn state_semantics(self) -> Option<StandardStateSemantics> {
+        use GlobalGameState::*;
+
+        let (loading, running, quitting, paused) = match self {
+            LoadingBuilding1PlayerFloor
+            | AtBuilding1PlayerFloor
+            | QuittingBuilding1PlayerFloor => (
+                LoadingBuilding1PlayerFloor,
+                AtBuilding1PlayerFloor,
+                QuittingBuilding1PlayerFloor,
+                None,
+            ),
+
+            LoadingBuilding1Basement1
+            | AtBuilding1Basement1
+            | QuittingBuilding1Basement1 => (
+                LoadingBuilding1Basement1,
+                AtBuilding1Basement1,
+                QuittingBuilding1Basement1,
+                None,
+            ),
+
+            LoadingMeditation | InGameMeditation | MeditationInMenu
+            | QuittingMeditation => (
+                LoadingMeditation,
+                InGameMeditation,
+                QuittingMeditation,
+                Some(MeditationInMenu),
+            ),
+
+            LoadingDowntown | AtDowntown | QuittingDowntown => {
+                (LoadingDowntown, AtDowntown, QuittingDowntown, None)
+            }
+
+            Blank | Exit | NewGame => return None,
+        };
+
+        Some(StandardStateSemantics {
+            loading,
+            running,
+            quitting,
+            paused,
+        })
     }
 }

@@ -6,7 +6,7 @@ Option<main_game_lib::top_down::layout::ZoneGroup>
 {
     use main_game_lib::top_down::layout::ZoneGroup;
     #[allow(clippy::match_single_binding)] match self
-    { Self::PlayerHouseEntrance => Some(ZoneGroup(0)),
+    { Self::Building1Entrance => Some(ZoneGroup(0)),
 Self::MallEntrance => Some(ZoneGroup(1)),
  #[allow(unreachable_patterns)] _ => None, }
 } #[inline] fn zone_size(&self) -> Option<usize>

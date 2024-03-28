@@ -9,7 +9,7 @@ pub mod systems;
 mod types;
 
 use bevy::{
-    app::{App, FixedUpdate, Last},
+    app::{App, FixedUpdate, Last, Update},
     math::{cubic_splines::CubicSegment, Vec2},
     render::color::Color,
 };
@@ -37,14 +37,15 @@ impl bevy::app::Plugin for Plugin {
             FixedUpdate,
             (systems::advance_atlas_animation, systems::interpolate),
         )
-        .add_systems(Last, systems::recv_begin_interpolation_events);
+        .add_systems(Last, systems::recv_begin_interpolation_events)
+        .add_systems(
+            Update,
+            (systems::begin_atlas_animation_at_random, systems::flicker),
+        );
 
         #[cfg(feature = "devtools")]
         {
-            use bevy::{
-                app::{Startup, Update},
-                diagnostic::FrameTimeDiagnosticsPlugin,
-            };
+            use bevy::{app::Startup, diagnostic::FrameTimeDiagnosticsPlugin};
 
             app.register_type::<AtlasAnimation>()
                 .register_type::<AtlasAnimationEnd>()

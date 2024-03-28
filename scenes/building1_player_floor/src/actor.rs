@@ -2,12 +2,11 @@
 
 use bevy::ecs::event::event_update_condition;
 use common_loading_screen::LoadingScreenSettings;
-use common_store::{DialogStore, GlobalStore};
-use common_story::dialog;
+use common_story::dialog::DialogGraph;
 use common_visuals::camera::MainCamera;
 use main_game_lib::{
     common_ext::QueryExt,
-    cutscene::{self, in_cutscene, IntoCutscene},
+    cutscene::{self, in_cutscene},
 };
 use top_down::{
     actor::{emit_movement_events, movement_event_emitted},
@@ -19,18 +18,10 @@ use crate::{
     prelude::*,
 };
 
-const EXIT_ELEVATOR_NODE_NAME: &str = "exit_elevator";
-const GO_TO_DOWNTOWN_NODE_NAME: &str = "go_to_downtown";
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        // the entities are spawned into the root entity
-        // this means we don't need to despawn them manually as they will be
-        // despawned when the scene is despawned
-        // we do this to leverage ysorting
-
         app.add_systems(
             Update,
             (start_meditation_minigame_if_near_chair, enter_the_elevator)
@@ -55,16 +46,12 @@ fn start_meditation_minigame_if_near_chair(
     mut action_events: EventReader<Building1PlayerFloorAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
-
-    player: Query<Entity, With<Player>>,
 ) {
     let is_triggered = action_events.read().any(|action| {
         matches!(action, Building1PlayerFloorAction::StartMeditation)
     });
 
-    if is_triggered && let Some(entity) = player.get_single_or_none() {
-        cmd.entity(entity).despawn_recursive();
-
+    if is_triggered {
         cmd.insert_resource(LoadingScreenSettings {
             atlas: Some(common_loading_screen::LoadingScreenAtlas::Space),
             stare_at_loading_screen_for_at_least: Some(
@@ -83,66 +70,45 @@ fn start_meditation_minigame_if_near_chair(
 fn enter_the_elevator(
     mut cmd: Commands,
     mut action_events: EventReader<Building1PlayerFloorAction>,
+    mut assets: ResMut<Assets<DialogGraph>>,
 
     player: Query<Entity, With<Player>>,
     elevator: Query<Entity, With<Elevator>>,
     camera: Query<Entity, With<MainCamera>>,
     points: Query<(&Name, &rscn::Point)>,
 ) {
-    fn did_choose_to_cancel_and_exit_the_elevator(store: &GlobalStore) -> bool {
-        store.was_this_the_last_dialog((
-            dialog::TypedNamespace::EnterTheApartmentElevator,
-            EXIT_ELEVATOR_NODE_NAME,
-        ))
-    }
-
-    fn on_took_the_elevator(cmd: &mut Commands, store: &GlobalStore) {
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(2000)),
-            ..default()
-        });
-        cmd.insert_resource(NextState(Some(
-            GlobalGameState::QuittingBuilding1PlayerFloor,
-        )));
-
-        let go_to_downtown = store.was_this_the_last_dialog((
-            dialog::TypedNamespace::EnterTheApartmentElevator,
-            GO_TO_DOWNTOWN_NODE_NAME,
-        ));
-
-        let transition = if go_to_downtown {
-            GlobalGameStateTransition::Building1PlayerFloorToDowntown
-        } else {
-            // only other possible transition
-            GlobalGameStateTransition::Building1PlayerFloorToBuilding1Basement1
-        };
-
-        cmd.insert_resource(transition);
-    }
-
     let is_triggered = action_events.read().any(|action| {
         matches!(action, Building1PlayerFloorAction::EnterElevator)
     });
 
-    if is_triggered && let Some(entity) = player.get_single_or_none() {
-        cutscene::enter_an_elevator::EnterAnElevator {
-            player: entity,
-            elevator: elevator.single(),
-            camera: camera.single(),
-            dialog: dialog::TypedNamespace::EnterTheApartmentElevator,
-            is_cancelled: did_choose_to_cancel_and_exit_the_elevator,
-            on_took_the_elevator,
-            point_in_elevator: {
-                let (_, rscn::Point(pos)) = points
-                    .iter()
-                    .find(|(name, _)| **name == Name::new("InElevator"))
-                    .expect("InElevator point not found");
+    if is_triggered && let Some(player) = player.get_single_or_none() {
+        let point_in_elevator = {
+            let (_, rscn::Point(pos)) = points
+                .iter()
+                .find(|(name, _)| **name == Name::new("InElevator"))
+                .expect("InElevator point not found");
 
-                *pos
-            },
-        }
-        .spawn(&mut cmd);
+            *pos
+        };
+
+        cutscene::enter_an_elevator::spawn(
+            &mut cmd,
+            &mut assets,
+            player,
+            elevator.single(),
+            camera.single(),
+            point_in_elevator,
+            &[
+                (
+                    GlobalGameStateTransition::Building1PlayerFloorToDowntown,
+                    "go to downtown",
+                ),
+                (
+                    GlobalGameStateTransition::Building1PlayerFloorToBuilding1Basement1,
+                    "go to basement",
+                ),
+            ],
+        );
     }
 }
 
@@ -189,45 +155,5 @@ fn toggle_zone_hints(
                 _ => {}
             },
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use common_story::dialog::DialogGraph;
-    use itertools::Itertools;
-
-    use super::*;
-
-    #[test]
-    fn it_has_exit_elevator_node_and_go_to_downtown_node() {
-        let namespace = dialog::TypedNamespace::EnterTheApartmentElevator;
-
-        let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-        let path = format!(
-            "{manifest}/../../main_game/assets/dialogs/{namespace}.toml"
-        );
-        let toml = std::fs::read_to_string(&path)
-            .unwrap_or_else(|e| panic!("{path}: {e}"));
-
-        let dialog = DialogGraph::subgraph_from_raw(namespace.into(), &toml);
-
-        let nodes = dialog
-            .node_names()
-            .filter_map(|node| {
-                let (_, name) = node.as_namespace_and_node_name_str()?;
-                Some(name.to_owned())
-            })
-            .collect_vec();
-
-        nodes
-            .iter()
-            .find(|name| name.as_str() == EXIT_ELEVATOR_NODE_NAME)
-            .expect("Exit elevator node not found");
-
-        nodes
-            .iter()
-            .find(|name| name.as_str() == GO_TO_DOWNTOWN_NODE_NAME)
-            .expect("Go to downtown node not found");
     }
 }

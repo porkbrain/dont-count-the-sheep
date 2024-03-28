@@ -1,7 +1,14 @@
-use bevy::render::view::RenderLayers;
+use bevy::{ecs::event::event_update_condition, render::view::RenderLayers};
 use bevy_grid_squared::sq;
-use common_visuals::camera::render_layer;
-use main_game_lib::cutscene::enter_an_elevator::STEP_TIME_ON_EXIT_ELEVATOR;
+use common_story::dialog::DialogGraph;
+use common_visuals::camera::{render_layer, MainCamera};
+use main_game_lib::{
+    common_ext::QueryExt,
+    cutscene::{
+        self, enter_an_elevator::STEP_TIME_ON_EXIT_ELEVATOR, in_cutscene,
+    },
+    top_down::actor::player::TakeAwayPlayerControl,
+};
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use strum::IntoEnumIterator;
 use top_down::{
@@ -34,6 +41,14 @@ impl bevy::app::Plugin for Plugin {
             OnExit(GlobalGameState::QuittingBuilding1Basement1),
             despawn,
         );
+
+        app.add_systems(
+            Update,
+            enter_the_elevator
+                .run_if(event_update_condition::<Building1Basement1Action>)
+                .run_if(Building1Basement1::in_running_state())
+                .run_if(not(in_cutscene())),
+        );
     }
 }
 
@@ -48,6 +63,7 @@ pub(crate) struct LayoutEntity;
 pub(crate) struct Elevator;
 
 struct Spawner<'a> {
+    transition: GlobalGameStateTransition,
     player_entity: Entity,
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
@@ -59,13 +75,14 @@ struct Spawner<'a> {
 /// The names are stored in the scene file.
 fn spawn(
     mut cmd: Commands,
+    transition: Res<GlobalGameStateTransition>,
     asset_server: Res<AssetServer>,
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 
     mut q: Query<&mut TscnTreeHandle<Building1Basement1>>,
 ) {
-    info!("Spawning Building1PlayerFloor scene");
+    info!("Spawning Building1Basement1 scene");
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
@@ -75,6 +92,7 @@ fn spawn(
 
     tscn.spawn_into(
         &mut Spawner {
+            transition: *transition,
             player_entity: player,
             player_builder: &mut player_builder,
             asset_server: &asset_server,
@@ -111,6 +129,8 @@ impl<'a> TscnSpawner for Spawner<'a> {
         NodeName(name): NodeName,
         translation: Vec3,
     ) {
+        use GlobalGameStateTransition::*;
+
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
 
@@ -121,6 +141,17 @@ impl<'a> TscnSpawner for Spawner<'a> {
             }
             "Elevator" => {
                 cmd.entity(who).insert(Elevator);
+
+                if self.transition == Building1PlayerFloorToBuilding1Basement1 {
+                    let player = self.player_entity;
+
+                    // take away player control for a moment to prevent them
+                    // from interacting with the elevator while it's closing
+                    cmd.entity(player).insert(TakeAwayPlayerControl);
+                    cmd.entity(who).add(move |e: EntityWorldMut| {
+                        cutscene::enter_an_elevator::start_with_open_elevator_and_close_it(player, e)
+                    });
+                }
             }
             "InElevator" => {
                 self.player_builder.initial_position(translation.truncate());
@@ -173,5 +204,51 @@ impl top_down::layout::Tile for Building1Basement1TileKind {
     #[inline]
     fn zones_iter() -> impl Iterator<Item = Self> {
         Self::iter().filter(|kind| kind.is_zone())
+    }
+}
+
+/// By entering the elevator, the player can this scene.
+fn enter_the_elevator(
+    mut cmd: Commands,
+    mut action_events: EventReader<Building1Basement1Action>,
+    mut assets: ResMut<Assets<DialogGraph>>,
+
+    player: Query<Entity, With<Player>>,
+    elevator: Query<Entity, With<Elevator>>,
+    camera: Query<Entity, With<MainCamera>>,
+    points: Query<(&Name, &rscn::Point)>,
+) {
+    let is_triggered = action_events.read().any(|action| {
+        matches!(action, Building1Basement1Action::EnterElevator)
+    });
+
+    if is_triggered && let Some(player) = player.get_single_or_none() {
+        let point_in_elevator = {
+            let (_, rscn::Point(pos)) = points
+                .iter()
+                .find(|(name, _)| **name == Name::new("InElevator"))
+                .expect("InElevator point not found");
+
+            *pos
+        };
+
+        cutscene::enter_an_elevator::spawn(
+            &mut cmd,
+            &mut assets,
+            player,
+            elevator.single(),
+            camera.single(),
+            point_in_elevator,
+            &[
+                (
+                    GlobalGameStateTransition::Building1Basement1ToPlayerFloor,
+                    "go to first floor",
+                ),
+                (
+                    GlobalGameStateTransition::Building1Basement1ToDowntown,
+                    "go to downtown",
+                ),
+            ],
+        );
     }
 }
