@@ -103,7 +103,6 @@ fn spawn(
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
-
     let player = cmd.spawn_empty().id();
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
@@ -121,7 +120,6 @@ fn spawn(
     );
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
-
     cmd.insert_resource(zone_to_inspect_label_entity);
 }
 

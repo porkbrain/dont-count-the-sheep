@@ -313,6 +313,12 @@ position = Vector2(284, 107)
 
 [node name="Point" type="Node" parent="Points/PlayerApartmentBuildingEntrance"]
 
+[node name="InspectLabel" type="Node" parent="Points/PlayerApartmentBuildingEntrance"]
+metadata/zone = "Building1Entrance"
+metadata/action = "EnterBuilding1"
+metadata/label = "Home"
+metadata/category = "Default"
+
 [node name="MallEntrance" type="Node2D" parent="Points"]
 position = Vector2(-149, 342)
 

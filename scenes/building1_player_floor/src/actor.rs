@@ -46,16 +46,12 @@ fn start_meditation_minigame_if_near_chair(
     mut action_events: EventReader<Building1PlayerFloorAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
-
-    player: Query<Entity, With<Player>>,
 ) {
     let is_triggered = action_events.read().any(|action| {
         matches!(action, Building1PlayerFloorAction::StartMeditation)
     });
 
-    if is_triggered && let Some(entity) = player.get_single_or_none() {
-        cmd.entity(entity).despawn_recursive();
-
+    if is_triggered {
         cmd.insert_resource(LoadingScreenSettings {
             atlas: Some(common_loading_screen::LoadingScreenAtlas::Space),
             stare_at_loading_screen_for_at_least: Some(
