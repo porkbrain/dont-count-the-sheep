@@ -184,7 +184,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                     common_story::Character::Winnie,
                 ))
                 .add_open_criteria(DoorOpenCriteria::Character(
-                    common_story::Character::Unnamed,
+                    common_story::Character::Samizdat,
                 ))
                 .with_initial_state(DoorState::Closed)
                 .with_obstacle_when_closed_between(sq(-40, -21), sq(-31, -21))
