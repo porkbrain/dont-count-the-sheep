@@ -27,6 +27,10 @@ pub enum GlobalGameState {
     AtBuilding1Basement1,
     QuittingBuilding1Basement1,
 
+    LoadingMall,
+    AtMall,
+    QuittingMall,
+
     /// Change the game state to this state to run systems that setup the
     /// meditation game in the background.
     /// Nothing is shown to the player yet.
@@ -79,6 +83,9 @@ pub enum GlobalGameStateTransition {
     Building1Basement1ToDowntown,
 
     DowntownToBuilding1PlayerFloor,
+    DowntownToMall,
+
+    MallToDowntown,
 }
 
 /// Typical scene has several states with standard semantics.
@@ -153,6 +160,10 @@ impl GlobalGameState {
                 QuittingBuilding1PlayerFloor,
                 None,
             ),
+
+            LoadingMall | AtMall | QuittingMall => {
+                (LoadingMall, AtMall, QuittingMall, None)
+            }
 
             LoadingBuilding1Basement1
             | AtBuilding1Basement1

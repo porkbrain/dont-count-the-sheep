@@ -25,22 +25,19 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(GlobalGameState::LoadingBuilding1Basement1),
+            OnEnter(Building1Basement1::loading()),
             rscn::start_loading_tscn::<Building1Basement1>,
         )
         .add_systems(
             Update,
             spawn
-                .run_if(in_state(GlobalGameState::LoadingBuilding1Basement1))
+                .run_if(Building1Basement1::in_loading_state())
                 .run_if(resource_exists::<TileMap<Building1Basement1>>)
                 .run_if(
                     rscn::tscn_loaded_but_not_spawned::<Building1Basement1>(),
                 ),
         )
-        .add_systems(
-            OnExit(GlobalGameState::QuittingBuilding1Basement1),
-            despawn,
-        );
+        .add_systems(OnExit(Building1Basement1::quitting()), despawn);
 
         app.add_systems(
             Update,
