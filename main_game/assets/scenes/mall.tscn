@@ -54,25 +54,43 @@ texture = ExtResource("1_py6kn")
 position = Vector2(-137, 85)
 sprite_frames = SubResource("SpriteFrames_3xvgv")
 
+[node name="YSort" type="Node2D" parent="VendingMachine"]
+position = Vector2(0, 24)
+
 [node name="Mallisles" type="Sprite2D" parent="."]
 position = Vector2(-2, -7)
 texture = ExtResource("3_7qiwu")
+
+[node name="YSort" type="Node2D" parent="Mallisles"]
+position = Vector2(3, 63)
 
 [node name="Salebox" type="Sprite2D" parent="."]
 position = Vector2(133, 84)
 texture = ExtResource("4_uvq87")
 
+[node name="YSort" type="Node2D" parent="Salebox"]
+position = Vector2(0, 16)
+
 [node name="SelfCheckout" type="Sprite2D" parent="."]
 position = Vector2(239, 75)
 texture = ExtResource("5_g377o")
+
+[node name="YSort" type="Node2D" parent="SelfCheckout"]
+position = Vector2(0, -8)
 
 [node name="Storage" type="Sprite2D" parent="."]
 position = Vector2(-60, 89)
 texture = ExtResource("6_egw2s")
 
+[node name="YSort" type="Node2D" parent="Storage"]
+position = Vector2(0, 18)
+
 [node name="MallGate" type="Sprite2D" parent="."]
 position = Vector2(140, 114)
 texture = ExtResource("7_34v1c")
+
+[node name="YSort" type="Node2D" parent="MallGate"]
+position = Vector2(0, 13)
 
 [node name="Points" type="Node2D" parent="."]
 
