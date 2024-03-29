@@ -4,7 +4,9 @@ use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_visuals::camera::render_layer;
 use main_game_lib::{
-    cutscene::{self, enter_an_elevator::STEP_TIME_ON_EXIT_ELEVATOR},
+    cutscene::enter_an_elevator::{
+        start_with_open_elevator_and_close_it, STEP_TIME_ON_EXIT_ELEVATOR,
+    },
     top_down::actor::player::TakeAwayPlayerControl,
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
@@ -150,6 +152,11 @@ impl<'a> TscnSpawner for Spawner<'a> {
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
 
+        let came_in_via_elevator = matches!(
+            self.transition,
+            DowntownToBuilding1PlayerFloor | Building1Basement1ToPlayerFloor
+        );
+
         match name.as_str() {
             "Building1PlayerFloor" => {
                 cmd.entity(who).insert(LayoutEntity);
@@ -158,14 +165,14 @@ impl<'a> TscnSpawner for Spawner<'a> {
             "Elevator" => {
                 cmd.entity(who).insert(Elevator);
 
-                if self.transition == Building1Basement1ToPlayerFloor {
+                if came_in_via_elevator {
                     let player = self.player_entity;
 
                     // take away player control for a moment to prevent them
                     // from interacting with the elevator while it's closing
                     cmd.entity(player).insert(TakeAwayPlayerControl);
                     cmd.entity(who).add(move |e: EntityWorldMut| {
-                        cutscene::enter_an_elevator::start_with_open_elevator_and_close_it(player, e)
+                        start_with_open_elevator_and_close_it(player, e)
                     });
                 }
             }
@@ -207,13 +214,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
             {
                 self.player_builder.initial_position(translation.truncate());
             }
-            "InElevator"
-                if matches!(
-                    self.transition,
-                    DowntownToBuilding1PlayerFloor
-                        | Building1Basement1ToPlayerFloor
-                ) =>
-            {
+            "InElevator" if came_in_via_elevator => {
                 self.player_builder.initial_position(translation.truncate());
                 self.player_builder.walking_to(ActorTarget::new(
                     LAYOUT.world_pos_to_square(translation.truncate())

@@ -116,6 +116,12 @@ pub fn finish_state() -> LoadingScreenState {
     LoadingScreenState::FadeInQuadToRemoveAtlas
 }
 
+/// In this state the loading screen is waiting for the user to set it to the
+/// state [`finish_state`] or call the [`finish`] system.
+pub fn wait_state() -> LoadingScreenState {
+    LoadingScreenState::WaitForSignalToFinish
+}
+
 /// Sets the state to [`finish_state`].
 pub fn finish(mut next_state: ResMut<NextState<LoadingScreenState>>) {
     next_state.set(finish_state());

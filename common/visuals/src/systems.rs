@@ -96,7 +96,7 @@ pub fn begin_atlas_animation_at_random(
             }
             BeginAtlasAnimationCond::Custom { with: Some(fun) } => {
                 let frame_time = settings.frame_time;
-                let fun = fun.clone();
+                let fun = *fun;
                 cmd.add(move |w: &mut World| {
                     if !fun(w, entity) {
                         return;

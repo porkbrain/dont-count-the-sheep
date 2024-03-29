@@ -12,7 +12,9 @@ Self::MallEntrance => Some(ZoneGroup(1)),
 } #[inline] fn zone_size(&self) -> Option<usize>
 {
     #[allow(clippy::match_single_binding)] match self
-    {  #[allow(unreachable_patterns)] _ => None, }
+    { Self::Building1Entrance => Some(27),
+Self::MallEntrance => Some(264),
+ #[allow(unreachable_patterns)] _ => None, }
 } type Successors = Self; #[inline] fn zone_successors(&self) -> Option<&'static
 [Self::Successors]>
 {

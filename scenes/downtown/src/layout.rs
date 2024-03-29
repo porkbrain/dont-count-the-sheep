@@ -1,6 +1,6 @@
 use bevy::{ecs::event::event_update_condition, render::view::RenderLayers};
 use bevy_grid_squared::sq;
-use common_loading_screen::LoadingScreenSettings;
+use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     cutscene::in_cutscene,
@@ -163,6 +163,7 @@ fn enter_building1(
     mut action_events: EventReader<DowntownAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
 ) {
     let is_triggered = action_events
         .read()
@@ -171,8 +172,11 @@ fn enter_building1(
     if is_triggered {
         cmd.insert_resource(LoadingScreenSettings {
             atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
             ..default()
         });
+
+        next_loading_screen_state.set(common_loading_screen::start_state());
 
         *transition = GlobalGameStateTransition::DowntownToBuilding1PlayerFloor;
         next_state.set(Downtown::quitting());

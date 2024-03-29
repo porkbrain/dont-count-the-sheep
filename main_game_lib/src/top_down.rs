@@ -238,16 +238,24 @@ where
                 .run_if(resource_exists::<Toolbar<T::LocalTileKind>>),
         );
 
-    app.add_systems(OnEnter(running), layout::map_maker::visualize_map::<T>)
-        .add_systems(
-            Update,
-            (
-                layout::map_maker::change_square_kind::<T>,
-                layout::map_maker::recolor_squares::<T>,
-                layout::map_maker::update_ui::<T>,
-            )
-                .run_if(in_state(running))
-                .chain(),
+    app.add_systems(
+        OnEnter(running),
+        layout::map_maker::spawn_debug_grid_root::<T>,
+    )
+    .add_systems(
+        Update,
+        layout::map_maker::show_tiles_around_cursor::<T>
+            .run_if(in_state(running)),
+    )
+    .add_systems(
+        Update,
+        (
+            layout::map_maker::change_square_kind::<T>,
+            layout::map_maker::recolor_squares::<T>,
+            layout::map_maker::update_ui::<T>,
         )
-        .add_systems(OnExit(quitting), layout::map_maker::destroy_map::<T>);
+            .run_if(in_state(running))
+            .chain(),
+    )
+    .add_systems(OnExit(quitting), layout::map_maker::destroy_map::<T>);
 }
