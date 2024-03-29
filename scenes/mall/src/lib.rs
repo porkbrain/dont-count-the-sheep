@@ -27,7 +27,7 @@ impl TopDownScene for Mall {
     }
 
     fn bounds() -> [i32; 4] {
-        [-100, 100, -100, 100]
+        [-94, 75, -40, 40]
     }
 }
 
