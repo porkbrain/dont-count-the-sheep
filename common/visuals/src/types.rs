@@ -52,7 +52,7 @@ pub enum AtlasAnimationEnd {
         /// action because otherwise the animation will keep looping on the
         /// last frame.
         #[reflect(ignore)]
-        with_fn: Option<CustomAtlasAnimationEndFn>,
+        with: Option<CustomAtlasAnimationEndFn>,
     },
 }
 
@@ -62,16 +62,37 @@ pub struct AtlasAnimationTimer(pub(crate) Timer);
 
 /// Allows to start an animation at random.
 #[derive(Component, Default, Reflect)]
-pub struct BeginAtlasAnimationAtRandom {
-    /// We roll a dice every delta seconds.
-    /// This scales that delta.
-    /// Between 0 and 1.
-    pub chance_per_second: f32,
+pub struct BeginAtlasAnimation {
+    /// The condition to start the animation.
+    pub cond: BeginAtlasAnimationCond,
     /// Once the animation is started, how long should each frame be shown?
     pub frame_time: Duration,
     /// If present, the animation cannot be started before this time has
     /// passed.
     pub with_min_delay: Option<(Duration, Stopwatch)>,
+}
+
+/// Various conditions to start an animation.
+#[derive(Default, Reflect)]
+pub enum BeginAtlasAnimationCond {
+    /// Makes sense only when [`BeginAtlasAnimationAtRandom::with_min_delay`]
+    /// is set.
+    /// Otherwise, just insert the [`AtlasAnimationTimer`] directly.
+    #[default]
+    Immediately,
+    /// We roll a dice every delta seconds.
+    /// This scales that delta.
+    /// Between 0 and 1.
+    AtRandom(f32),
+    /// Since the system that runs the conds doesn't have access to the world,
+    /// this is scheduled as a command.
+    Custom {
+        /// Option to be able to implement reflect.
+        ///
+        /// If returns true, the animation will be started.
+        #[reflect(ignore)]
+        with: Option<fn(&World, Entity) -> bool>,
+    },
 }
 
 /// Shows entity at random for a given duration.
@@ -126,7 +147,7 @@ pub(crate) enum OnInterpolationFinished {
 impl AtlasAnimationEnd {
     /// Runs this fn when the last frame of the animation is reached.
     pub fn run(fun: CustomAtlasAnimationEndFn) -> Self {
-        Self::Custom { with_fn: Some(fun) }
+        Self::Custom { with: Some(fun) }
     }
 }
 
@@ -456,6 +477,25 @@ impl AtlasAnimation {
             self.first == sprite.index
         } else {
             self.last == sprite.index
+        }
+    }
+}
+
+impl BeginAtlasAnimation {
+    /// Run the given function and when it returns true, that's when we can
+    /// start the animation.
+    ///
+    /// Note that the function is called every frame and added as a command
+    /// that's evaluated single-threaded.
+    pub fn run(
+        fun: fn(&World, Entity) -> bool,
+        frame_time: Duration,
+        with_min_delay: Option<Duration>,
+    ) -> Self {
+        Self {
+            cond: BeginAtlasAnimationCond::Custom { with: Some(fun) },
+            frame_time,
+            with_min_delay: with_min_delay.map(|d| (d, Stopwatch::new())),
         }
     }
 }

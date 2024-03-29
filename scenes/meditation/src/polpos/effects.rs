@@ -135,8 +135,10 @@ pub(crate) mod black_hole {
                 on_last_frame,
                 ..default()
             },
-            BeginAtlasAnimationAtRandom {
-                chance_per_second: BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND,
+            BeginAtlasAnimation {
+                cond: common_visuals::BeginAtlasAnimationCond::AtRandom(
+                    BLACK_HOLE_DESPAWN_CHANCE_PER_SECOND,
+                ),
                 frame_time: BLACK_HOLE_FRAME_TIME,
                 with_min_delay: Some((BLACK_HOLE_MIN_LIFE, Stopwatch::new())),
             },

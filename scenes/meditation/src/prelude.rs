@@ -4,7 +4,7 @@ pub(crate) use common_physics::{
 };
 pub(crate) use common_visuals::{
     AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer,
-    BeginAtlasAnimationAtRandom, Flicker,
+    BeginAtlasAnimation, Flicker,
 };
 pub(crate) use main_game_lib::prelude::*;
 
