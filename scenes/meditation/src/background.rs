@@ -99,8 +99,10 @@ fn spawn_shooting_star(
     cmd.spawn((
         BackgroundEntity,
         RenderLayers::layer(render_layer::OBJ),
-        BeginAtlasAnimationAtRandom {
-            chance_per_second: SHOOTING_STAR_CHANCE_PER_SECOND,
+        BeginAtlasAnimation {
+            cond: common_visuals::BeginAtlasAnimationCond::AtRandom(
+                SHOOTING_STAR_CHANCE_PER_SECOND,
+            ),
             frame_time: SHOOTING_STAR_FRAME_TIME,
             ..default()
         },

@@ -52,7 +52,7 @@ impl bevy::app::Plugin for Plugin {
                 .register_type::<AtlasAnimationTimer>()
                 .register_type::<TranslationInterpolation>()
                 .register_type::<ColorInterpolation>()
-                .register_type::<BeginAtlasAnimationAtRandom>()
+                .register_type::<BeginAtlasAnimation>()
                 .register_type::<Flicker>();
 
             app.add_plugins(FrameTimeDiagnosticsPlugin)

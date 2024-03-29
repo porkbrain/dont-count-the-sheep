@@ -12,7 +12,7 @@ use common_story::{
 };
 use common_visuals::{
     AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer,
-    BeginAtlasAnimationAtRandom, EASE_IN_OUT,
+    BeginAtlasAnimation, EASE_IN_OUT,
 };
 use top_down::layout::LAYOUT;
 
@@ -300,13 +300,19 @@ pub fn start_with_open_elevator_and_close_it(
     trace!("Setting elevator to last frame");
     // set the last frame as the current index
     elevator.get_mut::<TextureAtlas>().unwrap().index = last_frame;
-    // start the animation asap
-    elevator.insert(BeginAtlasAnimationAtRandom {
-        chance_per_second: 1.0,
-        frame_time: from_millis(150),
-        // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/111
-        with_min_delay: Some((from_millis(1750), Stopwatch::new())),
-    });
+    // start the animation as soon as we are in running state
+    fn is_in_running_global_state(w: &World, _: Entity) -> bool {
+        // SAFETY: GlobalGameState always present
+        let current_state = w.get_resource::<State<GlobalGameState>>().unwrap();
+        current_state
+            .state_semantics()
+            .is_some_and(|sem| sem.running == **current_state)
+    }
+    elevator.insert(common_visuals::BeginAtlasAnimation::run(
+        is_in_running_global_state,
+        from_millis(150),
+        Some(from_millis(1500)),
+    ));
 
     let mut a = elevator.get_mut::<AtlasAnimation>().unwrap();
     // animation runs in reverse
@@ -324,7 +330,7 @@ pub fn start_with_open_elevator_and_close_it(
                 trace!("Setting elevator animation back to normal");
                 // no anim running
                 e.remove::<AtlasAnimationTimer>();
-                e.remove::<BeginAtlasAnimationAtRandom>();
+                e.remove::<BeginAtlasAnimation>();
 
                 let mut a = e.get_mut::<AtlasAnimation>().unwrap();
                 // back to normal

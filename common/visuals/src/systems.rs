@@ -5,9 +5,9 @@ use common_ext::ColorExt;
 
 use crate::{
     AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer,
-    BeginAtlasAnimationAtRandom, BeginInterpolationEvent, ColorInterpolation,
-    Flicker, OnInterpolationFinished, TranslationInterpolation,
-    UiStyleHeightInterpolation,
+    BeginAtlasAnimation, BeginAtlasAnimationCond, BeginInterpolationEvent,
+    ColorInterpolation, Flicker, OnInterpolationFinished,
+    TranslationInterpolation, UiStyleHeightInterpolation,
 };
 
 /// Advances the animation by one frame.
@@ -43,10 +43,10 @@ pub fn advance_atlas_animation(
                     AtlasAnimationEnd::RemoveTimer => {
                         cmd.entity(entity).remove::<AtlasAnimationTimer>();
                     }
-                    AtlasAnimationEnd::Custom { with_fn: Some(fun) } => {
+                    AtlasAnimationEnd::Custom { with: Some(fun) } => {
                         fun(entity, &mut atlas, &mut visibility, &mut cmd);
                     }
-                    AtlasAnimationEnd::Custom { with_fn: None } => {
+                    AtlasAnimationEnd::Custom { with: None } => {
                         // nothing happens
                     }
                     AtlasAnimationEnd::Loop => {
@@ -73,7 +73,7 @@ pub fn begin_atlas_animation_at_random(
     time: Res<Time>,
 
     mut query: Query<
-        (Entity, &mut BeginAtlasAnimationAtRandom, &mut Visibility),
+        (Entity, &mut BeginAtlasAnimation, &mut Visibility),
         Without<AtlasAnimationTimer>,
     >,
 ) {
@@ -88,9 +88,36 @@ pub fn begin_atlas_animation_at_random(
         }
         settings.with_min_delay = None;
 
-        if rand::random::<f32>()
-            < settings.chance_per_second * time.delta_seconds()
-        {
+        let should_start = match &settings.cond {
+            BeginAtlasAnimationCond::Immediately
+            | BeginAtlasAnimationCond::Custom { with: None } => true,
+            BeginAtlasAnimationCond::AtRandom(chance_per_second) => {
+                rand::random::<f32>() < chance_per_second * time.delta_seconds()
+            }
+            BeginAtlasAnimationCond::Custom { with: Some(fun) } => {
+                let frame_time = settings.frame_time;
+                let fun = fun.clone();
+                cmd.add(move |w: &mut World| {
+                    if !fun(w, entity) {
+                        return;
+                    }
+
+                    if let Some(mut entity) = w.get_entity_mut(entity) {
+                        entity.remove::<BeginAtlasAnimation>();
+                        entity.insert(AtlasAnimationTimer::new(
+                            frame_time,
+                            TimerMode::Repeating,
+                        ));
+                    }
+                });
+
+                // the condition has to be evaluated later bcs we don't have
+                // access to the world here
+                false
+            }
+        };
+
+        if should_start {
             *visibility = Visibility::Visible;
             cmd.entity(entity).insert(AtlasAnimationTimer::new(
                 settings.frame_time,
