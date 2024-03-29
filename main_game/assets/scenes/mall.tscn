@@ -75,3 +75,14 @@ position = Vector2(140, 114)
 texture = ExtResource("7_34v1c")
 
 [node name="Points" type="Node2D" parent="."]
+
+[node name="Entrance" type="Node2D" parent="Points"]
+position = Vector2(249, 133)
+
+[node name="Point" type="Node" parent="Points/Entrance"]
+
+[node name="InspectLabel" type="Node" parent="Points/Entrance"]
+metadata/zone = "ExitZone"
+metadata/action = "ExitMall"
+metadata/label = "Exit"
+metadata/category = "Default"

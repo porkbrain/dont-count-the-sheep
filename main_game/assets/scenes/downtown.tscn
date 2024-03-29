@@ -323,3 +323,9 @@ metadata/category = "Default"
 position = Vector2(-149, 342)
 
 [node name="Point" type="Node" parent="Points/MallEntrance"]
+
+[node name="InspectLabel" type="Node" parent="Points/MallEntrance"]
+metadata/zone = "MallEntrance"
+metadata/action = "EnterMall"
+metadata/label = "Go shopping"
+metadata/category = "Default"

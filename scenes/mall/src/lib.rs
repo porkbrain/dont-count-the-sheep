@@ -1,8 +1,9 @@
 #![doc = include_str!("../README.md")]
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::type_complexity)]
+#![feature(trivial_bounds)]
+#![feature(let_chains)]
 
-mod actor;
 mod autogen;
 mod layout;
 mod prelude;
@@ -11,35 +12,36 @@ use common_loading_screen::LoadingScreenState;
 use prelude::*;
 use serde::{Deserialize, Serialize};
 
-/// Important scene struct.
-/// We use it as identifiable generic in some common logic such as layout or
-/// asset.
-#[derive(TypePath, Default)]
-pub(crate) struct Downtown;
+use crate::layout::LayoutEntity;
 
-impl TopDownScene for Downtown {
-    type LocalTileKind = DowntownTileKind;
+/// Important scene struct.
+/// We use it as identifiable generic in common logic.
+#[derive(TypePath, Default)]
+pub struct Mall;
+
+impl TopDownScene for Mall {
+    type LocalTileKind = MallTileKind;
 
     fn name() -> &'static str {
-        "downtown"
+        "mall"
     }
 
     fn bounds() -> [i32; 4] {
-        [-250, 250, -300, 300]
+        [-90, 40, -30, 0]
     }
 }
 
-impl WithStandardStateSemantics for Downtown {
+impl WithStandardStateSemantics for Mall {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingDowntown
+        GlobalGameState::LoadingMall
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtDowntown
+        GlobalGameState::AtMall
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingDowntown
+        GlobalGameState::QuittingMall
     }
 }
 
@@ -64,31 +66,29 @@ impl WithStandardStateSemantics for Downtown {
 )]
 #[reflect(Default)]
 #[allow(clippy::enum_variant_names)]
-pub enum DowntownTileKind {
+pub enum MallTileKind {
     #[default]
-    Building1Entrance,
-    MallEntrance,
+    ExitZone,
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString)]
-pub enum DowntownAction {
-    EnterMall,
-    EnterBuilding1,
+pub enum MallAction {
+    ExitMall,
 }
 
 pub fn add(app: &mut App) {
-    info!("Adding downtown to app");
+    info!("Adding Mall to app");
 
-    app.add_event::<DowntownAction>();
+    app.add_event::<MallAction>();
 
-    top_down::default_setup_for_scene::<Downtown>(app);
+    top_down::default_setup_for_scene::<Mall>(app);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Downtown>(app);
+    top_down::dev_default_setup_for_scene::<Mall>(app);
 
     debug!("Adding plugins");
 
-    app.add_plugins((layout::Plugin, actor::Plugin));
+    app.add_plugins(layout::Plugin);
 
     debug!("Adding game loop");
 
@@ -97,19 +97,20 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(Downtown::in_loading_state())
+            .run_if(Mall::in_loading_state())
+            .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_scene.run_if(Downtown::in_loading_state()),
+        enter_the_scene.run_if(Mall::in_loading_state()),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(Downtown::in_running_state())
+            .run_if(Mall::in_running_state())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
@@ -118,15 +119,15 @@ pub fn add(app: &mut App) {
         // wait for the loading screen to fade in before changing state,
         // otherwise the player might see a flicker
         exit.run_if(in_state(common_loading_screen::wait_state()))
-            .run_if(Downtown::in_quitting_state()),
+            .run_if(Mall::in_quitting_state()),
     );
 
-    info!("Added downtown to app");
+    info!("Added Mall to app");
 }
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<top_down::TileMap<Downtown>>>,
+    map: Option<Res<top_down::TileMap<Mall>>>,
 ) {
     if map.is_none() {
         return;
@@ -138,8 +139,8 @@ fn finish_when_everything_loaded(
 }
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
-    info!("Entering downtown");
-    next_state.set(Downtown::running());
+    info!("Entering Mall");
+    next_state.set(Mall::running());
 }
 
 fn exit(
@@ -147,21 +148,30 @@ fn exit(
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 ) {
-    info!("Leaving downtown");
+    info!("Leaving Mall");
 
     // be a good guy and don't invade other game loops with our controls
     controls.consume_all();
 
     use GlobalGameStateTransition::*;
     match *transition {
-        DowntownToBuilding1PlayerFloor => {
-            next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
-        }
-        DowntownToMall => {
-            next_state.set(GlobalGameState::LoadingMall);
+        MallToDowntown => {
+            next_state.set(GlobalGameState::LoadingDowntown);
         }
         _ => {
-            unreachable!("Invalid Downtown transition {transition:?}");
+            unreachable!("Invalid Mall transition {transition:?}");
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_has_valid_tscn_scene() {
+        const TSCN: &str =
+            include_str!("../../../main_game/assets/scenes/mall.tscn",);
+        rscn::parse(TSCN, &default());
     }
 }
