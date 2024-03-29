@@ -132,6 +132,13 @@ impl<'a> TscnSpawner for Spawner<'a> {
                         + sq(0, -2),
                 ));
             }
+            "MallEntrance" if self.transition == MallToDowntown => {
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(top_down::ActorTarget::new(
+                    LAYOUT.world_pos_to_square(translation.truncate())
+                        + sq(0, -2),
+                ));
+            }
             _ => {}
         }
 

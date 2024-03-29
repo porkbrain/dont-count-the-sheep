@@ -712,6 +712,7 @@ impl<T: TopDownScene> TileMap<T> {
         }
 
         // always will be included in `ACTOR_ZONE_AT_ORIGIN`
+        // can crash if the player is positioned outside of the map bounds
         debug_assert!(self.is_on(actor_stands_at, TileKind::Actor(entity)))
     }
 
