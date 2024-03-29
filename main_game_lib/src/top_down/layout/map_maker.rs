@@ -53,6 +53,10 @@ pub(crate) struct TileMapMakerToolbar<L: Tile> {
     /// If set to false, will not display a grid on the map.
     #[reflect(ignore)]
     display_grid: bool,
+    /// Since we render tiles lazily, we need to keep track of which tiles
+    /// have been rendered already to avoid rendering them again.
+    #[reflect(ignore)]
+    rendered_tiles: HashSet<Square>,
 }
 
 #[derive(Component)]
@@ -99,22 +103,84 @@ pub(crate) fn update_ui<T: TopDownScene>(
         });
 }
 
-pub(crate) fn visualize_map<T: TopDownScene>(
+pub(crate) fn spawn_debug_grid_root<T: TopDownScene>(mut cmd: Commands) {
+    cmd.spawn((
+        Name::new("Debug Layout Grid"),
+        DebugLayoutGrid,
+        SpatialBundle {
+            transform: Transform::from_translation(Vec2::ZERO.extend(10.0)),
+            ..default()
+        },
+    ));
+}
+
+// pub(crate) fn visualize_grid_with_gizmos<T: TopDownScene>(
+//     toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
+//     mut gizmos: Gizmos,
+// ) {
+//     if !toolbar.display_grid {
+//         return;
+//     }
+
+//     let [left, right, bottom, top] = T::bounds();
+
+//     for x in left..=right {
+//         let start = LAYOUT.square_to_world_pos(Square { x, y: bottom });
+//         let end = LAYOUT.square_to_world_pos(Square { x, y: top });
+//         gizmos.line_2d(start, end, Color::WHITE.with_a(0.05));
+//     }
+
+//     for y in bottom..=top {
+//         let start = LAYOUT.square_to_world_pos(Square { x: left, y });
+//         let end = LAYOUT.square_to_world_pos(Square { x: right, y });
+//         gizmos.line_2d(start, end, Color::WHITE.with_a(0.05));
+//     }
+// }
+
+/// We don't spawn and show all tiles because the map can be huge.
+/// So we get the cursor position and show the tiles around it only.
+pub(crate) fn show_tiles_around_cursor<T: TopDownScene>(
     mut cmd: Commands,
     map: Res<TileMap<T>>,
-) {
-    let root = cmd
-        .spawn((
-            Name::new("Debug Layout Grid"),
-            DebugLayoutGrid,
-            SpatialBundle {
-                transform: Transform::from_translation(Vec2::ZERO.extend(10.0)),
-                ..default()
-            },
-        ))
-        .id();
+    mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
 
-    for square in bevy_grid_squared::shapes::rectangle(T::bounds()) {
+    windows: Query<&Window, With<PrimaryWindow>>,
+    cameras: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    root: Query<(Entity, Option<&Children>), With<DebugLayoutGrid>>,
+) {
+    let (root, rendered_squares) = root.single();
+
+    if !toolbar.display_grid {
+        if let Some(rendered_squares) = rendered_squares {
+            for rendered_square in rendered_squares.iter() {
+                cmd.entity(*rendered_square).despawn_recursive();
+            }
+            toolbar.rendered_tiles.clear();
+        }
+
+        return;
+    }
+
+    let Some(clicked_at) = cursor_to_square(&LAYOUT, windows, cameras) else {
+        return;
+    };
+
+    let [left, right, bottom, top] = T::bounds();
+
+    // calculate a smaller rectangle +- 20 squares around the cursor
+    let left = clicked_at.x.saturating_sub(20).clamp(left, right);
+    let right = clicked_at.x.saturating_add(20).clamp(left, right);
+    let bottom = clicked_at.y.saturating_sub(20).clamp(bottom, top);
+    let top = clicked_at.y.saturating_add(20).clamp(bottom, top);
+
+    for square in
+        bevy_grid_squared::shapes::rectangle([left, right, bottom, top])
+    {
+        if !toolbar.rendered_tiles.insert(square) {
+            // already present
+            continue;
+        }
+
         let world_pos = LAYOUT.square_to_world_pos(square);
 
         let kind = map
@@ -400,7 +466,10 @@ fn cursor_to_square(
     windows: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) -> Option<Square> {
-    let cursor_pos = windows.single().cursor_position()?;
+    let cursor_pos = windows
+        .get_single()
+        .expect("some game window")
+        .cursor_position()?;
 
     let (camera, camera_transform) = camera.single();
     let world_pos =
@@ -432,6 +501,7 @@ impl<L: Tile> TileMapMakerToolbar<L> {
             paint_over_tiles: false,
             display_grid: true,
             begin_rect_at: None,
+            rendered_tiles: default(),
         }
     }
 }

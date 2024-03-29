@@ -18,6 +18,7 @@ pub fn rectangle_between(
 }
 
 /// All bounds can be negative, but left <= right and bottom <= top
+/// `[left, right, bottom, top]`
 pub fn rectangle(
     [left, right, bottom, top]: [i32; 4],
 ) -> impl ExactSizeIterator<Item = Square> {
