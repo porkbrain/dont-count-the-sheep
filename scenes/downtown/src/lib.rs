@@ -113,7 +113,13 @@ pub fn add(app: &mut App) {
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
-    app.add_systems(Update, exit.run_if(Downtown::in_quitting_state()));
+    app.add_systems(
+        Update,
+        // wait for the loading screen to fade in before changing state,
+        // otherwise the player might see a flicker
+        exit.run_if(in_state(common_loading_screen::wait_state()))
+            .run_if(Downtown::in_quitting_state()),
+    );
 
     info!("Added downtown to app");
 }

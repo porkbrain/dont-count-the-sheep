@@ -75,7 +75,7 @@ pub struct BeginAtlasAnimation {
 /// Various conditions to start an animation.
 #[derive(Default, Reflect)]
 pub enum BeginAtlasAnimationCond {
-    /// Makes sense only when [`BeginAtlasAnimationAtRandom::with_min_delay`]
+    /// Makes sense only when [`BeginAtlasAnimation::with_min_delay`]
     /// is set.
     /// Otherwise, just insert the [`AtlasAnimationTimer`] directly.
     #[default]

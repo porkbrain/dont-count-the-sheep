@@ -114,29 +114,6 @@ pub(crate) fn spawn_debug_grid_root<T: TopDownScene>(mut cmd: Commands) {
     ));
 }
 
-// pub(crate) fn visualize_grid_with_gizmos<T: TopDownScene>(
-//     toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
-//     mut gizmos: Gizmos,
-// ) {
-//     if !toolbar.display_grid {
-//         return;
-//     }
-
-//     let [left, right, bottom, top] = T::bounds();
-
-//     for x in left..=right {
-//         let start = LAYOUT.square_to_world_pos(Square { x, y: bottom });
-//         let end = LAYOUT.square_to_world_pos(Square { x, y: top });
-//         gizmos.line_2d(start, end, Color::WHITE.with_a(0.05));
-//     }
-
-//     for y in bottom..=top {
-//         let start = LAYOUT.square_to_world_pos(Square { x: left, y });
-//         let end = LAYOUT.square_to_world_pos(Square { x: right, y });
-//         gizmos.line_2d(start, end, Color::WHITE.with_a(0.05));
-//     }
-// }
-
 /// We don't spawn and show all tiles because the map can be huge.
 /// So we get the cursor position and show the tiles around it only.
 pub(crate) fn show_tiles_around_cursor<T: TopDownScene>(

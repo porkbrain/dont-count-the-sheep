@@ -244,10 +244,7 @@ where
     )
     .add_systems(
         Update,
-        (
-            // layout::map_maker::visualize_grid_with_gizmos::<T>,
-            layout::map_maker::show_tiles_around_cursor::<T>,
-        )
+        layout::map_maker::show_tiles_around_cursor::<T>
             .run_if(in_state(running)),
     )
     .add_systems(
