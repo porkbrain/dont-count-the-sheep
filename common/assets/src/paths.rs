@@ -83,7 +83,7 @@ pub mod portraits {
     pub const MASTER: &str = "characters/portraits/master1.png";
     pub const POOPER: &str = "characters/portraits/pooper1.png";
     pub const REDHEAD: &str = "characters/portraits/redhead1.png";
-    pub const UNNAMED: &str = "characters/portraits/unnamed1.png";
+    pub const SAMIZDAT: &str = "characters/portraits/samizdat1.png";
     pub const OTTER: &str = "characters/portraits/otter1.png";
 
     /// All portraits are the same size.
@@ -95,7 +95,7 @@ pub mod character_atlases {
 
     pub const WINNIE: &str = "characters/atlases/winnie1.png";
     pub const MARIE: &str = "characters/atlases/marie1.png";
-    pub const UNNAMED: &str = "characters/atlases/noname1.png";
+    pub const SAMIZDAT: &str = "characters/atlases/samizdat1.png";
     pub const BOLT: &str = "characters/atlases/bolt1.png";
 }
 

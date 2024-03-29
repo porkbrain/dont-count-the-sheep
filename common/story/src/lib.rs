@@ -63,7 +63,7 @@ pub enum Character {
     /// A character.
     Pooper,
     /// A character.
-    Unnamed,
+    Samizdat,
     /// A character.
     Otter,
 }
@@ -126,7 +126,7 @@ impl Character {
             Character::Cat => "Cat",
             Character::Emil => "Emil",
             Character::Pooper => "Pooper",
-            Character::Unnamed => "Unnamed",
+            Character::Samizdat => "Samizdat",
             Character::Otter => "Otter",
         }
     }
@@ -146,7 +146,7 @@ impl Character {
         match self {
             Character::Winnie => WINNIE,
             Character::Marie => MARIE,
-            Character::Unnamed => UNNAMED,
+            Character::Samizdat => SAMIZDAT,
             Character::Bolt => BOLT,
             _ => unimplemented!(),
         }
@@ -177,7 +177,7 @@ impl Character {
             Character::Master => MASTER,
             Character::Pooper => POOPER,
             Character::Redhead => REDHEAD,
-            Character::Unnamed => UNNAMED,
+            Character::Samizdat => SAMIZDAT,
             Character::Otter => OTTER,
         }
     }
@@ -189,7 +189,7 @@ impl Character {
         match self {
             Character::Winnie => Some((STANDARD_SIZE, 12, 1, default())),
             Character::Marie => Some((STANDARD_SIZE, 15, 1, default())),
-            Character::Unnamed => Some((STANDARD_SIZE, 15, 1, default())),
+            Character::Samizdat => Some((STANDARD_SIZE, 15, 1, default())),
             Character::Bolt => Some((STANDARD_SIZE, 12, 1, default())),
             _ => None,
         }
