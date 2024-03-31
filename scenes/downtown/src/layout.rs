@@ -1,9 +1,9 @@
-use bevy::{ecs::event::event_update_condition, render::view::RenderLayers};
+use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
 use main_game_lib::{
-    cutscene::in_cutscene,
+    cutscene::in_cutscene, hud::daybar,
     top_down::inspect_and_interact::ZoneToInspectLabelEntity,
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
@@ -35,7 +35,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             (enter_building1, enter_mall)
-                .run_if(event_update_condition::<DowntownAction>)
+                .run_if(on_event::<DowntownAction>())
                 .run_if(Downtown::in_running_state())
                 .run_if(not(in_cutscene())),
         );
@@ -53,6 +53,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     player_entity: Entity,
     transition: GlobalGameStateTransition,
+    daybar_event: &'a mut Events<daybar::IncreaseDayBarEvent>,
     zone_to_inspect_label_entity:
         &'a mut ZoneToInspectLabelEntity<DowntownTileKind>,
 }
@@ -65,6 +66,7 @@ fn spawn(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     transition: Res<GlobalGameStateTransition>,
+    mut daybar_event: ResMut<Events<daybar::IncreaseDayBarEvent>>,
 
     mut q: Query<&mut TscnTreeHandle<Downtown>>,
 ) {
@@ -81,6 +83,7 @@ fn spawn(
             transition: *transition,
             atlases: &mut atlas_layouts,
             player_entity: player,
+            daybar_event: &mut daybar_event,
             player_builder: &mut player_builder,
             zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
         },
@@ -131,6 +134,9 @@ impl<'a> TscnSpawner for Spawner<'a> {
                     LAYOUT.world_pos_to_square(translation.truncate())
                         + sq(0, -2),
                 ));
+
+                self.daybar_event
+                    .send(daybar::IncreaseDayBarEvent::ChangedScene);
             }
             "MallEntrance" if self.transition == MallToDowntown => {
                 self.player_builder.initial_position(translation.truncate());

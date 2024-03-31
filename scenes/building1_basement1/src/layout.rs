@@ -1,4 +1,4 @@
-use bevy::{ecs::event::event_update_condition, render::view::RenderLayers};
+use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_story::dialog::DialogGraph;
 use common_visuals::camera::{render_layer, MainCamera};
@@ -42,7 +42,7 @@ impl bevy::app::Plugin for Plugin {
         app.add_systems(
             Update,
             enter_the_elevator
-                .run_if(event_update_condition::<Building1Basement1Action>)
+                .run_if(on_event::<Building1Basement1Action>())
                 .run_if(Building1Basement1::in_running_state())
                 .run_if(not(in_cutscene())),
         );

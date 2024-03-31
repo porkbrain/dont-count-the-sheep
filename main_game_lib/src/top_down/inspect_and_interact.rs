@@ -398,6 +398,7 @@ fn spawn_label_bg_and_text(
     let bg_box_width = font_size + font_size / 7.0 * label.display.len() as f32;
     let bg = cmd
         .spawn(InspectLabelBg)
+        .insert(Name::new("InspectLabelBg"))
         .insert(SpriteBundle {
             transform: Transform::from_translation(Vec3::Z * Z_INDEX),
             sprite: Sprite {
@@ -412,6 +413,7 @@ fn spawn_label_bg_and_text(
     // make it stand above others with zindex
     let text = cmd
         .spawn(InspectLabelText)
+        .insert(Name::new("InspectLabelText"))
         .insert(Text2dBundle {
             // We invert the pixel camera zoom, otherwise we'd end
             // up with pixelated text.

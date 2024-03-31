@@ -127,7 +127,6 @@ pub trait ZoneTile {
 #[derive(
     Asset, Resource, Serialize, Deserialize, Reflect, Default, Clone, Debug,
 )]
-#[reflect(Resource)]
 pub struct TileMap<T: TopDownScene> {
     /// There can be multiple layers of tiles on a single square.
     pub(crate) squares:

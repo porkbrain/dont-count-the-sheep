@@ -20,7 +20,7 @@ pub mod layout;
 
 use actor::{emit_movement_events, BeginDialogEvent};
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
-use bevy::{ecs::event::event_update_condition, prelude::*};
+use bevy::prelude::*;
 pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, TopDownScene};
 use leafwing_input_manager::plugin::InputManagerSystem;
@@ -120,9 +120,8 @@ where
             Update,
             (
                 actor::npc::drive_behavior,
-                actor::npc::plan_path::<T>.run_if(
-                    event_update_condition::<actor::npc::PlanPathEvent>,
-                ),
+                actor::npc::plan_path::<T>
+                    .run_if(on_event::<actor::npc::PlanPathEvent>()),
                 actor::npc::run_path::<T>,
             )
                 .chain()
@@ -177,7 +176,7 @@ where
         (
             actor::npc::mark_nearby_as_ready_for_interaction,
             actor::npc::begin_dialog
-                .run_if(event_update_condition::<BeginDialogEvent>)
+                .run_if(on_event::<BeginDialogEvent>())
                 .run_if(not(
                     common_story::dialog::fe::portrait::in_portrait_dialog(),
                 )),
@@ -188,9 +187,7 @@ where
         Update,
         inspect_and_interact::match_interact_label_with_action_event::<T>
             .run_if(in_state(running))
-            .run_if(
-                event_update_condition::<ActorMovementEvent<T::LocalTileKind>>,
-            )
+            .run_if(on_event::<ActorMovementEvent<T::LocalTileKind>>())
             .after(emit_movement_events::<T>),
     );
 
@@ -208,6 +205,11 @@ where
                     common_story::dialog::fe::portrait::in_portrait_dialog(),
                 )),
         );
+
+    debug!("Adding HUD");
+
+    app.add_systems(OnEnter(running), crate::hud::daybar::spawn)
+        .add_systems(OnExit(running), crate::hud::daybar::despawn);
 }
 
 /// You can press `Enter` to export the map.
