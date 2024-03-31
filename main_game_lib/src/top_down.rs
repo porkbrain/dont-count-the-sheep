@@ -148,13 +148,13 @@ where
             inspect_and_interact::schedule_hide_all
                 .run_if(in_state(running))
                 .run_if(common_action::inspect_just_released()),
-        )
-        .add_systems(
-            Update,
-            inspect_and_interact::cancel_hide_all
-                .run_if(in_state(running))
-                .run_if(common_action::inspect_just_pressed()),
         );
+    // .add_systems(
+    //     Update,
+    //     inspect_and_interact::cancel_hide_all
+    //         .run_if(in_state(running))
+    //         .run_if(common_action::inspect_just_pressed()),
+    // );
 
     debug!("Adding interaction systems for {}", T::type_path());
 

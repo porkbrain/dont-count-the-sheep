@@ -86,6 +86,8 @@ pub(crate) struct InspectLabelDisplayed {
     bg: Entity,
     text: Entity,
     category_color: Color,
+    /// It's a fade out animation
+    being_hidden: bool,
 }
 
 /// Entities with [`InspectLabel`] and this component are considered when the
@@ -200,28 +202,25 @@ pub(crate) fn highlight_what_would_be_interacted_with(
     >,
 ) {
     let mut remove_old_highlight_if_present = || {
-        if let Some((highlighted, label, displayed)) =
+        if let Some((highlighted, label, old_displayed)) =
             highlighted.get_single_or_none()
         {
             cmd.entity(highlighted)
                 .remove::<HighlightedForInteraction>();
 
-            cmd.entity(displayed.bg).despawn();
-            cmd.entity(displayed.text).despawn();
+            cmd.entity(old_displayed.bg).despawn();
+            cmd.entity(old_displayed.text).despawn();
 
-            let displayed =
+            let mut new_displayed =
                 spawn_label_bg_and_text(&mut cmd, &asset_server, label, false);
             if !controls.pressed(&GlobalAction::Inspect) {
-                schedule_hide(
-                    &mut begin_interpolation,
-                    highlighted,
-                    &displayed,
-                );
+                new_displayed
+                    .schedule_hide(&mut begin_interpolation, highlighted);
             }
             cmd.entity(highlighted)
-                .add_child(displayed.bg)
-                .add_child(displayed.text)
-                .insert(displayed);
+                .add_child(new_displayed.bg)
+                .add_child(new_displayed.text)
+                .insert(new_displayed);
         }
     };
 
@@ -275,6 +274,10 @@ pub(crate) fn highlight_what_would_be_interacted_with(
     let displayed =
         spawn_label_bg_and_text(&mut cmd, &asset_server, label, true);
     cmd.entity(closest)
+        // Q: What if interpolation just finished in this frame and removed this
+        // component?
+        // Don't we need to order this system after the interpolation system?
+        // A: No, because interpolation runs on FixedUpdate schedule.
         .insert(HighlightedForInteraction)
         .add_child(displayed.bg)
         .add_child(displayed.text)
@@ -308,15 +311,18 @@ pub(crate) fn show_all_in_vicinity(
     mut cmd: Commands,
     store: Res<GlobalStore>,
     asset_server: Res<AssetServer>,
+    mut begin_interpolation: EventWriter<BeginInterpolationEvent>,
 
     player: Query<&GlobalTransform, With<Player>>,
-    inspectable_objects: Query<(
+    mut inspectable_objects: Query<(
         Entity,
         &InspectLabel,
         &GlobalTransform,
-        Option<&InspectLabelDisplayed>,
+        Option<&mut InspectLabelDisplayed>,
         Option<&ReadyForInteraction>,
     )>,
+    mut texts: Query<&mut Text, With<InspectLabelText>>,
+    mut bgs: Query<&mut Sprite, With<InspectLabelBg>>,
 ) {
     let Some(player) = player.get_single_or_none() else {
         return;
@@ -324,7 +330,7 @@ pub(crate) fn show_all_in_vicinity(
     let player = player.translation().truncate();
 
     for (entity, label, position, displayed, ready_for_interaction) in
-        inspectable_objects.iter()
+        inspectable_objects.iter_mut()
     {
         store.mark_as_seen(&label.display);
 
@@ -336,19 +342,18 @@ pub(crate) fn show_all_in_vicinity(
             // should not be shown and it's not, do nothing
             (false, None) => {}
 
-            // should be shown and is, we don't have to do anything here because
-            // `cancel_hide_all` got us covered
+            // should be shown, but is scheduled to be hidden, cancel that
+            (true, Some(mut displayed)) if displayed.being_hidden => {
+                displayed.cancel_hide(&mut cmd, &mut texts, &mut bgs);
+            }
+            // should be shown and is, we don't have to do anything here
             (true, Some(_)) => {}
 
+            // should not be shown and it is scheduled to be hidden, do nothing
+            (false, Some(displayed)) if displayed.being_hidden => {}
             // should not be shown and it is, hide it
-            (false, Some(InspectLabelDisplayed { bg, text, .. })) => {
-                trace!("Label {} going out of the view", label.display);
-
-                // TODO: schedule hide
-                cmd.entity(entity).remove::<HighlightedForInteraction>();
-                cmd.entity(entity).remove::<InspectLabelDisplayed>();
-                cmd.entity(*bg).despawn();
-                cmd.entity(*text).despawn();
+            (false, Some(mut displayed)) => {
+                displayed.schedule_hide(&mut begin_interpolation, entity);
             }
 
             // should be shown and it's not, show it
@@ -429,131 +434,102 @@ fn spawn_label_bg_and_text(
         bg,
         text,
         category_color: label.category.color(),
+        being_hidden: false,
     }
 }
 
-/// Run this when action [`GlobalAction::Inspect`] is just pressed.
-/// It cancels eventual [`schedule_hide_all`] call that scheduled the fade out
-/// and removal of the box.
-pub(crate) fn cancel_hide_all(
-    mut cmd: Commands,
+// /// Run this when action [`GlobalAction::Inspect`] is just pressed.
+// /// It cancels eventual [`schedule_hide_all`] call that scheduled the fade
+// out /// and removal of the box.
+// pub(crate) fn cancel_hide_all(
+//     mut cmd: Commands,
 
-    inspectable_objects: Query<&InspectLabelDisplayed>,
-    mut texts: Query<&mut Text, With<InspectLabelText>>,
-    mut bgs: Query<&mut Sprite, With<InspectLabelBg>>,
-) {
-    for displayed in inspectable_objects.iter() {
-        let InspectLabelDisplayed { bg, text, .. } = displayed;
-        cmd.entity(*bg).remove::<ColorInterpolation>();
-        bgs.get_mut(*bg)
-            .expect("BG must exist if display exists")
-            .color = HALF_TRANSPARENT;
-
-        cmd.entity(*text).remove::<ColorInterpolation>();
-        texts
-            .get_mut(*text)
-            .expect("Text must exist if display exists")
-            .sections[0]
-            .style
-            .color = displayed.category_color;
-    }
-
-    // for (entity, parent, mut text) in text.iter_mut() {
-    //     let parent = parent.get();
-    //     let color =
-    // inspectable_objects.get(parent).unwrap().category.color();
-    //     text.sections[0].style.color = color;
-
-    //     cmd.entity(entity).remove::<ColorInterpolation>();
-    // }
-
-    // for (entity, mut sprite) in bg.iter_mut() {
-    //     sprite.color = HALF_TRANSPARENT;
-    //     cmd.entity(entity).remove::<ColorInterpolation>();
-    // }
-}
+//     mut inspectable_objects: Query<&mut InspectLabelDisplayed>,
+//     mut texts: Query<&mut Text, With<InspectLabelText>>,
+//     mut bgs: Query<&mut Sprite, With<InspectLabelBg>>,
+// ) {
+//     for mut displayed in inspectable_objects.iter_mut() {
+//         displayed.cancel_hide(&mut cmd, &mut texts, &mut bgs);
+//     }
+// }
 
 /// Run this when action [`GlobalAction::Inspect`] was just released.
 /// It schedules removal of all labels by interpolating their color to none.
 pub(crate) fn schedule_hide_all(
     mut begin_interpolation: EventWriter<BeginInterpolationEvent>,
 
-    inspectable_objects: Query<
-        (Entity, &InspectLabelDisplayed),
+    mut inspectable_objects: Query<
+        (Entity, &mut InspectLabelDisplayed),
         Without<HighlightedForInteraction>,
     >,
 ) {
-    for (entity, displayed) in inspectable_objects.iter() {
-        schedule_hide(&mut begin_interpolation, entity, &displayed);
+    for (entity, mut displayed) in inspectable_objects.iter_mut() {
+        displayed.schedule_hide(&mut begin_interpolation, entity);
     }
-
-    // for (entity, parent) in text.iter() {
-    //     let parent = parent.get();
-    //     let to_color = {
-    //         let mut c =
-    //             inspectable_objects.get(parent).unwrap().category.color();
-    //         c.set_a(0.0);
-    //         c
-    //     };
-
-    //     begin_interpolation.send(
-    //         BeginInterpolationEvent::of_color(entity, None, to_color)
-    //             .over(FADE_OUT_IN)
-    //             .with_animation_curve(text_animation_curve.clone())
-    //             .when_finished_do(move |cmd| {
-    //                 cmd.entity(parent).remove::<Children>();
-    //                 cmd.entity(entity).despawn();
-    //             }),
-    //     );
-    // }
-
-    // for entity in bg.iter() {
-    //     begin_interpolation.send(
-    //         BeginInterpolationEvent::of_color(entity, None, Color::NONE)
-    //             .over(FADE_OUT_IN)
-    //             .with_animation_curve(bg_animation_curve.clone())
-    //             .when_finished_despawn_itself(),
-    //     );
-    // }
 }
 
-fn schedule_hide(
-    begin_interpolation: &mut EventWriter<BeginInterpolationEvent>,
-    label_entity: Entity,
-    displayed: &InspectLabelDisplayed,
-) {
-    let bg = displayed.bg;
-    let text = displayed.text;
-    let to_color = {
-        let mut c = displayed.category_color;
-        c.set_a(0.0);
-        c
-    };
+impl InspectLabelDisplayed {
+    fn schedule_hide(
+        &mut self,
+        begin_interpolation: &mut EventWriter<BeginInterpolationEvent>,
+        label_entity: Entity,
+    ) {
+        self.being_hidden = true;
+        let bg = self.bg;
+        let text = self.text;
+        let to_color = {
+            let mut c = self.category_color;
+            c.set_a(0.0);
+            c
+        };
 
-    // looks better when the text fades out faster than the bg
-    lazy_static! {
-        static ref TEXT_ANIMATION_CURVE: CubicSegment<Vec2> =
-            CubicSegment::new_bezier((0.9, 0.05), (0.9, 1.0));
-        static ref BG_ANIMATION_CURVE: CubicSegment<Vec2> =
-            CubicSegment::new_bezier((0.95, 0.01), (0.95, 1.0));
+        // looks better when the text fades out faster than the bg
+        lazy_static! {
+            static ref TEXT_ANIMATION_CURVE: CubicSegment<Vec2> =
+                CubicSegment::new_bezier((0.9, 0.05), (0.9, 1.0));
+            static ref BG_ANIMATION_CURVE: CubicSegment<Vec2> =
+                CubicSegment::new_bezier((0.95, 0.01), (0.95, 1.0));
+        }
+
+        begin_interpolation.send(
+            BeginInterpolationEvent::of_color(text, None, to_color)
+                .over(FADE_OUT_IN)
+                .with_animation_curve(TEXT_ANIMATION_CURVE.clone())
+                .when_finished_do(move |cmd| {
+                    cmd.entity(label_entity).remove::<Self>();
+                    cmd.entity(text).despawn();
+                }),
+        );
+
+        begin_interpolation.send(
+            BeginInterpolationEvent::of_color(bg, None, Color::NONE)
+                .over(FADE_OUT_IN)
+                .with_animation_curve(BG_ANIMATION_CURVE.clone())
+                .when_finished_despawn_itself(),
+        );
     }
 
-    begin_interpolation.send(
-        BeginInterpolationEvent::of_color(text, None, to_color)
-            .over(FADE_OUT_IN)
-            .with_animation_curve(TEXT_ANIMATION_CURVE.clone())
-            .when_finished_do(move |cmd| {
-                cmd.entity(label_entity).remove::<InspectLabelDisplayed>();
-                cmd.entity(text).despawn();
-            }),
-    );
+    fn cancel_hide(
+        &mut self,
+        cmd: &mut Commands,
+        texts: &mut Query<&mut Text, With<InspectLabelText>>,
+        bgs: &mut Query<&mut Sprite, With<InspectLabelBg>>,
+    ) {
+        cmd.entity(self.bg).remove::<ColorInterpolation>();
+        bgs.get_mut(self.bg)
+            .expect("BG must exist if display exists")
+            .color = HALF_TRANSPARENT;
 
-    begin_interpolation.send(
-        BeginInterpolationEvent::of_color(bg, None, Color::NONE)
-            .over(FADE_OUT_IN)
-            .with_animation_curve(BG_ANIMATION_CURVE.clone())
-            .when_finished_despawn_itself(),
-    );
+        cmd.entity(self.text).remove::<ColorInterpolation>();
+        texts
+            .get_mut(self.text)
+            .expect("Text must exist if display exists")
+            .sections[0]
+            .style
+            .color = self.category_color;
+
+        self.being_hidden = false;
+    }
 }
 
 impl InspectLabelCategory {
