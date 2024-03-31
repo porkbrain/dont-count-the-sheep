@@ -1,9 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::{
-    ecs::event::event_update_condition, render::view::RenderLayers,
-    utils::Instant,
-};
+use bevy::{render::view::RenderLayers, utils::Instant};
 use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
 use common_visuals::camera::render_layer;
 use itertools::Itertools;
@@ -87,7 +84,7 @@ impl bevy::app::Plugin for Plugin {
                 Update,
                 (
                     toggle_mode
-                        .run_if(event_update_condition::<hoshi::ActionEvent>)
+                        .run_if(on_event::<hoshi::ActionEvent>())
                         .after(hoshi::loading_special),
                     smoothly_transition_light_color,
                     move_occluders,
