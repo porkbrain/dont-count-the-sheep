@@ -20,10 +20,10 @@ Self::TeaZone => Some(ZoneGroup(0)),
     { Self::HallwayZone => Some(1266),
 Self::PlayerApartmentZone => Some(2725),
 Self::BedZone => Some(30),
-Self::ElevatorZone => Some(46),
+Self::ElevatorZone => Some(68),
 Self::PlayerDoorZone => Some(64),
-Self::MeditationZone => Some(78),
-Self::TeaZone => Some(21),
+Self::MeditationZone => Some(125),
+Self::TeaZone => Some(45),
  #[allow(unreachable_patterns)] _ => None, }
 } type Successors = Self; #[inline] fn zone_successors(&self) -> Option<&'static
 [Self::Successors]>
