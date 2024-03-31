@@ -63,330 +63,352 @@ z_index = -5
 position = Vector2(229, 378)
 texture = ExtResource("1_ac7tb")
 
-[node name="Barn" type="Sprite2D" parent="."]
-position = Vector2(-140, -649)
-texture = ExtResource("23_av7fi")
+[node name="CompoundRoot" type="Node2D" parent="."]
 
-[node name="YSort" type="Node2D" parent="Barn"]
-position = Vector2(-5, 68)
-
-[node name="Briza" type="Sprite2D" parent="."]
-position = Vector2(-32, -589)
-texture = ExtResource("16_xr53b")
-
-[node name="YSort" type="Node2D" parent="Briza"]
-position = Vector2(6, 71)
-
-[node name="Tower" type="Sprite2D" parent="."]
+[node name="Tower" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-189, -1000)
 texture = ExtResource("23_7ng4s")
 
-[node name="YSort" type="Node2D" parent="Tower"]
+[node name="YSort" type="Node2D" parent="CompoundRoot/Tower"]
 position = Vector2(3, 112)
 
-[node name="Robot" type="Sprite2D" parent="."]
-position = Vector2(608, 822)
-texture = ExtResource("8_s4pbl")
+[node name="Barn" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-140, -649)
+texture = ExtResource("23_av7fi")
 
-[node name="YSort" type="Node2D" parent="Robot"]
-position = Vector2(-13, 49)
+[node name="YSort" type="Node2D" parent="CompoundRoot/Barn"]
+position = Vector2(-5, 68)
 
-[node name="Swing" type="Sprite2D" parent="."]
-position = Vector2(744, 853)
-texture = ExtResource("9_gwh2v")
+[node name="Briza" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-32, -589)
+texture = ExtResource("16_xr53b")
 
-[node name="YSort" type="Node2D" parent="Swing"]
-position = Vector2(0, 24)
+[node name="YSort" type="Node2D" parent="CompoundRoot/Briza"]
+position = Vector2(6, 71)
 
-[node name="TrashcanTables" type="Sprite2D" parent="."]
-position = Vector2(-325, 107)
-texture = ExtResource("10_nyc25")
-
-[node name="Beer" type="Sprite2D" parent="TrashcanTables"]
-position = Vector2(-2, -13)
-texture = ExtResource("11_e3pff")
-
-[node name="YSort" type="Node2D" parent="TrashcanTables"]
-position = Vector2(0, 11)
-
-[node name="Tree" type="Sprite2D" parent="."]
-position = Vector2(799, 72)
-texture = ExtResource("13_7q235")
-
-[node name="Tree2" type="Sprite2D" parent="."]
-position = Vector2(800, -240)
-texture = ExtResource("13_7q235")
-
-[node name="Lamp" type="Sprite2D" parent="."]
-position = Vector2(96, -243)
-texture = ExtResource("14_8uy80")
-
-[node name="Ysort" type="Node2D" parent="Lamp"]
-position = Vector2(0, 33)
-
-[node name="Lamp3" type="Sprite2D" parent="."]
-position = Vector2(477, 82)
-texture = ExtResource("14_8uy80")
-
-[node name="YSort" type="Node2D" parent="Lamp3"]
-position = Vector2(0, 31)
-
-[node name="Lamp4" type="Sprite2D" parent="."]
-position = Vector2(614, -235)
-texture = ExtResource("14_8uy80")
-
-[node name="YSort" type="Node2D" parent="Lamp4"]
-position = Vector2(0, 33)
-
-[node name="FieldBackFence" type="Node2D" parent="."]
-position = Vector2(590, -35)
-
-[node name="YSort" type="Node2D" parent="FieldBackFence"]
-
-[node name="WiredFence1" type="Sprite2D" parent="FieldBackFence"]
-position = Vector2(-65, -29)
-texture = ExtResource("17_5ai3x")
-
-[node name="WiredFence2" type="Sprite2D" parent="FieldBackFence"]
-position = Vector2(143, -28)
-texture = ExtResource("17_5ai3x")
-
-[node name="WiredFence3" type="Sprite2D" parent="FieldBackFence"]
-position = Vector2(58, -28)
-texture = ExtResource("17_5ai3x")
-
-[node name="FieldFrontFence" type="Sprite2D" parent="."]
-position = Vector2(630, 7)
-texture = ExtResource("18_yr0u5")
-
-[node name="YSort" type="Node2D" parent="FieldFrontFence"]
-position = Vector2(0, 99)
-
-[node name="CompoundFence" type="Node2D" parent="."]
+[node name="CompoundFence" type="Node2D" parent="CompoundRoot"]
 position = Vector2(0, -334)
 
-[node name="YSort" type="Node2D" parent="CompoundFence"]
+[node name="YSort" type="Node2D" parent="CompoundRoot/CompoundFence"]
 position = Vector2(0, -2)
 
-[node name="Gate" type="Sprite2D" parent="CompoundFence"]
+[node name="Gate" type="Sprite2D" parent="CompoundRoot/CompoundFence"]
 position = Vector2(-357, -36)
 texture = ExtResource("20_o0xfm")
 
-[node name="WiredFence" type="Sprite2D" parent="CompoundFence"]
+[node name="WiredFence" type="Sprite2D" parent="CompoundRoot/CompoundFence"]
 position = Vector2(-844, -32)
 texture = ExtResource("17_5ai3x")
 
-[node name="WiredFence2" type="Sprite2D" parent="CompoundFence"]
+[node name="WiredFence2" type="Sprite2D" parent="CompoundRoot/CompoundFence"]
 position = Vector2(-929, -32)
 texture = ExtResource("17_5ai3x")
 
-[node name="WiredFence3" type="Sprite2D" parent="CompoundFence"]
+[node name="WiredFence3" type="Sprite2D" parent="CompoundRoot/CompoundFence"]
 position = Vector2(-1014, -32)
 texture = ExtResource("17_5ai3x")
 
-[node name="WiredFence7" type="Sprite2D" parent="CompoundFence"]
+[node name="WiredFence7" type="Sprite2D" parent="CompoundRoot/CompoundFence"]
 position = Vector2(130, -32)
 texture = ExtResource("17_5ai3x")
 
-[node name="WiredFence8" type="Sprite2D" parent="CompoundFence"]
+[node name="WiredFence8" type="Sprite2D" parent="CompoundRoot/CompoundFence"]
 position = Vector2(291, -30)
 texture = ExtResource("17_5ai3x")
 
-[node name="WiredFence9" type="Sprite2D" parent="CompoundFence"]
+[node name="WiredFence9" type="Sprite2D" parent="CompoundRoot/CompoundFence"]
 position = Vector2(376, -30)
 texture = ExtResource("17_5ai3x")
 
-[node name="MallBins" type="Node2D" parent="."]
-position = Vector2(-531, 342)
-
-[node name="YSort" type="Node2D" parent="MallBins"]
-
-[node name="RecycleBin4" type="Sprite2D" parent="MallBins"]
-position = Vector2(-9, -14)
-texture = ExtResource("5_her3o")
-
-[node name="BlackBin3" type="Sprite2D" parent="MallBins"]
-position = Vector2(9, -14)
-texture = ExtResource("7_p1j5y")
-
-[node name="CompoundFenceBins" type="Node2D" parent="."]
+[node name="CompoundFenceBins" type="Node2D" parent="CompoundRoot"]
 position = Vector2(-835, -329)
 
-[node name="YSort" type="Node2D" parent="CompoundFenceBins"]
+[node name="YSort" type="Node2D" parent="CompoundRoot/CompoundFenceBins"]
 
-[node name="RecycleBin4" type="Sprite2D" parent="CompoundFenceBins"]
+[node name="RecycleBin4" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
 position = Vector2(-9, -14)
 texture = ExtResource("5_her3o")
 
-[node name="BlackBin3" type="Sprite2D" parent="CompoundFenceBins"]
+[node name="BlackBin3" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
 position = Vector2(9, -14)
 texture = ExtResource("7_p1j5y")
 
-[node name="Beer3" type="Sprite2D" parent="CompoundFenceBins"]
+[node name="Beer3" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
 position = Vector2(-21, -8)
 texture = ExtResource("11_e3pff")
 
-[node name="Tree3" type="Sprite2D" parent="."]
-position = Vector2(56, -295)
-texture = ExtResource("13_7q235")
-
-[node name="YSort" type="Node2D" parent="Tree3"]
-position = Vector2(0, 69)
-
-[node name="Lamp2" type="Sprite2D" parent="."]
+[node name="Lamp2" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-472, -365)
 texture = ExtResource("14_8uy80")
 
-[node name="YSort" type="Node2D" parent="Lamp2"]
+[node name="YSort" type="Node2D" parent="CompoundRoot/Lamp2"]
 position = Vector2(0, 33)
 
-[node name="HousePlantshoptrio" type="Sprite2D" parent="."]
-position = Vector2(293, -297)
-texture = ExtResource("19_fdu3c")
+[node name="MallRoot" type="Node2D" parent="."]
 
-[node name="YSort" type="Node2D" parent="HousePlantshoptrio"]
-position = Vector2(16, 90)
+[node name="TrashcanTables6" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-556, -10)
+texture = ExtResource("10_nyc25")
 
-[node name="RecycleBin" type="Sprite2D" parent="HousePlantshoptrio"]
-position = Vector2(89, 80)
-texture = ExtResource("5_her3o")
+[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables6"]
+position = Vector2(0, 11)
 
-[node name="BlackBin" type="Sprite2D" parent="HousePlantshoptrio"]
-position = Vector2(108, 80)
-texture = ExtResource("7_p1j5y")
+[node name="TrashcanTables3" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-294, 146)
+texture = ExtResource("10_nyc25")
 
-[node name="Cone" type="Sprite2D" parent="."]
-position = Vector2(-66, 42)
-texture = ExtResource("6_4cklq")
+[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables3"]
+position = Vector2(0, 11)
 
-[node name="YSort" type="Node2D" parent="Cone"]
-position = Vector2(0, 8)
+[node name="TrashcanTables5" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-263, 105)
+texture = ExtResource("10_nyc25")
 
-[node name="Waterdispenser" type="Sprite2D" parent="."]
-position = Vector2(-352, -55)
+[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables5"]
+position = Vector2(0, 11)
+
+[node name="TrashcanTables4" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-632, 29)
+texture = ExtResource("10_nyc25")
+
+[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables4"]
+position = Vector2(0, 11)
+
+[node name="TrashcanTables" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-326, 107)
+texture = ExtResource("10_nyc25")
+
+[node name="Beer" type="Sprite2D" parent="MallRoot/TrashcanTables"]
+position = Vector2(-2, -13)
+texture = ExtResource("11_e3pff")
+
+[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables"]
+position = Vector2(0, 11)
+
+[node name="BambooRooftop" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-402, -56)
+texture = ExtResource("4_uahdt")
+
+[node name="YSort" type="Node2D" parent="MallRoot/BambooRooftop"]
+position = Vector2(0, 19)
+
+[node name="Waterdispenser" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-353, -55)
 texture = ExtResource("3_mnq47")
 
-[node name="YSort" type="Node2D" parent="Waterdispenser"]
+[node name="YSort" type="Node2D" parent="MallRoot/Waterdispenser"]
 position = Vector2(0, 23)
 
-[node name="AcAtlas" type="AnimatedSprite2D" parent="."]
-position = Vector2(-686, -30)
+[node name="RecycleBin" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-67, -40)
+texture = ExtResource("5_her3o")
+
+[node name="YSort" type="Node2D" parent="MallRoot/RecycleBin"]
+position = Vector2(0, 12)
+
+[node name="Cone" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-67, 42)
+texture = ExtResource("6_4cklq")
+
+[node name="YSort" type="Node2D" parent="MallRoot/Cone"]
+position = Vector2(0, 8)
+
+[node name="AcAtlas" type="AnimatedSprite2D" parent="MallRoot"]
+position = Vector2(-687, -30)
 sprite_frames = SubResource("SpriteFrames_q1mli")
 autoplay = "default"
 frame = 2
 frame_progress = 1.0
 
-[node name="YSort" type="Node2D" parent="AcAtlas"]
+[node name="YSort" type="Node2D" parent="MallRoot/AcAtlas"]
 position = Vector2(0, 16)
 
-[node name="BambooRooftop" type="Sprite2D" parent="."]
-position = Vector2(-401, -56)
-texture = ExtResource("4_uahdt")
+[node name="MallBins" type="Node2D" parent="MallRoot"]
+position = Vector2(-532, 342)
 
-[node name="YSort" type="Node2D" parent="BambooRooftop"]
-position = Vector2(0, 19)
+[node name="YSort" type="Node2D" parent="MallRoot/MallBins"]
 
-[node name="TrashcanTables6" type="Sprite2D" parent="."]
-position = Vector2(-555, -10)
-texture = ExtResource("10_nyc25")
-
-[node name="YSort" type="Node2D" parent="TrashcanTables6"]
-position = Vector2(0, 11)
-
-[node name="TrashcanTables3" type="Sprite2D" parent="."]
-position = Vector2(-293, 146)
-texture = ExtResource("10_nyc25")
-
-[node name="YSort" type="Node2D" parent="TrashcanTables3"]
-position = Vector2(0, 11)
-
-[node name="TrashcanTables5" type="Sprite2D" parent="."]
-position = Vector2(-262, 105)
-texture = ExtResource("10_nyc25")
-
-[node name="YSort" type="Node2D" parent="TrashcanTables5"]
-position = Vector2(0, 11)
-
-[node name="TrashcanTables4" type="Sprite2D" parent="."]
-position = Vector2(-631, 29)
-texture = ExtResource("10_nyc25")
-
-[node name="YSort" type="Node2D" parent="TrashcanTables4"]
-position = Vector2(0, 11)
-
-[node name="RecycleBin" type="Sprite2D" parent="."]
-position = Vector2(-66, -40)
+[node name="RecycleBin4" type="Sprite2D" parent="MallRoot/MallBins"]
+position = Vector2(-9, -14)
 texture = ExtResource("5_her3o")
 
-[node name="YSort" type="Node2D" parent="RecycleBin"]
-position = Vector2(0, 12)
+[node name="BlackBin3" type="Sprite2D" parent="MallRoot/MallBins"]
+position = Vector2(9, -14)
+texture = ExtResource("7_p1j5y")
 
-[node name="RoofMall" type="Node2D" parent="."]
-
-[node name="UmbrellaChair2" type="Sprite2D" parent="RoofMall"]
+[node name="UmbrellaChair2" type="Sprite2D" parent="MallRoot"]
 position = Vector2(-423, 159)
 texture = ExtResource("20_sy6x1")
 
-[node name="WaterBottleHalf" type="Sprite2D" parent="RoofMall/UmbrellaChair2"]
+[node name="WaterBottleHalf" type="Sprite2D" parent="MallRoot/UmbrellaChair2"]
 position = Vector2(-13, 25)
 texture = ExtResource("21_8m32a")
 
-[node name="UmbrellaChair" type="Sprite2D" parent="RoofMall"]
+[node name="UmbrellaChair" type="Sprite2D" parent="MallRoot"]
 position = Vector2(-565, 111)
 texture = ExtResource("20_sy6x1")
 
-[node name="Beer2" type="Sprite2D" parent="RoofMall/UmbrellaChair"]
+[node name="Beer2" type="Sprite2D" parent="MallRoot/UmbrellaChair"]
 position = Vector2(-10, 24)
 texture = ExtResource("11_e3pff")
 
-[node name="UmbrellaChair" type="Sprite2D" parent="."]
+[node name="UmbrellaChair3" type="Sprite2D" parent="MallRoot"]
 position = Vector2(-432, 31)
 texture = ExtResource("20_sy6x1")
 
-[node name="Truck" type="Sprite2D" parent="."]
+[node name="MallEntrance" type="Node2D" parent="MallRoot"]
+position = Vector2(-149, 342)
+
+[node name="Point" type="Node" parent="MallRoot/MallEntrance"]
+
+[node name="InspectLabel" type="Node" parent="MallRoot/MallEntrance"]
+metadata/zone = "MallEntrance"
+metadata/action = "EnterMall"
+metadata/label = "Go shopping"
+metadata/category = "Default"
+
+[node name="Block2Root" type="Node2D" parent="."]
+
+[node name="HousePlantshoptrio" type="Sprite2D" parent="Block2Root"]
+position = Vector2(293, -297)
+texture = ExtResource("19_fdu3c")
+
+[node name="YSort" type="Node2D" parent="Block2Root/HousePlantshoptrio"]
+position = Vector2(16, 90)
+
+[node name="RecycleBin" type="Sprite2D" parent="Block2Root/HousePlantshoptrio"]
+position = Vector2(89, 80)
+texture = ExtResource("5_her3o")
+
+[node name="BlackBin" type="Sprite2D" parent="Block2Root/HousePlantshoptrio"]
+position = Vector2(108, 80)
+texture = ExtResource("7_p1j5y")
+
+[node name="Tree3" type="Sprite2D" parent="Block2Root"]
+position = Vector2(56, -295)
+texture = ExtResource("13_7q235")
+
+[node name="YSort" type="Node2D" parent="Block2Root/Tree3"]
+position = Vector2(0, 69)
+
+[node name="Lamp" type="Sprite2D" parent="Block2Root"]
+position = Vector2(96, -243)
+texture = ExtResource("14_8uy80")
+
+[node name="Ysort" type="Node2D" parent="Block2Root/Lamp"]
+position = Vector2(0, 33)
+
+[node name="Lamp4" type="Sprite2D" parent="Block2Root"]
+position = Vector2(614, -235)
+texture = ExtResource("14_8uy80")
+
+[node name="YSort" type="Node2D" parent="Block2Root/Lamp4"]
+position = Vector2(0, 33)
+
+[node name="Tree2" type="Sprite2D" parent="Block2Root"]
+position = Vector2(800, -240)
+texture = ExtResource("13_7q235")
+
+[node name="YSort" type="Node2D" parent="Block2Root/Tree2"]
+position = Vector2(0, 69)
+
+[node name="Block1Root" type="Node2D" parent="."]
+
+[node name="Lamp3" type="Sprite2D" parent="Block1Root"]
+position = Vector2(477, 82)
+texture = ExtResource("14_8uy80")
+
+[node name="YSort" type="Node2D" parent="Block1Root/Lamp3"]
+position = Vector2(0, 31)
+
+[node name="FieldBackFence" type="Node2D" parent="Block1Root"]
+position = Vector2(590, -35)
+
+[node name="YSort" type="Node2D" parent="Block1Root/FieldBackFence"]
+
+[node name="WiredFence1" type="Sprite2D" parent="Block1Root/FieldBackFence"]
+position = Vector2(-65, -29)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence2" type="Sprite2D" parent="Block1Root/FieldBackFence"]
+position = Vector2(143, -28)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence3" type="Sprite2D" parent="Block1Root/FieldBackFence"]
+position = Vector2(58, -28)
+texture = ExtResource("17_5ai3x")
+
+[node name="FieldFrontFence" type="Sprite2D" parent="Block1Root"]
+position = Vector2(630, 7)
+texture = ExtResource("18_yr0u5")
+
+[node name="YSort" type="Node2D" parent="Block1Root/FieldFrontFence"]
+position = Vector2(0, 99)
+
+[node name="Tree" type="Sprite2D" parent="Block1Root"]
+position = Vector2(799, 72)
+texture = ExtResource("13_7q235")
+
+[node name="YSort" type="Node2D" parent="Block1Root/Tree"]
+position = Vector2(0, 69)
+
+[node name="PlayerApartmentBuildingEntrance" type="Node2D" parent="Block1Root"]
+position = Vector2(284, 107)
+
+[node name="Point" type="Node" parent="Block1Root/PlayerApartmentBuildingEntrance"]
+
+[node name="InspectLabel" type="Node" parent="Block1Root/PlayerApartmentBuildingEntrance"]
+metadata/zone = "Building1Entrance"
+metadata/action = "EnterBuilding1"
+metadata/label = "Home"
+metadata/category = "Default"
+
+[node name="ParkingRoot" type="Node2D" parent="."]
+
+[node name="Truck" type="Sprite2D" parent="ParkingRoot"]
 position = Vector2(-634, 432)
 texture = ExtResource("12_mwj3x")
 
-[node name="YSort" type="Node2D" parent="Truck"]
+[node name="YSort" type="Node2D" parent="ParkingRoot/Truck"]
 position = Vector2(-1, 25)
 
-[node name="TrashcanTables2" type="Sprite2D" parent="."]
+[node name="TrashcanTables2" type="Sprite2D" parent="ParkingRoot"]
 position = Vector2(-677, 507)
 texture = ExtResource("10_nyc25")
 
-[node name="YSort" type="Node2D" parent="TrashcanTables2"]
+[node name="YSort" type="Node2D" parent="ParkingRoot/TrashcanTables2"]
 position = Vector2(0, 11)
 
-[node name="Beer4" type="Sprite2D" parent="TrashcanTables2"]
+[node name="Beer4" type="Sprite2D" parent="ParkingRoot/TrashcanTables2"]
 position = Vector2(-2, -14)
 texture = ExtResource("11_e3pff")
 
-[node name="TrashcanTables7" type="Sprite2D" parent="."]
+[node name="TrashcanTables7" type="Sprite2D" parent="ParkingRoot"]
 position = Vector2(-617, 508)
 texture = ExtResource("10_nyc25")
 
-[node name="YSort" type="Node2D" parent="TrashcanTables7"]
+[node name="YSort" type="Node2D" parent="ParkingRoot/TrashcanTables7"]
 position = Vector2(0, 11)
 
-[node name="TrashcanTables8" type="Sprite2D" parent="."]
+[node name="TrashcanTables8" type="Sprite2D" parent="ParkingRoot"]
 position = Vector2(-645, 544)
 texture = ExtResource("10_nyc25")
 
-[node name="YSort" type="Node2D" parent="TrashcanTables8"]
+[node name="YSort" type="Node2D" parent="ParkingRoot/TrashcanTables8"]
 position = Vector2(0, 11)
 
-[node name="TrashcanTables9" type="Sprite2D" parent="."]
+[node name="TrashcanTables9" type="Sprite2D" parent="ParkingRoot"]
 position = Vector2(-678, 576)
 texture = ExtResource("10_nyc25")
 
-[node name="YSort" type="Node2D" parent="TrashcanTables9"]
+[node name="YSort" type="Node2D" parent="ParkingRoot/TrashcanTables9"]
 position = Vector2(0, 11)
 
-[node name="TrashcanTables10" type="Sprite2D" parent="."]
+[node name="TrashcanTables10" type="Sprite2D" parent="ParkingRoot"]
 position = Vector2(-615, 582)
 texture = ExtResource("10_nyc25")
 
-[node name="YSort" type="Node2D" parent="TrashcanTables10"]
+[node name="YSort" type="Node2D" parent="ParkingRoot/TrashcanTables10"]
 position = Vector2(0, 11)
 
 [node name="WiredFence2" type="Sprite2D" parent="."]
@@ -401,40 +423,32 @@ texture = ExtResource("17_5ai3x")
 position = Vector2(1.5, 1)
 texture = ExtResource("22_m6eml")
 
-[node name="Clinic" type="Sprite2D" parent="."]
+[node name="ShoreRoot" type="Node2D" parent="."]
+
+[node name="Clinic" type="Sprite2D" parent="ShoreRoot"]
 position = Vector2(-31, 968)
 texture = ExtResource("25_ukjmq")
 
-[node name="YSort" type="Node2D" parent="Clinic"]
+[node name="YSort" type="Node2D" parent="ShoreRoot/Clinic"]
 position = Vector2(-47, -16)
 
-[node name="Zabradli" type="Sprite2D" parent="."]
+[node name="Zabradli" type="Sprite2D" parent="ShoreRoot"]
 position = Vector2(-31, 968)
 texture = ExtResource("26_nm5hp")
 
-[node name="YSort" type="Node2D" parent="Zabradli"]
+[node name="YSort" type="Node2D" parent="ShoreRoot/Zabradli"]
 position = Vector2(-42, 97)
 
-[node name="Points" type="Node2D" parent="."]
+[node name="Robot" type="Sprite2D" parent="ShoreRoot"]
+position = Vector2(608, 822)
+texture = ExtResource("8_s4pbl")
 
-[node name="PlayerApartmentBuildingEntrance" type="Node2D" parent="Points"]
-position = Vector2(284, 107)
+[node name="YSort" type="Node2D" parent="ShoreRoot/Robot"]
+position = Vector2(-13, 49)
 
-[node name="Point" type="Node" parent="Points/PlayerApartmentBuildingEntrance"]
+[node name="Swing" type="Sprite2D" parent="ShoreRoot"]
+position = Vector2(744, 853)
+texture = ExtResource("9_gwh2v")
 
-[node name="InspectLabel" type="Node" parent="Points/PlayerApartmentBuildingEntrance"]
-metadata/zone = "Building1Entrance"
-metadata/action = "EnterBuilding1"
-metadata/label = "Home"
-metadata/category = "Default"
-
-[node name="MallEntrance" type="Node2D" parent="Points"]
-position = Vector2(-149, 342)
-
-[node name="Point" type="Node" parent="Points/MallEntrance"]
-
-[node name="InspectLabel" type="Node" parent="Points/MallEntrance"]
-metadata/zone = "MallEntrance"
-metadata/action = "EnterMall"
-metadata/label = "Go shopping"
-metadata/category = "Default"
+[node name="YSort" type="Node2D" parent="ShoreRoot/Swing"]
+position = Vector2(0, 24)

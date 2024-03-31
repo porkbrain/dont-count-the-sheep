@@ -444,17 +444,17 @@ metadata/zone = "MeditationZone"
 metadata/action = "StartMeditation"
 metadata/label = "Meditate"
 
+[node name="WinnieMeditating" type="Sprite2D" parent="BackwallFurniture/MeditationChair"]
+visible = false
+self_modulate = Color(1, 1, 1, 0.823529)
+position = Vector2(3, 0)
+texture = ExtResource("6_5id1h")
+
 [node name="WinnieSleeping" type="Sprite2D" parent="BackwallFurniture"]
 visible = false
 self_modulate = Color(1, 1, 1, 0.823529)
 position = Vector2(-70, -67.5)
 texture = ExtResource("5_u86a4")
-
-[node name="WinnieMeditating" type="Sprite2D" parent="BackwallFurniture"]
-visible = false
-self_modulate = Color(1, 1, 1, 0.823529)
-position = Vector2(41, -84)
-texture = ExtResource("6_5id1h")
 
 [node name="Toilet" type="Sprite2D" parent="."]
 z_index = 2

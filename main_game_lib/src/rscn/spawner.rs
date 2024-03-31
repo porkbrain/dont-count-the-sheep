@@ -265,8 +265,9 @@ fn node_to_entity<T: TscnSpawner>(
         }
     }
 
-    let translation =
-        position.extend(virtual_z_index.unwrap_or_else(|| ysort(position)));
+    // default zindex is 0 as per Godot, but we use f32::EPSILON to avoid z
+    // fighting between nested nodes (parent vs child)
+    let translation = position.extend(virtual_z_index.unwrap_or(f32::EPSILON));
     let transform = Transform::from_translation(translation);
     cmd.entity(entity).insert(SpatialBundle {
         transform,
