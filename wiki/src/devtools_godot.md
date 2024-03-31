@@ -56,7 +56,21 @@ Ysorting is a technique to render sprites in a top-down scene.
 It's a way to ensure that sprites are rendered in the correct order based on their y-coordinate.
 
 To apply ysorting to a node, the y-index must be set to **0** on the sprite node (default) and a new child node of type `Node2D` named `YSort` must be added.
-Ysorting only works for sibling nodes.
+
+Unlike Godot, Bevy's ysorting does not necessitate sibling relationships.
+This flexibility enables us to utilize nested nodes centered at `(0px, 0px)` to streamline our scenes.
+The default z-index when no `YSort` component is included is **0** (technically [this][f32-epsilon]).
+
+For example, if a parent node has a z-index of 2 and the child node has a z-index of 1, the global z-index of the child node is 3.
+
+It's important to use `YSort` only at the child nodes.
+If both parent and child have this, the z-index is added which does't make sense in terms of positioning.
+
+When considering the z-index, think of it as the "stacking order" of sprites within the scene.
+Imagine each sprite as a card placed on a table, where the z-index determines the order in which the cards are stacked.
+The higher the z-index, the closer the sprite appears to the viewer.
+For instance, if a sprite has a higher z-index value than another sprite, it will be rendered on top of the latter, regardless of their y-coordinates.
+This hierarchical arrangement allows for precise control over the rendering order, ensuring that sprites are displayed correctly within the scene.
 
 ## Supported settings:
 
@@ -96,3 +110,4 @@ Here's an exhaustive list of components (defined as `Node` type with their names
 <!-- List of References -->
 
 [godot-tscn]: https://docs.godotengine.org/en/stable/contributing/development/file_formats/tscn.html
+[f32-epsilon]: https://doc.rust-lang.org/std/primitive.f32.html#associatedconstant.EPSILON
