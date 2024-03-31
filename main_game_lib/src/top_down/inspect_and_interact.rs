@@ -307,6 +307,7 @@ pub fn interact(
 
 /// Run this when action [`GlobalAction::Inspect`] is pressed.
 /// It updates labels that come into the vicinity of the player.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn show_all_in_vicinity(
     mut cmd: Commands,
     store: Res<GlobalStore>,
@@ -441,21 +442,6 @@ fn spawn_label_bg_and_text(
         being_hidden: false,
     }
 }
-
-// /// Run this when action [`GlobalAction::Inspect`] is just pressed.
-// /// It cancels eventual [`schedule_hide_all`] call that scheduled the fade
-// out /// and removal of the box.
-// pub(crate) fn cancel_hide_all(
-//     mut cmd: Commands,
-
-//     mut inspectable_objects: Query<&mut InspectLabelDisplayed>,
-//     mut texts: Query<&mut Text, With<InspectLabelText>>,
-//     mut bgs: Query<&mut Sprite, With<InspectLabelBg>>,
-// ) {
-//     for mut displayed in inspectable_objects.iter_mut() {
-//         displayed.cancel_hide(&mut cmd, &mut texts, &mut bgs);
-//     }
-// }
 
 /// Run this when action [`GlobalAction::Inspect`] was just released.
 /// It schedules removal of all labels by interpolating their color to none.
