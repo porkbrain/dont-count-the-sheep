@@ -386,6 +386,10 @@ fn spawn_label_bg_and_text(
     let font_size =
         label.category.font_zone() + if highlighted { 3.0 } else { 0.0 };
 
+    // We set this to be the zindex of the bg and text.
+    // This is a dirty hack that puts the label always in front of everything.
+    const Z_INDEX: f32 = 10.0;
+
     // bit of padding and then a few pixels per character
     // this is easier than waiting for the text to be rendered and
     // then using the logical size, and the impression doesn't
@@ -394,7 +398,7 @@ fn spawn_label_bg_and_text(
     let bg = cmd
         .spawn(InspectLabelBg)
         .insert(SpriteBundle {
-            transform: Transform::from_translation(Vec3::Z),
+            transform: Transform::from_translation(Vec3::Z * Z_INDEX),
             sprite: Sprite {
                 color: HALF_TRANSPARENT * if highlighted { 1.5 } else { 1.0 },
                 custom_size: Some(Vec2::new(bg_box_width, font_size / 2.0)),
@@ -411,7 +415,7 @@ fn spawn_label_bg_and_text(
             // We invert the pixel camera zoom, otherwise we'd end
             // up with pixelated text.
             // We end up using larger font size instead.
-            transform: Transform::from_translation(Vec3::Z * 2.0)
+            transform: Transform::from_translation(Vec3::Z * Z_INDEX * 1.01)
                 .with_scale(Vec3::splat(1.0 / PIXEL_ZOOM as f32)),
             text: Text {
                 sections: vec![TextSection::new(
