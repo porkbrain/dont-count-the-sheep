@@ -1,12 +1,13 @@
-[gd_scene load_steps=13 format=3 uid="uid://drnrtwjeis0wl"]
+[gd_scene load_steps=19 format=3 uid="uid://drnrtwjeis0wl"]
 
-[ext_resource type="Texture2D" uid="uid://butuw555fooa1" path="res://assets/mall/mall.png" id="1_py6kn"]
-[ext_resource type="Texture2D" uid="uid://cqsdb5tp644w6" path="res://assets/environment/vending_machine_atlas.png" id="2_83cf2"]
-[ext_resource type="Texture2D" uid="uid://bit4syffi4073" path="res://assets/mall/mallisles.png" id="3_7qiwu"]
-[ext_resource type="Texture2D" uid="uid://ctql8gvld5oyf" path="res://assets/mall/salebox.png" id="4_uvq87"]
-[ext_resource type="Texture2D" uid="uid://qs3pmngv2da2" path="res://assets/mall/selfcheckout.png" id="5_g377o"]
-[ext_resource type="Texture2D" uid="uid://bqc21ow6lrmh" path="res://assets/mall/storage.png" id="6_egw2s"]
-[ext_resource type="Texture2D" uid="uid://b8qjuqrx7mxvg" path="res://assets/mall/mall_gate.png" id="7_34v1c"]
+[ext_resource type="Texture2D" uid="uid://cgvnw3xu0g55c" path="res://assets/mall/mall.png" id="1_py6kn"]
+[ext_resource type="Texture2D" uid="uid://cucclesngt72y" path="res://assets/environment/vending_machine_atlas.png" id="2_83cf2"]
+[ext_resource type="Texture2D" uid="uid://ckr3s6a6pkgh8" path="res://assets/mall/mallisles.png" id="3_7qiwu"]
+[ext_resource type="Texture2D" uid="uid://ctx6632qwroaa" path="res://assets/mall/salebox.png" id="4_uvq87"]
+[ext_resource type="Texture2D" uid="uid://kk1gkcrurjt8" path="res://assets/mall/selfcheckout.png" id="5_g377o"]
+[ext_resource type="Texture2D" uid="uid://b8xjoqkbaiqyp" path="res://assets/mall/storage.png" id="6_egw2s"]
+[ext_resource type="Texture2D" uid="uid://b3kynf8hs73" path="res://assets/mall/mall_gate.png" id="7_34v1c"]
+[ext_resource type="Texture2D" uid="uid://cn1n1shruw5xn" path="res://assets/environment/snack_machine_atlas.png" id="8_epuyy"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("2_83cf2")
@@ -42,6 +43,42 @@ animations = [{
 "loop": false,
 "name": &"default",
 "speed": 1.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tvw7y"]
+atlas = ExtResource("8_epuyy")
+region = Rect2(0, 0, 31, 55)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nof4l"]
+atlas = ExtResource("8_epuyy")
+region = Rect2(31, 0, 31, 55)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xqsx6"]
+atlas = ExtResource("8_epuyy")
+region = Rect2(62, 0, 31, 55)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3vhyk"]
+atlas = ExtResource("8_epuyy")
+region = Rect2(93, 0, 31, 55)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_t6d3n"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tvw7y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nof4l")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xqsx6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3vhyk")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
 }]
 
 [node name="Mall" type="Node2D"]
@@ -104,3 +141,7 @@ metadata/zone = "ExitZone"
 metadata/action = "ExitMall"
 metadata/label = "Exit"
 metadata/category = "Default"
+
+[node name="SnackMachineAtlas" type="AnimatedSprite2D" parent="."]
+position = Vector2(-107, 84)
+sprite_frames = SubResource("SpriteFrames_t6d3n")
