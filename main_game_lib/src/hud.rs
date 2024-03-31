@@ -9,7 +9,8 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(daybar::DayBar { progress: 0.0 }) // TODO: load from save
+        // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/14
+        app.insert_resource(daybar::DayBar { progress: 0.0 })
             .add_event::<daybar::IncreaseDayBarEvent>()
             .add_systems(
                 First,
