@@ -20,11 +20,13 @@
 use std::{borrow::Cow, time::Duration};
 
 use bevy::{prelude::*, utils::HashMap};
+use common_action::{ActionState, GlobalAction};
 use common_ext::QueryExt;
 use common_store::{GlobalStore, InspectAbilityStore};
 use common_visuals::{
     camera::PIXEL_ZOOM, BeginInterpolationEvent, ColorInterpolation,
 };
+use lazy_static::lazy_static;
 use strum::EnumString;
 
 use super::actor::player::TakeAwayPlayerControl;
@@ -77,6 +79,15 @@ pub struct InspectLabel {
     emit_event_on_interacted: Option<Box<dyn ActionEvent>>,
 }
 
+/// Present in those entities with [`InspectLabel`] that have their label
+/// currently displayed.
+#[derive(Component, Reflect)]
+pub(crate) struct InspectLabelDisplayed {
+    bg: Entity,
+    text: Entity,
+    category_color: Color,
+}
+
 /// Entities with [`InspectLabel`] and this component are considered when the
 /// player hits the interact button.
 /// The closest entity is chosen by default, but the player can change their
@@ -87,6 +98,13 @@ pub struct InspectLabel {
 /// action.
 #[derive(Component)]
 pub struct ReadyForInteraction;
+
+/// What entity with [`ReadyForInteraction`] component is the one that would
+/// be interacted with if the player pressed the interact button.
+///
+/// Only one entity can be highlighted at a time.
+#[derive(Component)]
+pub struct HighlightedForInteraction;
 
 /// Different categories can have different radius of visibility based on the
 /// player's experience.
@@ -152,43 +170,136 @@ pub(crate) fn match_interact_label_with_action_event<T: TopDownScene>(
     }
 }
 
+/// We want the player to know what would be interacted with if they clicked
+/// the interact button.
+///
+/// 1. Find the closest entity with [`InspectLabel`]
+/// 2. Set that entity as highlighted
+pub(crate) fn highlight_what_would_be_interacted_with(
+    mut cmd: Commands,
+    asset_server: Res<AssetServer>,
+    mut begin_interpolation: EventWriter<BeginInterpolationEvent>,
+    controls: Res<ActionState<GlobalAction>>,
+
+    player: Query<
+        &GlobalTransform,
+        (With<Player>, Without<TakeAwayPlayerControl>),
+    >,
+    highlighted: Query<
+        (Entity, &InspectLabel, &InspectLabelDisplayed),
+        With<HighlightedForInteraction>,
+    >,
+    inspectable: Query<
+        (
+            Entity,
+            &InspectLabel,
+            Option<&InspectLabelDisplayed>,
+            &GlobalTransform,
+        ),
+        With<ReadyForInteraction>,
+    >,
+) {
+    let mut remove_old_highlight_if_present = || {
+        if let Some((highlighted, label, displayed)) =
+            highlighted.get_single_or_none()
+        {
+            cmd.entity(highlighted)
+                .remove::<HighlightedForInteraction>();
+
+            cmd.entity(displayed.bg).despawn();
+            cmd.entity(displayed.text).despawn();
+
+            let displayed =
+                spawn_label_bg_and_text(&mut cmd, &asset_server, label, false);
+            if !controls.pressed(&GlobalAction::Inspect) {
+                schedule_hide(
+                    &mut begin_interpolation,
+                    highlighted,
+                    &displayed,
+                );
+            }
+            cmd.entity(highlighted)
+                .add_child(displayed.bg)
+                .add_child(displayed.text)
+                .insert(displayed);
+        }
+    };
+
+    //
+    // 1.
+    //
+    let Some(player) = player.get_single_or_none() else {
+        return;
+    };
+    let player = player.translation().truncate();
+
+    let Some((closest, label, displayed, _)) = inspectable
+        .iter()
+        // important to filter out entities without an event because those can
+        // never be interacted with
+        //
+        // the system [`interact`] assumes on this condition
+        .filter(|(_, label, _, _)| label.emit_event_on_interacted.is_some())
+        .map(|(entity, label, displayed, transform)| {
+            let distance = transform.translation().truncate().distance(player);
+            (entity, label, displayed, distance)
+        })
+        .min_by(|(_, _, _, a), (_, _, _, b)| {
+            a.partial_cmp(b).expect("distance is always a number")
+        })
+    else {
+        remove_old_highlight_if_present();
+        return;
+    };
+
+    //
+    // 2.
+    //
+
+    let highlighted_matches_closest =
+        highlighted.get_single_or_none().is_some_and(
+            |(highlighted_entity, _, _)| highlighted_entity == closest,
+        );
+    if highlighted_matches_closest {
+        // nothing to do, already in the state we want
+        return;
+    }
+
+    remove_old_highlight_if_present();
+
+    if let Some(InspectLabelDisplayed { bg, text, .. }) = displayed {
+        cmd.entity(*bg).despawn();
+        cmd.entity(*text).despawn();
+    }
+
+    let displayed =
+        spawn_label_bg_and_text(&mut cmd, &asset_server, label, true);
+    cmd.entity(closest)
+        .insert(HighlightedForInteraction)
+        .add_child(displayed.bg)
+        .add_child(displayed.text)
+        .insert(displayed);
+}
+
 /// This is registered in [`crate::top_down::default_setup_for_scene`].
 ///
 /// Any logic that listens to [`ActionEvent`]s should be ordered _after_ this.
 pub fn interact(
     mut cmd: Commands,
 
-    player: Query<
-        &GlobalTransform,
-        (With<Player>, Without<TakeAwayPlayerControl>),
-    >,
-    inspectable_objects: Query<
-        (&InspectLabel, &GlobalTransform),
-        With<ReadyForInteraction>,
-    >,
+    label: Query<&InspectLabel, With<HighlightedForInteraction>>,
 ) {
-    let Some(player) = player.get_single_or_none() else {
+    let Some(InspectLabel {
+        // this will always be Some because we only insert the component
+        // HighlightedForInteraction to inspect labels with an event
+        emit_event_on_interacted: Some(event),
+        ..
+    }) = label.get_single_or_none()
+    else {
         return;
     };
-    let player = player.translation().truncate();
 
-    let closest = inspectable_objects
-        .iter()
-        .filter(|(label, _)| label.emit_event_on_interacted.is_some()) // !
-        .map(|(label, transform)| {
-            let distance = transform.translation().truncate().distance(player);
-            (label, distance)
-        })
-        .min_by(|(_, a), (_, b)| {
-            a.partial_cmp(b).expect("distance is always a number")
-        })
-        .map(|(label, _)| label);
-
-    if let Some(closest) = closest {
-        let event = closest.emit_event_on_interacted.as_ref().unwrap(); // !
-
-        event.send_deferred(&mut cmd);
-    }
+    event.send_deferred(&mut cmd);
 }
 
 /// Run this when action [`GlobalAction::Inspect`] is pressed.
@@ -203,7 +314,8 @@ pub(crate) fn show_all_in_vicinity(
         Entity,
         &InspectLabel,
         &GlobalTransform,
-        Option<&Children>,
+        Option<&InspectLabelDisplayed>,
+        Option<&ReadyForInteraction>,
     )>,
 ) {
     let Some(player) = player.get_single_or_none() else {
@@ -211,13 +323,16 @@ pub(crate) fn show_all_in_vicinity(
     };
     let player = player.translation().truncate();
 
-    for (entity, label, position, children) in inspectable_objects.iter() {
+    for (entity, label, position, displayed, ready_for_interaction) in
+        inspectable_objects.iter()
+    {
         store.mark_as_seen(&label.display);
 
         let distance = player.distance(position.translation().truncate());
-        let should_be_shown = distance <= label.category.max_distance();
+        let should_be_shown = distance <= label.category.max_distance()
+            || ready_for_interaction.is_some();
 
-        match (should_be_shown, children) {
+        match (should_be_shown, displayed) {
             // should not be shown and it's not, do nothing
             (false, None) => {}
 
@@ -226,77 +341,94 @@ pub(crate) fn show_all_in_vicinity(
             (true, Some(_)) => {}
 
             // should not be shown and it is, hide it
-            (false, Some(children)) => {
+            (false, Some(InspectLabelDisplayed { bg, text, .. })) => {
                 trace!("Label {} going out of the view", label.display);
 
-                cmd.entity(entity).remove::<Children>();
-                for child in children {
-                    cmd.entity(*child).despawn();
-                }
+                // TODO: schedule hide
+                cmd.entity(entity).remove::<HighlightedForInteraction>();
+                cmd.entity(entity).remove::<InspectLabelDisplayed>();
+                cmd.entity(*bg).despawn();
+                cmd.entity(*text).despawn();
             }
 
             // should be shown and it's not, show it
             (true, None) => {
-                trace!("Displaying label {}", label.display);
-
-                let font_size = label.category.font_zone();
-
-                // bit of padding and then a few pixels per character
-                // this is easier than waiting for the text to be rendered and
-                // then using the logical size, and the impression doesn't
-                // matter for such a short text
-                let bg_box_width =
-                    font_size + font_size / 7.0 * label.display.len() as f32;
-                let bg = cmd
-                    .spawn(InspectLabelBg)
-                    .insert(SpriteBundle {
-                        transform: Transform::from_translation(Vec3::Z),
-                        sprite: Sprite {
-                            color: HALF_TRANSPARENT,
-                            custom_size: Some(Vec2::new(
-                                bg_box_width,
-                                font_size / 2.0,
-                            )),
-                            ..default()
-                        },
-                        ..default()
-                    })
-                    .id();
-
-                // make it stand above others with zindex
-                let txt = cmd
-                    .spawn(InspectLabelText)
-                    .insert(Text2dBundle {
-                        // We invert the pixel camera zoom, otherwise we'd end
-                        // up with pixelated text.
-                        // We end up using larger font size instead.
-                        transform: Transform::from_translation(Vec3::Z * 2.0)
-                            .with_scale(Vec3::splat(1.0 / PIXEL_ZOOM as f32)),
-                        text: Text {
-                            sections: vec![TextSection::new(
-                                label.display.clone(),
-                                TextStyle {
-                                    font: asset_server.load(
-                                        common_assets::fonts::TINY_PIXEL1,
-                                    ),
-                                    font_size,
-                                    color: label.category.color(),
-                                },
-                            )],
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                            ..default()
-                        },
-                        ..default()
-                    })
-                    .id();
-
-                cmd.entity(entity).insert_children(0, &[bg, txt]);
+                let displayed = spawn_label_bg_and_text(
+                    &mut cmd,
+                    &asset_server,
+                    label,
+                    false,
+                );
+                cmd.entity(entity)
+                    .add_child(displayed.bg)
+                    .add_child(displayed.text)
+                    .insert(displayed);
             }
         }
+    }
+}
 
-        if distance >= label.category.max_distance() {
-            continue;
-        }
+/// Attach the result as a component to the label's entity and the bg and text
+/// children to the labels' entity.
+fn spawn_label_bg_and_text(
+    cmd: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    label: &InspectLabel,
+    highlighted: bool,
+) -> InspectLabelDisplayed {
+    trace!("Displaying label {}", label.display);
+
+    let font_size =
+        label.category.font_zone() + if highlighted { 3.0 } else { 0.0 };
+
+    // bit of padding and then a few pixels per character
+    // this is easier than waiting for the text to be rendered and
+    // then using the logical size, and the impression doesn't
+    // matter for such a short text
+    let bg_box_width = font_size + font_size / 7.0 * label.display.len() as f32;
+    let bg = cmd
+        .spawn(InspectLabelBg)
+        .insert(SpriteBundle {
+            transform: Transform::from_translation(Vec3::Z),
+            sprite: Sprite {
+                color: HALF_TRANSPARENT * if highlighted { 1.5 } else { 1.0 },
+                custom_size: Some(Vec2::new(bg_box_width, font_size / 2.0)),
+                ..default()
+            },
+            ..default()
+        })
+        .id();
+
+    // make it stand above others with zindex
+    let text = cmd
+        .spawn(InspectLabelText)
+        .insert(Text2dBundle {
+            // We invert the pixel camera zoom, otherwise we'd end
+            // up with pixelated text.
+            // We end up using larger font size instead.
+            transform: Transform::from_translation(Vec3::Z * 2.0)
+                .with_scale(Vec3::splat(1.0 / PIXEL_ZOOM as f32)),
+            text: Text {
+                sections: vec![TextSection::new(
+                    label.display.clone(),
+                    TextStyle {
+                        font: asset_server
+                            .load(common_assets::fonts::TINY_PIXEL1),
+                        font_size,
+                        color: label.category.color(),
+                    },
+                )],
+                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                ..default()
+            },
+            ..default()
+        })
+        .id();
+
+    InspectLabelDisplayed {
+        bg,
+        text,
+        category_color: label.category.color(),
     }
 }
 
@@ -306,22 +438,39 @@ pub(crate) fn show_all_in_vicinity(
 pub(crate) fn cancel_hide_all(
     mut cmd: Commands,
 
-    inspectable_objects: Query<&InspectLabel>,
-    mut text: Query<(Entity, &Parent, &mut Text), With<InspectLabelText>>,
-    mut bg: Query<(Entity, &mut Sprite), With<InspectLabelBg>>,
+    inspectable_objects: Query<&InspectLabelDisplayed>,
+    mut texts: Query<&mut Text, With<InspectLabelText>>,
+    mut bgs: Query<&mut Sprite, With<InspectLabelBg>>,
 ) {
-    for (entity, parent, mut text) in text.iter_mut() {
-        let parent = parent.get();
-        let color = inspectable_objects.get(parent).unwrap().category.color();
-        text.sections[0].style.color = color;
+    for displayed in inspectable_objects.iter() {
+        let InspectLabelDisplayed { bg, text, .. } = displayed;
+        cmd.entity(*bg).remove::<ColorInterpolation>();
+        bgs.get_mut(*bg)
+            .expect("BG must exist if display exists")
+            .color = HALF_TRANSPARENT;
 
-        cmd.entity(entity).remove::<ColorInterpolation>();
+        cmd.entity(*text).remove::<ColorInterpolation>();
+        texts
+            .get_mut(*text)
+            .expect("Text must exist if display exists")
+            .sections[0]
+            .style
+            .color = displayed.category_color;
     }
 
-    for (entity, mut sprite) in bg.iter_mut() {
-        sprite.color = HALF_TRANSPARENT;
-        cmd.entity(entity).remove::<ColorInterpolation>();
-    }
+    // for (entity, parent, mut text) in text.iter_mut() {
+    //     let parent = parent.get();
+    //     let color =
+    // inspectable_objects.get(parent).unwrap().category.color();
+    //     text.sections[0].style.color = color;
+
+    //     cmd.entity(entity).remove::<ColorInterpolation>();
+    // }
+
+    // for (entity, mut sprite) in bg.iter_mut() {
+    //     sprite.color = HALF_TRANSPARENT;
+    //     cmd.entity(entity).remove::<ColorInterpolation>();
+    // }
 }
 
 /// Run this when action [`GlobalAction::Inspect`] was just released.
@@ -329,44 +478,82 @@ pub(crate) fn cancel_hide_all(
 pub(crate) fn schedule_hide_all(
     mut begin_interpolation: EventWriter<BeginInterpolationEvent>,
 
-    inspectable_objects: Query<&InspectLabel>,
-    text: Query<(Entity, &Parent), With<InspectLabelText>>,
-    bg: Query<Entity, With<InspectLabelBg>>,
+    inspectable_objects: Query<
+        (Entity, &InspectLabelDisplayed),
+        Without<HighlightedForInteraction>,
+    >,
 ) {
+    for (entity, displayed) in inspectable_objects.iter() {
+        schedule_hide(&mut begin_interpolation, entity, &displayed);
+    }
+
+    // for (entity, parent) in text.iter() {
+    //     let parent = parent.get();
+    //     let to_color = {
+    //         let mut c =
+    //             inspectable_objects.get(parent).unwrap().category.color();
+    //         c.set_a(0.0);
+    //         c
+    //     };
+
+    //     begin_interpolation.send(
+    //         BeginInterpolationEvent::of_color(entity, None, to_color)
+    //             .over(FADE_OUT_IN)
+    //             .with_animation_curve(text_animation_curve.clone())
+    //             .when_finished_do(move |cmd| {
+    //                 cmd.entity(parent).remove::<Children>();
+    //                 cmd.entity(entity).despawn();
+    //             }),
+    //     );
+    // }
+
+    // for entity in bg.iter() {
+    //     begin_interpolation.send(
+    //         BeginInterpolationEvent::of_color(entity, None, Color::NONE)
+    //             .over(FADE_OUT_IN)
+    //             .with_animation_curve(bg_animation_curve.clone())
+    //             .when_finished_despawn_itself(),
+    //     );
+    // }
+}
+
+fn schedule_hide(
+    begin_interpolation: &mut EventWriter<BeginInterpolationEvent>,
+    label_entity: Entity,
+    displayed: &InspectLabelDisplayed,
+) {
+    let bg = displayed.bg;
+    let text = displayed.text;
+    let to_color = {
+        let mut c = displayed.category_color;
+        c.set_a(0.0);
+        c
+    };
+
     // looks better when the text fades out faster than the bg
-    let text_animation_curve =
-        CubicSegment::new_bezier((0.9, 0.05), (0.9, 1.0));
-    let bg_animation_curve =
-        CubicSegment::new_bezier((0.95, 0.01), (0.95, 1.0));
-
-    for (entity, parent) in text.iter() {
-        let parent = parent.get();
-        let to_color = {
-            let mut c =
-                inspectable_objects.get(parent).unwrap().category.color();
-            c.set_a(0.0);
-            c
-        };
-
-        begin_interpolation.send(
-            BeginInterpolationEvent::of_color(entity, None, to_color)
-                .over(FADE_OUT_IN)
-                .with_animation_curve(text_animation_curve.clone())
-                .when_finished_do(move |cmd| {
-                    cmd.entity(parent).remove::<Children>();
-                    cmd.entity(entity).despawn();
-                }),
-        );
+    lazy_static! {
+        static ref TEXT_ANIMATION_CURVE: CubicSegment<Vec2> =
+            CubicSegment::new_bezier((0.9, 0.05), (0.9, 1.0));
+        static ref BG_ANIMATION_CURVE: CubicSegment<Vec2> =
+            CubicSegment::new_bezier((0.95, 0.01), (0.95, 1.0));
     }
 
-    for entity in bg.iter() {
-        begin_interpolation.send(
-            BeginInterpolationEvent::of_color(entity, None, Color::NONE)
-                .over(FADE_OUT_IN)
-                .with_animation_curve(bg_animation_curve.clone())
-                .when_finished_despawn_itself(),
-        );
-    }
+    begin_interpolation.send(
+        BeginInterpolationEvent::of_color(text, None, to_color)
+            .over(FADE_OUT_IN)
+            .with_animation_curve(TEXT_ANIMATION_CURVE.clone())
+            .when_finished_do(move |cmd| {
+                cmd.entity(label_entity).remove::<InspectLabelDisplayed>();
+                cmd.entity(text).despawn();
+            }),
+    );
+
+    begin_interpolation.send(
+        BeginInterpolationEvent::of_color(bg, None, Color::NONE)
+            .over(FADE_OUT_IN)
+            .with_animation_curve(BG_ANIMATION_CURVE.clone())
+            .when_finished_despawn_itself(),
+    );
 }
 
 impl InspectLabelCategory {

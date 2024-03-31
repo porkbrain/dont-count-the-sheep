@@ -135,9 +135,13 @@ where
     app.register_type::<InspectLabel>()
         .add_systems(
             Update,
-            inspect_and_interact::show_all_in_vicinity
-                .run_if(in_state(running))
-                .run_if(common_action::inspect_pressed()),
+            (
+                inspect_and_interact::highlight_what_would_be_interacted_with,
+                inspect_and_interact::show_all_in_vicinity
+                    .run_if(common_action::inspect_pressed()),
+            )
+                .chain() // easier to think about
+                .run_if(in_state(running)),
         )
         .add_systems(
             Update,
