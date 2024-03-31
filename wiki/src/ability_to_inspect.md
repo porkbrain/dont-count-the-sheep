@@ -48,7 +48,7 @@ A natural solution is to gamify the inspection mode, making it feel less like a 
       Each category has its own radius, and the curiosity level would be combined with other factors to determine the radius.
 - [ ] There would gadgets that could be attached to the [phone](phone.md).
       Their purpose would be to alter the inspection mode in some way.
-- [ ] We would highlight the object that was closest to you.
+- [x] We highlight the object that is the closest to you.
       That would be the object you would interact with if you pressed the interaction button.
 - [ ] To avoid repositioning you could also change the highlighted object with directional input.
       Pressing up would change selection to the next object closest to the highlighted object in the upward direction.

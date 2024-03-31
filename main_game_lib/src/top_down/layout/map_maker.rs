@@ -68,8 +68,6 @@ pub(crate) struct DebugLayoutGrid;
 pub(crate) fn update_ui<T: TopDownScene>(
     mut contexts: EguiContexts,
     mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
-
-    mut grid_root: Query<&mut Visibility, With<DebugLayoutGrid>>,
 ) where
     T::LocalTileKind: Ord,
 {
@@ -81,17 +79,7 @@ pub(crate) fn update_ui<T: TopDownScene>(
             // 1.
             //
             if ui.button("Toggle square grid").clicked() {
-                let mut visibility = grid_root.single_mut();
-                *visibility = match *visibility {
-                    Visibility::Visible | Visibility::Inherited => {
-                        toolbar.display_grid = false;
-                        Visibility::Hidden
-                    }
-                    Visibility::Hidden => {
-                        toolbar.display_grid = true;
-                        Visibility::Visible
-                    }
-                };
+                toolbar.display_grid = !toolbar.display_grid;
             }
 
             //
@@ -207,6 +195,7 @@ pub(crate) fn change_square_kind<T: TopDownScene>(
     }
 
     let ctrl_pressed = keyboard.pressed(KeyCode::ControlLeft);
+    let esc_pressed = keyboard.just_pressed(KeyCode::Escape);
     let just_pressed_left = mouse.just_pressed(MouseButton::Left);
     let just_released_left = mouse.just_released(MouseButton::Left);
     let just_pressed_right = mouse.just_pressed(MouseButton::Right);
@@ -217,11 +206,19 @@ pub(crate) fn change_square_kind<T: TopDownScene>(
     // b) if painting rect, release left to stop painting
     let stop_painting_rect =
         toolbar.begin_rect_at.is_some() && just_released_left;
-    // c) press right to paint single square
-    let paint_single_square = just_pressed_right;
+    // c) press right to paint single square (unless in rect mode)
+    let paint_single_square =
+        just_pressed_right && toolbar.begin_rect_at.is_none();
+    // d) cancel painting rect on esc
+    let cancel_painting =
+        esc_pressed && !stop_painting_rect && toolbar.begin_rect_at.is_some();
 
     // if neither of these, then early return
-    if !start_painting_rect && !stop_painting_rect && !paint_single_square {
+    if !start_painting_rect
+        && !stop_painting_rect
+        && !paint_single_square
+        && !cancel_painting
+    {
         return;
     }
 
@@ -239,6 +236,8 @@ pub(crate) fn change_square_kind<T: TopDownScene>(
         }
     } else if paint_single_square {
         try_paint(&mut toolbar, &mut map, clicked_at);
+    } else if cancel_painting {
+        toolbar.begin_rect_at.take();
     }
 }
 
