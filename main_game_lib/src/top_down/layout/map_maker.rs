@@ -476,7 +476,7 @@ impl<L: Tile> TileMapMakerToolbar<L> {
             paint: default(),
             layer: 0,
             paint_over_tiles: false,
-            display_grid: true,
+            display_grid: false,
             begin_rect_at: None,
             rendered_tiles: default(),
         }
