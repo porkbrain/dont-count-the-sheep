@@ -5,6 +5,7 @@
 #![allow(clippy::type_complexity)]
 
 pub mod cutscene;
+pub mod hud;
 pub mod prelude;
 pub mod rscn;
 pub mod state;
@@ -100,6 +101,7 @@ pub fn windowed_app() -> App {
         common_visuals::Plugin,
         cutscene::Plugin,
         PixelCameraPlugin,
+        crate::hud::Plugin,
     ));
 
     info!("Plugins added");

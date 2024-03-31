@@ -2,7 +2,6 @@ use std::marker::PhantomData;
 
 use bevy::{
     asset::load_internal_asset,
-    ecs::event::event_update_condition,
     prelude::*,
     render::{
         extract_resource::ExtractResourcePlugin,
@@ -88,7 +87,7 @@ pub trait LightScene:
         app.add_systems(
             PreUpdate,
             handle_window_resize::<Self>
-                .run_if(event_update_condition::<WindowResized>)
+                .run_if(on_event::<WindowResized>())
                 .after(detect_target_sizes),
         );
 
@@ -163,8 +162,7 @@ impl bevy::app::Plugin for Plugin {
             .add_systems(PreStartup, detect_target_sizes)
             .add_systems(
                 PreUpdate,
-                detect_target_sizes
-                    .run_if(event_update_condition::<WindowResized>),
+                detect_target_sizes.run_if(on_event::<WindowResized>()),
             );
 
         load_internal_asset!(
@@ -224,7 +222,7 @@ struct LightPassRenderLabel(&'static str);
 /// app.add_systems(
 ///     PreUpdate,
 ///     detect_target_sizes
-///         .run_if(event_update_condition::<WindowResized>),
+///         .run_if(on_event::<WindowResized>),
 /// );
 /// ```
 pub fn detect_target_sizes(
@@ -250,7 +248,7 @@ pub fn detect_target_sizes(
 /// app.add_systems(
 ///     PreUpdate,
 ///     handle_window_resize::<YourLightScene>
-///         .run_if(event_update_condition::<WindowResized>)
+///         .run_if(on_event::<WindowResized>)
 ///         .after(detect_target_sizes),
 /// );
 /// ```

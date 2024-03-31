@@ -6,10 +6,7 @@ pub mod player;
 use std::{iter, time::Duration};
 
 use bevy::{
-    ecs::{
-        entity::EntityHashMap, event::event_update_condition,
-        system::EntityCommands,
-    },
+    ecs::{entity::EntityHashMap, system::EntityCommands},
     prelude::*,
     render::view::RenderLayers,
     time::Stopwatch,
@@ -33,8 +30,8 @@ use crate::top_down::{
 /// Use with [`IntoSystemConfigs::run_if`] to run a system only when an actor
 /// moves.
 pub fn movement_event_emitted<T: TopDownScene>(
-) -> impl FnMut(Res<Events<ActorMovementEvent<T::LocalTileKind>>>) -> bool {
-    event_update_condition::<ActorMovementEvent<T::LocalTileKind>>
+) -> impl FnMut(EventReader<ActorMovementEvent<T::LocalTileKind>>) -> bool {
+    on_event::<ActorMovementEvent<T::LocalTileKind>>()
 }
 
 /// Entity with this component can be moved around.
@@ -159,7 +156,7 @@ pub(crate) struct BeginDialogEvent(Entity);
 /// [`crate::top_down::default_setup_for_scene`].
 ///
 /// If you listen to this event then condition your system to run on
-/// `run_if(event_update_condition::<ActorMovementEvent>)` and
+/// `run_if(on_event::<ActorMovementEvent>)` and
 /// `after(actor::emit_movement_events::<T>)`.
 ///
 /// We also emit a zone left event when an actor is despawned.

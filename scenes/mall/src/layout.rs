@@ -1,4 +1,4 @@
-use bevy::{ecs::event::event_update_condition, render::view::RenderLayers};
+use bevy::render::view::RenderLayers;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
 use main_game_lib::cutscene::in_cutscene;
@@ -30,7 +30,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(Mall::quitting()), despawn)
         .add_systems(
             Update,
-            exit.run_if(event_update_condition::<MallAction>)
+            exit.run_if(on_event::<MallAction>())
                 .run_if(Mall::in_running_state())
                 .run_if(not(in_cutscene())),
         );

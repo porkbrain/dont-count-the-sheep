@@ -1,12 +1,12 @@
 //! Player and NPCs.
 
-use bevy::ecs::event::event_update_condition;
 use common_loading_screen::LoadingScreenSettings;
 use common_story::dialog::DialogGraph;
 use common_visuals::camera::MainCamera;
 use main_game_lib::{
     common_ext::QueryExt,
     cutscene::{self, in_cutscene},
+    hud::daybar::DayBar,
 };
 use top_down::{
     actor::{emit_movement_events, movement_event_emitted},
@@ -24,8 +24,8 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (start_meditation_minigame_if_near_chair, enter_the_elevator)
-                .run_if(event_update_condition::<Building1PlayerFloorAction>)
+            (start_meditation_minigame, enter_the_elevator)
+                .run_if(on_event::<Building1PlayerFloorAction>())
                 .run_if(Building1PlayerFloor::in_running_state())
                 .run_if(not(in_cutscene())),
         );
@@ -41,17 +41,25 @@ impl bevy::app::Plugin for Plugin {
 }
 
 /// Will change the game state to meditation minigame.
-fn start_meditation_minigame_if_near_chair(
+fn start_meditation_minigame(
     mut cmd: Commands,
     mut action_events: EventReader<Building1PlayerFloorAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
+    daybar: Res<DayBar>,
 ) {
     let is_triggered = action_events.read().any(|action| {
         matches!(action, Building1PlayerFloorAction::StartMeditation)
     });
 
     if is_triggered {
+        if daybar.is_depleted() {
+            trace!("Cannot start meditation minigame, daybar is depleted.");
+            // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/126
+
+            return;
+        }
+
         cmd.insert_resource(LoadingScreenSettings {
             atlas: Some(common_loading_screen::LoadingScreenAtlas::Space),
             stare_at_loading_screen_for_at_least: Some(

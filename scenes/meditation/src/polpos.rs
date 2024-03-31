@@ -4,7 +4,6 @@ mod react;
 mod spawner;
 mod videos;
 
-use bevy::ecs::event::event_update_condition;
 use common_physics::PoissonsEquationUpdateEvent;
 use rand::random;
 use videos::Video;
@@ -62,11 +61,11 @@ impl bevy::app::Plugin for Plugin {
                     follow_curve,
                     react::to_environment,
                     react::to_hoshi_special
-                        .run_if(event_update_condition::<hoshi::ActionEvent>)
+                        .run_if(on_event::<hoshi::ActionEvent>())
                         .after(hoshi::loading_special),
                     effects::bolt::propel,
                     destroyed
-                        .run_if(event_update_condition::<PolpoDestroyedEvent>)
+                        .run_if(on_event::<PolpoDestroyedEvent>())
                         .after(react::to_hoshi_special)
                         .after(react::to_environment),
                 )
