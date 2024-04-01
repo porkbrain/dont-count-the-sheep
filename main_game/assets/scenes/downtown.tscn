@@ -284,6 +284,9 @@ texture = ExtResource("7_p1j5y")
 position = Vector2(-423, 159)
 texture = ExtResource("20_sy6x1")
 
+[node name="YSort" type="Node2D" parent="MallRoot/UmbrellaChair2"]
+position = Vector2(0, 41)
+
 [node name="WaterBottleHalf" type="Sprite2D" parent="MallRoot/UmbrellaChair2"]
 position = Vector2(-13, 25)
 texture = ExtResource("21_8m32a")
@@ -296,9 +299,15 @@ texture = ExtResource("20_sy6x1")
 position = Vector2(-10, 24)
 texture = ExtResource("11_e3pff")
 
+[node name="YSort" type="Node2D" parent="MallRoot/UmbrellaChair"]
+position = Vector2(0, 41)
+
 [node name="UmbrellaChair3" type="Sprite2D" parent="MallRoot"]
 position = Vector2(-432, 31)
 texture = ExtResource("20_sy6x1")
+
+[node name="YSort" type="Node2D" parent="MallRoot/UmbrellaChair3"]
+position = Vector2(0, 41)
 
 [node name="MallEntrance" type="Node2D" parent="MallRoot"]
 position = Vector2(-149, 342)
