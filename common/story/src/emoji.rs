@@ -23,6 +23,10 @@ const MIN_EMOJI_DURATION: Duration = Duration::from_millis(1000);
 /// How large is a single emoji atlas tile.
 const EMOJI_SIZE: Vec2 = vec2(24.0, 22.0);
 
+/// System in this set consumes [`DisplayEmojiEvent`]s.
+#[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct DisplayEmojiEventConsumer;
+
 /// Send this event to display an emoji.
 ///
 /// This event might end up being ignored if
@@ -71,7 +75,9 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<DisplayEmojiEvent>().add_systems(
             Update,
-            play_next.run_if(on_event::<DisplayEmojiEvent>()),
+            play_next
+                .in_set(DisplayEmojiEventConsumer)
+                .run_if(on_event::<DisplayEmojiEvent>()),
         );
     }
 }

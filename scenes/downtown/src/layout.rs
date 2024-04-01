@@ -3,8 +3,13 @@ use bevy_grid_squared::sq;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
 use main_game_lib::{
-    cutscene::in_cutscene, hud::daybar::IncreaseDayBarEvent,
-    top_down::inspect_and_interact::ZoneToInspectLabelEntity,
+    cutscene::in_cutscene,
+    hud::daybar::{DayBar, DayBarDependent, IncreaseDayBarEvent},
+    top_down::inspect_and_interact::{
+        ChangeHighlightedInspectLabelEvent,
+        ChangeHighlightedInspectLabelEventConsumer, SpawnLabelBgAndTextParams,
+        ZoneToInspectLabelEntity,
+    },
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use strum::IntoEnumIterator;
@@ -34,7 +39,10 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(Downtown::quitting()), despawn)
         .add_systems(
             Update,
-            (enter_building1, enter_mall)
+            (
+                enter_building1,
+                enter_mall.before(ChangeHighlightedInspectLabelEventConsumer),
+            )
                 .run_if(on_event::<DowntownAction>())
                 .run_if(Downtown::in_running_state())
                 .run_if(not(in_cutscene())),
@@ -219,15 +227,41 @@ fn enter_building1(
 fn enter_mall(
     mut cmd: Commands,
     mut action_events: EventReader<DowntownAction>,
+    mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+    zone_to_inspect_label_entity: Res<
+        ZoneToInspectLabelEntity<DowntownTileKind>,
+    >,
+    daybar: Res<DayBar>,
 ) {
     let is_triggered = action_events
         .read()
         .any(|action| matches!(action, DowntownAction::EnterMall));
 
     if is_triggered {
+        if !daybar.is_it_time_for(DayBarDependent::MallOpenHours) {
+            if let Some(entity) = zone_to_inspect_label_entity
+                .map
+                .get(&DowntownTileKind::MallEntrance)
+                .copied()
+            {
+                inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
+                    entity,
+                    spawn_params: SpawnLabelBgAndTextParams {
+                        highlighted: true,
+                        overwrite_font_color: Some(Color::rgb(1.0, 0.7, 0.7)),
+                        overwrite_display_text: Some("(closed)".to_string()),
+                    },
+                });
+            } else {
+                error!("Cannot find mall entrance zone inspect label entity");
+            }
+
+            return;
+        }
+
         cmd.insert_resource(LoadingScreenSettings {
             atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
             stare_at_loading_screen_for_at_least: Some(from_millis(1000)),

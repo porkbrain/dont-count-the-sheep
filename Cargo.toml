@@ -72,7 +72,7 @@ common_story = { path = "common/story" }
 common_visuals = { path = "common/visuals" }
 main_game_lib = { path = "main_game_lib" }
 
-graphviz-rust = "0.7"
+graphviz-rust = "0.8"
 itertools = "0.12"
 lazy_static = "1.4"
 logos = "0.14"

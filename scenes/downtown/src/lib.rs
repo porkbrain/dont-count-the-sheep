@@ -2,7 +2,6 @@
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::type_complexity)]
 
-mod actor;
 mod autogen;
 mod layout;
 mod prelude;
@@ -88,7 +87,7 @@ pub fn add(app: &mut App) {
 
     debug!("Adding plugins");
 
-    app.add_plugins((layout::Plugin, actor::Plugin));
+    app.add_plugins(layout::Plugin);
 
     debug!("Adding game loop");
 
