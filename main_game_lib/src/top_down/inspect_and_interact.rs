@@ -307,7 +307,6 @@ pub fn interact(
 
 /// Run this when action [`GlobalAction::Inspect`] is pressed.
 /// It updates labels that come into the vicinity of the player.
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn show_all_in_vicinity(
     mut cmd: Commands,
     store: Res<GlobalStore>,

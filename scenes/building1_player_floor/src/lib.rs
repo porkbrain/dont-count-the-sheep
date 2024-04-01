@@ -3,6 +3,7 @@
 #![allow(clippy::type_complexity)]
 #![feature(trivial_bounds)]
 #![feature(let_chains)]
+#![allow(clippy::too_many_arguments)]
 
 mod actor;
 mod autogen;
