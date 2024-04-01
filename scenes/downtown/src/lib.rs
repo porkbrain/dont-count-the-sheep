@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::type_complexity)]
+#![allow(clippy::too_many_arguments)]
 
 mod autogen;
 mod layout;
