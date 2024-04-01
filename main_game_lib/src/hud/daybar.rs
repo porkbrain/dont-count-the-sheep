@@ -21,6 +21,8 @@ pub struct DayBar {
 pub enum IncreaseDayBarEvent {
     /// Non trivial scene transition, such as leaving a building.
     ChangedScene,
+    /// Finished meditating.
+    Meditated,
 }
 
 #[derive(Component)]
@@ -87,6 +89,7 @@ pub(crate) fn increase(
     for event in events.read() {
         let amount = match event {
             IncreaseDayBarEvent::ChangedScene => 0.01,
+            IncreaseDayBarEvent::Meditated => 0.05,
         };
 
         daybar.progress = (daybar.progress + amount).clamp(0.0, 1.0);
