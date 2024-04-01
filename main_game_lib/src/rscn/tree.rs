@@ -165,7 +165,6 @@ pub(crate) fn from_state(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn apply_section_key(
     conf: &Config,
     state: &intermediate_repr::State,

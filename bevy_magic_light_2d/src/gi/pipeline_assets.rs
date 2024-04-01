@@ -57,7 +57,6 @@ pub fn system_prepare_pipeline_assets<T: LightScene>(
     gi_compute_assets.write_buffer(&render_device, &render_queue);
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn system_extract_pipeline_assets<T: LightScene>(
     res_light_settings: Extract<Res<BevyMagicLight2DSettings>>,
     res_target_sizes: Extract<Res<ComputedTargetSizes>>,

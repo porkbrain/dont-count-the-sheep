@@ -3,6 +3,7 @@
 #![feature(let_chains)]
 #![deny(missing_docs)]
 #![allow(clippy::type_complexity)]
+#![allow(clippy::too_many_arguments)]
 
 pub mod cutscene;
 pub mod hud;

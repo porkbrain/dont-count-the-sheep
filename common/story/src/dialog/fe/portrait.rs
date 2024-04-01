@@ -179,7 +179,6 @@ impl bevy::app::Plugin for Plugin {
 ///
 /// This should run only in state [`PortraitDialogState::PlayerControl`] and
 /// if the player hit the interact button.
-#[allow(clippy::too_many_arguments)]
 fn player_wishes_to_continue(
     mut cmd: Commands,
     mut next_dialog_state: ResMut<NextState<PortraitDialogState>>,
@@ -241,7 +240,6 @@ fn player_wishes_to_continue(
 /// This system will wait until the async operations are done and then continue.
 ///
 /// Run this only if in state [`PortraitDialogState::WaitingForAsync`].
-#[allow(clippy::too_many_arguments)]
 fn await_portrait_async_ops(
     mut cmd: Commands,
     mut next_dialog_state: ResMut<NextState<PortraitDialogState>>,
@@ -279,7 +277,6 @@ fn await_portrait_async_ops(
     };
 }
 
-#[allow(clippy::too_many_arguments)]
 fn render_choices_if_no_more_text_to_render(
     mut cmd: Commands,
     mut next_dialog_state: ResMut<NextState<PortraitDialogState>>,
@@ -361,7 +358,6 @@ fn get_more_text_to_render(
     None
 }
 
-#[allow(clippy::too_many_arguments)]
 fn advance_dialog(
     cmd: &mut Commands,
     store: &GlobalStore,

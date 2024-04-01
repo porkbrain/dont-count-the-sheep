@@ -3,7 +3,7 @@ use bevy_grid_squared::sq;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
 use main_game_lib::{
-    cutscene::in_cutscene, hud::daybar,
+    cutscene::in_cutscene, hud::daybar::IncreaseDayBarEvent,
     top_down::inspect_and_interact::ZoneToInspectLabelEntity,
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
@@ -53,7 +53,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     player_entity: Entity,
     transition: GlobalGameStateTransition,
-    daybar_event: &'a mut Events<daybar::IncreaseDayBarEvent>,
+    daybar_event: &'a mut Events<IncreaseDayBarEvent>,
     zone_to_inspect_label_entity:
         &'a mut ZoneToInspectLabelEntity<DowntownTileKind>,
 }
@@ -66,7 +66,7 @@ fn spawn(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     transition: Res<GlobalGameStateTransition>,
-    mut daybar_event: ResMut<Events<daybar::IncreaseDayBarEvent>>,
+    mut daybar_event: ResMut<Events<IncreaseDayBarEvent>>,
 
     mut q: Query<&mut TscnTreeHandle<Downtown>>,
 ) {
@@ -135,8 +135,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                         + sq(0, -2),
                 ));
 
-                self.daybar_event
-                    .send(daybar::IncreaseDayBarEvent::ChangedScene);
+                self.daybar_event.send(IncreaseDayBarEvent::ChangedScene);
             }
             "MallEntrance" if self.transition == MallToDowntown => {
                 self.player_builder.initial_position(translation.truncate());
@@ -144,6 +143,8 @@ impl<'a> TscnSpawner for Spawner<'a> {
                     LAYOUT.world_pos_to_square(translation.truncate())
                         + sq(0, -2),
                 ));
+
+                self.daybar_event.send(IncreaseDayBarEvent::ChangedScene);
             }
             _ => {}
         }

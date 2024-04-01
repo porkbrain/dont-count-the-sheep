@@ -5,6 +5,7 @@
 #![feature(trivial_bounds)]
 #![deny(missing_docs)]
 #![feature(let_chains)]
+#![allow(clippy::too_many_arguments)]
 
 pub mod dialog;
 
