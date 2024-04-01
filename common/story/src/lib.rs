@@ -8,6 +8,7 @@
 #![allow(clippy::too_many_arguments)]
 
 pub mod dialog;
+pub mod emoji;
 
 use std::time::Duration;
 
@@ -75,6 +76,8 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(emoji::Plugin);
+
         app.add_plugins(dialog::fe::portrait::Plugin)
             .init_asset_loader::<dialog::loader::Loader>()
             .init_asset::<dialog::DialogGraph>();
@@ -184,6 +187,7 @@ impl Character {
     }
 
     /// Returns arguments to [`TextureAtlasLayout::from_grid`].
+    #[inline]
     fn sprite_atlas(self) -> Option<(Vec2, usize, usize, Vec2)> {
         const STANDARD_SIZE: Vec2 = Vec2::new(25.0, 46.0);
 

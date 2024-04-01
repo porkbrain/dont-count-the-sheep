@@ -1,7 +1,10 @@
 //! Player and NPCs.
 
 use common_loading_screen::LoadingScreenSettings;
-use common_story::dialog::DialogGraph;
+use common_story::{
+    dialog::DialogGraph,
+    emoji::{DisplayEmojiEvent, EmojiKind},
+};
 use common_visuals::camera::MainCamera;
 use main_game_lib::{
     common_ext::QueryExt,
@@ -44,18 +47,31 @@ impl bevy::app::Plugin for Plugin {
 fn start_meditation_minigame(
     mut cmd: Commands,
     mut action_events: EventReader<Building1PlayerFloorAction>,
+    mut emoji_events: EventWriter<DisplayEmojiEvent>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     daybar: Res<DayBar>,
+
+    player: Query<Entity, With<Player>>,
 ) {
     let is_triggered = action_events.read().any(|action| {
         matches!(action, Building1PlayerFloorAction::StartMeditation)
     });
 
     if is_triggered {
-        if daybar.is_depleted() {
+        if true || daybar.is_depleted() {
             trace!("Cannot start meditation minigame, daybar is depleted.");
             // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/126
+
+            if let Some(on_parent) = player.get_single_or_none() {
+                emoji_events.send(DisplayEmojiEvent {
+                    emoji: EmojiKind::Tired,
+                    on_parent,
+                    offset_for: common_story::Character::Winnie,
+                });
+            } else {
+                error!("Cannot find player entity");
+            }
 
             return;
         }

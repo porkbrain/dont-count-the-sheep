@@ -238,7 +238,7 @@ pub(crate) fn highlight_what_would_be_interacted_with(
         // never be interacted with
         //
         // the system [`interact`] assumes on this condition
-        .filter(|(_, label, _, _)| label.emit_event_on_interacted.is_some())
+        .filter(|(_, label, ..)| label.emit_event_on_interacted.is_some())
         .map(|(entity, label, displayed, transform)| {
             let distance = transform.translation().truncate().distance(player);
             (entity, label, displayed, distance)
@@ -255,10 +255,9 @@ pub(crate) fn highlight_what_would_be_interacted_with(
     // 2.
     //
 
-    let highlighted_matches_closest =
-        highlighted.get_single_or_none().is_some_and(
-            |(highlighted_entity, _, _)| highlighted_entity == closest,
-        );
+    let highlighted_matches_closest = highlighted
+        .get_single_or_none()
+        .is_some_and(|(highlighted_entity, ..)| highlighted_entity == closest);
     if highlighted_matches_closest {
         // nothing to do, already in the state we want
         return;
