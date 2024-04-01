@@ -59,10 +59,7 @@ fn start_meditation_minigame(
     });
 
     if is_triggered {
-        if true || daybar.is_depleted() {
-            trace!("Cannot start meditation minigame, daybar is depleted.");
-            // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/126
-
+        if daybar.is_depleted() {
             if let Some(on_parent) = player.get_single_or_none() {
                 emoji_events.send(DisplayEmojiEvent {
                     emoji: EmojiKind::Tired,

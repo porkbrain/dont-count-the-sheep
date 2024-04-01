@@ -3,7 +3,7 @@
 //! We store e.g. level layouts this way.
 
 pub mod ignore_loader;
-mod paths;
+pub mod paths;
 pub mod ron_loader;
 pub mod store;
 

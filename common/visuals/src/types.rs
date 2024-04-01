@@ -34,7 +34,7 @@ pub enum AtlasAnimationStep {
     /// Goes from the first frame to the last.
     #[default]
     Forward,
-    /// Reversed of [`AtlasAnimationMode::FromFirstToLast`].
+    /// Reverse version of [`Self::Forward`].
     Backward,
 }
 
