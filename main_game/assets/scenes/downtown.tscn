@@ -1,4 +1,4 @@
-[gd_scene load_steps=37 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=38 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -32,6 +32,7 @@
 [ext_resource type="Texture2D" uid="uid://uuxhgpjap208" path="res://assets/downtown/big_tree.png" id="28_6tavv"]
 [ext_resource type="Texture2D" uid="uid://c8vxwyyvlctic" path="res://assets/downtown/jehlicnan.png" id="29_j62ep"]
 [ext_resource type="Texture2D" uid="uid://c85luubin2ham" path="res://assets/downtown/fancy_stairs.png" id="32_01aim"]
+[ext_resource type="Texture2D" uid="uid://dxokrosjob4s5" path="res://assets/downtown/fancy_sloupky.png" id="33_lx3i7"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -509,3 +510,11 @@ texture = ExtResource("29_j62ep")
 z_index = -2
 position = Vector2(1133, -332)
 texture = ExtResource("32_01aim")
+
+[node name="FancySloupky" type="Sprite2D" parent="FancyStairs"]
+position = Vector2(240.5, 78)
+texture = ExtResource("33_lx3i7")
+
+[node name="FancySloupky2" type="Sprite2D" parent="FancyStairs"]
+position = Vector2(-240.5, 78)
+texture = ExtResource("33_lx3i7")
