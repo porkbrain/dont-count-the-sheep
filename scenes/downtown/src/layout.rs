@@ -252,6 +252,7 @@ fn enter_mall(
                     spawn_params: SpawnLabelBgAndTextParams {
                         highlighted: true,
                         overwrite_font_color: Some(Color::rgb(1.0, 0.7, 0.7)),
+                        // LOCALIZATION
                         overwrite_display_text: Some("(closed)".to_string()),
                     },
                 });

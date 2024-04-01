@@ -84,6 +84,7 @@ fn start_meditation_minigame(
                     spawn_params: SpawnLabelBgAndTextParams {
                         highlighted: true,
                         overwrite_font_color: Some(Color::rgb(1.0, 0.7, 0.7)),
+                        // LOCALIZATION
                         overwrite_display_text: Some("(too tired)".to_string()),
                     },
                 });
@@ -129,6 +130,8 @@ fn enter_the_elevator(
     camera: Query<Entity, With<MainCamera>>,
     points: Query<(&Name, &rscn::Point)>,
 ) {
+    use GlobalGameStateTransition::*;
+
     let is_triggered = action_events.read().any(|action| {
         matches!(action, Building1PlayerFloorAction::EnterElevator)
     });
@@ -150,15 +153,10 @@ fn enter_the_elevator(
             elevator.single(),
             camera.single(),
             point_in_elevator,
+            // LOCALIZATION
             &[
-                (
-                    GlobalGameStateTransition::Building1PlayerFloorToDowntown,
-                    "go to downtown",
-                ),
-                (
-                    GlobalGameStateTransition::Building1PlayerFloorToBuilding1Basement1,
-                    "go to basement",
-                ),
+                (Building1PlayerFloorToDowntown, "go to downtown"),
+                (Building1PlayerFloorToBuilding1Basement1, "go to basement"),
             ],
         );
     }
