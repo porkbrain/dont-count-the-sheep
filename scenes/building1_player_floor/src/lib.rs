@@ -86,6 +86,8 @@ pub enum Building1PlayerFloorTileKind {
 pub enum Building1PlayerFloorAction {
     EnterElevator,
     StartMeditation,
+    Sleep,
+    BrewTea,
 }
 
 pub fn add(app: &mut App) {

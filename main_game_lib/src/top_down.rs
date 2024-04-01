@@ -25,8 +25,11 @@ pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, TopDownScene};
 use leafwing_input_manager::plugin::InputManagerSystem;
 
+use self::inspect_and_interact::ChangeHighlightedInspectLabelEvent;
 use crate::{
-    cutscene::in_cutscene, StandardStateSemantics, WithStandardStateSemantics,
+    cutscene::in_cutscene,
+    top_down::inspect_and_interact::ChangeHighlightedInspectLabelEventConsumer,
+    StandardStateSemantics, WithStandardStateSemantics,
 };
 
 /// Does not add any systems, only registers generic-less types.
@@ -35,11 +38,13 @@ pub struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<npc::PlanPathEvent>()
-            .add_event::<BeginDialogEvent>();
+            .add_event::<BeginDialogEvent>()
+            .add_event::<ChangeHighlightedInspectLabelEvent>();
 
         #[cfg(feature = "devtools")]
         app.register_type::<Actor>()
             .register_type::<ActorTarget>()
+            .register_type::<InspectLabel>()
             .register_type::<InspectLabelCategory>()
             .register_type::<npc::NpcInTheMap>()
             .register_type::<npc::PlanPathEvent>()
@@ -131,23 +136,25 @@ where
 
     debug!("Adding inspect ability for {}", T::type_path());
 
-    app.register_type::<InspectLabel>()
-        .add_systems(
-            Update,
-            (
-                inspect_and_interact::highlight_what_would_be_interacted_with,
-                inspect_and_interact::show_all_in_vicinity
-                    .run_if(common_action::inspect_pressed()),
-            )
-                .chain() // easier to think about
-                .run_if(in_state(running)),
+    app.add_systems(
+        Update,
+        (
+            inspect_and_interact::highlight_what_would_be_interacted_with,
+            inspect_and_interact::change_highlighted_label
+                .in_set(ChangeHighlightedInspectLabelEventConsumer)
+                .run_if(on_event::<ChangeHighlightedInspectLabelEvent>()),
+            inspect_and_interact::show_all_in_vicinity
+                .run_if(common_action::inspect_pressed()),
         )
-        .add_systems(
-            Update,
-            inspect_and_interact::schedule_hide_all
-                .run_if(in_state(running))
-                .run_if(common_action::inspect_just_released()),
-        );
+            .chain() // easier to reason about
+            .run_if(in_state(running)),
+    )
+    .add_systems(
+        Update,
+        inspect_and_interact::schedule_hide_all
+            .run_if(in_state(running))
+            .run_if(common_action::inspect_just_released()),
+    );
 
     debug!("Adding interaction systems for {}", T::type_path());
 

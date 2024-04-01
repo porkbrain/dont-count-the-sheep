@@ -19,7 +19,7 @@ lazy_static! {
     /// The box is centered at camera position.
     pub static ref BOUNDING_BOX_SIZE: Vec2 = {
 
-        2.0 * vec2(PIXEL_VISIBLE_WIDTH, PIXEL_VISIBLE_HEIGHT)
+        vec2(PIXEL_VISIBLE_WIDTH, PIXEL_VISIBLE_HEIGHT)
     / //------------------------------------------------------
                             3.0
 
@@ -28,7 +28,7 @@ lazy_static! {
 
 /// How smooth is the transition of the camera from wherever it is to the
 /// player's position.
-pub const SYNCING_DURATION: Duration = Duration::from_millis(2000);
+pub const SYNCING_DURATION: Duration = Duration::from_millis(1000);
 
 /// If the player leaves a bounding box defined with
 /// [`static@BOUNDING_BOX_SIZE`], this component is attached.

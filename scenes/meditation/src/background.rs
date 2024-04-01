@@ -92,7 +92,7 @@ fn spawn_shooting_star(
 ) {
     let animation = AtlasAnimation {
         // we schedule it at random
-        on_last_frame: AtlasAnimationEnd::RemoveTimerAndHide,
+        on_last_frame: AtlasAnimationEnd::RemoveTimerAndHideAndReset,
         last: SHOOTING_STAR_FRAMES - 1,
         ..default()
     };

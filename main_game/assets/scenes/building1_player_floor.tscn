@@ -439,7 +439,10 @@ texture = ExtResource("3_e2w78")
 position = Vector2(38, -84)
 texture = ExtResource("4_njet2")
 
-[node name="InspectLabel" type="Node" parent="BackwallFurniture/MeditationChair"]
+[node name="Label" type="Node2D" parent="BackwallFurniture/MeditationChair"]
+position = Vector2(0, -21)
+
+[node name="InspectLabel" type="Node" parent="BackwallFurniture/MeditationChair/Label"]
 metadata/zone = "MeditationZone"
 metadata/action = "StartMeditation"
 metadata/label = "Meditate"
@@ -456,6 +459,22 @@ self_modulate = Color(1, 1, 1, 0.823529)
 position = Vector2(-70, -67.5)
 texture = ExtResource("5_u86a4")
 
+[node name="GoToSleep" type="Node2D" parent="BackwallFurniture"]
+position = Vector2(-70, -49)
+
+[node name="InspectLabel" type="Node" parent="BackwallFurniture/GoToSleep"]
+metadata/zone = "BedZone"
+metadata/action = "Sleep"
+metadata/label = "Sleep"
+
+[node name="BrewTea" type="Node2D" parent="BackwallFurniture"]
+position = Vector2(132, -111)
+
+[node name="InspectLabel" type="Node" parent="BackwallFurniture/BrewTea"]
+metadata/zone = "TeaZone"
+metadata/action = "BrewTea"
+metadata/label = "Winnie  Put  the  Kettle  On"
+
 [node name="Toilet" type="Sprite2D" parent="."]
 z_index = 2
 position = Vector2(-143, -6)
@@ -471,7 +490,10 @@ texture = ExtResource("8_uh48f")
 position = Vector2(-201.5, 49.5)
 sprite_frames = SubResource("SpriteFrames_33ymd")
 
-[node name="InspectLabel" type="Node" parent="HallwayBg/Elevator"]
+[node name="Label" type="Node2D" parent="HallwayBg/Elevator"]
+position = Vector2(0, 21)
+
+[node name="InspectLabel" type="Node" parent="HallwayBg/Elevator/Label"]
 metadata/zone = "ElevatorZone"
 metadata/action = "EnterElevator"
 metadata/label = "Elevator"
@@ -550,8 +572,11 @@ z_index = -1
 position = Vector2(0, -65)
 texture = ExtResource("18_fe7mm")
 
-[node name="InspectLabel" type="Node" parent="Package"]
-metadata/label = "Open package"
+[node name="Label" type="Node2D" parent="Package"]
+position = Vector2(0, 10)
+
+[node name="InspectLabel" type="Node" parent="Package/Label"]
+metadata/label = "Open  package"
 
 [node name="WaterBottleEmpty" type="Sprite2D" parent="."]
 position = Vector2(-98, -68)

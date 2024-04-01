@@ -105,3 +105,5 @@ pub mod misc {
     pub const LOADING_SCREEN_SPACE_ATLAS: &str =
         "misc/loading_screens/space_atlas.png";
 }
+
+pub const EMOJI_ATLAS: &str = "misc/emoji_atlas.png";

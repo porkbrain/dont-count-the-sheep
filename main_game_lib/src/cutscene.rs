@@ -23,7 +23,8 @@ use common_story::dialog::{
 };
 use common_visuals::{
     camera::{order, render_layer},
-    AtlasAnimation, AtlasAnimationTimer, BeginInterpolationEvent,
+    AtlasAnimation, AtlasAnimationStep, AtlasAnimationTimer,
+    BeginInterpolationEvent,
 };
 
 use crate::{
@@ -680,7 +681,10 @@ fn reverse_atlas_animation(
     };
 
     if let Ok(mut animation) = animations.get_mut(*entity) {
-        animation.reversed = !animation.reversed;
+        animation.play = match animation.play {
+            AtlasAnimationStep::Forward => AtlasAnimationStep::Backward,
+            AtlasAnimationStep::Backward => AtlasAnimationStep::Forward,
+        };
     }
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);

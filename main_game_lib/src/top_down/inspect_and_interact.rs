@@ -32,8 +32,11 @@ use strum::EnumString;
 use super::actor::player::TakeAwayPlayerControl;
 use crate::top_down::{ActorMovementEvent, Player, TileKind, TopDownScene};
 
+/// Useful for error labels.
+pub const LIGHT_RED: Color = Color::rgb(1.0, 0.7, 0.7);
+
 /// The label's bg is a rect with a half transparent color.
-const HALF_TRANSPARENT: Color = Color::rgba(0.0, 0.0, 0.0, 0.5);
+const BG_COLOR: Color = Color::rgba(0.0, 0.0, 0.0, 0.65);
 /// When the player releases the inspect button, the labels fade out in this
 /// duration.
 const FADE_OUT_IN: Duration = Duration::from_millis(5000);
@@ -172,6 +175,68 @@ pub(crate) fn match_interact_label_with_action_event<T: TopDownScene>(
     }
 }
 
+/// System in this set consumes [`ChangeHighlightedInspectLabelEvent`]s.
+#[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ChangeHighlightedInspectLabelEventConsumer;
+
+/// Enables changing of the label's appearance.
+/// This is only relevant for highlighted labels.
+/// Useful to give the player some extra information why the interaction
+/// is not actually possible due to some other condition, such as time (e.g.
+/// shop after hours).
+///
+/// This change of appearance is not permanent and resets on first opportunity.
+#[derive(Event)]
+pub struct ChangeHighlightedInspectLabelEvent {
+    /// The entity that has [`InspectLabel`] component
+    pub entity: Entity,
+    /// Edit options
+    pub spawn_params: SpawnLabelBgAndTextParams,
+}
+
+/// Customize the appearance of a label.
+#[derive(Default)]
+pub struct SpawnLabelBgAndTextParams {
+    /// Highlight the label visually.
+    /// (does not overwrite interaction precedence)
+    pub highlighted: bool,
+    /// Overwrite the label font color that's by default given by its category.
+    pub overwrite_font_color: Option<Color>,
+    /// Change the text that's displayed.
+    pub overwrite_display_text: Option<String>,
+}
+
+/// Respawns the label with provided appearance options.
+pub(crate) fn change_highlighted_label(
+    mut cmd: Commands,
+    asset_server: Res<AssetServer>,
+    mut events: EventReader<ChangeHighlightedInspectLabelEvent>,
+
+    highlighted: Query<
+        (&InspectLabel, &InspectLabelDisplayed),
+        With<HighlightedForInteraction>,
+    >,
+) {
+    let ChangeHighlightedInspectLabelEvent {
+        entity,
+        spawn_params,
+    } = events.read().last().expect("At least one event present");
+
+    let Some((label, displayed)) = highlighted.get_single_or_none() else {
+        return;
+    };
+
+    cmd.entity(displayed.bg).despawn();
+    cmd.entity(displayed.text).despawn();
+
+    let displayed =
+        spawn_label_bg_and_text(&mut cmd, &asset_server, label, spawn_params);
+    cmd.entity(*entity)
+        .add_child(displayed.bg)
+        .add_child(displayed.text)
+        .insert(displayed);
+}
+
 /// We want the player to know what would be interacted with if they clicked
 /// the interact button.
 ///
@@ -211,8 +276,12 @@ pub(crate) fn highlight_what_would_be_interacted_with(
             cmd.entity(old_displayed.bg).despawn();
             cmd.entity(old_displayed.text).despawn();
 
-            let mut new_displayed =
-                spawn_label_bg_and_text(&mut cmd, &asset_server, label, false);
+            let mut new_displayed = spawn_label_bg_and_text(
+                &mut cmd,
+                &asset_server,
+                label,
+                &default(),
+            );
             if !controls.pressed(&GlobalAction::Inspect) {
                 new_displayed
                     .schedule_hide(&mut begin_interpolation, highlighted);
@@ -238,7 +307,7 @@ pub(crate) fn highlight_what_would_be_interacted_with(
         // never be interacted with
         //
         // the system [`interact`] assumes on this condition
-        .filter(|(_, label, _, _)| label.emit_event_on_interacted.is_some())
+        .filter(|(_, label, ..)| label.emit_event_on_interacted.is_some())
         .map(|(entity, label, displayed, transform)| {
             let distance = transform.translation().truncate().distance(player);
             (entity, label, displayed, distance)
@@ -255,10 +324,9 @@ pub(crate) fn highlight_what_would_be_interacted_with(
     // 2.
     //
 
-    let highlighted_matches_closest =
-        highlighted.get_single_or_none().is_some_and(
-            |(highlighted_entity, _, _)| highlighted_entity == closest,
-        );
+    let highlighted_matches_closest = highlighted
+        .get_single_or_none()
+        .is_some_and(|(highlighted_entity, ..)| highlighted_entity == closest);
     if highlighted_matches_closest {
         // nothing to do, already in the state we want
         return;
@@ -271,8 +339,15 @@ pub(crate) fn highlight_what_would_be_interacted_with(
         cmd.entity(*text).despawn();
     }
 
-    let displayed =
-        spawn_label_bg_and_text(&mut cmd, &asset_server, label, true);
+    let displayed = spawn_label_bg_and_text(
+        &mut cmd,
+        &asset_server,
+        label,
+        &SpawnLabelBgAndTextParams {
+            highlighted: true,
+            ..default()
+        },
+    );
     cmd.entity(closest)
         // Q: What if interpolation just finished in this frame and removed this
         // component?
@@ -362,7 +437,7 @@ pub(crate) fn show_all_in_vicinity(
                     &mut cmd,
                     &asset_server,
                     label,
-                    false,
+                    &default(),
                 );
                 cmd.entity(entity)
                     .add_child(displayed.bg)
@@ -379,12 +454,22 @@ fn spawn_label_bg_and_text(
     cmd: &mut Commands,
     asset_server: &Res<AssetServer>,
     label: &InspectLabel,
-    highlighted: bool,
+    SpawnLabelBgAndTextParams {
+        highlighted,
+        overwrite_font_color,
+        overwrite_display_text,
+    }: &SpawnLabelBgAndTextParams,
 ) -> InspectLabelDisplayed {
     trace!("Displaying label {}", label.display);
 
     let font_size =
-        label.category.font_zone() + if highlighted { 3.0 } else { 0.0 };
+        label.category.font_zone() + if *highlighted { 3.0 } else { 0.0 };
+
+    let text_to_display = if let Some(text) = overwrite_display_text {
+        text.as_str()
+    } else {
+        label.display.as_ref()
+    };
 
     // We set this to be the zindex of the bg and text.
     // This is a dirty hack that puts the label always in front of everything.
@@ -394,14 +479,15 @@ fn spawn_label_bg_and_text(
     // this is easier than waiting for the text to be rendered and
     // then using the logical size, and the impression doesn't
     // matter for such a short text
-    let bg_box_width = font_size + font_size / 7.0 * label.display.len() as f32;
+    let bg_box_width =
+        font_size + font_size / 7.0 * text_to_display.len() as f32;
     let bg = cmd
         .spawn(InspectLabelBg)
         .insert(Name::new("InspectLabelBg"))
         .insert(SpriteBundle {
             transform: Transform::from_translation(Vec3::Z * Z_INDEX),
             sprite: Sprite {
-                color: HALF_TRANSPARENT * if highlighted { 1.5 } else { 1.0 },
+                color: BG_COLOR * if *highlighted { 1.5 } else { 1.0 },
                 custom_size: Some(Vec2::new(bg_box_width, font_size / 2.0)),
                 ..default()
             },
@@ -421,12 +507,13 @@ fn spawn_label_bg_and_text(
                 .with_scale(Vec3::splat(1.0 / PIXEL_ZOOM as f32)),
             text: Text {
                 sections: vec![TextSection::new(
-                    label.display.clone(),
+                    text_to_display,
                     TextStyle {
                         font: asset_server
                             .load(common_assets::fonts::TINY_PIXEL1),
                         font_size,
-                        color: label.category.color(),
+                        color: overwrite_font_color
+                            .unwrap_or_else(|| label.category.color()),
                     },
                 )],
                 linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -509,7 +596,7 @@ impl InspectLabelDisplayed {
         cmd.entity(self.bg).remove::<ColorInterpolation>();
         bgs.get_mut(self.bg)
             .expect("BG must exist if display exists")
-            .color = HALF_TRANSPARENT;
+            .color = BG_COLOR;
 
         cmd.entity(self.text).remove::<ColorInterpolation>();
         texts

@@ -10,24 +10,39 @@ use crate::EASE_IN_OUT;
 /// The animation specifically integrates with texture atlas sprites.
 #[derive(Component, Default, Reflect)]
 pub struct AtlasAnimation {
-    /// What should happen when the last frame is reached?
-    pub on_last_frame: AtlasAnimationEnd,
     /// The index of the first frame.
     /// Typically 0.
     pub first: usize,
     /// The index of the last frame of the atlas.
     pub last: usize,
-    /// If the animation should be played in reverse, going from last to first.
-    /// When the first frame is reached, the animation still acts in accordance
-    /// with the [`AtlasAnimationEnd`] strategy.
-    pub reversed: bool,
+    /// How should the animation be played?
+    pub play: AtlasAnimationStep,
+    /// What should happen when the last frame is reached?
+    pub on_last_frame: AtlasAnimationEnd,
+    /// After finishing with [`AtlasAnimation::play`] mode, play these next.
+    /// Leave empty for just one mode.
+    /// Allows for stitching animations together.
+    ///
+    /// The current step is stored in [`AtlasAnimationTimer`].
+    /// The current index is stored in [`TextureAtlas`].
+    pub extra_steps: Vec<AtlasAnimationStep>,
+}
+
+/// How should the animation be played?
+#[derive(Default, Reflect, Clone, Copy)]
+pub enum AtlasAnimationStep {
+    /// Goes from the first frame to the last.
+    #[default]
+    Forward,
+    /// Reverse version of [`Self::Forward`].
+    Backward,
 }
 
 /// Can be used to run custom logic when the last frame of the animation is
 /// reached.
 #[allow(clippy::type_complexity)]
 pub type CustomAtlasAnimationEndFn = Box<
-    dyn Fn(Entity, &mut TextureAtlas, &mut Visibility, &mut Commands)
+    dyn Fn(&mut Commands, Entity, &mut TextureAtlas, &mut Visibility)
         + Send
         + Sync,
 >;
@@ -37,13 +52,15 @@ pub type CustomAtlasAnimationEndFn = Box<
 pub enum AtlasAnimationEnd {
     /// Loops the animation.
     #[default]
-    Loop,
+    LoopIndefinitely,
     /// Removes the animation timer, hides the entity and sets the index back
     /// to the first frame.
-    RemoveTimerAndHide,
+    RemoveTimerAndHideAndReset,
     /// Just removes the animation timer.
     /// Keeps the entity visible and on the last frame.
     RemoveTimer,
+    /// Despawns the animated entity.
+    DespawnItself,
     /// Can optionally mutate state.
     Custom {
         /// The function to call when the last frame is reached.
@@ -57,8 +74,14 @@ pub enum AtlasAnimationEnd {
 }
 
 /// Must be present for the systems to actually drive the animation.
-#[derive(Component, Deref, DerefMut, Reflect)]
-pub struct AtlasAnimationTimer(pub(crate) Timer);
+#[derive(Component, Reflect)]
+pub struct AtlasAnimationTimer {
+    pub(crate) inner: Timer,
+    /// 0 => means current is [`AtlasAnimation::play`].
+    /// 1 => extra_steps[0]
+    /// and so on...
+    pub(crate) current_step: usize,
+}
 
 /// Allows to start an animation at random.
 #[derive(Component, Default, Reflect)]
@@ -460,23 +483,47 @@ impl AtlasAnimationTimer {
     /// Creates a new animation timer.
     #[inline]
     pub fn new(duration: Duration, mode: TimerMode) -> Self {
-        Self(Timer::new(duration, mode))
+        Self {
+            inner: Timer::new(duration, mode),
+            current_step: 0,
+        }
     }
 
     /// How many times a second should we go to the next frame.
     #[inline]
     pub fn new_fps(fps: f32) -> Self {
-        Self(Timer::from_seconds(1.0 / fps, TimerMode::Repeating))
+        Self {
+            inner: Timer::from_seconds(1.0 / fps, TimerMode::Repeating),
+            current_step: 0,
+        }
     }
 }
 
 impl AtlasAnimation {
-    /// Takes into account whether the animation is reversed or not.
-    pub fn is_on_last_frame(&self, sprite: &TextureAtlas) -> bool {
-        if self.reversed {
-            self.first == sprite.index
+    pub(crate) fn next_step_index_and_frame(
+        &self,
+        atlas: &TextureAtlas,
+        current_step_index: usize,
+    ) -> Option<(usize, usize)> {
+        let current_step = if current_step_index == 0 {
+            self.play
         } else {
-            self.last == sprite.index
+            self.extra_steps.get(current_step_index - 1).copied()?
+        };
+
+        match current_step {
+            AtlasAnimationStep::Forward if atlas.index >= self.last => {
+                self.next_step_index_and_frame(atlas, current_step_index + 1)
+            }
+            AtlasAnimationStep::Forward => {
+                Some((current_step_index, atlas.index + 1))
+            }
+            AtlasAnimationStep::Backward if atlas.index <= self.first => {
+                self.next_step_index_and_frame(atlas, current_step_index + 1)
+            }
+            AtlasAnimationStep::Backward => {
+                Some((current_step_index, atlas.index - 1))
+            }
         }
     }
 }

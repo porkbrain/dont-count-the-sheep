@@ -25,6 +25,13 @@ pub enum IncreaseDayBarEvent {
     Meditated,
 }
 
+/// What sort of things are dependent on status of the daybar.
+#[derive(Debug)]
+pub enum DayBarDependent {
+    /// The span of time when the mall is open.
+    MallOpenHours,
+}
+
 #[derive(Component)]
 pub(crate) struct DayBarRoot;
 #[derive(Component)]
@@ -110,5 +117,14 @@ impl DayBar {
     /// Returns `true` if the day is over.
     pub fn is_depleted(&self) -> bool {
         self.progress >= 1.0
+    }
+
+    /// Whether it's time for something to happen.
+    pub fn is_it_time_for(&self, what: DayBarDependent) -> bool {
+        let range = match what {
+            DayBarDependent::MallOpenHours => 0.05..0.75,
+        };
+
+        range.contains(&self.progress)
     }
 }

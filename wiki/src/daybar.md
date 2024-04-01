@@ -31,8 +31,8 @@ NPCs within the game adhere to their own schedules, often influenced by the time
 Since time progression is contingent upon player actions, NPC behavior dynamically adjusts based on the player's activities throughout the day.
 
 - [ ] There would be various instruments that could change how much time would be consumed by specific actions.
-      Instruments could include [traits][traits], consumables, events, quests, etc.
+      Instruments could include [traits](traits.md), consumables, events, quests, etc.
 
-<!-- List of References -->
+Shops and other establishments may have varying hours of operation:
 
-[traits]: traits.md
+- The [Mall scene](scene_mall.md)

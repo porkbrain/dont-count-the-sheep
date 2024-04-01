@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use common_ext::ColorExt;
 
 use crate::{
-    AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer,
+    AtlasAnimation, AtlasAnimationEnd, AtlasAnimationStep, AtlasAnimationTimer,
     BeginAtlasAnimation, BeginAtlasAnimationCond, BeginInterpolationEvent,
     ColorInterpolation, Flicker, OnInterpolationFinished,
     TranslationInterpolation, UiStyleHeightInterpolation,
@@ -27,41 +27,46 @@ pub fn advance_atlas_animation(
 ) {
     for (entity, animation, mut timer, mut atlas, mut visibility) in &mut query
     {
-        timer.tick(time.delta());
-        if timer.just_finished() {
-            if animation.is_on_last_frame(&atlas) {
+        timer.inner.tick(time.delta());
+        if !timer.inner.just_finished() {
+            continue;
+        }
+
+        match animation.next_step_index_and_frame(&atlas, timer.current_step) {
+            Some((step_index, frame)) => {
+                atlas.index = frame;
+                timer.current_step = step_index;
+            }
+            None => {
                 match &animation.on_last_frame {
-                    AtlasAnimationEnd::RemoveTimerAndHide => {
+                    AtlasAnimationEnd::RemoveTimerAndHideAndReset => {
                         cmd.entity(entity).remove::<AtlasAnimationTimer>();
                         *visibility = Visibility::Hidden;
-                        atlas.index = if animation.reversed {
-                            animation.last
-                        } else {
-                            animation.first
+                        atlas.index = match animation.play {
+                            AtlasAnimationStep::Forward => animation.first,
+                            AtlasAnimationStep::Backward => animation.last,
                         };
+                    }
+                    AtlasAnimationEnd::DespawnItself => {
+                        cmd.entity(entity).despawn();
                     }
                     AtlasAnimationEnd::RemoveTimer => {
                         cmd.entity(entity).remove::<AtlasAnimationTimer>();
                     }
                     AtlasAnimationEnd::Custom { with: Some(fun) } => {
-                        fun(entity, &mut atlas, &mut visibility, &mut cmd);
+                        fun(&mut cmd, entity, &mut atlas, &mut visibility);
                     }
                     AtlasAnimationEnd::Custom { with: None } => {
                         // nothing happens
                     }
-                    AtlasAnimationEnd::Loop => {
-                        atlas.index = if animation.reversed {
-                            animation.last
-                        } else {
-                            animation.first
+                    AtlasAnimationEnd::LoopIndefinitely => {
+                        atlas.index = match animation.play {
+                            AtlasAnimationStep::Forward => animation.first,
+                            AtlasAnimationStep::Backward => animation.last,
                         };
                     }
                 }
-            } else if animation.reversed {
-                atlas.index -= 1;
-            } else {
-                atlas.index += 1;
-            };
+            }
         }
     }
 }

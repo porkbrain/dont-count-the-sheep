@@ -108,14 +108,14 @@ pub(crate) mod black_hole {
 
         // the reason why black hole does not despawn while game is paused is
         // that we don't run the system while game is paused
-        let on_last_frame = AtlasAnimationEnd::run(Box::new(
-            move |entity, _atlas, _visibility, commands| {
+        let on_last_frame =
+            AtlasAnimationEnd::run(Box::new(move |cmd, entity, _, _| {
                 debug!("Despawning black hole ({entity:?})");
 
-                commands.entity(entity).despawn_recursive();
+                cmd.entity(entity).despawn_recursive();
 
                 // remove gravity influence
-                commands.add(move |world: &mut World| {
+                cmd.add(move |world: &mut World| {
                     world.send_event(
                         PoissonsEquationUpdateEvent::<Gravity>::new(
                             -BLACK_HOLE_GRAVITY,
@@ -123,8 +123,7 @@ pub(crate) mod black_hole {
                         ),
                     );
                 });
-            },
-        ));
+            }));
 
         cmd.spawn((
             BlackHole,
