@@ -7,6 +7,7 @@ use main_game_lib::{
     cutscene::enter_an_elevator::{
         start_with_open_elevator_and_close_it, STEP_TIME_ON_EXIT_ELEVATOR,
     },
+    hud::daybar::IncreaseDayBarEvent,
     top_down::actor::player::TakeAwayPlayerControl,
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
@@ -84,6 +85,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
+    daybar_event: &'a mut Events<IncreaseDayBarEvent>,
     tilemap: &'a mut TileMap<Building1PlayerFloor>,
     zone_to_inspect_label_entity:
         &'a mut ZoneToInspectLabelEntity<Building1PlayerFloorTileKind>,
@@ -98,6 +100,7 @@ fn spawn(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut tilemap: ResMut<TileMap<Building1PlayerFloor>>,
+    mut daybar_event: ResMut<Events<IncreaseDayBarEvent>>,
 
     mut q: Query<&mut TscnTreeHandle<Building1PlayerFloor>>,
 ) {
@@ -114,6 +117,7 @@ fn spawn(
             player_entity: player,
             player_builder: &mut player_builder,
             asset_server: &asset_server,
+            daybar_event: &mut daybar_event,
             atlases: &mut atlas_layouts,
             tilemap: &mut tilemap,
             zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
@@ -208,6 +212,8 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 ));
                 self.player_builder
                     .initial_step_time(STEP_TIME_ONLOAD_FROM_MEDITATION);
+
+                self.daybar_event.send(IncreaseDayBarEvent::Meditated);
             }
             "NewGameSpawn"
                 if self.transition == NewGameToBuilding1PlayerFloor =>
