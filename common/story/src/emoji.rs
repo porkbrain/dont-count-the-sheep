@@ -5,7 +5,10 @@ use bevy::{
     prelude::*,
     utils::{Duration, Instant},
 };
-use common_assets::paths::EMOJI_ATLAS;
+use common_assets::EMOJI_ATLAS;
+use common_visuals::{
+    AtlasAnimation, AtlasAnimationEnd, AtlasAnimationStep, AtlasAnimationTimer,
+};
 
 use crate::Character;
 
@@ -48,6 +51,7 @@ pub enum EmojiKind {
 }
 
 enum EmojiFrames {
+    #[allow(dead_code)]
     Empty = 0,
 
     Tired1 = 1,
@@ -86,12 +90,14 @@ fn play_next(
             .iter_mut()
             .find(|(_, parent, ..)| parent.get() == event.on_parent);
 
-        if let Some((entity, _, mut emoji, mut atlas)) = existing_emoji {
+        let entity = if let Some((entity, _, mut emoji, mut atlas)) =
+            existing_emoji
+        {
             if emoji.kind == event.emoji
                 || emoji.started_at.elapsed() < MIN_EMOJI_DURATION
             {
                 // let the current emoji play out
-                return;
+                continue;
             }
 
             // set new emoji
@@ -99,13 +105,9 @@ fn play_next(
                 kind: event.emoji,
                 started_at: Instant::now(),
             };
+            atlas.index = event.emoji.initial_frame();
 
-            if event.emoji.is_animation() {
-                atlas.index = EmojiFrames::Empty as usize;
-                // TODO: schedule next_emoji_kind animation
-            } else {
-                atlas.index = EmojiFrames::from(event.emoji) as usize;
-            }
+            entity
         } else {
             let entity = cmd
                 .spawn(Name::new("Emoji"))
@@ -130,18 +132,24 @@ fn play_next(
                         Some(Vec2::splat(2.0)),
                         Some(Vec2::splat(1.0)),
                     )),
-                    index: if event.emoji.is_animation() {
-                        EmojiFrames::Empty as usize
-                    } else {
-                        EmojiFrames::from(event.emoji) as usize
-                    },
+                    index: event.emoji.initial_frame(),
                 })
                 .id();
             cmd.entity(event.on_parent).add_child(entity);
 
-            if event.emoji.is_animation() {
-                // TODO: schedule next_emoji_kind animation
-            }
+            entity
+        };
+
+        if let Some(first) = event.emoji.animation_first_frame() {
+            cmd.entity(entity)
+                .insert(AtlasAnimation {
+                    first,
+                    last: event.emoji.animation_last_frame(),
+                    play: AtlasAnimationStep::Forward,
+                    on_last_frame: AtlasAnimationEnd::DespawnItself,
+                    extra_steps: event.emoji.extra_steps(),
+                })
+                .insert(AtlasAnimationTimer::new_fps(event.emoji.fps()));
         }
     }
 }
@@ -154,18 +162,41 @@ impl Character {
     }
 }
 
-impl From<EmojiKind> for EmojiFrames {
-    fn from(emoji: EmojiKind) -> Self {
-        match emoji {
-            EmojiKind::Tired => EmojiFrames::Tired1,
+impl EmojiKind {
+    fn initial_frame(self) -> usize {
+        match self {
+            Self::Tired => EmojiFrames::Tired1 as usize,
         }
     }
-}
 
-impl EmojiKind {
-    fn is_animation(self) -> bool {
+    /// Only [`Some`] if an animation.
+    fn animation_first_frame(self) -> Option<usize> {
         match self {
-            Self::Tired => false,
+            Self::Tired => Some(EmojiFrames::Tired2 as usize),
+        }
+    }
+
+    fn animation_last_frame(self) -> usize {
+        match self {
+            Self::Tired => EmojiFrames::Tired3 as usize,
+        }
+    }
+
+    fn fps(self) -> f32 {
+        match self {
+            Self::Tired => 3.0,
+        }
+    }
+
+    fn extra_steps(self) -> Vec<AtlasAnimationStep> {
+        match self {
+            Self::Tired => vec![
+                AtlasAnimationStep::Backward,
+                AtlasAnimationStep::Forward,
+                AtlasAnimationStep::Backward,
+                AtlasAnimationStep::Forward,
+                AtlasAnimationStep::Backward,
+            ],
         }
     }
 }

@@ -205,7 +205,7 @@ pub(super) fn to_environment(
                 let static_entity = cmd
                     .spawn((
                         AtlasAnimation {
-                            on_last_frame: AtlasAnimationEnd::Loop,
+                            on_last_frame: AtlasAnimationEnd::LoopIndefinitely,
                             first: first_frame,
                             last: STATIC_ATLAS_FRAMES - 1,
                             ..default()

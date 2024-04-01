@@ -158,13 +158,7 @@ fn spawn(
         HoshiEntity,
         RenderLayers::layer(render_layer::OBJ),
         AtlasAnimation {
-            on_last_frame: AtlasAnimationEnd::run(Box::new(
-                |entity, atlas, visibility, commands| {
-                    *visibility = Visibility::Hidden;
-                    commands.entity(entity).remove::<AtlasAnimationTimer>();
-                    atlas.index = 0;
-                },
-            )),
+            on_last_frame: AtlasAnimationEnd::RemoveTimerAndHideAndReset,
             last: SPARK_FRAMES - 1,
             ..default()
         },

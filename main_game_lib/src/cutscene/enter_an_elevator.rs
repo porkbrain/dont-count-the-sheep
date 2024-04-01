@@ -11,7 +11,7 @@ use common_story::{
     Character,
 };
 use common_visuals::{
-    AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer,
+    AtlasAnimation, AtlasAnimationEnd, AtlasAnimationStep, AtlasAnimationTimer,
     BeginAtlasAnimation, EASE_IN_OUT,
 };
 use top_down::layout::LAYOUT;
@@ -316,10 +316,10 @@ pub fn start_with_open_elevator_and_close_it(
 
     let mut a = elevator.get_mut::<AtlasAnimation>().unwrap();
     // animation runs in reverse
-    a.reversed = true;
+    a.play = AtlasAnimationStep::Backward;
     // on last frame, put everything back to normal
     a.on_last_frame =
-        AtlasAnimationEnd::run(Box::new(move |who, atlas, _, cmd| {
+        AtlasAnimationEnd::run(Box::new(move |cmd, who, atlas, _| {
             // animation finished in reverse
             debug_assert_eq!(0, atlas.index);
 
@@ -335,7 +335,7 @@ pub fn start_with_open_elevator_and_close_it(
                 let mut a = e.get_mut::<AtlasAnimation>().unwrap();
                 // back to normal
                 a.on_last_frame = AtlasAnimationEnd::RemoveTimer;
-                a.reversed = false;
+                a.play = AtlasAnimationStep::Forward;
             });
         }));
 }

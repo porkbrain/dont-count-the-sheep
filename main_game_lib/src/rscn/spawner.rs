@@ -153,7 +153,7 @@ fn node_to_entity<T: TscnSpawner>(
                 })
                 .insert(AtlasAnimation {
                     on_last_frame: if animation.should_endless_loop {
-                        AtlasAnimationEnd::Loop
+                        AtlasAnimationEnd::LoopIndefinitely
                     } else {
                         AtlasAnimationEnd::RemoveTimer
                     },

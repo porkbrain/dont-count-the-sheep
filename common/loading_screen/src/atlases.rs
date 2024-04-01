@@ -43,7 +43,7 @@ impl LoadingScreenAtlas {
             TextureAtlasLayout::from_grid(tile_size, columns, 1, None, None),
             AtlasAnimation {
                 last: columns - 1,
-                on_last_frame: AtlasAnimationEnd::Loop,
+                on_last_frame: AtlasAnimationEnd::LoopIndefinitely,
                 ..default()
             },
             AtlasAnimationTimer::new_fps(fps),
