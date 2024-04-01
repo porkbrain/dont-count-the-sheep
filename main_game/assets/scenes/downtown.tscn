@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=37 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -22,6 +22,8 @@
 [ext_resource type="Texture2D" uid="uid://dcl4guw8e72nh" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
 [ext_resource type="Texture2D" uid="uid://bbvuyahml5l4l" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]
 [ext_resource type="Texture2D" uid="uid://ufn4rnxo8e62" path="res://assets/environment/water_bottle_half.png" id="21_8m32a"]
+[ext_resource type="Texture2D" uid="uid://bmbgymdlgia22" path="res://assets/downtown/praha_building.png" id="21_sq8gl"]
+[ext_resource type="Texture2D" uid="uid://bs5503nvkypsp" path="res://assets/downtown/building_duo.png" id="22_bl5xi"]
 [ext_resource type="Texture2D" uid="uid://dy8urm75tam2x" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
 [ext_resource type="Texture2D" uid="uid://bqhuebro50e5n" path="res://assets/downtown/tower.png" id="23_7ng4s"]
 [ext_resource type="Texture2D" uid="uid://closy5vs11rwm" path="res://assets/downtown/barn.png" id="23_av7fi"]
@@ -29,6 +31,7 @@
 [ext_resource type="Texture2D" uid="uid://vyq68glbbaiv" path="res://assets/downtown/zabradli.png" id="26_nm5hp"]
 [ext_resource type="Texture2D" uid="uid://uuxhgpjap208" path="res://assets/downtown/big_tree.png" id="28_6tavv"]
 [ext_resource type="Texture2D" uid="uid://c8vxwyyvlctic" path="res://assets/downtown/jehlicnan.png" id="29_j62ep"]
+[ext_resource type="Texture2D" uid="uid://c85luubin2ham" path="res://assets/downtown/fancy_stairs.png" id="32_01aim"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -63,7 +66,7 @@ animations = [{
 
 [node name="DowntownBg" type="Sprite2D" parent="."]
 z_index = -5
-position = Vector2(229, 378)
+position = Vector2(242, 380)
 texture = ExtResource("1_ac7tb")
 
 [node name="CompoundRoot" type="Node2D" parent="."]
@@ -121,6 +124,14 @@ texture = ExtResource("17_5ai3x")
 
 [node name="WiredFence9" type="Sprite2D" parent="CompoundRoot/CompoundFence"]
 position = Vector2(376, -30)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence10" type="Sprite2D" parent="CompoundRoot/CompoundFence"]
+position = Vector2(514, -28)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence11" type="Sprite2D" parent="CompoundRoot/CompoundFence"]
+position = Vector2(599, -28)
 texture = ExtResource("17_5ai3x")
 
 [node name="CompoundFenceBins" type="Node2D" parent="CompoundRoot"]
@@ -320,19 +331,27 @@ texture = ExtResource("14_8uy80")
 [node name="YSort" type="Node2D" parent="Block2Root/Lamp4"]
 position = Vector2(0, 33)
 
-[node name="Tree2" type="Sprite2D" parent="Block2Root"]
-position = Vector2(799, -245)
+[node name="PrahaBuilding" type="Sprite2D" parent="Block2Root"]
+position = Vector2(701, -326)
+texture = ExtResource("21_sq8gl")
+
+[node name="Tree2" type="Sprite2D" parent="Block2Root/PrahaBuilding"]
+position = Vector2(102, 72)
 texture = ExtResource("13_7q235")
 
-[node name="YSort" type="Node2D" parent="Block2Root/Tree2"]
+[node name="YSort" type="Node2D" parent="Block2Root/PrahaBuilding/Tree2"]
 position = Vector2(0, 69)
 
-[node name="TreePot" type="Sprite2D" parent="Block2Root/Tree2"]
+[node name="TreePot" type="Sprite2D" parent="Block2Root/PrahaBuilding/Tree2"]
 z_index = -1
 position = Vector2(1, 64)
 texture = ExtResource("20_kpivv")
 
 [node name="Block1Root" type="Node2D" parent="."]
+
+[node name="BuildingDuo" type="Sprite2D" parent="Block1Root"]
+position = Vector2(355, 9)
+texture = ExtResource("22_bl5xi")
 
 [node name="Lamp3" type="Sprite2D" parent="Block1Root"]
 position = Vector2(477, 82)
@@ -485,3 +504,8 @@ texture = ExtResource("28_6tavv")
 [node name="Jehlicnan" type="Sprite2D" parent="."]
 position = Vector2(-634, -555)
 texture = ExtResource("29_j62ep")
+
+[node name="FancyStairs" type="Sprite2D" parent="."]
+z_index = -2
+position = Vector2(1133, -332)
+texture = ExtResource("32_01aim")
