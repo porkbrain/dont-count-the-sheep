@@ -32,6 +32,9 @@ use strum::EnumString;
 use super::actor::player::TakeAwayPlayerControl;
 use crate::top_down::{ActorMovementEvent, Player, TileKind, TopDownScene};
 
+/// Useful for error labels.
+pub const LIGHT_RED: Color = Color::rgb(1.0, 0.7, 0.7);
+
 /// The label's bg is a rect with a half transparent color.
 const BG_COLOR: Color = Color::rgba(0.0, 0.0, 0.0, 0.65);
 /// When the player releases the inspect button, the labels fade out in this

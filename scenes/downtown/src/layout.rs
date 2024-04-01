@@ -8,7 +8,7 @@ use main_game_lib::{
     top_down::inspect_and_interact::{
         ChangeHighlightedInspectLabelEvent,
         ChangeHighlightedInspectLabelEventConsumer, SpawnLabelBgAndTextParams,
-        ZoneToInspectLabelEntity,
+        ZoneToInspectLabelEntity, LIGHT_RED,
     },
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
@@ -251,7 +251,7 @@ fn enter_mall(
                     entity,
                     spawn_params: SpawnLabelBgAndTextParams {
                         highlighted: true,
-                        overwrite_font_color: Some(Color::rgb(1.0, 0.7, 0.7)),
+                        overwrite_font_color: Some(LIGHT_RED),
                         // LOCALIZATION
                         overwrite_display_text: Some("(closed)".to_string()),
                     },
