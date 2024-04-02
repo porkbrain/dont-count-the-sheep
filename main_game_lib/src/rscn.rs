@@ -26,6 +26,7 @@ use std::borrow::Cow;
 
 use bevy::{
     asset::{Asset, AssetServer, Assets, Handle},
+    core::Name,
     ecs::{
         component::Component,
         entity::Entity,
@@ -205,7 +206,7 @@ pub fn start_loading_tscn<T: TscnInBevy>(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    let mut e = cmd.spawn_empty();
+    let mut e = cmd.spawn(Name::new(".tscn tree handle"));
     e.insert(TscnTreeHandle::<T> {
         entity: e.id(),
         handle: Some(asset_server.load(T::tscn_asset_path())),

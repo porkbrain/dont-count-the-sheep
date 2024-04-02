@@ -275,5 +275,6 @@ fn node_to_entity<T: TscnSpawner>(
         ..default()
     });
 
+    bevy::log::trace!("Spawning {entity:?} {name:?} from scene file",);
     spawner.on_spawned(cmd, entity, name, translation);
 }
