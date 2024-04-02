@@ -322,6 +322,10 @@ metadata/action = "EnterMall"
 metadata/label = "Go shopping"
 metadata/category = "Default"
 
+[node name="RoofBuilding" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-162.5, -2)
+texture = ExtResource("36_4dgjx")
+
 [node name="Block2Root" type="Node2D" parent="."]
 
 [node name="HousePlantshoptrio" type="Sprite2D" parent="Block2Root"]
@@ -569,7 +573,3 @@ position = Vector2(0, 69)
 z_index = -1
 position = Vector2(1, 68)
 texture = ExtResource("20_kpivv")
-
-[node name="RoofBuilding" type="Sprite2D" parent="."]
-position = Vector2(-162.5, -2)
-texture = ExtResource("36_4dgjx")
