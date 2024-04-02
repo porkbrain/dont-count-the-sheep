@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=41 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -35,6 +35,7 @@
 [ext_resource type="Texture2D" uid="uid://c85luubin2ham" path="res://assets/downtown/fancy_stairs.png" id="32_01aim"]
 [ext_resource type="Texture2D" uid="uid://dxokrosjob4s5" path="res://assets/downtown/fancy_sloupky.png" id="33_lx3i7"]
 [ext_resource type="Texture2D" uid="uid://dsdky0twwr6jh" path="res://assets/downtown/blue_clinic.png" id="35_ecxbn"]
+[ext_resource type="Texture2D" uid="uid://cj7k78j2n48gr" path="res://assets/downtown/roof_building.png" id="36_4dgjx"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -568,3 +569,7 @@ position = Vector2(0, 69)
 z_index = -1
 position = Vector2(1, 68)
 texture = ExtResource("20_kpivv")
+
+[node name="RoofBuilding" type="Sprite2D" parent="."]
+position = Vector2(-162.5, -2)
+texture = ExtResource("36_4dgjx")
