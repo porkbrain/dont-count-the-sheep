@@ -387,9 +387,9 @@ impl Cutscene {
                 trace!("Despawning cutscene");
                 cmd.remove_resource::<Cutscene>();
 
-                cmd.entity(entities[0]).despawn();
-                cmd.entity(entities[1]).despawn();
-                cmd.entity(entities[2]).despawn();
+                cmd.entity(entities[0]).despawn_recursive();
+                cmd.entity(entities[1]).despawn_recursive();
+                cmd.entity(entities[2]).despawn_recursive();
             })
             .insert(cmd);
         } else {

@@ -15,7 +15,7 @@ pub(crate) fn start_loading_map<T: TopDownScene>(
     let asset_path = format!("maps/{}.ron", T::name());
     debug!("Loading map {} from {}", T::type_path(), asset_path);
     let handle: Handle<TileMap<T>> = assets.load(asset_path);
-    cmd.spawn(handle);
+    cmd.spawn((Name::new(format!("TileMap<{}>", T::type_path())), handle));
 }
 
 /// Run this to wait for the map to be loaded and insert it as a resource.
@@ -52,7 +52,7 @@ pub(crate) fn try_insert_map_as_resource<T: TopDownScene>(
 
         cmd.insert_resource(loaded_map);
         cmd.init_resource::<crate::top_down::actor::ActorZoneMap<T::LocalTileKind>>();
-        cmd.entity(entity).despawn();
+        cmd.entity(entity).despawn_recursive();
     }
 }
 

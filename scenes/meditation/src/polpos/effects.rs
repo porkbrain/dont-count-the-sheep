@@ -35,7 +35,7 @@ pub(crate) mod bolt {
             let lives_for = bolt.spawned_at.elapsed();
 
             if lives_for > BOLT_LIFETIME {
-                cmd.entity(entity).despawn();
+                cmd.entity(entity).despawn_recursive();
             } else {
                 let lerp_factor =
                     lives_for.as_secs_f32() / BOLT_LIFETIME.as_secs_f32();

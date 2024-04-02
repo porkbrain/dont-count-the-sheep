@@ -152,7 +152,7 @@ fn play_next(
                     first,
                     last: event.emoji.animation_last_frame(),
                     play: AtlasAnimationStep::Forward,
-                    on_last_frame: AtlasAnimationEnd::DespawnItself,
+                    on_last_frame: AtlasAnimationEnd::DespawnRecursiveItself,
                     extra_steps: event.emoji.extra_steps(),
                 })
                 .insert(AtlasAnimationTimer::new_fps(event.emoji.fps()));

@@ -161,6 +161,7 @@ pub fn setup_post_processing_quad<T: LightScene>(
     let layer = RenderLayers::layer(T::render_layer_index());
 
     cmd.spawn((
+        Name::new("PostProcessingQuad"),
         T::default(),
         PostProcessingQuad,
         MaterialMesh2dBundle {

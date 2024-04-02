@@ -107,6 +107,10 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
 
     let root = root.single();
     cmd.entity(root).despawn_recursive();
+
+    cmd.remove_resource::<ZoneToInspectLabelEntity<
+        <Downtown as TopDownScene>::LocalTileKind,
+    >>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
@@ -156,8 +160,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
             }
             _ => {}
         }
-
-        trace!("Spawned {name:?} as {who:?} from scene file");
     }
 
     fn add_texture_atlas(

@@ -20,10 +20,8 @@ impl bevy::app::Plugin for Plugin {
 
         #[cfg(feature = "devtools")]
         {
-            use bevy_inspector_egui::quick::ResourceInspectorPlugin;
-
             app.register_type::<daybar::DayBar>()
-                .add_plugins(ResourceInspectorPlugin::<daybar::DayBar>::new());
+                .add_systems(Update, daybar::change_progress);
         }
     }
 }

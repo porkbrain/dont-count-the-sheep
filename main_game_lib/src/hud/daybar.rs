@@ -3,6 +3,7 @@
 //!
 //! See wiki for more information about day progress.
 
+use bevy::ui::RelativeCursorPosition;
 use common_ext::QueryExt;
 use common_visuals::camera::MainCamera;
 
@@ -23,6 +24,11 @@ pub enum IncreaseDayBarEvent {
     ChangedScene,
     /// Finished meditating.
     Meditated,
+    /// Sets the daybar progress to 0.
+    Reset,
+    /// Custom amount of increase in the day bar.
+    /// The final progress is clamped between 0 and 1.
+    Custom(f32),
 }
 
 /// What sort of things are dependent on status of the daybar.
@@ -47,6 +53,8 @@ pub(crate) fn spawn(
         Name::new("DayBar"),
         DayBarRoot,
         TargetCamera(camera.single()),
+        Interaction::default(),
+        RelativeCursorPosition::default(),
         NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
@@ -97,12 +105,35 @@ pub(crate) fn increase(
         let amount = match event {
             IncreaseDayBarEvent::ChangedScene => 0.01,
             IncreaseDayBarEvent::Meditated => 0.05,
+            IncreaseDayBarEvent::Custom(amount) => *amount,
+            IncreaseDayBarEvent::Reset => -daybar.progress,
         };
 
         daybar.progress = (daybar.progress + amount).clamp(0.0, 1.0);
+    }
 
-        if let Some(mut progress) = progress.get_single_mut_or_none() {
-            progress.width = Val::Percent(daybar.progress * 100.0);
+    if let Some(mut progress) = progress.get_single_mut_or_none() {
+        progress.width = Val::Percent(daybar.progress * 100.0);
+    }
+}
+
+#[cfg(feature = "devtools")]
+pub(crate) fn change_progress(
+    mut events: EventWriter<IncreaseDayBarEvent>,
+
+    root: Query<
+        (&Interaction, &RelativeCursorPosition),
+        (Changed<Interaction>, With<DayBarRoot>),
+    >,
+) {
+    for (interaction, cursor_position) in root.iter() {
+        if !matches!(interaction, Interaction::Pressed) {
+            continue;
+        }
+
+        if let Some(position) = cursor_position.normalized {
+            events.send(IncreaseDayBarEvent::Reset);
+            events.send(IncreaseDayBarEvent::Custom(position.x));
         }
     }
 }
@@ -122,7 +153,7 @@ impl DayBar {
     /// Whether it's time for something to happen.
     pub fn is_it_time_for(&self, what: DayBarDependent) -> bool {
         let range = match what {
-            DayBarDependent::MallOpenHours => 0.05..0.75,
+            DayBarDependent::MallOpenHours => ..0.75,
         };
 
         range.contains(&self.progress)

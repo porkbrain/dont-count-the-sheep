@@ -231,8 +231,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
             }
             _ => {}
         }
-
-        trace!("Spawned {name:?} as {who:?} from scene file");
     }
 
     fn handle_plain_node(
