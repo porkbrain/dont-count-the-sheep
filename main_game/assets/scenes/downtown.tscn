@@ -1,39 +1,40 @@
-[gd_scene load_steps=39 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=40 format=3 uid="uid://dtow2k2vgk8kg"]
 
-[ext_resource type="Texture2D" uid="uid://ctujtb5gwqvre" path="res://assets/downtown/bg.png" id="1_ac7tb"]
-[ext_resource type="Texture2D" uid="uid://kqhfsst8cp0b" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
-[ext_resource type="Texture2D" uid="uid://fvsk7527x314" path="res://assets/downtown/water_dispenser.png" id="3_mnq47"]
-[ext_resource type="Texture2D" uid="uid://ccpux3rqyc01t" path="res://assets/downtown/bamboo_rooftop.png" id="4_uahdt"]
-[ext_resource type="Texture2D" uid="uid://cve0p1fj5bjp3" path="res://assets/downtown/recycle_bin.png" id="5_her3o"]
-[ext_resource type="Texture2D" uid="uid://c7pfatjf403l5" path="res://assets/downtown/cone.png" id="6_4cklq"]
-[ext_resource type="Texture2D" uid="uid://bmy3x3gvi867d" path="res://assets/downtown/black_bin.png" id="7_p1j5y"]
-[ext_resource type="Texture2D" uid="uid://d1y5l8pmrdloy" path="res://assets/downtown/robot.png" id="8_s4pbl"]
-[ext_resource type="Texture2D" uid="uid://dlc054120cn8l" path="res://assets/downtown/swing.png" id="9_gwh2v"]
-[ext_resource type="Texture2D" uid="uid://b75yq8snj53yw" path="res://assets/downtown/trashcan_tables.png" id="10_nyc25"]
-[ext_resource type="Texture2D" uid="uid://d2v4j1m6u8ek1" path="res://assets/environment/beer.png" id="11_e3pff"]
-[ext_resource type="Texture2D" uid="uid://djc7g7t6dy3wa" path="res://assets/downtown/truck.png" id="12_mwj3x"]
-[ext_resource type="Texture2D" uid="uid://dh2sjhvbvlj0y" path="res://assets/downtown/tree.png" id="13_7q235"]
-[ext_resource type="Texture2D" uid="uid://c6bjetxf4tjpq" path="res://assets/downtown/mall.png" id="13_jgs6s"]
-[ext_resource type="Texture2D" uid="uid://b54rhfp4mdr1d" path="res://assets/downtown/lamp.png" id="14_8uy80"]
-[ext_resource type="Texture2D" uid="uid://7iyu03tse1f0" path="res://assets/downtown/briza.png" id="16_xr53b"]
-[ext_resource type="Texture2D" uid="uid://cpagv4vgk17ov" path="res://assets/downtown/wired_fence.png" id="17_5ai3x"]
-[ext_resource type="Texture2D" uid="uid://d28l4plhavno" path="res://assets/downtown/front_field.png" id="18_yr0u5"]
-[ext_resource type="Texture2D" uid="uid://deq70sixg36ra" path="res://assets/downtown/house_plantshoptrio.png" id="19_fdu3c"]
-[ext_resource type="Texture2D" uid="uid://dqvep7ugj5h2e" path="res://assets/downtown/tree_pot.png" id="20_kpivv"]
-[ext_resource type="Texture2D" uid="uid://dj4h0df73poo0" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
-[ext_resource type="Texture2D" uid="uid://c3jrebwaemnlt" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]
-[ext_resource type="Texture2D" uid="uid://dpj7jnsvxyfvt" path="res://assets/environment/water_bottle_half.png" id="21_8m32a"]
-[ext_resource type="Texture2D" uid="uid://bodg01kctbo3d" path="res://assets/downtown/praha_building.png" id="21_sq8gl"]
-[ext_resource type="Texture2D" uid="uid://crl8brm7m7obp" path="res://assets/downtown/building_duo.png" id="22_bl5xi"]
-[ext_resource type="Texture2D" uid="uid://dm414iyf3bdnr" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
-[ext_resource type="Texture2D" uid="uid://cvpb63r4tafm8" path="res://assets/downtown/tower.png" id="23_7ng4s"]
-[ext_resource type="Texture2D" uid="uid://cjkde3a6ochx7" path="res://assets/downtown/barn.png" id="23_av7fi"]
-[ext_resource type="Texture2D" uid="uid://ctd21n83m0nwc" path="res://assets/downtown/clinic.png" id="25_ukjmq"]
-[ext_resource type="Texture2D" uid="uid://cyd2vttksmhrg" path="res://assets/downtown/zabradli.png" id="26_nm5hp"]
-[ext_resource type="Texture2D" uid="uid://d4d4x4dbmu2f" path="res://assets/downtown/big_tree.png" id="28_6tavv"]
-[ext_resource type="Texture2D" uid="uid://dqqvboiu7sjg4" path="res://assets/downtown/jehlicnan.png" id="29_j62ep"]
-[ext_resource type="Texture2D" uid="uid://d2ainwkym4lxy" path="res://assets/downtown/fancy_stairs.png" id="32_01aim"]
-[ext_resource type="Texture2D" uid="uid://04yhpl0qtq7g" path="res://assets/downtown/fancy_sloupky.png" id="33_lx3i7"]
+[ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
+[ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
+[ext_resource type="Texture2D" uid="uid://od7278drijk8" path="res://assets/downtown/water_dispenser.png" id="3_mnq47"]
+[ext_resource type="Texture2D" uid="uid://bwt8l2nfovdrb" path="res://assets/downtown/bamboo_rooftop.png" id="4_uahdt"]
+[ext_resource type="Texture2D" uid="uid://5ywhhdx6rx7r" path="res://assets/downtown/recycle_bin.png" id="5_her3o"]
+[ext_resource type="Texture2D" uid="uid://b8xgrwspdhoao" path="res://assets/downtown/cone.png" id="6_4cklq"]
+[ext_resource type="Texture2D" uid="uid://clp5emmiqqigh" path="res://assets/downtown/black_bin.png" id="7_p1j5y"]
+[ext_resource type="Texture2D" uid="uid://cnd2np6d33oqh" path="res://assets/downtown/robot.png" id="8_s4pbl"]
+[ext_resource type="Texture2D" uid="uid://hmoa0kdonp88" path="res://assets/downtown/swing.png" id="9_gwh2v"]
+[ext_resource type="Texture2D" uid="uid://bdn0jfgw4tpeg" path="res://assets/downtown/trashcan_tables.png" id="10_nyc25"]
+[ext_resource type="Texture2D" uid="uid://cskl5m8h5o3n8" path="res://assets/environment/beer.png" id="11_e3pff"]
+[ext_resource type="Texture2D" uid="uid://qjb3dquepnch" path="res://assets/downtown/truck.png" id="12_mwj3x"]
+[ext_resource type="Texture2D" uid="uid://cs4xyldoxgtxg" path="res://assets/downtown/tree.png" id="13_7q235"]
+[ext_resource type="Texture2D" uid="uid://djrcy48yl8ego" path="res://assets/downtown/mall.png" id="13_jgs6s"]
+[ext_resource type="Texture2D" uid="uid://b7r70khewajh0" path="res://assets/downtown/lamp.png" id="14_8uy80"]
+[ext_resource type="Texture2D" uid="uid://d3swa0vc5iitv" path="res://assets/downtown/briza.png" id="16_xr53b"]
+[ext_resource type="Texture2D" uid="uid://lgsyrvis4y80" path="res://assets/downtown/wired_fence.png" id="17_5ai3x"]
+[ext_resource type="Texture2D" uid="uid://bneahsxtb6wpe" path="res://assets/downtown/front_field.png" id="18_yr0u5"]
+[ext_resource type="Texture2D" uid="uid://bq3fw5e27w801" path="res://assets/downtown/house_plantshoptrio.png" id="19_fdu3c"]
+[ext_resource type="Texture2D" uid="uid://brvijlucyh2jx" path="res://assets/downtown/tree_pot.png" id="20_kpivv"]
+[ext_resource type="Texture2D" uid="uid://dcl4guw8e72nh" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
+[ext_resource type="Texture2D" uid="uid://bbvuyahml5l4l" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]
+[ext_resource type="Texture2D" uid="uid://ufn4rnxo8e62" path="res://assets/environment/water_bottle_half.png" id="21_8m32a"]
+[ext_resource type="Texture2D" uid="uid://bmbgymdlgia22" path="res://assets/downtown/praha_building.png" id="21_sq8gl"]
+[ext_resource type="Texture2D" uid="uid://bs5503nvkypsp" path="res://assets/downtown/building_duo.png" id="22_bl5xi"]
+[ext_resource type="Texture2D" uid="uid://dy8urm75tam2x" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
+[ext_resource type="Texture2D" uid="uid://bqhuebro50e5n" path="res://assets/downtown/tower.png" id="23_7ng4s"]
+[ext_resource type="Texture2D" uid="uid://closy5vs11rwm" path="res://assets/downtown/barn.png" id="23_av7fi"]
+[ext_resource type="Texture2D" uid="uid://m2ycv8ggd4ho" path="res://assets/downtown/clinic.png" id="25_ukjmq"]
+[ext_resource type="Texture2D" uid="uid://vyq68glbbaiv" path="res://assets/downtown/zabradli.png" id="26_nm5hp"]
+[ext_resource type="Texture2D" uid="uid://uuxhgpjap208" path="res://assets/downtown/big_tree.png" id="28_6tavv"]
+[ext_resource type="Texture2D" uid="uid://c8vxwyyvlctic" path="res://assets/downtown/jehlicnan.png" id="29_j62ep"]
+[ext_resource type="Texture2D" uid="uid://c85luubin2ham" path="res://assets/downtown/fancy_stairs.png" id="32_01aim"]
+[ext_resource type="Texture2D" uid="uid://dxokrosjob4s5" path="res://assets/downtown/fancy_sloupky.png" id="33_lx3i7"]
+[ext_resource type="Texture2D" uid="uid://dsdky0twwr6jh" path="res://assets/downtown/blue_clinic.png" id="35_ecxbn"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -68,7 +69,7 @@ animations = [{
 
 [node name="DowntownBg" type="Sprite2D" parent="."]
 z_index = -5
-position = Vector2(242, 380)
+position = Vector2(242, 480)
 texture = ExtResource("1_ac7tb")
 
 [node name="CompoundRoot" type="Node2D" parent="."]
@@ -346,7 +347,7 @@ position = Vector2(0, 69)
 
 [node name="TreePot" type="Sprite2D" parent="Block2Root/Tree3"]
 z_index = -1
-position = Vector2(0, 65)
+position = Vector2(0, 69)
 texture = ExtResource("20_kpivv")
 
 [node name="Lamp" type="Sprite2D" parent="Block2Root"]
@@ -376,7 +377,7 @@ position = Vector2(0, 69)
 
 [node name="TreePot" type="Sprite2D" parent="Block2Root/PrahaBuilding/Tree2"]
 z_index = -1
-position = Vector2(1, 64)
+position = Vector2(1, 68)
 texture = ExtResource("20_kpivv")
 
 [node name="FancyStairs" type="Sprite2D" parent="Block2Root"]
@@ -444,7 +445,7 @@ position = Vector2(0, 69)
 
 [node name="TreePot" type="Sprite2D" parent="Block1Root/Tree"]
 z_index = -1
-position = Vector2(1, 64)
+position = Vector2(0, 67)
 texture = ExtResource("20_kpivv")
 
 [node name="PlayerApartmentBuildingEntrance" type="Node2D" parent="Block1Root"]
@@ -547,3 +548,23 @@ texture = ExtResource("9_gwh2v")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/Swing"]
 position = Vector2(0, 24)
+
+[node name="BlueClinic" type="Sprite2D" parent="."]
+position = Vector2(-930, 962)
+texture = ExtResource("35_ecxbn")
+
+[node name="Lamp" type="Sprite2D" parent="."]
+position = Vector2(-1000, 1016)
+texture = ExtResource("14_8uy80")
+
+[node name="Tree" type="Sprite2D" parent="."]
+position = Vector2(499, 770)
+texture = ExtResource("13_7q235")
+
+[node name="YSort" type="Node2D" parent="Tree"]
+position = Vector2(0, 69)
+
+[node name="TreePot" type="Sprite2D" parent="Tree"]
+z_index = -1
+position = Vector2(1, 68)
+texture = ExtResource("20_kpivv")
