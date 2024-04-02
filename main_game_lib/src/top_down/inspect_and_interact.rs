@@ -226,8 +226,8 @@ pub(crate) fn change_highlighted_label(
         return;
     };
 
-    cmd.entity(displayed.bg).despawn();
-    cmd.entity(displayed.text).despawn();
+    cmd.entity(displayed.bg).despawn_recursive();
+    cmd.entity(displayed.text).despawn_recursive();
 
     let displayed =
         spawn_label_bg_and_text(&mut cmd, &asset_server, label, spawn_params);
@@ -273,8 +273,8 @@ pub(crate) fn highlight_what_would_be_interacted_with(
             cmd.entity(highlighted)
                 .remove::<HighlightedForInteraction>();
 
-            cmd.entity(old_displayed.bg).despawn();
-            cmd.entity(old_displayed.text).despawn();
+            cmd.entity(old_displayed.bg).despawn_recursive();
+            cmd.entity(old_displayed.text).despawn_recursive();
 
             let mut new_displayed = spawn_label_bg_and_text(
                 &mut cmd,
@@ -335,8 +335,8 @@ pub(crate) fn highlight_what_would_be_interacted_with(
     remove_old_highlight_if_present();
 
     if let Some(InspectLabelDisplayed { bg, text, .. }) = displayed {
-        cmd.entity(*bg).despawn();
-        cmd.entity(*text).despawn();
+        cmd.entity(*bg).despawn_recursive();
+        cmd.entity(*text).despawn_recursive();
     }
 
     let displayed = spawn_label_bg_and_text(
@@ -575,7 +575,7 @@ impl InspectLabelDisplayed {
                 .with_animation_curve(TEXT_ANIMATION_CURVE.clone())
                 .when_finished_do(move |cmd| {
                     cmd.entity(label_entity).remove::<Self>();
-                    cmd.entity(text).despawn();
+                    cmd.entity(text).despawn_recursive();
                 }),
         );
 
@@ -583,7 +583,7 @@ impl InspectLabelDisplayed {
             BeginInterpolationEvent::of_color(bg, None, Color::NONE)
                 .over(FADE_OUT_IN)
                 .with_animation_curve(BG_ANIMATION_CURVE.clone())
-                .when_finished_despawn_itself(),
+                .when_finished_despawn_recursive_itself(),
         );
     }
 

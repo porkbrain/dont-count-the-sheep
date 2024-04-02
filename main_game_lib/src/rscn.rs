@@ -32,6 +32,7 @@ use bevy::{
         entity::Entity,
         system::{Commands, Query, Res},
     },
+    hierarchy::DespawnRecursiveExt,
     math::{Rect, Vec2},
     reflect::TypePath,
     render::color::Color,
@@ -240,7 +241,7 @@ impl<T> TscnTreeHandle<T> {
     ) -> TscnTree {
         let handle = self.handle.take().expect("Handle already consumed");
         let tscn = assets.remove(handle).expect("Handle not loaded");
-        cmd.entity(self.entity).despawn();
+        cmd.entity(self.entity).despawn_recursive();
         tscn
     }
 }

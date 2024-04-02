@@ -598,7 +598,7 @@ impl PortraitDialog {
         camera: Entity,
         root: Entity,
     ) {
-        cmd.entity(camera).despawn();
+        cmd.entity(camera).despawn_recursive();
         cmd.entity(root).despawn_recursive();
         cmd.remove_resource::<PortraitDialog>();
 

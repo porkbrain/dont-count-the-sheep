@@ -60,7 +60,7 @@ pub enum AtlasAnimationEnd {
     /// Keeps the entity visible and on the last frame.
     RemoveTimer,
     /// Despawns the animated entity.
-    DespawnItself,
+    DespawnRecursiveItself,
     /// Can optionally mutate state.
     Custom {
         /// The function to call when the last frame is reached.
@@ -162,7 +162,7 @@ pub struct BeginInterpolationEvent {
 #[derive(Clone)]
 pub(crate) enum OnInterpolationFinished {
     /// Despawn the entity.
-    DespawnItself,
+    DespawnRecursiveItself,
     /// Can schedule commands.
     Custom(Arc<dyn Fn(&mut Commands) + Send + Sync>),
 }
@@ -370,8 +370,8 @@ impl BeginInterpolationEvent {
     }
 
     /// Despawn the entity when interpolation is done.
-    pub fn when_finished_despawn_itself(self) -> Self {
-        self.when_finished(OnInterpolationFinished::DespawnItself)
+    pub fn when_finished_despawn_recursive_itself(self) -> Self {
+        self.when_finished(OnInterpolationFinished::DespawnRecursiveItself)
     }
 
     /// Any extra logic when interpolation is done?

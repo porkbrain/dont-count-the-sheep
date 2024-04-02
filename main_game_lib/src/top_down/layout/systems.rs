@@ -52,7 +52,7 @@ pub(crate) fn try_insert_map_as_resource<T: TopDownScene>(
 
         cmd.insert_resource(loaded_map);
         cmd.init_resource::<crate::top_down::actor::ActorZoneMap<T::LocalTileKind>>();
-        cmd.entity(entity).despawn();
+        cmd.entity(entity).despawn_recursive();
     }
 }
 
