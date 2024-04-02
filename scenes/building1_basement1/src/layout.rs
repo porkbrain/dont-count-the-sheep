@@ -161,8 +161,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
             }
             _ => {}
         }
-
-        trace!("Spawned {name:?} as {who:?} from scene file");
     }
 
     fn add_texture_atlas(

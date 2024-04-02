@@ -26,11 +26,13 @@ use std::borrow::Cow;
 
 use bevy::{
     asset::{Asset, AssetServer, Assets, Handle},
+    core::Name,
     ecs::{
         component::Component,
         entity::Entity,
         system::{Commands, Query, Res},
     },
+    hierarchy::DespawnRecursiveExt,
     math::{Rect, Vec2},
     reflect::TypePath,
     render::color::Color,
@@ -205,7 +207,7 @@ pub fn start_loading_tscn<T: TscnInBevy>(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    let mut e = cmd.spawn_empty();
+    let mut e = cmd.spawn(Name::new(".tscn tree handle"));
     e.insert(TscnTreeHandle::<T> {
         entity: e.id(),
         handle: Some(asset_server.load(T::tscn_asset_path())),
@@ -239,7 +241,7 @@ impl<T> TscnTreeHandle<T> {
     ) -> TscnTree {
         let handle = self.handle.take().expect("Handle already consumed");
         let tscn = assets.remove(handle).expect("Handle not loaded");
-        cmd.entity(self.entity).despawn();
+        cmd.entity(self.entity).despawn_recursive();
         tscn
     }
 }

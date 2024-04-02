@@ -10,6 +10,7 @@ use bevy::{
         query::With,
         system::{Commands, Query},
     },
+    hierarchy::DespawnRecursiveExt,
     render::{camera::Camera, view::RenderLayers},
     utils::default,
 };
@@ -92,5 +93,5 @@ pub fn spawn(mut cmd: Commands) {
 
 /// System to despawn 2D camera with component [`MainCamera`].
 pub fn despawn(mut cmd: Commands, camera: Query<Entity, With<MainCamera>>) {
-    cmd.entity(camera.single()).despawn();
+    cmd.entity(camera.single()).despawn_recursive();
 }

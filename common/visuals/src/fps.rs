@@ -47,6 +47,7 @@ pub(crate) fn spawn(mut cmd: Commands) {
     // create our text
     let text_fps = cmd
         .spawn((
+            Name::new("FPS text"),
             FpsText,
             TextBundle {
                 // use two sections, so it is easy to update just the number

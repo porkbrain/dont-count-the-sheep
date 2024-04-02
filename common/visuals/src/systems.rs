@@ -47,8 +47,8 @@ pub fn advance_atlas_animation(
                             AtlasAnimationStep::Backward => animation.last,
                         };
                     }
-                    AtlasAnimationEnd::DespawnItself => {
-                        cmd.entity(entity).despawn();
+                    AtlasAnimationEnd::DespawnRecursiveItself => {
+                        cmd.entity(entity).despawn_recursive();
                     }
                     AtlasAnimationEnd::RemoveTimer => {
                         cmd.entity(entity).remove::<AtlasAnimationTimer>();
@@ -218,8 +218,8 @@ pub fn interpolate(
                     Some(OnInterpolationFinished::Custom(fun)) => {
                         fun(&mut cmd);
                     }
-                    Some(OnInterpolationFinished::DespawnItself) => {
-                        cmd.entity(entity).despawn();
+                    Some(OnInterpolationFinished::DespawnRecursiveItself) => {
+                        cmd.entity(entity).despawn_recursive();
                     }
                     None => {}
                 }
@@ -267,8 +267,8 @@ pub fn interpolate(
                 Some(OnInterpolationFinished::Custom(fun)) => {
                     fun(&mut cmd);
                 }
-                Some(OnInterpolationFinished::DespawnItself) => {
-                    cmd.entity(entity).despawn();
+                Some(OnInterpolationFinished::DespawnRecursiveItself) => {
+                    cmd.entity(entity).despawn_recursive();
                 }
                 None => {}
             }
@@ -304,8 +304,8 @@ pub fn interpolate(
                 Some(OnInterpolationFinished::Custom(fun)) => {
                     fun(&mut cmd);
                 }
-                Some(OnInterpolationFinished::DespawnItself) => {
-                    cmd.entity(entity).despawn();
+                Some(OnInterpolationFinished::DespawnRecursiveItself) => {
+                    cmd.entity(entity).despawn_recursive();
                 }
                 None => {}
             }
