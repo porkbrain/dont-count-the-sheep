@@ -2370,9 +2370,9 @@ dependencies = [
 
 [[package]]
 name = "graphviz-rust"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d3adbad2800805b14170067aee88336e12838823086b6a4f70ca8dfb5d971f3"
+checksum = "8c33d03804e2ce21db5821f2beb4e54f844a8f90326e6bd99a1771dc54aef427"
 dependencies = [
  "dot-generator",
  "dot-structures",
@@ -2917,7 +2917,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
- "bevy_egui 0.25.0",
+ "bevy_egui 0.27.0",
  "bevy_grid_squared",
  "bevy_magic_light_2d",
  "bevy_pixel_camera",

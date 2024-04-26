@@ -211,16 +211,8 @@ fn toggle_zone_hints(
 fn sleep(
     mut cmd: Commands,
     mut action_events: EventReader<Building1PlayerFloorAction>,
-    mut emoji_events: EventWriter<DisplayEmojiEvent>,
-    mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    zone_to_inspect_label_entity: Res<
-        ZoneToInspectLabelEntity<Building1PlayerFloorTileKind>,
-    >,
-    daybar: Res<DayBar>,
-
-    player: Query<Entity, With<Player>>,
 ) {
     let is_triggered = action_events
         .read()
