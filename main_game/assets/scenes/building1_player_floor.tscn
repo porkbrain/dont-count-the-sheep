@@ -605,6 +605,11 @@ texture = ExtResource("23_kalpq")
 
 [node name="Points" type="Node2D" parent="."]
 
+[node name="AfterSleepSpawn" type="Node2D" parent="Points"]
+position = Vector2(-144, -58)
+
+[node name="Point" type="Node" parent="Points/AfterSleepSpawn"]
+
 [node name="MeditationSpawn" type="Node2D" parent="Points"]
 position = Vector2(25, -60)
 
