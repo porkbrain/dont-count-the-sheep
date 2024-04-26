@@ -206,6 +206,9 @@ fn smooth_exit(
             Building1PlayerFloorToDowntown => {
                 next_state.set(GlobalGameState::LoadingDowntown);
             }
+            Sleeping => {
+                next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
+            }
             _ => {
                 unreachable!(
                     "Invalid Building1PlayerFloor transition {transition:?}"

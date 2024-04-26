@@ -15,6 +15,9 @@ pub(crate) const START_LOADING_SCREEN_AFTER: Duration = from_millis(500);
 /// fading to happen.
 pub(crate) const WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST:
     Duration = from_millis(1500);
+/// Hard coded to make the animation play out.
+pub(crate) const WINNIE_IN_BATHROOM_TRANSITION_FOR_AT_LEAST: Duration =
+    from_millis(3500);
 
 /// Walk down slowly otherwise it'll happen before the player even sees it.
 pub(crate) const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(750);

@@ -54,7 +54,7 @@ pub enum BehaviorResult {
 }
 
 /// A behavior tree can be attached to an NPC to drive its actions.
-#[derive(Debug, Component, Reflect)]
+#[derive(Debug, Component)]
 pub struct BehaviorTree {
     /// The zeroth element is the root node.
     /// The last element is the currently visited node.
@@ -75,7 +75,7 @@ pub struct BehaviorTree {
 /// Nodes can carry state.
 /// When a node is visited for the first time, it is cloned and pushed onto the
 /// stack.
-#[derive(Debug, Clone, Reflect)]
+#[derive(Debug, Clone)]
 pub enum BehaviorNode {
     /// Composite node that runs one child after another.
     /// Exits with failed if any child fails, otherwise succeeds.
