@@ -1,7 +1,7 @@
 mod watch_entry_to_hallway;
 
 use bevy::render::view::RenderLayers;
-use bevy_grid_squared::sq;
+use bevy_grid_squared::{sq, GridDirection};
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     cutscene::enter_an_elevator::{
@@ -228,6 +228,11 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 ));
                 self.player_builder
                     .initial_step_time(STEP_TIME_ON_EXIT_ELEVATOR);
+            }
+            "AfterSleepSpawn" if self.transition == Sleeping => {
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.initial_direction(GridDirection::Top);
+                self.daybar_event.send(IncreaseDayBarEvent::Reset);
             }
             _ => {}
         }

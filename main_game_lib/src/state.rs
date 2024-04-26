@@ -78,6 +78,7 @@ pub enum GlobalGameStateTransition {
     Building1PlayerFloorToMeditation,
     Building1PlayerFloorToDowntown,
     Building1PlayerFloorToBuilding1Basement1,
+    Sleeping,
 
     Building1Basement1ToPlayerFloor,
     Building1Basement1ToDowntown,

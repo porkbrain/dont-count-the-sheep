@@ -33,7 +33,7 @@ impl bevy::app::Plugin for Plugin {
         app.add_systems(
             Update,
             (
-                start_meditation_minigame
+                (start_meditation_minigame, sleep)
                     .before(DisplayEmojiEventConsumer)
                     .before(ChangeHighlightedInspectLabelEventConsumer),
                 enter_the_elevator,
@@ -72,39 +72,39 @@ fn start_meditation_minigame(
         matches!(action, Building1PlayerFloorAction::StartMeditation)
     });
 
-    if is_triggered {
-        if daybar.is_depleted() {
-            if let Some(entity) = zone_to_inspect_label_entity
-                .map
-                .get(&Building1PlayerFloorTileKind::MeditationZone)
-                .copied()
-            {
-                inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
-                    entity,
-                    spawn_params: SpawnLabelBgAndTextParams {
-                        highlighted: true,
-                        overwrite_font_color: Some(LIGHT_RED),
-                        // LOCALIZATION
-                        overwrite_display_text: Some("(too tired)".to_string()),
-                    },
-                });
-            } else {
-                error!("Cannot find meditation zone inspect label entity");
-            }
+    if !is_triggered {
+        return;
+    }
 
-            if let Some(on_parent) = player.get_single_or_none() {
-                emoji_events.send(DisplayEmojiEvent {
-                    emoji: EmojiKind::Tired,
-                    on_parent,
-                    offset_for: common_story::Character::Winnie,
-                });
-            } else {
-                error!("Cannot find player entity");
-            }
-
-            return;
+    if daybar.is_depleted() {
+        if let Some(entity) = zone_to_inspect_label_entity
+            .map
+            .get(&Building1PlayerFloorTileKind::MeditationZone)
+            .copied()
+        {
+            inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
+                entity,
+                spawn_params: SpawnLabelBgAndTextParams {
+                    highlighted: true,
+                    overwrite_font_color: Some(LIGHT_RED),
+                    // LOCALIZATION
+                    overwrite_display_text: Some("(too tired)".to_string()),
+                },
+            });
+        } else {
+            error!("Cannot find meditation zone inspect label entity");
         }
 
+        if let Some(on_parent) = player.get_single_or_none() {
+            emoji_events.send(DisplayEmojiEvent {
+                emoji: EmojiKind::Tired,
+                on_parent,
+                offset_for: common_story::Character::Winnie,
+            });
+        } else {
+            error!("Cannot find player entity");
+        }
+    } else {
         cmd.insert_resource(LoadingScreenSettings {
             atlas: Some(common_loading_screen::LoadingScreenAtlas::Space),
             stare_at_loading_screen_for_at_least: Some(
@@ -206,4 +206,32 @@ fn toggle_zone_hints(
             },
         }
     }
+}
+
+fn sleep(
+    mut cmd: Commands,
+    mut action_events: EventReader<Building1PlayerFloorAction>,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+) {
+    let is_triggered = action_events
+        .read()
+        .any(|action| matches!(action, Building1PlayerFloorAction::Sleep));
+
+    if !is_triggered {
+        return;
+    }
+
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(
+            common_loading_screen::LoadingScreenAtlas::WinnieInBathroom,
+        ),
+        stare_at_loading_screen_for_at_least: Some(
+            WINNIE_IN_BATHROOM_TRANSITION_FOR_AT_LEAST,
+        ),
+        ..default()
+    });
+
+    *transition = GlobalGameStateTransition::Sleeping;
+    next_state.set(Building1PlayerFloor::quitting());
 }
