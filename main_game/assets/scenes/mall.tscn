@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://drnrtwjeis0wl"]
+[gd_scene load_steps=29 format=3 uid="uid://drnrtwjeis0wl"]
 
 [ext_resource type="Texture2D" uid="uid://cgvnw3xu0g55c" path="res://assets/mall/mall.png" id="1_py6kn"]
 [ext_resource type="Texture2D" uid="uid://cucclesngt72y" path="res://assets/environment/vending_machine_atlas.png" id="2_83cf2"]
@@ -8,6 +8,13 @@
 [ext_resource type="Texture2D" uid="uid://b8xjoqkbaiqyp" path="res://assets/mall/storage.png" id="6_egw2s"]
 [ext_resource type="Texture2D" uid="uid://b3kynf8hs73" path="res://assets/mall/mall_gate.png" id="7_34v1c"]
 [ext_resource type="Texture2D" uid="uid://cn1n1shruw5xn" path="res://assets/environment/snack_machine_atlas.png" id="8_epuyy"]
+[ext_resource type="Texture2D" uid="uid://5ywhhdx6rx7r" path="res://assets/downtown/recycle_bin.png" id="9_apkp3"]
+[ext_resource type="Texture2D" uid="uid://brapyya5pqurk" path="res://assets/downtown/potted_bush.png" id="10_2mfkd"]
+[ext_resource type="Texture2D" uid="uid://od7278drijk8" path="res://assets/downtown/water_dispenser.png" id="11_fqe1k"]
+[ext_resource type="Texture2D" uid="uid://bnjtrujdg2l5p" path="res://assets/downtown/no_smoking_sign.png" id="12_sgjlf"]
+[ext_resource type="Texture2D" uid="uid://bcs5gw33o4yel" path="res://assets/residential/indoors/utility_door_atlas.png" id="13_qlspq"]
+[ext_resource type="Texture2D" uid="uid://b0pfippwkkdhi" path="res://assets/residential/indoors/garland.png" id="14_vhnj1"]
+[ext_resource type="Texture2D" uid="uid://7gj1w81mpy8h" path="res://assets/residential/indoors/chair_yellow.png" id="15_5nsl6"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("2_83cf2")
@@ -81,6 +88,33 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_3e02v"]
+atlas = ExtResource("13_qlspq")
+region = Rect2(0, 0, 27, 56)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ft0kf"]
+atlas = ExtResource("13_qlspq")
+region = Rect2(27, 0, 27, 56)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_aktpu"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3e02v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ft0kf")
+}],
+"loop": true,
+"name": &"new_animation",
+"speed": 5.0
+}]
+
 [node name="Mall" type="Node2D"]
 
 [node name="MallBg" type="Sprite2D" parent="."]
@@ -145,3 +179,32 @@ metadata/category = "Default"
 [node name="SnackMachineAtlas" type="AnimatedSprite2D" parent="."]
 position = Vector2(-107, 84)
 sprite_frames = SubResource("SpriteFrames_t6d3n")
+
+[node name="RecycleBin" type="Sprite2D" parent="."]
+position = Vector2(-316, 121)
+texture = ExtResource("9_apkp3")
+
+[node name="PottedBush" type="Sprite2D" parent="."]
+position = Vector2(-316, 137)
+texture = ExtResource("10_2mfkd")
+
+[node name="WaterDispenser" type="Sprite2D" parent="."]
+position = Vector2(-167, -123)
+texture = ExtResource("11_fqe1k")
+
+[node name="NoSmokingSign" type="Sprite2D" parent="."]
+position = Vector2(-102, -145)
+texture = ExtResource("12_sgjlf")
+
+[node name="UtilityDoorAtlas" type="AnimatedSprite2D" parent="."]
+position = Vector2(-131, -136)
+sprite_frames = SubResource("SpriteFrames_aktpu")
+animation = &"new_animation"
+
+[node name="Garland" type="Sprite2D" parent="."]
+position = Vector2(234, -151)
+texture = ExtResource("14_vhnj1")
+
+[node name="ChairYellow" type="Sprite2D" parent="."]
+position = Vector2(-194, -127)
+texture = ExtResource("15_5nsl6")

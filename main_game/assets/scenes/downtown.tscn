@@ -1,6 +1,7 @@
-[gd_scene load_steps=55 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=56 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
+[ext_resource type="Texture2D" uid="uid://dovhxy23h1onl" path="res://assets/downtown/jehlicnan_flipped.png" id="2_muold"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
 [ext_resource type="Texture2D" uid="uid://od7278drijk8" path="res://assets/downtown/water_dispenser.png" id="3_mnq47"]
 [ext_resource type="Texture2D" uid="uid://bwt8l2nfovdrb" path="res://assets/downtown/bamboo_rooftop.png" id="4_uahdt"]
@@ -87,8 +88,12 @@ z_index = -5
 position = Vector2(232, 477)
 texture = ExtResource("1_ac7tb")
 
+[node name="JehlicnanFlipped" type="Sprite2D" parent="DowntownBg"]
+position = Vector2(-779, -931)
+texture = ExtResource("2_muold")
+
 [node name="Jehlicnan2" type="Sprite2D" parent="DowntownBg"]
-position = Vector2(-713, -898)
+position = Vector2(-727, -901)
 texture = ExtResource("29_j62ep")
 
 [node name="YSort" type="Node2D" parent="DowntownBg/Jehlicnan2"]
@@ -207,7 +212,7 @@ texture = ExtResource("14_8uy80")
 position = Vector2(0, 33)
 
 [node name="BigTree" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-485, -637)
+position = Vector2(-485, -646)
 texture = ExtResource("28_6tavv")
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/BigTree"]
@@ -695,3 +700,7 @@ texture = ExtResource("50_ubqu6")
 [node name="Mushroom2" type="Sprite2D" parent="."]
 position = Vector2(-285, -982)
 texture = ExtResource("50_ubqu6")
+
+[node name="JehlicnanFlipped" type="Sprite2D" parent="."]
+position = Vector2(-421, -615)
+texture = ExtResource("2_muold")
