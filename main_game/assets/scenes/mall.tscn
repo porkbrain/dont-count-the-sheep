@@ -98,11 +98,6 @@ region = Rect2(27, 0, 27, 56)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_aktpu"]
 animations = [{
-"frames": [],
-"loop": true,
-"name": &"default",
-"speed": 5.0
-}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_3e02v")
@@ -111,7 +106,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_ft0kf")
 }],
 "loop": true,
-"name": &"new_animation",
+"name": &"default",
 "speed": 5.0
 }]
 
@@ -199,7 +194,6 @@ texture = ExtResource("12_sgjlf")
 [node name="UtilityDoorAtlas" type="AnimatedSprite2D" parent="."]
 position = Vector2(-131, -136)
 sprite_frames = SubResource("SpriteFrames_aktpu")
-animation = &"new_animation"
 
 [node name="Garland" type="Sprite2D" parent="."]
 position = Vector2(234, -151)
