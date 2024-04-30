@@ -4,7 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://cucclesngt72y" path="res://assets/environment/vending_machine_atlas.png" id="2_ape1y"]
 [ext_resource type="Texture2D" uid="uid://bwt8l2nfovdrb" path="res://assets/downtown/bamboo_rooftop.png" id="3_o3esx"]
 [ext_resource type="Texture2D" uid="uid://o3lvnnwlx58x" path="res://assets/residential/indoors/brown_light_door_atlas.png" id="4_dp2ef"]
-[ext_resource type="Texture2D" uid="uid://cinpx6e0t2ywt" path="res://assets/residential/indoors/sofa_yellow.png" id="5_nm05f"]
 [ext_resource type="Texture2D" uid="uid://7gj1w81mpy8h" path="res://assets/residential/indoors/chair_yellow.png" id="6_wlrbh"]
 [ext_resource type="Texture2D" uid="uid://ck0d0ox20muxk" path="res://assets/residential/indoors/cupboard2.png" id="7_bkx0a"]
 [ext_resource type="Texture2D" uid="uid://bmvpodknaiv1g" path="res://assets/environment/fruit_bowl.png" id="8_6810t"]
@@ -17,6 +16,7 @@
 [ext_resource type="Texture2D" uid="uid://bvs7vcwiqrlkg" path="res://assets/residential/indoors/certificat.png" id="15_oqnj7"]
 [ext_resource type="Texture2D" uid="uid://bnjtrujdg2l5p" path="res://assets/downtown/no_smoking_sign.png" id="16_nyb36"]
 [ext_resource type="Texture2D" uid="uid://6cfnodb0dmgj" path="res://assets/downtown/hazardous_bin.png" id="17_1fycq"]
+[ext_resource type="Texture2D" uid="uid://cavulo8mbkcac" path="res://assets/residential/indoors/sofa_yellow_plain.png" id="17_p7ntv"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("2_ape1y")
@@ -97,10 +97,6 @@ sprite_frames = SubResource("SpriteFrames_dnigs")
 [node name="YSort" type="Node2D" parent="PlayerApartmentDoor"]
 position = Vector2(0, 18)
 
-[node name="SofaYellow" type="Sprite2D" parent="."]
-position = Vector2(6, 45)
-texture = ExtResource("5_nm05f")
-
 [node name="ChairYellow" type="Sprite2D" parent="."]
 position = Vector2(50, 46)
 texture = ExtResource("6_wlrbh")
@@ -118,7 +114,7 @@ position = Vector2(-101, -61)
 texture = ExtResource("9_tfx34")
 
 [node name="HospitalBed" type="Sprite2D" parent="."]
-position = Vector2(87, -29)
+position = Vector2(87, -31)
 texture = ExtResource("10_x5l8d")
 
 [node name="HospitalDivider" type="Sprite2D" parent="."]
@@ -148,3 +144,7 @@ texture = ExtResource("16_nyb36")
 [node name="HazardousBin" type="Sprite2D" parent="."]
 position = Vector2(41, -51)
 texture = ExtResource("17_1fycq")
+
+[node name="SofaYellowPlain" type="Sprite2D" parent="."]
+position = Vector2(6, 45)
+texture = ExtResource("17_p7ntv")

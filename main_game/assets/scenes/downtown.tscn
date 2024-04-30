@@ -1,4 +1,4 @@
-[gd_scene load_steps=56 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=61 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dovhxy23h1onl" path="res://assets/downtown/jehlicnan_flipped.png" id="2_muold"]
@@ -45,12 +45,17 @@
 [ext_resource type="Texture2D" uid="uid://bflcaqeap0y6j" path="res://assets/downtown/bin_bag.png" id="37_kbqnk"]
 [ext_resource type="Texture2D" uid="uid://c140qot1ofdoq" path="res://assets/downtown/red_car.png" id="41_h1vqy"]
 [ext_resource type="Texture2D" uid="uid://b3k4s743uhvpa" path="res://assets/downtown/white_van.png" id="42_gumcj"]
+[ext_resource type="Texture2D" uid="uid://brxo7qp0roc3k" path="res://assets/downtown/lavicka.png" id="43_ihbqd"]
 [ext_resource type="Texture2D" uid="uid://c8evra3g3jreh" path="res://assets/downtown/orange_car.png" id="43_rbmlo"]
 [ext_resource type="Texture2D" uid="uid://brapyya5pqurk" path="res://assets/downtown/potted_bush.png" id="44_d0uug"]
 [ext_resource type="Texture2D" uid="uid://dxx6j71ewje3y" path="res://assets/environment/sand_dollar.png" id="47_y13ek"]
 [ext_resource type="Texture2D" uid="uid://btu6osn2fwawr" path="res://assets/environment/sand_dollar_white.png" id="48_etaxq"]
 [ext_resource type="Texture2D" uid="uid://bocqwi765pwlg" path="res://assets/environment/musle.png" id="49_andyj"]
 [ext_resource type="Texture2D" uid="uid://b4h751x5bs34" path="res://assets/environment/mushroom.png" id="50_ubqu6"]
+[ext_resource type="Texture2D" uid="uid://cb225g1s3oiqo" path="res://assets/downtown/plain_trio.png" id="52_ri67k"]
+[ext_resource type="Texture2D" uid="uid://dpeanyyafcpdk" path="res://assets/environment/beach_chair.png" id="54_3y7cj"]
+[ext_resource type="Texture2D" uid="uid://b2k6tb2xitvs4" path="res://assets/environment/beach_chair_blue.png" id="54_c8hw3"]
+[ext_resource type="Texture2D" uid="uid://bc4ctkjg1r38u" path="res://assets/environment/umbrella.png" id="56_tmimn"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -85,12 +90,15 @@ animations = [{
 
 [node name="DowntownBg" type="Sprite2D" parent="."]
 z_index = -5
-position = Vector2(232, 477)
+position = Vector2(233, 477)
 texture = ExtResource("1_ac7tb")
 
 [node name="JehlicnanFlipped" type="Sprite2D" parent="DowntownBg"]
 position = Vector2(-779, -931)
 texture = ExtResource("2_muold")
+
+[node name="YSort" type="Node2D" parent="DowntownBg/JehlicnanFlipped"]
+position = Vector2(0, 61)
 
 [node name="Jehlicnan2" type="Sprite2D" parent="DowntownBg"]
 position = Vector2(-727, -901)
@@ -98,6 +106,34 @@ texture = ExtResource("29_j62ep")
 
 [node name="YSort" type="Node2D" parent="DowntownBg/Jehlicnan2"]
 position = Vector2(0, 61)
+
+[node name="Jehlicnan3" type="Sprite2D" parent="DowntownBg"]
+position = Vector2(490, -1038)
+texture = ExtResource("29_j62ep")
+
+[node name="YSort" type="Node2D" parent="DowntownBg/Jehlicnan3"]
+position = Vector2(0, 61)
+
+[node name="JehlicnanFlipped2" type="Sprite2D" parent="DowntownBg"]
+position = Vector2(-653, -1092)
+texture = ExtResource("2_muold")
+
+[node name="YSort" type="Node2D" parent="DowntownBg/JehlicnanFlipped2"]
+position = Vector2(0, 75)
+
+[node name="JehlicnanFlipped3" type="Sprite2D" parent="DowntownBg"]
+position = Vector2(502, -969)
+texture = ExtResource("2_muold")
+
+[node name="YSort" type="Node2D" parent="DowntownBg/JehlicnanFlipped3"]
+position = Vector2(0, 75)
+
+[node name="BigTree" type="Sprite2D" parent="DowntownBg"]
+position = Vector2(435, -953)
+texture = ExtResource("28_6tavv")
+
+[node name="YSort" type="Node2D" parent="DowntownBg/BigTree"]
+position = Vector2(0, 75)
 
 [node name="CompoundRoot" type="Node2D" parent="."]
 
@@ -390,22 +426,22 @@ texture = ExtResource("25_1tn82")
 [node name="Block2Root" type="Node2D" parent="."]
 
 [node name="HousePlantshoptrio" type="Sprite2D" parent="Block2Root"]
-position = Vector2(293, -297)
+position = Vector2(311, -297)
 texture = ExtResource("19_fdu3c")
 
 [node name="YSort" type="Node2D" parent="Block2Root/HousePlantshoptrio"]
 position = Vector2(16, 90)
 
 [node name="RecycleBin" type="Sprite2D" parent="Block2Root/HousePlantshoptrio"]
-position = Vector2(89, 80)
+position = Vector2(66, 80)
 texture = ExtResource("5_her3o")
 
 [node name="BlackBin" type="Sprite2D" parent="Block2Root/HousePlantshoptrio"]
-position = Vector2(108, 80)
+position = Vector2(85, 80)
 texture = ExtResource("7_p1j5y")
 
 [node name="PottedBush" type="Sprite2D" parent="Block2Root/HousePlantshoptrio"]
-position = Vector2(175, 82)
+position = Vector2(157, 82)
 texture = ExtResource("44_d0uug")
 
 [node name="Tree3" type="Sprite2D" parent="Block2Root"]
@@ -581,7 +617,7 @@ texture = ExtResource("10_nyc25")
 position = Vector2(0, 11)
 
 [node name="WiredFence2" type="Sprite2D" parent="."]
-position = Vector2(29.5, 280.5)
+position = Vector2(64, 508)
 texture = ExtResource("17_5ai3x")
 
 [node name="WiredFence" type="Sprite2D" parent="WiredFence2"]
@@ -618,6 +654,10 @@ texture = ExtResource("8_s4pbl")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/Robot"]
 position = Vector2(-13, 49)
+
+[node name="Lavicka" type="Sprite2D" parent="ShoreRoot"]
+position = Vector2(557, 773)
+texture = ExtResource("43_ihbqd")
 
 [node name="Swing" type="Sprite2D" parent="ShoreRoot"]
 position = Vector2(744, 853)
@@ -701,6 +741,46 @@ texture = ExtResource("50_ubqu6")
 position = Vector2(-285, -982)
 texture = ExtResource("50_ubqu6")
 
-[node name="JehlicnanFlipped" type="Sprite2D" parent="."]
-position = Vector2(-421, -615)
-texture = ExtResource("2_muold")
+[node name="PlainTrio" type="Sprite2D" parent="."]
+position = Vector2(1273, 299)
+texture = ExtResource("52_ri67k")
+
+[node name="Lavicka2" type="Sprite2D" parent="PlainTrio"]
+position = Vector2(-93, 81)
+texture = ExtResource("43_ihbqd")
+
+[node name="Lavicka" type="Sprite2D" parent="."]
+position = Vector2(763, 953)
+texture = ExtResource("43_ihbqd")
+
+[node name="Lavicka3" type="Sprite2D" parent="."]
+position = Vector2(-347, -818)
+texture = ExtResource("43_ihbqd")
+
+[node name="Lavicka4" type="Sprite2D" parent="."]
+position = Vector2(875, -216)
+texture = ExtResource("43_ihbqd")
+
+[node name="Lavicka2" type="Sprite2D" parent="."]
+position = Vector2(535, -331)
+texture = ExtResource("43_ihbqd")
+
+[node name="FancySloupky" type="Sprite2D" parent="."]
+position = Vector2(896, -488)
+texture = ExtResource("33_lx3i7")
+
+[node name="FancySloupky2" type="Sprite2D" parent="."]
+position = Vector2(1112, -488)
+texture = ExtResource("33_lx3i7")
+
+[node name="BeachChairBlue" type="Sprite2D" parent="."]
+position = Vector2(-253, 1209)
+texture = ExtResource("54_c8hw3")
+
+[node name="BeachChair" type="Sprite2D" parent="."]
+position = Vector2(-189, 1206)
+texture = ExtResource("54_3y7cj")
+
+[node name="Umbrella" type="Sprite2D" parent="."]
+position = Vector2(-223, 1164)
+texture = ExtResource("56_tmimn")
