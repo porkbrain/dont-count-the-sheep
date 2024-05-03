@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cargo fmt -- --check
+
+cargo check --all-features
+
+cargo clippy -- -D warnings
+
+cargo test
+
+RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --offline

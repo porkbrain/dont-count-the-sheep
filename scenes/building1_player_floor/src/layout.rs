@@ -192,7 +192,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 ))
                 .with_initial_state(DoorState::Closed)
                 .with_obstacle_when_closed_between(sq(-40, -21), sq(-31, -21))
-                .build(self.tilemap);
+                .build_and_insert_obstacle(self.tilemap);
                 cmd.entity(who).insert(door);
             }
             "WinnieSleeping" => {

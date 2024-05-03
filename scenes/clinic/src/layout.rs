@@ -1,7 +1,13 @@
 use bevy::render::view::RenderLayers;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
-use main_game_lib::cutscene::in_cutscene;
+use main_game_lib::{
+    cutscene::in_cutscene,
+    top_down::{
+        actor::{self, movement_event_emitted},
+        environmental_objects::{self, door::DoorBuilder},
+    },
+};
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use strum::IntoEnumIterator;
 use top_down::{
@@ -17,22 +23,30 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(Mall::loading()),
-            rscn::start_loading_tscn::<Mall>,
+            OnEnter(Clinic::loading()),
+            rscn::start_loading_tscn::<Clinic>,
         )
         .add_systems(
             Update,
             spawn
-                .run_if(Mall::in_loading_state())
-                .run_if(resource_exists::<TileMap<Mall>>)
-                .run_if(rscn::tscn_loaded_but_not_spawned::<Mall>()),
+                .run_if(Clinic::in_loading_state())
+                .run_if(resource_exists::<TileMap<Clinic>>)
+                .run_if(rscn::tscn_loaded_but_not_spawned::<Clinic>()),
         )
-        .add_systems(OnExit(Mall::quitting()), despawn)
+        .add_systems(OnExit(Clinic::quitting()), despawn)
         .add_systems(
             Update,
-            exit.run_if(on_event::<MallAction>())
-                .run_if(Mall::in_running_state())
+            exit.run_if(on_event::<ClinicAction>())
+                .run_if(Clinic::in_running_state())
                 .run_if(not(in_cutscene())),
+        );
+
+        app.add_systems(
+            Update,
+            environmental_objects::door::toggle::<Clinic>
+                .run_if(Clinic::in_running_state())
+                .run_if(movement_event_emitted::<Clinic>())
+                .after(actor::emit_movement_events::<Clinic>),
         );
     }
 }
@@ -48,7 +62,7 @@ struct Spawner<'a> {
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
     zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<MallTileKind>,
+        &'a mut ZoneToInspectLabelEntity<ClinicTileKind>,
 }
 
 /// The names are stored in the scene file.
@@ -58,9 +72,9 @@ fn spawn(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 
-    mut q: Query<&mut TscnTreeHandle<Mall>>,
+    mut q: Query<&mut TscnTreeHandle<Clinic>>,
 ) {
-    info!("Spawning Mall scene");
+    info!("Spawning Clinic1 scene");
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
@@ -91,13 +105,13 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.entity(root).despawn_recursive();
 
     cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <Mall as TopDownScene>::LocalTileKind,
+        <Clinic as TopDownScene>::LocalTileKind,
     >>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
-    type LocalActionKind = MallAction;
-    type LocalZoneKind = MallTileKind;
+    type LocalActionKind = ClinicAction;
+    type LocalZoneKind = ClinicTileKind;
 
     fn on_spawned(
         &mut self,
@@ -110,12 +124,17 @@ impl<'a> TscnSpawner for Spawner<'a> {
             .insert(RenderLayers::layer(render_layer::BG));
 
         match name.as_str() {
-            "Mall" => {
+            "Clinic" => {
                 cmd.entity(who).insert(LayoutEntity);
                 cmd.entity(who).add_child(self.player_entity);
             }
             "Entrance" => {
                 self.player_builder.initial_position(translation.truncate());
+            }
+            "Door" => {
+                let door = DoorBuilder::new(ClinicTileKind::DoorZone)
+                    .build::<Clinic>();
+                cmd.entity(who).insert(door);
             }
             _ => {}
         }
@@ -141,7 +160,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
     }
 }
 
-impl top_down::layout::Tile for MallTileKind {
+impl top_down::layout::Tile for ClinicTileKind {
     #[inline]
     fn is_walkable(&self, _: Entity) -> bool {
         true
@@ -150,7 +169,7 @@ impl top_down::layout::Tile for MallTileKind {
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::ExitZone => true,
+            Self::ExitZone | Self::DoorZone => true,
         }
     }
 
@@ -162,14 +181,14 @@ impl top_down::layout::Tile for MallTileKind {
 
 fn exit(
     mut cmd: Commands,
-    mut action_events: EventReader<MallAction>,
+    mut action_events: EventReader<ClinicAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
 ) {
     let is_triggered = action_events
         .read()
-        .any(|action| matches!(action, MallAction::ExitScene));
+        .any(|action| matches!(action, ClinicAction::ExitScene));
 
     if is_triggered {
         cmd.insert_resource(LoadingScreenSettings {
@@ -180,7 +199,7 @@ fn exit(
 
         next_loading_screen_state.set(common_loading_screen::start_state());
 
-        *transition = GlobalGameStateTransition::MallToDowntown;
-        next_state.set(Mall::quitting());
+        *transition = GlobalGameStateTransition::ClinicToDowntown;
+        next_state.set(Clinic::quitting());
     }
 }

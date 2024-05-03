@@ -68,12 +68,14 @@ pub enum DowntownTileKind {
     #[default]
     Building1Entrance,
     MallEntrance,
+    ClinicEntrance,
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString)]
 pub enum DowntownAction {
-    EnterMall,
     EnterBuilding1,
+    EnterMall,
+    EnterClinic,
 }
 
 pub fn add(app: &mut App) {
@@ -159,6 +161,9 @@ fn exit(
         }
         DowntownToMall => {
             next_state.set(GlobalGameState::LoadingMall);
+        }
+        DowntownToClinic => {
+            next_state.set(GlobalGameState::LoadingClinic);
         }
         _ => {
             unreachable!("Invalid Downtown transition {transition:?}");
