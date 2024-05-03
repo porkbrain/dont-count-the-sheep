@@ -9,6 +9,17 @@ use crate::rscn::{
     Config, In2D, Node, NodeName, SpriteFrames, SpriteTexture, TscnTree,
 };
 
+struct Properties {
+    z_index: Option<f32>,
+    position: Vec2,
+    metadata: HashMap<String, String>,
+    path: Option<String>,
+    animation: Option<SpriteFrames>,
+    visible: bool,
+    color: Option<Color>,
+    flip_horizontally: bool,
+}
+
 pub(crate) fn from_state(
     mut state: intermediate_repr::State,
     conf: &Config,
@@ -62,29 +73,22 @@ pub(crate) fn from_state(
     let mut nodes = vec![];
     std::mem::swap(&mut nodes, &mut state.nodes); // to avoid borrow checker
     for parsed_node in nodes {
-        let mut metadata = HashMap::new();
-
-        let mut z_index = None;
-        let mut position = Vec2::ZERO;
-        let mut path = None;
-        let mut animation = None;
-        let mut visible = true;
-        let mut color = None;
+        let mut properties = default();
 
         for section_key in parsed_node.section_keys {
-            apply_section_key(
-                conf,
-                &state,
-                section_key,
-                &mut z_index,
-                &mut position,
-                &mut metadata,
-                &mut path,
-                &mut animation,
-                &mut visible,
-                &mut color,
-            );
+            apply_section_key(conf, &state, section_key, &mut properties);
         }
+
+        let Properties {
+            z_index,
+            position,
+            metadata,
+            path,
+            animation,
+            visible,
+            color,
+            flip_horizontally,
+        } = properties;
 
         let in_2d = match parsed_node.kind {
             ParsedNodeKind::AnimatedSprite2D => Some(In2D {
@@ -98,6 +102,7 @@ pub(crate) fn from_state(
                         assert!(animation.is_some());
                         animation
                     },
+                    flip_horizontally,
                 }),
             }),
             ParsedNodeKind::Sprite2D => Some(In2D {
@@ -111,6 +116,7 @@ pub(crate) fn from_state(
                         assert!(animation.is_none());
                         None
                     },
+                    flip_horizontally,
                 }),
             }),
             ParsedNodeKind::Node2D => Some(In2D {
@@ -169,13 +175,16 @@ fn apply_section_key(
     conf: &Config,
     state: &intermediate_repr::State,
     section_key: intermediate_repr::SectionKey,
-    z_index: &mut Option<f32>,
-    position: &mut Vec2,
-    metadata: &mut HashMap<String, String>,
-    path: &mut Option<String>,
-    animation: &mut Option<SpriteFrames>,
-    visibility: &mut bool,
-    color: &mut Option<Color>,
+    Properties {
+        z_index,
+        position,
+        metadata,
+        path,
+        animation,
+        visible,
+        color,
+        flip_horizontally,
+    }: &mut Properties,
 ) {
     use intermediate_repr::{Number, SectionKey, X};
 
@@ -201,8 +210,11 @@ fn apply_section_key(
                 "Node should not have more than one color"
             );
         }
-        SectionKey::Visibility(visible) => {
-            *visibility = visible;
+        SectionKey::FlipHorizontally(flip) => {
+            *flip_horizontally = flip;
+        }
+        SectionKey::Visibility(visibility) => {
+            *visible = visibility;
         }
         SectionKey::ZIndex(Number(z)) => {
             assert!(
@@ -353,5 +365,20 @@ impl Config {
     fn to_prefixless_path(&self, godot_path: &str) -> String {
         assert!(godot_path.starts_with(&self.asset_path_prefix));
         godot_path[self.asset_path_prefix.len()..].to_owned()
+    }
+}
+
+impl Default for Properties {
+    fn default() -> Self {
+        Self {
+            z_index: None,
+            position: Vec2::ZERO,
+            metadata: default(),
+            path: None,
+            animation: None,
+            visible: true,
+            color: None,
+            flip_horizontally: false,
+        }
     }
 }

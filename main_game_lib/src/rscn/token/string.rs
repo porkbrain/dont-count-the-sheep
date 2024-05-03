@@ -42,6 +42,9 @@ pub(super) fn parse(
             "self_modulate" => Expecting::SectionKey(
                 SectionKeyBuilder::SelfModulate(default()),
             ),
+            "flip_h" => {
+                Expecting::SectionKey(SectionKeyBuilder::FlipHorizontally)
+            }
             s if s.starts_with("metadata/") => {
                 Expecting::SectionKey(SectionKeyBuilder::StringMetadata(
                     s["metadata/".len()..].to_ascii_lowercase(),

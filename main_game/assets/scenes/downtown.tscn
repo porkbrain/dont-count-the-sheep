@@ -1,7 +1,6 @@
-[gd_scene load_steps=61 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=60 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://ctujtb5gwqvre" path="res://assets/downtown/bg.png" id="1_ac7tb"]
-[ext_resource type="Texture2D" uid="uid://ttfch7c5a23u" path="res://assets/downtown/jehlicnan_flipped.png" id="2_muold"]
 [ext_resource type="Texture2D" uid="uid://kqhfsst8cp0b" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
 [ext_resource type="Texture2D" uid="uid://fvsk7527x314" path="res://assets/downtown/water_dispenser.png" id="3_mnq47"]
 [ext_resource type="Texture2D" uid="uid://ccpux3rqyc01t" path="res://assets/downtown/bamboo_rooftop.png" id="4_uahdt"]
@@ -106,6 +105,13 @@ position = Vector2(233, 477)
 texture = ExtResource("1_ac7tb")
 
 [node name="CompoundRoot" type="Node2D" parent="."]
+
+[node name="Jehlicnan2" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-494, -424)
+texture = ExtResource("29_j62ep")
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/Jehlicnan2"]
+position = Vector2(0, 61)
 
 [node name="Tower" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-189, -1000)
@@ -257,16 +263,10 @@ texture = ExtResource("16_6vem6")
 
 [node name="JehlicnanFlipped" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-546, -454)
-texture = ExtResource("2_muold")
+texture = ExtResource("29_j62ep")
+flip_h = true
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/JehlicnanFlipped"]
-position = Vector2(0, 61)
-
-[node name="Jehlicnan2" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-494, -424)
-texture = ExtResource("29_j62ep")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/Jehlicnan2"]
 position = Vector2(0, 61)
 
 [node name="Jehlicnan3" type="Sprite2D" parent="CompoundRoot"]
@@ -278,14 +278,16 @@ position = Vector2(0, 61)
 
 [node name="JehlicnanFlipped2" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-420, -615)
-texture = ExtResource("2_muold")
+texture = ExtResource("29_j62ep")
+flip_h = true
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/JehlicnanFlipped2"]
 position = Vector2(0, 75)
 
 [node name="JehlicnanFlipped3" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(735, -492)
-texture = ExtResource("2_muold")
+texture = ExtResource("29_j62ep")
+flip_h = true
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/JehlicnanFlipped3"]
 position = Vector2(0, 75)

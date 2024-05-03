@@ -125,11 +125,13 @@ fn node_to_entity<T: TscnSpawner>(
         animation,
         visible,
         color,
+        flip_horizontally,
     }) = texture
     {
         let texture = spawner.load_texture(&path);
         cmd.entity(entity).insert(texture).insert(Sprite {
             color: color.unwrap_or(Color::WHITE),
+            flip_x: flip_horizontally,
             ..default()
         });
 

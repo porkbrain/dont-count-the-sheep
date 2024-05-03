@@ -288,6 +288,17 @@ fn parse_with_state(
 
                 Expecting::HeadingOrSectionKey
             }
+            Expecting::SectionKey(SectionKeyBuilder::FlipHorizontally) => {
+                let visible = matches!(token, TscnToken::True);
+                state
+                    .nodes
+                    .last_mut()
+                    .unwrap()
+                    .section_keys
+                    .push(SectionKey::FlipHorizontally(visible));
+
+                Expecting::HeadingOrSectionKey
+            }
             _ => panic!("Unexpected bool for {expecting:?}"),
         },
 
@@ -358,6 +369,8 @@ enum SectionKeyBuilder {
     StringMetadata(String),
     /// true or false
     Visibility,
+    /// true or false
+    FlipHorizontally,
     /// e.g. `self_modulate = Color(1, 1, 1, 0.823529)`
     SelfModulate(ColorExpecting),
 }

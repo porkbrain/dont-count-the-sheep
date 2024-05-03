@@ -69,6 +69,8 @@ pub(crate) enum SectionKey {
     /// Whether the node is visible.
     /// If false we add a `Visibility::Hidden` component to the node.
     Visibility(bool),
+    /// A texture should be flipped horizontally.
+    FlipHorizontally(bool),
     /// RGBa
     SelfModulateColor(Number, Number, Number, Number),
 }

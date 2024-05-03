@@ -165,3 +165,15 @@ fn exit(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_has_valid_tscn_scene() {
+        const TSCN: &str =
+            include_str!("../../../main_game/assets/scenes/downtown.tscn",);
+        rscn::parse(TSCN, &default());
+    }
+}
