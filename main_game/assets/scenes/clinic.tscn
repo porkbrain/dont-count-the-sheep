@@ -76,7 +76,7 @@ animations = [{
 "speed": 1.0
 }]
 
-[node name="Clinic1" type="Node2D"]
+[node name="Clinic" type="Node2D"]
 
 [node name="ClinicBg" type="Sprite2D" parent="."]
 z_index = -2
@@ -97,11 +97,11 @@ texture = ExtResource("3_o3esx")
 [node name="YSort" type="Node2D" parent="BambooRooftop"]
 position = Vector2(0, 23)
 
-[node name="PlayerApartmentDoor" type="AnimatedSprite2D" parent="."]
+[node name="Door" type="AnimatedSprite2D" parent="."]
 position = Vector2(-117, 59)
 sprite_frames = SubResource("SpriteFrames_dnigs")
 
-[node name="YSort" type="Node2D" parent="PlayerApartmentDoor"]
+[node name="YSort" type="Node2D" parent="Door"]
 position = Vector2(0, 18)
 
 [node name="ChairYellow" type="Sprite2D" parent="."]
@@ -178,5 +178,13 @@ position = Vector2(0, 14)
 
 [node name="Points" type="Node2D" parent="."]
 
-[node name="ClinicSpawn" type="Node2D" parent="Points"]
-position = Vector2(-117, 108)
+[node name="Entrance" type="Node2D" parent="Points"]
+position = Vector2(-118, 107)
+
+[node name="Point" type="Node" parent="Points/Entrance"]
+
+[node name="InspectLabel" type="Node" parent="Points/Entrance"]
+metadata/zone = "ExitZone"
+metadata/action = "ExitScene"
+metadata/label = "Exit"
+metadata/category = "Default"

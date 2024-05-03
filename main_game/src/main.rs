@@ -53,6 +53,7 @@ fn main() {
     scene_meditation::add(&mut app);
     scene_downtown::add(&mut app);
     scene_mall::add(&mut app);
+    scene_clinic::add(&mut app);
 
     info!("Starting Don't Count The Sheep");
     app.run();

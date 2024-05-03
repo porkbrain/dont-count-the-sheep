@@ -838,3 +838,19 @@ texture = ExtResource("43_ihbqd")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/Lavicka2"]
 position = Vector2(0, 13)
+
+[node name="ClinicEntrance" type="Node2D" parent="ShoreRoot"]
+position = Vector2(-59, 971)
+
+[node name="Point" type="Node" parent="ShoreRoot/ClinicEntrance"]
+
+[node name="InspectLabel" type="Node" parent="ShoreRoot/ClinicEntrance"]
+metadata/zone = "ClinicEntrance"
+metadata/action = "EnterClinic"
+metadata/label = "Clinic"
+metadata/category = "Default"
+
+[node name="ClinicExit" type="Node2D" parent="ShoreRoot"]
+position = Vector2(-73, 1059)
+
+[node name="Point" type="Node" parent="ShoreRoot/ClinicExit"]
