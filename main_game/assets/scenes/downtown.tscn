@@ -540,23 +540,16 @@ texture = ExtResource("25_1tn82")
 [node name="Block3Root" type="Node2D" parent="."]
 
 [node name="PlainTrio" type="Sprite2D" parent="Block3Root"]
-position = Vector2(1273, 299)
+position = Vector2(1273, 274)
 texture = ExtResource("52_ri67k")
 
 [node name="YSort" type="Node2D" parent="Block3Root/PlainTrio"]
 position = Vector2(-4, 89)
 
-[node name="Lavicka2" type="Sprite2D" parent="Block3Root"]
-position = Vector2(1180, 380)
-texture = ExtResource("43_ihbqd")
-
-[node name="YSort" type="Node2D" parent="Block3Root/Lavicka2"]
-position = Vector2(0, 13)
-
 [node name="Block2Root" type="Node2D" parent="."]
 
 [node name="HousePlantshoptrio" type="Sprite2D" parent="Block2Root"]
-position = Vector2(311, -297)
+position = Vector2(301, -297)
 texture = ExtResource("19_fdu3c")
 
 [node name="YSort" type="Node2D" parent="Block2Root/HousePlantshoptrio"]
@@ -603,7 +596,7 @@ position = Vector2(0, 13)
 [node name="Block1Root" type="Node2D" parent="."]
 
 [node name="BuildingDuo" type="Sprite2D" parent="Block1Root"]
-position = Vector2(355, 9)
+position = Vector2(345, 8)
 texture = ExtResource("22_bl5xi")
 
 [node name="Lamp3" type="Sprite2D" parent="Block1Root"]
