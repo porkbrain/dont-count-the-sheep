@@ -74,7 +74,7 @@ fn spawn(
 
     mut q: Query<&mut TscnTreeHandle<Clinic>>,
 ) {
-    info!("Spawning Clinic1 scene");
+    info!("Spawning Clinic scene");
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
