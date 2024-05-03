@@ -4,7 +4,7 @@
 
 A top down pixelart game created with [Bevy](https://bevyengine.org/).
 
-Run `$ ./bin/wiki` to open the game's [wiki](wiki/README.md) locally in your browser.
+Run `$ ./dev/wiki` to open the game's [wiki](wiki/README.md) locally in your browser.
 
 # Repo organization
 

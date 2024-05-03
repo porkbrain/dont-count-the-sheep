@@ -1,3 +1,0 @@
-#!/bin/bash
-
-python3 bin/visualize_dialog.py --watch

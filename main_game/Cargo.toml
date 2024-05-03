@@ -28,6 +28,7 @@ common_story.workspace = true
 main_game_lib.workspace = true
 scene_building1_basement1.workspace = true
 scene_building1_player_floor.workspace = true
+scene_clinic.workspace = true
 scene_downtown.workspace = true
 scene_mall.workspace = true
 scene_meditation.workspace = true

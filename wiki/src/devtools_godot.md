@@ -76,6 +76,8 @@ This hierarchical arrangement allows for precise control over the rendering orde
 
 - Visibility / Visible check box
 - Visibility / Self Modulate color
+- Ordering / Z Index
+- Offset / Flip H
 
 ## Components
 

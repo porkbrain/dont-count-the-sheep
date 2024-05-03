@@ -42,6 +42,7 @@ impl bevy::app::Plugin for Plugin {
             (
                 enter_building1,
                 enter_mall.before(ChangeHighlightedInspectLabelEventConsumer),
+                enter_clinic.before(ChangeHighlightedInspectLabelEventConsumer),
             )
                 .run_if(on_event::<DowntownAction>())
                 .run_if(Downtown::in_running_state())
@@ -158,6 +159,15 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
                 self.daybar_event.send(IncreaseDayBarEvent::ChangedScene);
             }
+            "ClinicExit" if self.transition == ClinicToDowntown => {
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(top_down::ActorTarget::new(
+                    LAYOUT.world_pos_to_square(translation.truncate())
+                        + sq(0, -2),
+                ));
+
+                self.daybar_event.send(IncreaseDayBarEvent::ChangedScene);
+            }
             _ => {}
         }
     }
@@ -191,7 +201,9 @@ impl top_down::layout::Tile for DowntownTileKind {
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::MallEntrance | Self::Building1Entrance => true,
+            Self::MallEntrance
+            | Self::ClinicEntrance
+            | Self::Building1Entrance => true,
         }
     }
 
@@ -274,6 +286,58 @@ fn enter_mall(
         next_loading_screen_state.set(common_loading_screen::start_state());
 
         *transition = GlobalGameStateTransition::DowntownToMall;
+        next_state.set(Downtown::quitting());
+    }
+}
+
+fn enter_clinic(
+    mut cmd: Commands,
+    mut action_events: EventReader<DowntownAction>,
+    mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+    zone_to_inspect_label_entity: Res<
+        ZoneToInspectLabelEntity<DowntownTileKind>,
+    >,
+    daybar: Res<DayBar>,
+) {
+    let is_triggered = action_events
+        .read()
+        .any(|action| matches!(action, DowntownAction::EnterClinic));
+
+    if is_triggered {
+        if !daybar.is_it_time_for(DayBarDependent::ClinicOpenHours) {
+            if let Some(entity) = zone_to_inspect_label_entity
+                .map
+                .get(&DowntownTileKind::ClinicEntrance)
+                .copied()
+            {
+                inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
+                    entity,
+                    spawn_params: SpawnLabelBgAndTextParams {
+                        highlighted: true,
+                        overwrite_font_color: Some(LIGHT_RED),
+                        // LOCALIZATION
+                        overwrite_display_text: Some("(closed)".to_string()),
+                    },
+                });
+            } else {
+                error!("Cannot find clinic entrance zone inspect label entity");
+            }
+
+            return;
+        }
+
+        cmd.insert_resource(LoadingScreenSettings {
+            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+            ..default()
+        });
+
+        next_loading_screen_state.set(common_loading_screen::start_state());
+
+        *transition = GlobalGameStateTransition::DowntownToClinic;
         next_state.set(Downtown::quitting());
     }
 }

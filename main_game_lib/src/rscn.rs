@@ -145,6 +145,8 @@ pub struct SpriteTexture {
     /// We only support sprite frames that are part of an atlas (single file
     /// texture.)
     pub animation: Option<SpriteFrames>,
+    /// If the texture should be flipped horizontally.
+    pub flip_horizontally: bool,
 }
 
 /// Atlas animation.

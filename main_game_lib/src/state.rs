@@ -27,6 +27,10 @@ pub enum GlobalGameState {
     AtBuilding1Basement1,
     QuittingBuilding1Basement1,
 
+    LoadingClinic,
+    AtClinic,
+    QuittingClinic,
+
     LoadingMall,
     AtMall,
     QuittingMall,
@@ -86,7 +90,10 @@ pub enum GlobalGameStateTransition {
     DowntownToBuilding1PlayerFloor,
     DowntownToMall,
 
+    DowntownToClinic,
     MallToDowntown,
+
+    ClinicToDowntown,
 }
 
 /// Typical scene has several states with standard semantics.
@@ -174,6 +181,10 @@ impl GlobalGameState {
                 QuittingBuilding1Basement1,
                 None,
             ),
+
+            LoadingClinic | AtClinic | QuittingClinic => {
+                (LoadingClinic, AtClinic, QuittingClinic, None)
+            }
 
             LoadingMeditation | InGameMeditation | MeditationInMenu
             | QuittingMeditation => (

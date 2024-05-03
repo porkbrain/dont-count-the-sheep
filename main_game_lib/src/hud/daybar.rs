@@ -36,6 +36,8 @@ pub enum IncreaseDayBarEvent {
 pub enum DayBarDependent {
     /// The span of time when the mall is open.
     MallOpenHours,
+    /// The span of time when the clinic is open.
+    ClinicOpenHours,
 }
 
 #[derive(Component)]
@@ -154,6 +156,7 @@ impl DayBar {
     pub fn is_it_time_for(&self, what: DayBarDependent) -> bool {
         let range = match what {
             DayBarDependent::MallOpenHours => ..0.75,
+            DayBarDependent::ClinicOpenHours => ..0.75,
         };
 
         range.contains(&self.progress)

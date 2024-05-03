@@ -2,6 +2,8 @@
 //! There are different [`DoorOpenCriteria`] that can be used to open the door.
 //! Optionally, the door can have an obstacle that's inserted into the map when
 //! the door is closed.
+//!
+//! You must register the `environmental_objects::door::toggle` system.
 
 use bevy::prelude::*;
 use bevy_grid_squared::Square;
@@ -114,8 +116,8 @@ fn apply_event_to_door_and_map<T: TopDownScene>(
                 return;
             }
 
-            let can_be_opened =
-                door.open_criteria.iter().any(|criteria| match criteria {
+            let can_be_opened = door.open_criteria.is_empty()
+                || door.open_criteria.iter().any(|criteria| match criteria {
                     DoorOpenCriteria::Character(character) => {
                         who.character == *character
                     }
@@ -215,7 +217,10 @@ impl<L> DoorBuilder<L> {
     /// If the door is closed, we insert a wall between the obstacle squares
     /// if set.
     #[must_use]
-    pub fn build<T: TopDownScene>(self, tilemap: &mut TileMap<T>) -> Door<L> {
+    pub fn build_and_insert_obstacle<T: TopDownScene>(
+        self,
+        tilemap: &mut TileMap<T>,
+    ) -> Door<L> {
         let obstacle = self.obstacle.map(|(from, to)| {
             let layers = if matches!(self.initial_state, DoorState::Closed) {
                 bevy_grid_squared::shapes::rectangle_between(from, to)
@@ -240,6 +245,26 @@ impl<L> DoorBuilder<L> {
             state: self.initial_state,
             open_criteria: self.open_criteria,
             obstacle,
+
+            actors_near: 0,
+        }
+    }
+
+    /// Does not insert the obstacle into the tilemap.
+    /// Will panic if the door is closed and the obstacle is set.
+    #[must_use]
+    pub fn build<T: TopDownScene>(self) -> Door<L> {
+        assert!(
+            !matches!(self.initial_state, DoorState::Closed)
+                || self.obstacle.is_none(),
+            "Door is closed and has an obstacle"
+        );
+
+        Door {
+            zone_tile_kind: self.zone_tile_kind,
+            state: self.initial_state,
+            open_criteria: self.open_criteria,
+            obstacle: None,
 
             actors_near: 0,
         }
