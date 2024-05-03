@@ -774,13 +774,13 @@ position = Vector2(1112, -488)
 texture = ExtResource("33_lx3i7")
 
 [node name="BeachChairBlue" type="Sprite2D" parent="."]
-position = Vector2(-253, 1209)
+position = Vector2(-250, 1232)
 texture = ExtResource("54_c8hw3")
 
 [node name="BeachChair" type="Sprite2D" parent="."]
-position = Vector2(-189, 1206)
+position = Vector2(-182, 1229)
 texture = ExtResource("54_3y7cj")
 
 [node name="Umbrella" type="Sprite2D" parent="."]
-position = Vector2(-223, 1164)
+position = Vector2(-222, 1192)
 texture = ExtResource("56_tmimn")
