@@ -1,4 +1,4 @@
-[gd_scene load_steps=61 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=62 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -50,12 +50,13 @@
 [ext_resource type="Texture2D" uid="uid://dxx6j71ewje3y" path="res://assets/environment/sand_dollar.png" id="47_y13ek"]
 [ext_resource type="Texture2D" uid="uid://btu6osn2fwawr" path="res://assets/environment/sand_dollar_white.png" id="48_etaxq"]
 [ext_resource type="Texture2D" uid="uid://bocqwi765pwlg" path="res://assets/environment/musle.png" id="49_andyj"]
-[ext_resource type="Texture2D" path="res://assets/downtown/zabradli_blue.png" id="50_q6ssf"]
+[ext_resource type="Texture2D" uid="uid://dwpf4k88nn8sd" path="res://assets/downtown/zabradli_blue.png" id="50_q6ssf"]
 [ext_resource type="Texture2D" uid="uid://b4h751x5bs34" path="res://assets/environment/mushroom.png" id="50_ubqu6"]
 [ext_resource type="Texture2D" uid="uid://cb225g1s3oiqo" path="res://assets/downtown/plain_trio.png" id="52_ri67k"]
 [ext_resource type="Texture2D" uid="uid://dpeanyyafcpdk" path="res://assets/environment/beach_chair.png" id="54_3y7cj"]
 [ext_resource type="Texture2D" uid="uid://b2k6tb2xitvs4" path="res://assets/environment/beach_chair_blue.png" id="54_c8hw3"]
 [ext_resource type="Texture2D" uid="uid://bc4ctkjg1r38u" path="res://assets/environment/umbrella.png" id="56_tmimn"]
+[ext_resource type="Texture2D" uid="uid://n8ietma8qsly" path="res://assets/downtown/manhole.png" id="57_hq0ra"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -540,7 +541,7 @@ texture = ExtResource("25_1tn82")
 [node name="Block3Root" type="Node2D" parent="."]
 
 [node name="PlainTrio" type="Sprite2D" parent="Block3Root"]
-position = Vector2(1273, 274)
+position = Vector2(1280, 290)
 texture = ExtResource("52_ri67k")
 
 [node name="YSort" type="Node2D" parent="Block3Root/PlainTrio"]
@@ -851,3 +852,19 @@ metadata/category = "Default"
 position = Vector2(-73, 1059)
 
 [node name="Point" type="Node" parent="ShoreRoot/ClinicExit"]
+
+[node name="Manhole" type="Sprite2D" parent="."]
+position = Vector2(-789, 443)
+texture = ExtResource("57_hq0ra")
+
+[node name="Manhole2" type="Sprite2D" parent="."]
+position = Vector2(139, 46)
+texture = ExtResource("57_hq0ra")
+
+[node name="Manhole3" type="Sprite2D" parent="."]
+position = Vector2(-390, -259)
+texture = ExtResource("57_hq0ra")
+
+[node name="Manhole4" type="Sprite2D" parent="."]
+position = Vector2(800, -52)
+texture = ExtResource("57_hq0ra")
