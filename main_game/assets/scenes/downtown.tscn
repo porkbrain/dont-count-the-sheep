@@ -1,4 +1,4 @@
-[gd_scene load_steps=62 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=65 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -16,7 +16,9 @@
 [ext_resource type="Texture2D" uid="uid://djrcy48yl8ego" path="res://assets/downtown/mall.png" id="13_jgs6s"]
 [ext_resource type="Texture2D" uid="uid://bprq7kf7j27if" path="res://assets/downtown/sipek.png" id="14_6c1wy"]
 [ext_resource type="Texture2D" uid="uid://b7r70khewajh0" path="res://assets/downtown/lamp.png" id="14_8uy80"]
+[ext_resource type="Texture2D" uid="uid://ilearc5bolbg" path="res://assets/downtown/bin_big.png" id="15_o3fof"]
 [ext_resource type="Texture2D" uid="uid://c0omccqp4eqfx" path="res://assets/downtown/weed.png" id="16_6vem6"]
+[ext_resource type="Texture2D" uid="uid://b1suw854p3cjo" path="res://assets/downtown/bin_big_empty.png" id="16_x0sc1"]
 [ext_resource type="Texture2D" uid="uid://d3swa0vc5iitv" path="res://assets/downtown/briza.png" id="16_xr53b"]
 [ext_resource type="Texture2D" uid="uid://lgsyrvis4y80" path="res://assets/downtown/wired_fence.png" id="17_5ai3x"]
 [ext_resource type="Texture2D" uid="uid://sdlblu0np1tm" path="res://assets/downtown/sprout.png" id="17_qyuai"]
@@ -57,6 +59,7 @@
 [ext_resource type="Texture2D" uid="uid://b2k6tb2xitvs4" path="res://assets/environment/beach_chair_blue.png" id="54_c8hw3"]
 [ext_resource type="Texture2D" uid="uid://bc4ctkjg1r38u" path="res://assets/environment/umbrella.png" id="56_tmimn"]
 [ext_resource type="Texture2D" uid="uid://n8ietma8qsly" path="res://assets/downtown/manhole.png" id="57_hq0ra"]
+[ext_resource type="Texture2D" uid="uid://bi5q7b2nayy0w" path="res://assets/environment/water_bottle_empty.png" id="60_7dwn7"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -192,24 +195,40 @@ position = Vector2(-835, -329)
 [node name="YSort" type="Node2D" parent="CompoundRoot/CompoundFenceBins"]
 
 [node name="RecycleBin4" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
-position = Vector2(-9, -14)
+position = Vector2(-30, -15)
 texture = ExtResource("5_her3o")
 
+[node name="RecycleBin5" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
+position = Vector2(-171, -2.5)
+texture = ExtResource("5_her3o")
+
+[node name="WaterBottleEmpty" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins/RecycleBin5"]
+position = Vector2(4, 11.5)
+texture = ExtResource("60_7dwn7")
+
 [node name="BlackBin3" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
-position = Vector2(9, -14)
+position = Vector2(-12, -15)
+texture = ExtResource("7_p1j5y")
+
+[node name="BlackBin4" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
+position = Vector2(-114, -14.5)
 texture = ExtResource("7_p1j5y")
 
 [node name="Beer3" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
-position = Vector2(2, -1)
+position = Vector2(-19, -2)
 texture = ExtResource("11_e3pff")
 
-[node name="BlackBin" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
-position = Vector2(27, -14)
-texture = ExtResource("7_p1j5y")
-
 [node name="BinBag" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
-position = Vector2(-29, -14)
+position = Vector2(-91, -17.5)
 texture = ExtResource("37_kbqnk")
+
+[node name="BinBig" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
+position = Vector2(-60, -25.5)
+texture = ExtResource("15_o3fof")
+
+[node name="BinBigEmpty" type="Sprite2D" parent="CompoundRoot/CompoundFenceBins"]
+position = Vector2(-143, -25.5)
+texture = ExtResource("16_x0sc1")
 
 [node name="Lamp2" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-472, -365)
@@ -867,4 +886,8 @@ texture = ExtResource("57_hq0ra")
 
 [node name="Manhole4" type="Sprite2D" parent="."]
 position = Vector2(800, -52)
+texture = ExtResource("57_hq0ra")
+
+[node name="Manhole5" type="Sprite2D" parent="."]
+position = Vector2(-963, -299)
 texture = ExtResource("57_hq0ra")
