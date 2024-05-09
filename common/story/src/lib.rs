@@ -112,7 +112,7 @@ impl Character {
     /// How long does it take to move one square.
     pub fn default_step_time(self) -> Duration {
         match self {
-            Character::Winnie => Duration::from_millis(15),
+            Character::Winnie => Duration::from_millis(35),
             _ => Duration::from_millis(50),
         }
     }

@@ -10,18 +10,12 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/14
-        app.insert_resource(daybar::DayBar { progress: 0.0 })
-            .add_event::<daybar::IncreaseDayBarEvent>()
+        app.insert_resource(daybar::DayBar::default())
+            .add_event::<daybar::UpdateDayBarEvent>()
             .add_systems(
                 First,
-                daybar::increase
-                    .run_if(on_event::<daybar::IncreaseDayBarEvent>()),
-            );
-
-        #[cfg(feature = "devtools")]
-        {
-            app.register_type::<daybar::DayBar>()
-                .add_systems(Update, daybar::change_progress);
-        }
+                daybar::update.run_if(on_event::<daybar::UpdateDayBarEvent>()),
+            )
+            .add_systems(Update, daybar::interact);
     }
 }

@@ -4,7 +4,7 @@ use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     cutscene::in_cutscene,
-    hud::daybar::{DayBar, DayBarDependent, IncreaseDayBarEvent},
+    hud::daybar::{DayBar, DayBarDependent, UpdateDayBarEvent},
     top_down::inspect_and_interact::{
         ChangeHighlightedInspectLabelEvent,
         ChangeHighlightedInspectLabelEventConsumer, SpawnLabelBgAndTextParams,
@@ -62,7 +62,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     player_entity: Entity,
     transition: GlobalGameStateTransition,
-    daybar_event: &'a mut Events<IncreaseDayBarEvent>,
+    daybar_event: &'a mut Events<UpdateDayBarEvent>,
     zone_to_inspect_label_entity:
         &'a mut ZoneToInspectLabelEntity<DowntownTileKind>,
 }
@@ -75,7 +75,7 @@ fn spawn(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     transition: Res<GlobalGameStateTransition>,
-    mut daybar_event: ResMut<Events<IncreaseDayBarEvent>>,
+    mut daybar_event: ResMut<Events<UpdateDayBarEvent>>,
 
     mut q: Query<&mut TscnTreeHandle<Downtown>>,
 ) {
@@ -148,7 +148,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                         + sq(0, -2),
                 ));
 
-                self.daybar_event.send(IncreaseDayBarEvent::ChangedScene);
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
             }
             "MallEntrance" if self.transition == MallToDowntown => {
                 self.player_builder.initial_position(translation.truncate());
@@ -157,7 +157,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                         + sq(0, -2),
                 ));
 
-                self.daybar_event.send(IncreaseDayBarEvent::ChangedScene);
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
             }
             "ClinicExit" if self.transition == ClinicToDowntown => {
                 self.player_builder.initial_position(translation.truncate());
@@ -166,7 +166,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                         + sq(0, -2),
                 ));
 
-                self.daybar_event.send(IncreaseDayBarEvent::ChangedScene);
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
             }
             _ => {}
         }

@@ -7,7 +7,7 @@ use main_game_lib::{
     cutscene::enter_an_elevator::{
         start_with_open_elevator_and_close_it, STEP_TIME_ON_EXIT_ELEVATOR,
     },
-    hud::daybar::IncreaseDayBarEvent,
+    hud::daybar::UpdateDayBarEvent,
     top_down::actor::player::TakeAwayPlayerControl,
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
@@ -85,7 +85,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
-    daybar_event: &'a mut Events<IncreaseDayBarEvent>,
+    daybar_event: &'a mut Events<UpdateDayBarEvent>,
     tilemap: &'a mut TileMap<Building1PlayerFloor>,
     zone_to_inspect_label_entity:
         &'a mut ZoneToInspectLabelEntity<Building1PlayerFloorTileKind>,
@@ -100,7 +100,7 @@ fn spawn(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut tilemap: ResMut<TileMap<Building1PlayerFloor>>,
-    mut daybar_event: ResMut<Events<IncreaseDayBarEvent>>,
+    mut daybar_event: ResMut<Events<UpdateDayBarEvent>>,
 
     mut q: Query<&mut TscnTreeHandle<Building1PlayerFloor>>,
 ) {
@@ -213,7 +213,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 self.player_builder
                     .initial_step_time(STEP_TIME_ONLOAD_FROM_MEDITATION);
 
-                self.daybar_event.send(IncreaseDayBarEvent::Meditated);
+                self.daybar_event.send(UpdateDayBarEvent::Meditated);
             }
             "NewGameSpawn"
                 if self.transition == NewGameToBuilding1PlayerFloor =>
@@ -232,7 +232,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
             "AfterSleepSpawn" if self.transition == Sleeping => {
                 self.player_builder.initial_position(translation.truncate());
                 self.player_builder.initial_direction(GridDirection::Top);
-                self.daybar_event.send(IncreaseDayBarEvent::Reset);
+                self.daybar_event.send(UpdateDayBarEvent::Reset);
             }
             _ => {}
         }
