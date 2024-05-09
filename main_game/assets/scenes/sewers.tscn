@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://cehfnn2h1xqt7"]
+
+[ext_resource type="Texture2D" uid="uid://sit53g2cltgl" path="res://assets/downtown/sewers_bg.png" id="1_sy4gy"]
+[ext_resource type="Texture2D" uid="uid://bflcaqeap0y6j" path="res://assets/downtown/bin_bag.png" id="2_w3jta"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="SewersBg" type="Sprite2D" parent="."]
+position = Vector2(-280, -139)
+texture = ExtResource("1_sy4gy")
+
+[node name="BinBag" type="Sprite2D" parent="."]
+position = Vector2(-78, -8)
+texture = ExtResource("2_w3jta")
