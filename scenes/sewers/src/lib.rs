@@ -1,7 +1,8 @@
 #![doc = include_str!("../README.md")]
 #![allow(clippy::assertions_on_constants)]
 #![allow(clippy::type_complexity)]
-#![allow(clippy::too_many_arguments)]
+#![feature(trivial_bounds)]
+#![feature(let_chains)]
 
 mod autogen;
 mod layout;
@@ -11,35 +12,36 @@ use common_loading_screen::LoadingScreenState;
 use prelude::*;
 use serde::{Deserialize, Serialize};
 
-/// Important scene struct.
-/// We use it as identifiable generic in some common logic such as layout or
-/// asset.
-#[derive(TypePath, Default)]
-pub(crate) struct Downtown;
+use crate::layout::LayoutEntity;
 
-impl TopDownScene for Downtown {
-    type LocalTileKind = DowntownTileKind;
+/// Important scene struct.
+/// We use it as identifiable generic in common logic.
+#[derive(TypePath, Default, Debug)]
+pub struct Sewers;
+
+impl TopDownScene for Sewers {
+    type LocalTileKind = SewersTileKind;
 
     fn name() -> &'static str {
-        "downtown"
+        "sewers"
     }
 
     fn bounds() -> [i32; 4] {
-        [-350, 350, -500, 350]
+        [-100, 100, -100, 100]
     }
 }
 
-impl WithStandardStateSemantics for Downtown {
+impl WithStandardStateSemantics for Sewers {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingDowntown
+        GlobalGameState::LoadingSewers
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtDowntown
+        GlobalGameState::AtSewers
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingDowntown
+        GlobalGameState::QuittingSewers
     }
 }
 
@@ -64,35 +66,25 @@ impl WithStandardStateSemantics for Downtown {
 )]
 #[reflect(Default)]
 #[allow(clippy::enum_variant_names)]
-pub enum DowntownTileKind {
+pub enum SewersTileKind {
     #[default]
-    Building1Entrance,
-    SewersEntrance,
-    MallEntrance,
-    ClinicEntrance,
-    PlantShopEntrance,
-    TwinpeaksApartmentEntrance,
+    ExitZone,
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString)]
-pub enum DowntownAction {
-    EnterBuilding1,
-    EnterTwinpeaksApartment,
-    EnterSewers,
-    EnterMall,
-    EnterClinic,
-    EnterPlantShop,
+pub enum SewersAction {
+    ExitScene,
 }
 
 pub fn add(app: &mut App) {
-    info!("Adding downtown to app");
+    info!("Adding {Sewers:?} to app");
 
-    app.add_event::<DowntownAction>();
+    app.add_event::<SewersAction>();
 
-    top_down::default_setup_for_scene::<Downtown>(app);
+    top_down::default_setup_for_scene::<Sewers>(app);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Downtown>(app);
+    top_down::dev_default_setup_for_scene::<Sewers>(app);
 
     debug!("Adding plugins");
 
@@ -105,19 +97,20 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(Downtown::in_loading_state())
+            .run_if(Sewers::in_loading_state())
+            .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_scene.run_if(Downtown::in_loading_state()),
+        enter_the_scene.run_if(Sewers::in_loading_state()),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(Downtown::in_running_state())
+            .run_if(Sewers::in_running_state())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
@@ -126,15 +119,15 @@ pub fn add(app: &mut App) {
         // wait for the loading screen to fade in before changing state,
         // otherwise the player might see a flicker
         exit.run_if(in_state(common_loading_screen::wait_state()))
-            .run_if(Downtown::in_quitting_state()),
+            .run_if(Sewers::in_quitting_state()),
     );
 
-    info!("Added downtown to app");
+    info!("Added {Sewers:?} to app");
 }
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<top_down::TileMap<Downtown>>>,
+    map: Option<Res<top_down::TileMap<Sewers>>>,
 ) {
     if map.is_none() {
         return;
@@ -146,8 +139,8 @@ fn finish_when_everything_loaded(
 }
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
-    info!("Entering downtown");
-    next_state.set(Downtown::running());
+    info!("Entering {Sewers:?}");
+    next_state.set(Sewers::running());
 }
 
 fn exit(
@@ -155,33 +148,18 @@ fn exit(
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 ) {
-    info!("Leaving downtown");
+    info!("Leaving {Sewers:?}");
 
     // be a good guy and don't invade other game loops with our controls
     controls.consume_all();
 
     use GlobalGameStateTransition::*;
     match *transition {
-        DowntownToBuilding1PlayerFloor => {
-            next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
-        }
-        DowntownToMall => {
-            next_state.set(GlobalGameState::LoadingMall);
-        }
-        DowntownToClinic => {
-            next_state.set(GlobalGameState::LoadingClinic);
-        }
-        DowntownToPlantShop => {
-            next_state.set(GlobalGameState::LoadingPlantShop);
-        }
-        DowntownToSewers => {
-            next_state.set(GlobalGameState::LoadingSewers);
-        }
-        DowntownToTwinpeaksApartment => {
-            next_state.set(GlobalGameState::LoadingTwinpeaksApartment);
+        SewersToDowntown => {
+            next_state.set(GlobalGameState::LoadingDowntown);
         }
         _ => {
-            unreachable!("Invalid Downtown transition {transition:?}");
+            unreachable!("Invalid {Sewers:?} transition {transition:?}");
         }
     }
 }
@@ -193,7 +171,7 @@ mod tests {
     #[test]
     fn it_has_valid_tscn_scene() {
         const TSCN: &str =
-            include_str!("../../../main_game/assets/scenes/downtown.tscn",);
+            include_str!("../../../main_game/assets/scenes/sewers.tscn");
         rscn::parse(TSCN, &default());
     }
 }

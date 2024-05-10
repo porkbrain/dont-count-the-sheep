@@ -4,7 +4,7 @@ use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     cutscene::in_cutscene,
-    hud::daybar::{DayBar, DayBarDependent, IncreaseDayBarEvent},
+    hud::daybar::{DayBar, DayBarDependent, UpdateDayBarEvent},
     top_down::inspect_and_interact::{
         ChangeHighlightedInspectLabelEvent,
         ChangeHighlightedInspectLabelEventConsumer, SpawnLabelBgAndTextParams,
@@ -41,9 +41,13 @@ impl bevy::app::Plugin for Plugin {
             Update,
             (
                 enter_building1,
-                enter_mall.before(ChangeHighlightedInspectLabelEventConsumer),
-                enter_clinic.before(ChangeHighlightedInspectLabelEventConsumer),
+                enter_clinic,
+                enter_mall,
+                enter_plant_shop,
+                enter_sewers,
+                enter_twinpeaks_apartment,
             )
+                .before(ChangeHighlightedInspectLabelEventConsumer)
                 .run_if(on_event::<DowntownAction>())
                 .run_if(Downtown::in_running_state())
                 .run_if(not(in_cutscene())),
@@ -62,7 +66,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     player_entity: Entity,
     transition: GlobalGameStateTransition,
-    daybar_event: &'a mut Events<IncreaseDayBarEvent>,
+    daybar_event: &'a mut Events<UpdateDayBarEvent>,
     zone_to_inspect_label_entity:
         &'a mut ZoneToInspectLabelEntity<DowntownTileKind>,
 }
@@ -75,7 +79,7 @@ fn spawn(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     transition: Res<GlobalGameStateTransition>,
-    mut daybar_event: ResMut<Events<IncreaseDayBarEvent>>,
+    mut daybar_event: ResMut<Events<UpdateDayBarEvent>>,
 
     mut q: Query<&mut TscnTreeHandle<Downtown>>,
 ) {
@@ -148,7 +152,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                         + sq(0, -2),
                 ));
 
-                self.daybar_event.send(IncreaseDayBarEvent::ChangedScene);
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
             }
             "MallEntrance" if self.transition == MallToDowntown => {
                 self.player_builder.initial_position(translation.truncate());
@@ -157,7 +161,36 @@ impl<'a> TscnSpawner for Spawner<'a> {
                         + sq(0, -2),
                 ));
 
-                self.daybar_event.send(IncreaseDayBarEvent::ChangedScene);
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
+            }
+            "TwinpeaksApartmentEntrance"
+                if self.transition == TwinpeaksApartmentToDowntown =>
+            {
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(top_down::ActorTarget::new(
+                    LAYOUT.world_pos_to_square(translation.truncate())
+                        + sq(0, -2),
+                ));
+
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
+            }
+            "PlantShopEntrance" if self.transition == PlantShopToDowntown => {
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(top_down::ActorTarget::new(
+                    LAYOUT.world_pos_to_square(translation.truncate())
+                        + sq(0, -2),
+                ));
+
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
+            }
+            "SewersEntrance" if self.transition == SewersToDowntown => {
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(top_down::ActorTarget::new(
+                    LAYOUT.world_pos_to_square(translation.truncate())
+                        + sq(0, -2),
+                ));
+
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
             }
             "ClinicExit" if self.transition == ClinicToDowntown => {
                 self.player_builder.initial_position(translation.truncate());
@@ -166,7 +199,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                         + sq(0, -2),
                 ));
 
-                self.daybar_event.send(IncreaseDayBarEvent::ChangedScene);
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
             }
             _ => {}
         }
@@ -201,9 +234,12 @@ impl top_down::layout::Tile for DowntownTileKind {
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::MallEntrance
+            Self::Building1Entrance
+            | Self::SewersEntrance
+            | Self::MallEntrance
             | Self::ClinicEntrance
-            | Self::Building1Entrance => true,
+            | Self::PlantShopEntrance
+            | Self::TwinpeaksApartmentEntrance => true,
         }
     }
 
@@ -338,6 +374,110 @@ fn enter_clinic(
         next_loading_screen_state.set(common_loading_screen::start_state());
 
         *transition = GlobalGameStateTransition::DowntownToClinic;
+        next_state.set(Downtown::quitting());
+    }
+}
+
+fn enter_plant_shop(
+    mut cmd: Commands,
+    mut action_events: EventReader<DowntownAction>,
+    mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+    zone_to_inspect_label_entity: Res<
+        ZoneToInspectLabelEntity<DowntownTileKind>,
+    >,
+    daybar: Res<DayBar>,
+) {
+    let is_triggered = action_events
+        .read()
+        .any(|action| matches!(action, DowntownAction::EnterPlantShop));
+
+    if is_triggered {
+        if !daybar.is_it_time_for(DayBarDependent::PlantShopOpenHours) {
+            if let Some(entity) = zone_to_inspect_label_entity
+                .map
+                .get(&DowntownTileKind::PlantShopEntrance)
+                .copied()
+            {
+                inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
+                    entity,
+                    spawn_params: SpawnLabelBgAndTextParams {
+                        highlighted: true,
+                        overwrite_font_color: Some(LIGHT_RED),
+                        // LOCALIZATION
+                        overwrite_display_text: Some("(closed)".to_string()),
+                    },
+                });
+            } else {
+                error!(
+                    "Cannot find plant shop entrance zone inspect label entity"
+                );
+            }
+
+            return;
+        }
+
+        cmd.insert_resource(LoadingScreenSettings {
+            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+            ..default()
+        });
+
+        next_loading_screen_state.set(common_loading_screen::start_state());
+
+        *transition = GlobalGameStateTransition::DowntownToPlantShop;
+        next_state.set(Downtown::quitting());
+    }
+}
+
+fn enter_twinpeaks_apartment(
+    mut cmd: Commands,
+    mut action_events: EventReader<DowntownAction>,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+) {
+    let is_triggered = action_events.read().any(|action| {
+        matches!(action, DowntownAction::EnterTwinpeaksApartment)
+    });
+
+    if is_triggered {
+        cmd.insert_resource(LoadingScreenSettings {
+            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+            ..default()
+        });
+
+        next_loading_screen_state.set(common_loading_screen::start_state());
+
+        *transition = GlobalGameStateTransition::DowntownToTwinpeaksApartment;
+        next_state.set(Downtown::quitting());
+    }
+}
+
+fn enter_sewers(
+    mut cmd: Commands,
+    mut action_events: EventReader<DowntownAction>,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+) {
+    let is_triggered = action_events
+        .read()
+        .any(|action| matches!(action, DowntownAction::EnterSewers));
+
+    if is_triggered {
+        cmd.insert_resource(LoadingScreenSettings {
+            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+            ..default()
+        });
+
+        next_loading_screen_state.set(common_loading_screen::start_state());
+
+        *transition = GlobalGameStateTransition::DowntownToSewers;
         next_state.set(Downtown::quitting());
     }
 }

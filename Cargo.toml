@@ -21,6 +21,9 @@ members = [
     "scenes/downtown",
     "scenes/mall",
     "scenes/meditation",
+    "scenes/plant_shop",
+    "scenes/sewers",
+    "scenes/twinpeaks_apartment",
 ]
 
 
@@ -59,6 +62,9 @@ scene_clinic = { path = "scenes/clinic" }
 scene_downtown = { path = "scenes/downtown" }
 scene_mall = { path = "scenes/mall" }
 scene_meditation = { path = "scenes/meditation" }
+scene_plant_shop = { path = "scenes/plant_shop" }
+scene_sewers = { path = "scenes/sewers" }
+scene_twinpeaks_apartment = { path = "scenes/twinpeaks_apartment" }
 
 bevy_grid_squared = { path = "bevy_grid_squared", features = ["serde"] }
 bevy_magic_light_2d = { path = "bevy_magic_light_2d" }

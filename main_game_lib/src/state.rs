@@ -31,6 +31,18 @@ pub enum GlobalGameState {
     AtClinic,
     QuittingClinic,
 
+    LoadingPlantShop,
+    AtPlantShop,
+    QuittingPlantShop,
+
+    LoadingSewers,
+    AtSewers,
+    QuittingSewers,
+
+    LoadingTwinpeaksApartment,
+    AtTwinpeaksApartment,
+    QuittingTwinpeaksApartment,
+
     LoadingMall,
     AtMall,
     QuittingMall,
@@ -80,20 +92,28 @@ pub enum GlobalGameStateTransition {
     MeditationToBuilding1PlayerFloor,
 
     Building1PlayerFloorToMeditation,
-    Building1PlayerFloorToDowntown,
     Building1PlayerFloorToBuilding1Basement1,
     Sleeping,
+    DowntownToBuilding1PlayerFloor,
+    Building1PlayerFloorToDowntown,
 
     Building1Basement1ToPlayerFloor,
     Building1Basement1ToDowntown,
 
-    DowntownToBuilding1PlayerFloor,
     DowntownToMall,
-
-    DowntownToClinic,
     MallToDowntown,
 
+    TwinpeaksApartmentToDowntown,
+    DowntownToTwinpeaksApartment,
+
+    PlantShopToDowntown,
+    DowntownToPlantShop,
+
+    SewersToDowntown,
+    DowntownToSewers,
+
     ClinicToDowntown,
+    DowntownToClinic,
 }
 
 /// Typical scene has several states with standard semantics.
@@ -185,6 +205,23 @@ impl GlobalGameState {
             LoadingClinic | AtClinic | QuittingClinic => {
                 (LoadingClinic, AtClinic, QuittingClinic, None)
             }
+
+            LoadingPlantShop | AtPlantShop | QuittingPlantShop => {
+                (LoadingPlantShop, AtPlantShop, QuittingPlantShop, None)
+            }
+
+            LoadingSewers | AtSewers | QuittingSewers => {
+                (LoadingSewers, AtSewers, QuittingSewers, None)
+            }
+
+            LoadingTwinpeaksApartment
+            | AtTwinpeaksApartment
+            | QuittingTwinpeaksApartment => (
+                LoadingTwinpeaksApartment,
+                AtTwinpeaksApartment,
+                QuittingTwinpeaksApartment,
+                None,
+            ),
 
             LoadingMeditation | InGameMeditation | MeditationInMenu
             | QuittingMeditation => (

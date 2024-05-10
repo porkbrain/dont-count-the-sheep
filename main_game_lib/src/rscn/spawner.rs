@@ -240,7 +240,11 @@ fn node_to_entity<T: TscnSpawner>(
                 if let Some(action) = child_node.metadata.remove("action") {
                     label.set_emit_event_on_interacted(
                         T::LocalActionKind::from_str(&action).unwrap_or_else(
-                            |_| panic!("InspectLabel action not valid"),
+                            |_| {
+                                panic!(
+                                    "InspectLabel action '{action}' not valid"
+                                )
+                            },
                         ),
                     );
                 }
