@@ -118,8 +118,8 @@ texture = ExtResource("7_bkx0a")
 [node name="YSort" type="Node2D" parent="Cupboard2"]
 position = Vector2(0, 10)
 
-[node name="FruitBowl" type="Sprite2D" parent="."]
-position = Vector2(109, 54)
+[node name="FruitBowl" type="Sprite2D" parent="Cupboard2"]
+position = Vector2(-3, -17)
 texture = ExtResource("8_6810t")
 
 [node name="WaterDispenser" type="Sprite2D" parent="."]

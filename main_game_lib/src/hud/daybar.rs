@@ -162,7 +162,7 @@ pub(crate) fn interact(
                         text: Text::from_section(
                             // LOCALIZATION
                             format!(
-                                "{} / {} beats ({})",
+                                "{} / {} beats\n({})",
                                 daybar.progress.0,
                                 Beats::DAY.0,
                                 daybar.progress.time_of_day(),
@@ -172,7 +172,6 @@ pub(crate) fn interact(
                                 // TODO
                                 font_size: 18.0,
                                 font: asset_server.load(fonts::PIXEL1),
-                                ..default()
                             },
                         )
                         .with_justify(JustifyText::Center),

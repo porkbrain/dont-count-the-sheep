@@ -1,9 +1,10 @@
 [gd_scene load_steps=3 format=3 uid="uid://cehfnn2h1xqt7"]
 
-[ext_resource type="Texture2D" uid="uid://sit53g2cltgl" path="res://assets/downtown/sewers_bg.png" id="1_sy4gy"]
-[ext_resource type="Texture2D" uid="uid://bflcaqeap0y6j" path="res://assets/downtown/bin_bag.png" id="2_w3jta"]
+[ext_resource type="Texture2D" uid="uid://c42cvp1tai2ek" path="res://assets/downtown/sewers_bg.png" id="1_sy4gy"]
+[ext_resource type="Texture2D" uid="uid://c3306mx7c6kvh" path="res://assets/downtown/bin_bag.png" id="2_w3jta"]
 
-[node name="Node2D" type="Node2D"]
+[node name="Sewers" type="Node2D"]
+position = Vector2(284, 131)
 
 [node name="SewersBg" type="Sprite2D" parent="."]
 position = Vector2(-280, -139)
@@ -12,3 +13,16 @@ texture = ExtResource("1_sy4gy")
 [node name="BinBag" type="Sprite2D" parent="."]
 position = Vector2(-78, -8)
 texture = ExtResource("2_w3jta")
+
+[node name="Points" type="Node2D" parent="."]
+
+[node name="Entrance" type="Node2D" parent="Points"]
+position = Vector2(38, 8)
+
+[node name="Point" type="Node" parent="Points/Entrance"]
+
+[node name="InspectLabel" type="Node" parent="Points/Entrance"]
+metadata/zone = "ExitZone"
+metadata/action = "ExitScene"
+metadata/label = "Exit"
+metadata/category = "Default"

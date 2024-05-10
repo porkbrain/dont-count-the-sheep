@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://dtninaqnht00i" path="res://assets/twinpeaks_apartment/shower.png" id="3_i5k2w"]
 [ext_resource type="Texture2D" uid="uid://dpj7jnsvxyfvt" path="res://assets/environment/water_bottle_half.png" id="4_8j1mb"]
 
-[node name="TwinPeaksApartment" type="Node2D"]
+[node name="TwinPeaks" type="Node2D"]
 
 [node name="TwinPeaksBg" type="Sprite2D" parent="."]
 position = Vector2(-53, 83)
@@ -22,3 +22,16 @@ texture = ExtResource("3_i5k2w")
 [node name="WaterBottleHalf" type="Sprite2D" parent="."]
 position = Vector2(25, -34)
 texture = ExtResource("4_8j1mb")
+
+[node name="Points" type="Node2D" parent="."]
+
+[node name="Entrance" type="Node2D" parent="Points"]
+position = Vector2(-114, 69)
+
+[node name="Point" type="Node" parent="Points/Entrance"]
+
+[node name="InspectLabel" type="Node" parent="Points/Entrance"]
+metadata/zone = "ExitZone"
+metadata/action = "ExitScene"
+metadata/label = "Exit"
+metadata/category = "Default"

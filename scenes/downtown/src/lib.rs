@@ -25,7 +25,7 @@ impl TopDownScene for Downtown {
     }
 
     fn bounds() -> [i32; 4] {
-        [-250, 250, -500, 300]
+        [-350, 350, -500, 350]
     }
 }
 
