@@ -159,6 +159,35 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
                 self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
             }
+            "TwinpeaksApartmentEntrance"
+                if self.transition == TwinpeaksApartmentToDowntown =>
+            {
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(top_down::ActorTarget::new(
+                    LAYOUT.world_pos_to_square(translation.truncate())
+                        + sq(0, -2),
+                ));
+
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
+            }
+            "PlantShopEntrance" if self.transition == PlantShopToDowntown => {
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(top_down::ActorTarget::new(
+                    LAYOUT.world_pos_to_square(translation.truncate())
+                        + sq(0, -2),
+                ));
+
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
+            }
+            "SewersEntrance" if self.transition == SewersToDowntown => {
+                self.player_builder.initial_position(translation.truncate());
+                self.player_builder.walking_to(top_down::ActorTarget::new(
+                    LAYOUT.world_pos_to_square(translation.truncate())
+                        + sq(0, -2),
+                ));
+
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
+            }
             "ClinicExit" if self.transition == ClinicToDowntown => {
                 self.player_builder.initial_position(translation.truncate());
                 self.player_builder.walking_to(top_down::ActorTarget::new(
@@ -201,9 +230,12 @@ impl top_down::layout::Tile for DowntownTileKind {
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::MallEntrance
+            Self::Building1Entrance
+            | Self::SewersEntrance
+            | Self::MallEntrance
             | Self::ClinicEntrance
-            | Self::Building1Entrance => true,
+            | Self::PlantShopEntrance
+            | Self::TwinpeaksApartmentEntrance => true,
         }
     }
 

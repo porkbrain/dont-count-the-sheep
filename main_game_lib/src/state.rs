@@ -80,20 +80,28 @@ pub enum GlobalGameStateTransition {
     MeditationToBuilding1PlayerFloor,
 
     Building1PlayerFloorToMeditation,
-    Building1PlayerFloorToDowntown,
     Building1PlayerFloorToBuilding1Basement1,
     Sleeping,
+    DowntownToBuilding1PlayerFloor,
+    Building1PlayerFloorToDowntown,
 
     Building1Basement1ToPlayerFloor,
     Building1Basement1ToDowntown,
 
-    DowntownToBuilding1PlayerFloor,
     DowntownToMall,
-
-    DowntownToClinic,
     MallToDowntown,
 
+    TwinpeaksApartmentToDowntown,
+    DowntownToTwinpeaksApartment,
+
+    PlantShopToDowntown,
+    DowntownToPlantShop,
+
+    SewersToDowntown,
+    DowntownToSewers,
+
     ClinicToDowntown,
+    DowntownToClinic,
 }
 
 /// Typical scene has several states with standard semantics.

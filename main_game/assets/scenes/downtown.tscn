@@ -632,7 +632,7 @@ position = Vector2(287, -201)
 [node name="InspectLabel" type="Node" parent="Block2Root/TwinpeaksApartmentEntrance"]
 metadata/zone = "TwinpeaksApartmentEntrance"
 metadata/action = "EnterTwinpeaksApartment"
-metadata/label = "Plant shop"
+metadata/label = "Unlocked doors"
 metadata/category = "Default"
 
 [node name="Block1Root" type="Node2D" parent="."]

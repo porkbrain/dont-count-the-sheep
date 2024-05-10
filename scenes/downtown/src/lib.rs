@@ -67,15 +67,21 @@ impl WithStandardStateSemantics for Downtown {
 pub enum DowntownTileKind {
     #[default]
     Building1Entrance,
+    SewersEntrance,
     MallEntrance,
     ClinicEntrance,
+    PlantShopEntrance,
+    TwinpeaksApartmentEntrance,
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString)]
 pub enum DowntownAction {
     EnterBuilding1,
+    EnterTwinpeaksApartment,
+    EnterSewers,
     EnterMall,
     EnterClinic,
+    EnterPlantShop,
 }
 
 pub fn add(app: &mut App) {
