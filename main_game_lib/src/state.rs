@@ -31,6 +31,18 @@ pub enum GlobalGameState {
     AtClinic,
     QuittingClinic,
 
+    LoadingPlantShop,
+    AtPlantShop,
+    QuittingPlantShop,
+
+    LoadingSewers,
+    AtSewers,
+    QuittingSewers,
+
+    LoadingTwinpeaksApartment,
+    AtTwinpeaksApartment,
+    QuittingTwinpeaksApartment,
+
     LoadingMall,
     AtMall,
     QuittingMall,
@@ -193,6 +205,23 @@ impl GlobalGameState {
             LoadingClinic | AtClinic | QuittingClinic => {
                 (LoadingClinic, AtClinic, QuittingClinic, None)
             }
+
+            LoadingPlantShop | AtPlantShop | QuittingPlantShop => {
+                (LoadingPlantShop, AtPlantShop, QuittingPlantShop, None)
+            }
+
+            LoadingSewers | AtSewers | QuittingSewers => {
+                (LoadingSewers, AtSewers, QuittingSewers, None)
+            }
+
+            LoadingTwinpeaksApartment
+            | AtTwinpeaksApartment
+            | QuittingTwinpeaksApartment => (
+                LoadingTwinpeaksApartment,
+                AtTwinpeaksApartment,
+                QuittingTwinpeaksApartment,
+                None,
+            ),
 
             LoadingMeditation | InGameMeditation | MeditationInMenu
             | QuittingMeditation => (

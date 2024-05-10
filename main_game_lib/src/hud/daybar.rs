@@ -50,6 +50,8 @@ pub enum DayBarDependent {
     MallOpenHours,
     /// The span of time when the clinic is open.
     ClinicOpenHours,
+    /// The span of time when the plant shop is open.
+    PlantShopOpenHours,
 }
 
 #[derive(Component)]
@@ -222,6 +224,7 @@ impl DayBar {
         let range = match what {
             DayBarDependent::MallOpenHours => ..Beats::EVENING,
             DayBarDependent::ClinicOpenHours => ..Beats::EVENING,
+            DayBarDependent::PlantShopOpenHours => ..Beats::EVENING,
         };
 
         range.contains(&self.progress)

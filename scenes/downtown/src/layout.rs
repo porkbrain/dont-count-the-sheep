@@ -39,11 +39,8 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(Downtown::quitting()), despawn)
         .add_systems(
             Update,
-            (
-                enter_building1,
-                enter_mall.before(ChangeHighlightedInspectLabelEventConsumer),
-                enter_clinic.before(ChangeHighlightedInspectLabelEventConsumer),
-            )
+            (enter_building1, enter_mall, enter_clinic, enter_plant_shop)
+                .before(ChangeHighlightedInspectLabelEventConsumer)
                 .run_if(on_event::<DowntownAction>())
                 .run_if(Downtown::in_running_state())
                 .run_if(not(in_cutscene())),
@@ -370,6 +367,60 @@ fn enter_clinic(
         next_loading_screen_state.set(common_loading_screen::start_state());
 
         *transition = GlobalGameStateTransition::DowntownToClinic;
+        next_state.set(Downtown::quitting());
+    }
+}
+
+fn enter_plant_shop(
+    mut cmd: Commands,
+    mut action_events: EventReader<DowntownAction>,
+    mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+    zone_to_inspect_label_entity: Res<
+        ZoneToInspectLabelEntity<DowntownTileKind>,
+    >,
+    daybar: Res<DayBar>,
+) {
+    let is_triggered = action_events
+        .read()
+        .any(|action| matches!(action, DowntownAction::EnterPlantShop));
+
+    if is_triggered {
+        if !daybar.is_it_time_for(DayBarDependent::PlantShopOpenHours) {
+            if let Some(entity) = zone_to_inspect_label_entity
+                .map
+                .get(&DowntownTileKind::PlantShopEntrance)
+                .copied()
+            {
+                inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
+                    entity,
+                    spawn_params: SpawnLabelBgAndTextParams {
+                        highlighted: true,
+                        overwrite_font_color: Some(LIGHT_RED),
+                        // LOCALIZATION
+                        overwrite_display_text: Some("(closed)".to_string()),
+                    },
+                });
+            } else {
+                error!(
+                    "Cannot find plant shop entrance zone inspect label entity"
+                );
+            }
+
+            return;
+        }
+
+        cmd.insert_resource(LoadingScreenSettings {
+            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+            ..default()
+        });
+
+        next_loading_screen_state.set(common_loading_screen::start_state());
+
+        *transition = GlobalGameStateTransition::DowntownToPlantShop;
         next_state.set(Downtown::quitting());
     }
 }

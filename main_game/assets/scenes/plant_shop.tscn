@@ -20,11 +20,11 @@
 
 [node name="PlantshopBg" type="Sprite2D" parent="."]
 z_index = -3
-position = Vector2(155, -79)
+position = Vector2(0, 30)
 texture = ExtResource("1_bruju")
 
 [node name="RecycleBin" type="Sprite2D" parent="."]
-position = Vector2(343, -129)
+position = Vector2(188, -20)
 texture = ExtResource("2_gim71")
 
 [node name="YSort" type="Node2D" parent="RecycleBin"]
@@ -32,17 +32,17 @@ position = Vector2(0, 12)
 
 [node name="PottedBush" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(63, -177)
+position = Vector2(-92, -68)
 texture = ExtResource("6_uoc65")
 
 [node name="FireEx" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(343, -166)
+position = Vector2(188, -57)
 texture = ExtResource("7_2xqcs")
 
 [node name="Shelf" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(184, -195)
+position = Vector2(29, -86)
 texture = ExtResource("8_52cf7")
 
 [node name="Plant2" type="Sprite2D" parent="Shelf"]
@@ -76,12 +76,12 @@ texture = ExtResource("10_ejop8")
 
 [node name="PlantshopPainting" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(63, -215)
+position = Vector2(-92, -106)
 texture = ExtResource("13_fsohl")
 
 [node name="ShelfWide" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(8, -195)
+position = Vector2(-147, -86)
 texture = ExtResource("14_afqnm")
 
 [node name="Plant1Pink" type="Sprite2D" parent="ShelfWide"]
@@ -107,11 +107,11 @@ texture = ExtResource("10_ejop8")
 
 [node name="Cupboard2" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(100, -172)
+position = Vector2(-55, -63)
 texture = ExtResource("17_xg3n8")
 
 [node name="CounterWide" type="Sprite2D" parent="."]
-position = Vector2(286, -108)
+position = Vector2(131, 1)
 texture = ExtResource("13_f2gnt")
 
 [node name="Plant4" type="Sprite2D" parent="CounterWide"]
@@ -126,14 +126,14 @@ texture = ExtResource("3_7v53w")
 position = Vector2(1, 14)
 
 [node name="CounterWidePurple" type="Sprite2D" parent="."]
-position = Vector2(42, -115)
+position = Vector2(-113, -6)
 texture = ExtResource("15_c65y4")
 
 [node name="YSort" type="Node2D" parent="CounterWidePurple"]
 position = Vector2(1, 15)
 
 [node name="CounterWidePurple2" type="Sprite2D" parent="."]
-position = Vector2(42, -55)
+position = Vector2(-113, 54)
 texture = ExtResource("15_c65y4")
 
 [node name="YSort" type="Node2D" parent="CounterWidePurple2"]
@@ -141,18 +141,19 @@ position = Vector2(1, 14)
 
 [node name="ShelfWide2" type="Sprite2D" parent="."]
 z_index = 2
-position = Vector2(204, -32)
+position = Vector2(49, 77)
 texture = ExtResource("14_afqnm")
 
 [node name="ShelfWide3" type="Sprite2D" parent="."]
 z_index = 2
-position = Vector2(301, -32)
+position = Vector2(146, 77)
 texture = ExtResource("14_afqnm")
 
 [node name="Points" type="Node2D" parent="."]
+position = Vector2(-155, 109)
 
 [node name="Entrance" type="Node2D" parent="Points"]
-position = Vector2(48, -15)
+position = Vector2(49, -10)
 
 [node name="Point" type="Node" parent="Points/Entrance"]
 

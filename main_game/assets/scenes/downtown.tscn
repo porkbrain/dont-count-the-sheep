@@ -614,7 +614,7 @@ texture = ExtResource("43_ihbqd")
 position = Vector2(0, 13)
 
 [node name="PlantShopEntrance" type="Node2D" parent="Block2Root"]
-position = Vector2(151, -199)
+position = Vector2(151, -202)
 
 [node name="Point" type="Node" parent="Block2Root/PlantShopEntrance"]
 
@@ -625,7 +625,7 @@ metadata/label = "Plant shop"
 metadata/category = "Default"
 
 [node name="TwinpeaksApartmentEntrance" type="Node2D" parent="Block2Root"]
-position = Vector2(287, -201)
+position = Vector2(287, -202)
 
 [node name="Point" type="Node" parent="Block2Root/TwinpeaksApartmentEntrance"]
 

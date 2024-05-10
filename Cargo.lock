@@ -2910,6 +2910,7 @@ dependencies = [
  "scene_downtown",
  "scene_mall",
  "scene_meditation",
+ "scene_plant_shop",
 ]
 
 [[package]]
@@ -3900,6 +3901,28 @@ dependencies = [
  "leafwing-input-manager",
  "main_game_lib",
  "rand",
+]
+
+[[package]]
+name = "scene_plant_shop"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_grid_squared",
+ "bevy_pixel_camera",
+ "common_action",
+ "common_assets",
+ "common_loading_screen",
+ "common_store",
+ "common_story",
+ "common_visuals",
+ "itertools",
+ "lazy_static",
+ "main_game_lib",
+ "rand",
+ "serde",
+ "smallvec",
+ "strum",
 ]
 
 [[package]]
