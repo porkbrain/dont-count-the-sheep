@@ -7,15 +7,21 @@ Option<main_game_lib::top_down::layout::ZoneGroup>
     use main_game_lib::top_down::layout::ZoneGroup;
     #[allow(clippy::match_single_binding)] match self
     { Self::Building1Entrance => Some(ZoneGroup(0)),
-Self::MallEntrance => Some(ZoneGroup(1)),
-Self::ClinicEntrance => Some(ZoneGroup(2)),
+Self::SewersEntrance => Some(ZoneGroup(1)),
+Self::MallEntrance => Some(ZoneGroup(2)),
+Self::ClinicEntrance => Some(ZoneGroup(3)),
+Self::PlantShopEntrance => Some(ZoneGroup(4)),
+Self::TwinpeaksApartmentEntrance => Some(ZoneGroup(5)),
  #[allow(unreachable_patterns)] _ => None, }
 } #[inline] fn zone_size(&self) -> Option<usize>
 {
     #[allow(clippy::match_single_binding)] match self
     { Self::Building1Entrance => Some(33),
+Self::SewersEntrance => Some(60),
 Self::MallEntrance => Some(145),
 Self::ClinicEntrance => Some(9),
+Self::PlantShopEntrance => Some(44),
+Self::TwinpeaksApartmentEntrance => Some(44),
  #[allow(unreachable_patterns)] _ => None, }
 } type Successors = Self; #[inline] fn zone_successors(&self) -> Option<&'static
 [Self::Successors]>
