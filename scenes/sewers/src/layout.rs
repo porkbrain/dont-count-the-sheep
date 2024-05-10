@@ -17,21 +17,21 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(PlantShop::loading()),
-            rscn::start_loading_tscn::<PlantShop>,
+            OnEnter(Sewers::loading()),
+            rscn::start_loading_tscn::<Sewers>,
         )
         .add_systems(
             Update,
             spawn
-                .run_if(PlantShop::in_loading_state())
-                .run_if(resource_exists::<TileMap<PlantShop>>)
-                .run_if(rscn::tscn_loaded_but_not_spawned::<PlantShop>()),
+                .run_if(Sewers::in_loading_state())
+                .run_if(resource_exists::<TileMap<Sewers>>)
+                .run_if(rscn::tscn_loaded_but_not_spawned::<Sewers>()),
         )
-        .add_systems(OnExit(PlantShop::quitting()), despawn)
+        .add_systems(OnExit(Sewers::quitting()), despawn)
         .add_systems(
             Update,
-            exit.run_if(on_event::<PlantShopAction>())
-                .run_if(PlantShop::in_running_state())
+            exit.run_if(on_event::<SewersAction>())
+                .run_if(Sewers::in_running_state())
                 .run_if(not(in_cutscene())),
         );
     }
@@ -48,7 +48,7 @@ struct Spawner<'a> {
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
     zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<PlantShopTileKind>,
+        &'a mut ZoneToInspectLabelEntity<SewersTileKind>,
 }
 
 /// The names are stored in the scene file.
@@ -58,9 +58,9 @@ fn spawn(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 
-    mut q: Query<&mut TscnTreeHandle<PlantShop>>,
+    mut q: Query<&mut TscnTreeHandle<Sewers>>,
 ) {
-    info!("Spawning {PlantShop:?} scene");
+    info!("Spawning {Sewers:?} scene");
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
@@ -91,13 +91,13 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.entity(root).despawn_recursive();
 
     cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <PlantShop as TopDownScene>::LocalTileKind,
+        <Sewers as TopDownScene>::LocalTileKind,
     >>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
-    type LocalActionKind = PlantShopAction;
-    type LocalZoneKind = PlantShopTileKind;
+    type LocalActionKind = SewersAction;
+    type LocalZoneKind = SewersTileKind;
 
     fn on_spawned(
         &mut self,
@@ -110,7 +110,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
             .insert(RenderLayers::layer(render_layer::BG));
 
         match name.as_str() {
-            "PlantShop" => {
+            "Sewers" => {
                 cmd.entity(who).insert(LayoutEntity);
                 cmd.entity(who).add_child(self.player_entity);
             }
@@ -141,7 +141,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
     }
 }
 
-impl top_down::layout::Tile for PlantShopTileKind {
+impl top_down::layout::Tile for SewersTileKind {
     #[inline]
     fn is_walkable(&self, _: Entity) -> bool {
         true
@@ -162,14 +162,14 @@ impl top_down::layout::Tile for PlantShopTileKind {
 
 fn exit(
     mut cmd: Commands,
-    mut action_events: EventReader<PlantShopAction>,
+    mut action_events: EventReader<SewersAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
 ) {
     let is_triggered = action_events
         .read()
-        .any(|action| matches!(action, PlantShopAction::ExitScene));
+        .any(|action| matches!(action, SewersAction::ExitScene));
 
     if is_triggered {
         cmd.insert_resource(LoadingScreenSettings {
@@ -180,7 +180,7 @@ fn exit(
 
         next_loading_screen_state.set(common_loading_screen::start_state());
 
-        *transition = GlobalGameStateTransition::PlantShopToDowntown;
-        next_state.set(PlantShop::quitting());
+        *transition = GlobalGameStateTransition::SewersToDowntown;
+        next_state.set(Sewers::quitting());
     }
 }

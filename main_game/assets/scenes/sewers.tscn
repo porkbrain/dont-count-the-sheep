@@ -4,20 +4,19 @@
 [ext_resource type="Texture2D" uid="uid://c3306mx7c6kvh" path="res://assets/downtown/bin_bag.png" id="2_w3jta"]
 
 [node name="Sewers" type="Node2D"]
-position = Vector2(284, 131)
 
 [node name="SewersBg" type="Sprite2D" parent="."]
-position = Vector2(-280, -139)
+position = Vector2(-21, 1)
 texture = ExtResource("1_sy4gy")
 
 [node name="BinBag" type="Sprite2D" parent="."]
-position = Vector2(-78, -8)
+position = Vector2(181, 132)
 texture = ExtResource("2_w3jta")
 
 [node name="Points" type="Node2D" parent="."]
 
 [node name="Entrance" type="Node2D" parent="Points"]
-position = Vector2(38, 8)
+position = Vector2(292, 152)
 
 [node name="Point" type="Node" parent="Points/Entrance"]
 

@@ -26,7 +26,7 @@ texture = ExtResource("4_8j1mb")
 [node name="Points" type="Node2D" parent="."]
 
 [node name="Entrance" type="Node2D" parent="Points"]
-position = Vector2(-114, 69)
+position = Vector2(-131, 82)
 
 [node name="Point" type="Node" parent="Points/Entrance"]
 

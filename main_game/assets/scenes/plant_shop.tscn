@@ -150,10 +150,9 @@ position = Vector2(146, 77)
 texture = ExtResource("14_afqnm")
 
 [node name="Points" type="Node2D" parent="."]
-position = Vector2(-155, 109)
 
 [node name="Entrance" type="Node2D" parent="Points"]
-position = Vector2(49, -10)
+position = Vector2(-107, 99)
 
 [node name="Point" type="Node" parent="Points/Entrance"]
 

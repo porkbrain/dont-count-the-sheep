@@ -33,3 +33,5 @@ scene_downtown.workspace = true
 scene_mall.workspace = true
 scene_meditation.workspace = true
 scene_plant_shop.workspace = true
+scene_sewers.workspace = true
+scene_twinpeaks_apartment.workspace = true

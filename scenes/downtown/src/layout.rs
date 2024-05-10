@@ -39,7 +39,14 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(Downtown::quitting()), despawn)
         .add_systems(
             Update,
-            (enter_building1, enter_mall, enter_clinic, enter_plant_shop)
+            (
+                enter_building1,
+                enter_clinic,
+                enter_mall,
+                enter_plant_shop,
+                enter_sewers,
+                enter_twinpeaks_apartment,
+            )
                 .before(ChangeHighlightedInspectLabelEventConsumer)
                 .run_if(on_event::<DowntownAction>())
                 .run_if(Downtown::in_running_state())
@@ -421,6 +428,56 @@ fn enter_plant_shop(
         next_loading_screen_state.set(common_loading_screen::start_state());
 
         *transition = GlobalGameStateTransition::DowntownToPlantShop;
+        next_state.set(Downtown::quitting());
+    }
+}
+
+fn enter_twinpeaks_apartment(
+    mut cmd: Commands,
+    mut action_events: EventReader<DowntownAction>,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+) {
+    let is_triggered = action_events.read().any(|action| {
+        matches!(action, DowntownAction::EnterTwinpeaksApartment)
+    });
+
+    if is_triggered {
+        cmd.insert_resource(LoadingScreenSettings {
+            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+            ..default()
+        });
+
+        next_loading_screen_state.set(common_loading_screen::start_state());
+
+        *transition = GlobalGameStateTransition::DowntownToTwinpeaksApartment;
+        next_state.set(Downtown::quitting());
+    }
+}
+
+fn enter_sewers(
+    mut cmd: Commands,
+    mut action_events: EventReader<DowntownAction>,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+) {
+    let is_triggered = action_events
+        .read()
+        .any(|action| matches!(action, DowntownAction::EnterSewers));
+
+    if is_triggered {
+        cmd.insert_resource(LoadingScreenSettings {
+            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+            ..default()
+        });
+
+        next_loading_screen_state.set(common_loading_screen::start_state());
+
+        *transition = GlobalGameStateTransition::DowntownToSewers;
         next_state.set(Downtown::quitting());
     }
 }

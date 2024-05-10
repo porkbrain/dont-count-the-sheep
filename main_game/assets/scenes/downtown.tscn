@@ -918,12 +918,12 @@ z_index = -1
 position = Vector2(800, -52)
 texture = ExtResource("57_hq0ra")
 
-[node name="Manhole5" type="Sprite2D" parent="."]
+[node name="SewersEntrance" type="Sprite2D" parent="."]
 z_index = -1
 position = Vector2(-963, -299)
 texture = ExtResource("57_hq0ra")
 
-[node name="InspectLabel" type="Node" parent="Manhole5"]
+[node name="InspectLabel" type="Node" parent="SewersEntrance"]
 metadata/zone = "SewersEntrance"
 metadata/action = "EnterSewers"
 metadata/label = "Go down under"
