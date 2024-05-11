@@ -1,4 +1,4 @@
-[gd_scene load_steps=75 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=76 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -65,6 +65,7 @@
 [ext_resource type="Texture2D" uid="uid://cf4vsx36spow3" path="res://assets/environment/box_cardboard_sideways.png" id="63_vdtxl"]
 [ext_resource type="Texture2D" uid="uid://ddyls3h5535ci" path="res://assets/downtown/wild_flower1.png" id="64_u50jo"]
 [ext_resource type="Texture2D" uid="uid://cqx60k4oq584k" path="res://assets/downtown/wild_flower2.png" id="65_k5t6a"]
+[ext_resource type="Texture2D" uid="uid://vwk8f81yiltw" path="res://assets/downtown/wild_flower3.png" id="66_53tlk"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -281,7 +282,7 @@ texture = ExtResource("28_6tavv")
 position = Vector2(0, 75)
 
 [node name="Mushroom" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-438, -692)
+position = Vector2(-438, -684)
 texture = ExtResource("50_ubqu6")
 
 [node name="Mushroom3" type="Sprite2D" parent="CompoundRoot"]
@@ -1141,3 +1142,7 @@ texture = ExtResource("64_u50jo")
 [node name="WildFlower16" type="Sprite2D" parent="."]
 position = Vector2(-878, -810)
 texture = ExtResource("65_k5t6a")
+
+[node name="WildFlower17" type="Sprite2D" parent="."]
+position = Vector2(-381, -560)
+texture = ExtResource("66_53tlk")

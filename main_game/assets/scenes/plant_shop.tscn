@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://dek7ps022pco7"]
+[gd_scene load_steps=25 format=3 uid="uid://dek7ps022pco7"]
 
 [ext_resource type="Texture2D" uid="uid://c116mof5v4lgc" path="res://assets/downtown/plantshop_bg.png" id="1_bruju"]
 [ext_resource type="Texture2D" uid="uid://5ywhhdx6rx7r" path="res://assets/downtown/recycle_bin.png" id="2_gim71"]
@@ -22,6 +22,8 @@
 [ext_resource type="Texture2D" uid="uid://cf4vsx36spow3" path="res://assets/environment/box_cardboard_sideways.png" id="20_ewfv5"]
 [ext_resource type="Texture2D" uid="uid://bprq7kf7j27if" path="res://assets/downtown/sipek.png" id="21_7cf1p"]
 [ext_resource type="Texture2D" uid="uid://bwt8l2nfovdrb" path="res://assets/downtown/bamboo_rooftop.png" id="22_l5faq"]
+[ext_resource type="Texture2D" uid="uid://bwopuawk238e4" path="res://assets/residential/indoors/plant4.png" id="23_6cdwa"]
+[ext_resource type="Texture2D" uid="uid://bwhroeinh4ybc" path="res://assets/downtown/hanging_plants.png" id="24_0wcvj"]
 
 [node name="PlantShop" type="Node2D"]
 
@@ -44,7 +46,7 @@ texture = ExtResource("6_uoc65")
 
 [node name="FireEx" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(188, -57)
+position = Vector2(188, -51)
 texture = ExtResource("7_2xqcs")
 
 [node name="Shelf" type="Sprite2D" parent="."]
@@ -140,6 +142,10 @@ texture = ExtResource("3_7v53w")
 [node name="YSort" type="Node2D" parent="CounterWide"]
 position = Vector2(1, 14)
 
+[node name="PottedBush3" type="Sprite2D" parent="CounterWide"]
+position = Vector2(54, 9)
+texture = ExtResource("6_uoc65")
+
 [node name="CounterWidePurple" type="Sprite2D" parent="."]
 position = Vector2(-113, -6)
 texture = ExtResource("15_c65y4")
@@ -171,7 +177,7 @@ position = Vector2(0, 8)
 texture = ExtResource("18_mulg4")
 
 [node name="CounterWidePurple2" type="Sprite2D" parent="."]
-position = Vector2(-75, 49)
+position = Vector2(-75, 44)
 texture = ExtResource("15_c65y4")
 
 [node name="YSort" type="Node2D" parent="CounterWidePurple2"]
@@ -220,6 +226,10 @@ texture = ExtResource("21_7cf1p")
 position = Vector2(-32, 88)
 texture = ExtResource("22_l5faq")
 
-[node name="PottedBush3" type="Sprite2D" parent="."]
-position = Vector2(185, 10)
-texture = ExtResource("6_uoc65")
+[node name="Plant4" type="Sprite2D" parent="."]
+position = Vector2(-47, -81)
+texture = ExtResource("23_6cdwa")
+
+[node name="HangingPlants" type="Sprite2D" parent="."]
+position = Vector2(115, -59)
+texture = ExtResource("24_0wcvj")
