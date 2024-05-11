@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://dek7ps022pco7"]
+[gd_scene load_steps=23 format=3 uid="uid://dek7ps022pco7"]
 
 [ext_resource type="Texture2D" uid="uid://c116mof5v4lgc" path="res://assets/downtown/plantshop_bg.png" id="1_bruju"]
 [ext_resource type="Texture2D" uid="uid://5ywhhdx6rx7r" path="res://assets/downtown/recycle_bin.png" id="2_gim71"]
@@ -19,6 +19,9 @@
 [ext_resource type="Texture2D" uid="uid://ck0d0ox20muxk" path="res://assets/residential/indoors/cupboard2.png" id="17_xg3n8"]
 [ext_resource type="Texture2D" uid="uid://bkaiirf71lsu5" path="res://assets/residential/indoors/sign_seedling.png" id="18_mulg4"]
 [ext_resource type="Texture2D" uid="uid://dwvjh1ee1wsy7" path="res://assets/environment/room_light.png" id="19_ialyq"]
+[ext_resource type="Texture2D" uid="uid://cf4vsx36spow3" path="res://assets/environment/box_cardboard_sideways.png" id="20_ewfv5"]
+[ext_resource type="Texture2D" uid="uid://bprq7kf7j27if" path="res://assets/downtown/sipek.png" id="21_7cf1p"]
+[ext_resource type="Texture2D" uid="uid://bwt8l2nfovdrb" path="res://assets/downtown/bamboo_rooftop.png" id="22_l5faq"]
 
 [node name="PlantShop" type="Node2D"]
 
@@ -154,12 +157,21 @@ flip_h = true
 position = Vector2(-25, -16)
 texture = ExtResource("17_5kiyl")
 
+[node name="Seedlings3" type="Sprite2D" parent="CounterWidePurple"]
+z_index = 1
+position = Vector2(27, -10)
+texture = ExtResource("17_5kiyl")
+
+[node name="Seedlings4" type="Sprite2D" parent="CounterWidePurple"]
+position = Vector2(24.5, -15.5)
+texture = ExtResource("17_5kiyl")
+
 [node name="SignSeedling" type="Sprite2D" parent="CounterWidePurple"]
 position = Vector2(0, 8)
 texture = ExtResource("18_mulg4")
 
 [node name="CounterWidePurple2" type="Sprite2D" parent="."]
-position = Vector2(-113, 54)
+position = Vector2(-75, 49)
 texture = ExtResource("15_c65y4")
 
 [node name="YSort" type="Node2D" parent="CounterWidePurple2"]
@@ -191,3 +203,23 @@ metadata/category = "Default"
 [node name="RoomLight" type="Sprite2D" parent="."]
 position = Vector2(-56, -81)
 texture = ExtResource("19_ialyq")
+
+[node name="BoxCardboardSideways" type="Sprite2D" parent="."]
+position = Vector2(-178, -43)
+texture = ExtResource("20_ewfv5")
+
+[node name="PottedBush2" type="Sprite2D" parent="."]
+position = Vector2(-174, 95)
+texture = ExtResource("6_uoc65")
+
+[node name="Sipek" type="Sprite2D" parent="PottedBush2"]
+position = Vector2(3, -15)
+texture = ExtResource("21_7cf1p")
+
+[node name="BambooRooftop" type="Sprite2D" parent="."]
+position = Vector2(-32, 88)
+texture = ExtResource("22_l5faq")
+
+[node name="PottedBush3" type="Sprite2D" parent="."]
+position = Vector2(185, 10)
+texture = ExtResource("6_uoc65")

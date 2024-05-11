@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://qrq4qd72bkgp"]
+[gd_scene load_steps=8 format=3 uid="uid://qrq4qd72bkgp"]
 
 [ext_resource type="Texture2D" uid="uid://p2vei5la1m3i" path="res://assets/twinpeaks_apartment/twinpeaks_bg.png" id="1_cqoh4"]
 [ext_resource type="Texture2D" uid="uid://dgh7pxmg8k4yg" path="res://assets/twinpeaks_apartment/bed_plain.png" id="2_x34s0"]
 [ext_resource type="Texture2D" uid="uid://c40aoo40c6ysm" path="res://assets/twinpeaks_apartment/shower.png" id="3_i5k2w"]
 [ext_resource type="Texture2D" uid="uid://ufn4rnxo8e62" path="res://assets/environment/water_bottle_half.png" id="4_8j1mb"]
+[ext_resource type="Texture2D" uid="uid://cf4vsx36spow3" path="res://assets/environment/box_cardboard_sideways.png" id="5_l06fy"]
+[ext_resource type="Texture2D" uid="uid://uy06ivqk8lwk" path="res://assets/residential/indoors/plant1.png" id="6_1lf6j"]
+[ext_resource type="Texture2D" uid="uid://2wr58b6rdevo" path="res://assets/residential/indoors/plant3.png" id="7_t6oyq"]
 
 [node name="TwinPeaks" type="Node2D"]
 
@@ -42,3 +45,15 @@ metadata/zone = "ExitZone"
 metadata/action = "ExitScene"
 metadata/label = "Exit"
 metadata/category = "Default"
+
+[node name="BoxCardboardSideways" type="Sprite2D" parent="."]
+position = Vector2(-57, -14)
+texture = ExtResource("5_l06fy")
+
+[node name="Plant1" type="Sprite2D" parent="."]
+position = Vector2(-148, -40)
+texture = ExtResource("6_1lf6j")
+
+[node name="Plant3" type="Sprite2D" parent="."]
+position = Vector2(148, -41)
+texture = ExtResource("7_t6oyq")
