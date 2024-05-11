@@ -1,13 +1,14 @@
 [gd_scene load_steps=5 format=3 uid="uid://qrq4qd72bkgp"]
 
-[ext_resource type="Texture2D" uid="uid://bxned4cxwr5oh" path="res://assets/twinpeaks_apartment/twinpeaks_bg.png" id="1_cqoh4"]
-[ext_resource type="Texture2D" uid="uid://c312if8qifaet" path="res://assets/twinpeaks_apartment/bed_plain.png" id="2_x34s0"]
-[ext_resource type="Texture2D" uid="uid://dtninaqnht00i" path="res://assets/twinpeaks_apartment/shower.png" id="3_i5k2w"]
-[ext_resource type="Texture2D" uid="uid://dpj7jnsvxyfvt" path="res://assets/environment/water_bottle_half.png" id="4_8j1mb"]
+[ext_resource type="Texture2D" uid="uid://p2vei5la1m3i" path="res://assets/twinpeaks_apartment/twinpeaks_bg.png" id="1_cqoh4"]
+[ext_resource type="Texture2D" uid="uid://dgh7pxmg8k4yg" path="res://assets/twinpeaks_apartment/bed_plain.png" id="2_x34s0"]
+[ext_resource type="Texture2D" uid="uid://c40aoo40c6ysm" path="res://assets/twinpeaks_apartment/shower.png" id="3_i5k2w"]
+[ext_resource type="Texture2D" uid="uid://ufn4rnxo8e62" path="res://assets/environment/water_bottle_half.png" id="4_8j1mb"]
 
 [node name="TwinPeaks" type="Node2D"]
 
 [node name="TwinPeaksBg" type="Sprite2D" parent="."]
+z_index = -2
 position = Vector2(-53, 83)
 texture = ExtResource("1_cqoh4")
 
@@ -15,9 +16,15 @@ texture = ExtResource("1_cqoh4")
 position = Vector2(87, 21)
 texture = ExtResource("2_x34s0")
 
+[node name="YSort" type="Node2D" parent="BedPlain"]
+position = Vector2(-2, 26)
+
 [node name="Shower" type="Sprite2D" parent="."]
 position = Vector2(199, 60)
 texture = ExtResource("3_i5k2w")
+
+[node name="YSort" type="Node2D" parent="Shower"]
+position = Vector2(0, 31)
 
 [node name="WaterBottleHalf" type="Sprite2D" parent="."]
 position = Vector2(25, -34)
