@@ -1,11 +1,11 @@
 [gd_scene load_steps=22 format=3 uid="uid://b4jfxrl5rqnne"]
 
-[ext_resource type="Texture2D" uid="uid://c3bviqtax6ykr" path="res://assets/residential/indoors/hallway2.png" id="1_hc42t"]
-[ext_resource type="Texture2D" uid="uid://746dhnn7rf8e" path="res://assets/residential/indoors/brown_dark_door_atlas.png" id="2_hgy38"]
-[ext_resource type="Texture2D" uid="uid://bfqm58ggdqvps" path="res://assets/residential/indoors/elevator_atlas.png" id="3_af3up"]
-[ext_resource type="Texture2D" uid="uid://bcs5gw33o4yel" path="res://assets/residential/indoors/utility_door_atlas.png" id="4_5p8gt"]
-[ext_resource type="Texture2D" uid="uid://5ywhhdx6rx7r" path="res://assets/downtown/recycle_bin.png" id="5_0eq5h"]
-[ext_resource type="Texture2D" uid="uid://clp5emmiqqigh" path="res://assets/downtown/black_bin.png" id="6_sj14k"]
+[ext_resource type="Texture2D" uid="uid://cbouvwlgc3k01" path="res://assets/residential/indoors/hallway2.png" id="1_hc42t"]
+[ext_resource type="Texture2D" uid="uid://3212443mchtu" path="res://assets/residential/indoors/brown_dark_door_atlas.png" id="2_hgy38"]
+[ext_resource type="Texture2D" uid="uid://cq4dga042qxr" path="res://assets/residential/indoors/elevator_atlas.png" id="3_af3up"]
+[ext_resource type="Texture2D" uid="uid://dnj0hlb6fb6yh" path="res://assets/residential/indoors/utility_door_atlas.png" id="4_5p8gt"]
+[ext_resource type="Texture2D" uid="uid://cve0p1fj5bjp3" path="res://assets/downtown/recycle_bin.png" id="5_0eq5h"]
+[ext_resource type="Texture2D" uid="uid://bmy3x3gvi867d" path="res://assets/downtown/black_bin.png" id="6_sj14k"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0m8kt"]
 atlas = ExtResource("2_hgy38")
@@ -118,14 +118,14 @@ animations = [{
 [node name="Building1Basement1" type="Node2D"]
 
 [node name="HallwayBg" type="Sprite2D" parent="."]
-z_index = -2
+z_index = -3
 texture = ExtResource("1_hc42t")
 
-[node name="HallwayDoor2" type="AnimatedSprite2D" parent="HallwayBg"]
+[node name="HallwayDoor2" type="AnimatedSprite2D" parent="."]
 position = Vector2(51, 109)
 sprite_frames = SubResource("SpriteFrames_c3prb")
 
-[node name="YSort" type="Node2D" parent="HallwayBg/HallwayDoor2"]
+[node name="YSort" type="Node2D" parent="HallwayDoor2"]
 position = Vector2(0, 18)
 
 [node name="Elevator" type="AnimatedSprite2D" parent="."]
@@ -150,17 +150,23 @@ metadata/action = "EnterBasement"
 metadata/label = "Basement"
 metadata/category = "Default"
 
+[node name="RecycleBin" type="Sprite2D" parent="."]
+position = Vector2(-133, 68)
+texture = ExtResource("5_0eq5h")
+
+[node name="YSort" type="Node2D" parent="RecycleBin"]
+position = Vector2(0, 12)
+
+[node name="BlackBin" type="Sprite2D" parent="."]
+position = Vector2(-114, 68)
+texture = ExtResource("6_sj14k")
+
+[node name="YSort" type="Node2D" parent="BlackBin"]
+position = Vector2(0, 12)
+
 [node name="Points" type="Node2D" parent="."]
 
 [node name="InElevator" type="Node2D" parent="Points"]
 position = Vector2(-192, 76)
 
 [node name="Point" type="Node" parent="Points/InElevator"]
-
-[node name="RecycleBin" type="Sprite2D" parent="."]
-position = Vector2(-133, 68)
-texture = ExtResource("5_0eq5h")
-
-[node name="BlackBin" type="Sprite2D" parent="."]
-position = Vector2(-114, 68)
-texture = ExtResource("6_sj14k")
