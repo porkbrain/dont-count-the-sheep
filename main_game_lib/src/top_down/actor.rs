@@ -76,6 +76,9 @@ pub struct ActorTarget {
     /// The target square actor walks to.
     pub square: Square,
     /// How long we've been walking towards the target.
+    ///
+    /// Does not start stopped!
+    /// But, you can stop it and it will resume on the next tick.
     pub since: Stopwatch,
     /// Once the current target is reached, we can plan the next one.
     pub planned: Option<(Square, GridDirection)>,
