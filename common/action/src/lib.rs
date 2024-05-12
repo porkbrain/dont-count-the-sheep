@@ -5,7 +5,6 @@
 use bevy::prelude::*;
 pub use leafwing_input_manager::{self, action_state::ActionState};
 use leafwing_input_manager::{
-    action_state::ActionData,
     input_map::InputMap,
     plugin::InputManagerPlugin,
     user_input::{InputKind, UserInput},
@@ -21,10 +20,16 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ActionState<GlobalAction>>()
             .insert_resource(GlobalAction::input_map())
-            .add_plugins(InputManagerPlugin::<GlobalAction>::default())
-            .register_type::<GlobalAction>()
-            .register_type::<ActionState<GlobalAction>>()
-            .register_type::<ActionData>();
+            .add_plugins(InputManagerPlugin::<GlobalAction>::default());
+
+        #[cfg(feature = "devtools")]
+        {
+            use leafwing_input_manager::action_state::ActionData;
+
+            app.register_type::<GlobalAction>()
+                .register_type::<ActionState<GlobalAction>>()
+                .register_type::<ActionData>();
+        }
     }
 }
 
