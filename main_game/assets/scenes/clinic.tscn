@@ -1,10 +1,9 @@
-[gd_scene load_steps=25 format=3 uid="uid://bl1kr7uql87cg"]
+[gd_scene load_steps=27 format=3 uid="uid://bl1kr7uql87cg"]
 
 [ext_resource type="Texture2D" uid="uid://dbsqahk1d8up6" path="res://assets/residential/indoors/clinic_interior.png" id="1_v4nqd"]
 [ext_resource type="Texture2D" uid="uid://cucclesngt72y" path="res://assets/environment/vending_machine_atlas.png" id="2_ape1y"]
 [ext_resource type="Texture2D" uid="uid://bwt8l2nfovdrb" path="res://assets/downtown/bamboo_rooftop.png" id="3_o3esx"]
 [ext_resource type="Texture2D" uid="uid://o3lvnnwlx58x" path="res://assets/residential/indoors/brown_light_door_atlas.png" id="4_dp2ef"]
-[ext_resource type="Texture2D" uid="uid://7gj1w81mpy8h" path="res://assets/residential/indoors/chair_yellow.png" id="6_wlrbh"]
 [ext_resource type="Texture2D" uid="uid://ck0d0ox20muxk" path="res://assets/residential/indoors/cupboard2.png" id="7_bkx0a"]
 [ext_resource type="Texture2D" uid="uid://bmvpodknaiv1g" path="res://assets/environment/fruit_bowl.png" id="8_6810t"]
 [ext_resource type="Texture2D" uid="uid://od7278drijk8" path="res://assets/downtown/water_dispenser.png" id="9_tfx34"]
@@ -12,10 +11,13 @@
 [ext_resource type="Texture2D" uid="uid://c8s7dhhe5duih" path="res://assets/residential/indoors/hospital_divider.png" id="11_he74j"]
 [ext_resource type="Texture2D" uid="uid://dmrem43l81ule" path="res://assets/residential/indoors/pc_chair.png" id="13_p2x2y"]
 [ext_resource type="Texture2D" uid="uid://8v5up8wq5o5i" path="res://assets/residential/indoors/window_blinds.png" id="14_1hmki"]
+[ext_resource type="Texture2D" uid="uid://c2fqfujxxdivy" path="res://assets/residential/indoors/chair_purple.png" id="15_1f34y"]
 [ext_resource type="Texture2D" uid="uid://b0n6v661lfyx7" path="res://assets/residential/indoors/pc_table.png" id="15_fuouy"]
 [ext_resource type="Texture2D" uid="uid://bvs7vcwiqrlkg" path="res://assets/residential/indoors/certificat.png" id="15_oqnj7"]
+[ext_resource type="Texture2D" uid="uid://c1cd2hlm3qlyu" path="res://assets/residential/indoors/sofa_purple_plain.png" id="16_mka70"]
 [ext_resource type="Texture2D" uid="uid://6cfnodb0dmgj" path="res://assets/downtown/hazardous_bin.png" id="17_1fycq"]
-[ext_resource type="Texture2D" uid="uid://cavulo8mbkcac" path="res://assets/residential/indoors/sofa_yellow_plain.png" id="17_p7ntv"]
+[ext_resource type="Texture2D" uid="uid://4xex1q0625dd" path="res://assets/residential/indoors/sofa_yellow_vertical.png" id="17_11qqd"]
+[ext_resource type="Texture2D" uid="uid://cjcrvju1iauih" path="res://assets/residential/indoors/bonsai2.png" id="18_opw3o"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("2_ape1y")
@@ -103,22 +105,15 @@ sprite_frames = SubResource("SpriteFrames_dnigs")
 [node name="YSort" type="Node2D" parent="Door"]
 position = Vector2(0, 18)
 
-[node name="ChairYellow" type="Sprite2D" parent="."]
-position = Vector2(75, 67)
-texture = ExtResource("6_wlrbh")
-
-[node name="YSort" type="Node2D" parent="ChairYellow"]
-position = Vector2(0, 14)
-
 [node name="Cupboard2" type="Sprite2D" parent="."]
-position = Vector2(112, 71)
+position = Vector2(105, 71)
 texture = ExtResource("7_bkx0a")
 
 [node name="YSort" type="Node2D" parent="Cupboard2"]
 position = Vector2(0, 10)
 
 [node name="FruitBowl" type="Sprite2D" parent="Cupboard2"]
-position = Vector2(0, -17)
+position = Vector2(11, -17)
 texture = ExtResource("8_6810t")
 
 [node name="WaterDispenser" type="Sprite2D" parent="."]
@@ -163,13 +158,6 @@ texture = ExtResource("15_oqnj7")
 position = Vector2(66, -30)
 texture = ExtResource("17_1fycq")
 
-[node name="SofaYellowPlain" type="Sprite2D" parent="."]
-position = Vector2(31, 66)
-texture = ExtResource("17_p7ntv")
-
-[node name="YSort" type="Node2D" parent="SofaYellowPlain"]
-position = Vector2(0, 14)
-
 [node name="Points" type="Node2D" parent="."]
 
 [node name="Entrance" type="Node2D" parent="Points"]
@@ -182,3 +170,19 @@ metadata/zone = "ExitZone"
 metadata/action = "ExitScene"
 metadata/label = "Exit"
 metadata/category = "Default"
+
+[node name="ChairPurple" type="Sprite2D" parent="."]
+position = Vector2(68, 67)
+texture = ExtResource("15_1f34y")
+
+[node name="SofaPurplePlain" type="Sprite2D" parent="."]
+position = Vector2(25, 66)
+texture = ExtResource("16_mka70")
+
+[node name="SofaYellowVertical" type="Sprite2D" parent="."]
+position = Vector2(143, 96)
+texture = ExtResource("17_11qqd")
+
+[node name="Bonsai2" type="Sprite2D" parent="."]
+position = Vector2(96, 50)
+texture = ExtResource("18_opw3o")
