@@ -17,7 +17,7 @@ Action points are expended throughout the day, with some resetting after short r
 Skyrim also incorporates a day-night cycle, affecting gameplay such as shop availability and merchant restocking.
 Players have the option to rest or sleep, allowing them to choose the number of hours to pass.
 
-In Knight of Honour 2, time management is flexible, allowing players to pause or accelerate time according to their preferences.
+In Knights of Honour 2 or Stellaris, time management is flexible, allowing players to pause or accelerate time according to their preferences.
 This feature enables players to strategize and plan their actions at their own pace.
 
 ## Time Measurement in _Don't Count the Sheep_
@@ -26,6 +26,12 @@ In _Don't Count the Sheep_, time is primarily segmented into days, with each day
 Unlike traditional clock-based systems, there is no constant ticking of seconds; instead, time progresses as the player takes actions.
 Essentially, we intertwine the concept of energy with time, granting players greater control over the pace of time advancement.
 For example, players can reorganize their inventory in peace at the end of the day, a task that would be stressful in Stardew Valley.
+
+The time measurement unit is called a _"beat"_ and roughly translates to one heartbeat.
+There are 80k beats in a day.
+One hour is about 5k beats, therefore there are about 16 hours in a waking day.
+Each actions costs a certain number of beats.
+When the player runs out of beats, their ability to perform actions is limited.
 
 NPCs within the game adhere to their own schedules, often influenced by the time of day.
 Since time progression is contingent upon player actions, NPC behavior dynamically adjusts based on the player's activities throughout the day.
@@ -36,3 +42,4 @@ Since time progression is contingent upon player actions, NPC behavior dynamical
 Shops and other establishments may have varying hours of operation:
 
 - The [Mall scene](scene_mall.md)
+- The [Clinic scene](scene_clinic.md)

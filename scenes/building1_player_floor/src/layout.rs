@@ -232,7 +232,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
             "AfterSleepSpawn" if self.transition == Sleeping => {
                 self.player_builder.initial_position(translation.truncate());
                 self.player_builder.initial_direction(GridDirection::Top);
-                self.daybar_event.send(UpdateDayBarEvent::Reset);
+                self.daybar_event.send(UpdateDayBarEvent::NewDay);
             }
             _ => {}
         }

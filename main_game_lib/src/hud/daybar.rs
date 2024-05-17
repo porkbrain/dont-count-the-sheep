@@ -3,14 +3,14 @@
 //!
 //! See wiki for more information about day progress.
 
-use std::ops::{Add, Neg};
+use std::ops::{Add, AddAssign, Neg, Sub};
 
 use bevy::ui::RelativeCursorPosition;
 use common_assets::fonts;
 use common_ext::QueryExt;
 use common_visuals::camera::MainCamera;
 
-use crate::prelude::*;
+use crate::{player_stats::PlayerStats, prelude::*};
 
 /// Unit of time.
 #[derive(
@@ -37,7 +37,7 @@ pub enum UpdateDayBarEvent {
     /// Finished meditating.
     Meditated,
     /// Sets the daybar progress to 0.
-    Reset,
+    NewDay,
     /// Custom amount of increase in the day bar.
     /// The final progress is clamped between 0 and 1.
     Custom(Beats),
@@ -101,17 +101,41 @@ pub(crate) fn despawn(
 pub(crate) fn update(
     mut events: EventReader<UpdateDayBarEvent>,
     mut daybar: ResMut<DayBar>,
+    mut stats: ResMut<PlayerStats>,
 ) {
     for event in events.read() {
-        let amount = match event {
+        // beats never go backwards except on a new day
+        let full_cost = match event {
+            // !
+            // unlike the other, this one resets the daybar and so it's not
+            // considered an activity that would need discounting
+            UpdateDayBarEvent::NewDay => {
+                daybar.progress = Beats(0);
+                stats.traits.early_bird.extra_beats_today = Beats(0);
+                stats.traits.night_owl.extra_beats_today = Beats(0);
+
+                continue;
+            }
+
             UpdateDayBarEvent::ChangedScene => Beats::TEN_MINUTES,
             UpdateDayBarEvent::Meditated => Beats::FIFTEEN_MINUTES,
-            UpdateDayBarEvent::Custom(amount) => *amount,
-            UpdateDayBarEvent::Reset => -daybar.progress,
+            UpdateDayBarEvent::Custom(Beats(amount)) => {
+                debug_assert!(*amount > 0, "Beats can only go forward");
+                Beats(*amount)
+            }
         };
 
-        daybar.progress =
-            (daybar.progress + amount).clamp(Beats(0), Beats::DAY);
+        let progress = daybar.progress;
+        let progress_after_full_cost =
+            (progress + full_cost).clamp(Beats(0), Beats::DAY);
+        let real_cost = progress_after_full_cost - progress;
+
+        daybar.progress += if real_cost <= Beats(1) {
+            // there's nothing that can be discounted
+            real_cost
+        } else {
+            stats.discount_activity(progress, real_cost)
+        };
     }
 
     // TODO: if tooltip is shown, update it
@@ -258,6 +282,10 @@ impl Beats {
             "evening".to_string()
         }
     }
+
+    pub(crate) fn as_fraction_of_day(self) -> f32 {
+        self.0 as f32 / Self::DAY.0 as f32
+    }
 }
 
 impl Neg for Beats {
@@ -273,5 +301,19 @@ impl Add for Beats {
 
     fn add(self, rhs: Self) -> Self::Output {
         Self(self.0 + rhs.0)
+    }
+}
+
+impl Sub for Beats {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self(self.0 - rhs.0)
+    }
+}
+
+impl AddAssign for Beats {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
     }
 }
