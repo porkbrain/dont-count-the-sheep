@@ -147,6 +147,8 @@ pub struct SpriteTexture {
     pub animation: Option<SpriteFrames>,
     /// If the texture should be flipped horizontally.
     pub flip_horizontally: bool,
+    /// If the texture should be flipped vertically.
+    pub flip_vertically: bool,
 }
 
 /// Atlas animation.

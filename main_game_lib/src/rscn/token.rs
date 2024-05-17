@@ -288,14 +288,18 @@ fn parse_with_state(
 
                 Expecting::HeadingOrSectionKey
             }
-            Expecting::SectionKey(SectionKeyBuilder::FlipHorizontally) => {
+            Expecting::SectionKey(
+                dir @ (SectionKeyBuilder::FlipHorizontally
+                | SectionKeyBuilder::FlipVertically),
+            ) => {
                 let visible = matches!(token, TscnToken::True);
-                state
-                    .nodes
-                    .last_mut()
-                    .unwrap()
-                    .section_keys
-                    .push(SectionKey::FlipHorizontally(visible));
+                state.nodes.last_mut().unwrap().section_keys.push(
+                    if matches!(dir, SectionKeyBuilder::FlipHorizontally) {
+                        SectionKey::FlipHorizontally(visible)
+                    } else {
+                        SectionKey::FlipVertically(visible)
+                    },
+                );
 
                 Expecting::HeadingOrSectionKey
             }
@@ -371,6 +375,8 @@ enum SectionKeyBuilder {
     Visibility,
     /// true or false
     FlipHorizontally,
+    /// true or false
+    FlipVertically,
     /// e.g. `self_modulate = Color(1, 1, 1, 0.823529)`
     SelfModulate(ColorExpecting),
 }

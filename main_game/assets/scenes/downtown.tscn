@@ -500,6 +500,7 @@ texture = ExtResource("16_x0sc1")
 [node name="BoxCardboardSideways" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-915, -318)
 texture = ExtResource("63_vdtxl")
+flip_v = true
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/BoxCardboardSideways"]
 position = Vector2(-4, 9)
