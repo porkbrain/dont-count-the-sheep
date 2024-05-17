@@ -45,7 +45,6 @@ pub struct NightOwl {
     ///
     /// The actual discount will be 0 in the beginning of the day and converge
     /// to this value at the end of the day.
-    ///
     pub full_discount: f32,
 }
 
@@ -100,7 +99,7 @@ impl PlayerStats {
         let cost = self.traits.night_owl.discount_activity(elapsed, cost);
         let cost = self.traits.early_bird.discount_activity(elapsed, cost);
 
-        cost
+        cost.max(Beats(1))
     }
 }
 
@@ -123,7 +122,7 @@ impl NightOwl {
         let multiplier = elapsed.as_fraction_of_day().powi(8);
 
         // full discount is reached only at the end of the day, as the full
-        // discount is scaled down by the time of the day
+        // discount is proportional to the time elapsed
         let actual_discount = multiplier * self.full_discount;
 
         // - 1 because an activity must always cost at least 1 beat
@@ -155,8 +154,8 @@ impl EarlyBird {
         // <0; 1>
         let multiplier = (-16.0 * elapsed.as_fraction_of_day()).exp();
 
-        // full discount is reached only at the end of the day, as the full
-        // discount is scaled down by the time of the day
+        // full discount is only applicable at the beginning of the day, as the
+        // full discount is inversely proportional to the time elapsed
         let actual_discount = multiplier * self.full_discount;
 
         // - 1 because an activity must always cost at least 1 beat

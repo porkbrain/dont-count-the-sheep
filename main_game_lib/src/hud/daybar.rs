@@ -111,6 +111,9 @@ pub(crate) fn update(
             // considered an activity that would need discounting
             UpdateDayBarEvent::NewDay => {
                 daybar.progress = Beats(0);
+                stats.traits.early_bird.extra_beats_today = Beats(0);
+                stats.traits.night_owl.extra_beats_today = Beats(0);
+
                 continue;
             }
 
