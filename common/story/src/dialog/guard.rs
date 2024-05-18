@@ -30,11 +30,11 @@ pub(crate) enum GuardCmd {
     /// this command might not result in transition.
     TryTransition(NodeName),
     /// We want to show player choices in dialog.
-    /// This command says: in the [`Dialog::next_nodes`] array, at the
-    /// specified index, give us string that we should show to the player
-    /// as a choice.
+    /// This command says: in the [`Dialog::branching`]'s [`Branching::Choice`]
+    /// vector, at the specified index, give us string that we should show
+    /// to the player as a choice.
     /// It's possible that the guard will decide to stop the current branch
-    /// with [`NextNode::Stop`].
+    /// with [`BranchStatus::Stop`].
     PlayerChoice {
         node_name: NodeName,
         next_branch_index: usize,

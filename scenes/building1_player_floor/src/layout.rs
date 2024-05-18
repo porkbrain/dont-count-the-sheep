@@ -92,7 +92,7 @@ struct Spawner<'a> {
 }
 
 /// The names are stored in the scene file.
-/// See the [`Building1PlayerFloor`] implementation of [`SpriteScene`].
+/// See Godot scene file for details.
 fn spawn(
     mut cmd: Commands,
     transition: Res<GlobalGameStateTransition>,

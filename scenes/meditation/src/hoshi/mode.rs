@@ -9,7 +9,7 @@ use crate::prelude::{stopwatch_at, Radians};
 #[derive(Component)]
 pub(super) struct Normal {
     /// Hoshi has a limited number of jumps before it must reset
-    /// via the [`Climate`]
+    /// via the [`crate::climate::Climate`]
     pub(super) jumps: usize,
     /// there's a minimum delay between jumps
     pub(super) last_jump: Stopwatch,
@@ -24,7 +24,7 @@ pub(super) struct Normal {
 #[derive(Component, Default)]
 pub(crate) struct LoadingSpecial {
     /// Angle is given by the combination of keys pressed.
-    /// See [`unit_circle_angle`].
+    /// See `super::controls::unit_circle_angle`.
     pub(super) angle: Radians,
     /// special mode has a set duration after which it fires
     pub(super) activated: Stopwatch,

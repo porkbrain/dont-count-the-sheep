@@ -22,7 +22,7 @@ pub struct Beats(pub isize);
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
 pub struct DayBar {
-    /// The current progress through the day, from 0 to [`DAY_LENGTH`].
+    /// The current progress through the day, from 0 to [`Beats::DAY`].
     pub(crate) progress: Beats,
     /// If the tooltip is shown, it's some with the entity that can then be
     /// despawned to hide it again.

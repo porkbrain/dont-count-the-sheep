@@ -47,7 +47,7 @@ next = ["aggressive_leave", "leave"]
 
 [[node]]
 name = "aggressive_leave"
-who = "Winne"
+who = "Winnie"
 en = "One rude little kitty"
 next = "_end_dialog"
 
