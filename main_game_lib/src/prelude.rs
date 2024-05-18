@@ -3,6 +3,8 @@
 pub use std::time::Duration;
 
 pub use bevy::{math::vec2, prelude::*, time::Stopwatch};
+#[cfg(feature = "devtools")]
+pub use bevy_inspector_egui::prelude::*;
 pub use common_action::{
     leafwing_input_manager::action_state::ActionState, GlobalAction,
 };

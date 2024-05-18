@@ -45,6 +45,9 @@ pub(super) fn parse(
             "flip_h" => {
                 Expecting::SectionKey(SectionKeyBuilder::FlipHorizontally)
             }
+            "flip_v" => {
+                Expecting::SectionKey(SectionKeyBuilder::FlipVertically)
+            }
             s if s.starts_with("metadata/") => {
                 Expecting::SectionKey(SectionKeyBuilder::StringMetadata(
                     s["metadata/".len()..].to_ascii_lowercase(),

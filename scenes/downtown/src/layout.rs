@@ -1,7 +1,8 @@
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_visuals::camera::render_layer;
+use common_story::Character;
+use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{
     cutscene::in_cutscene,
     hud::daybar::{DayBar, DayBarDependent, UpdateDayBarEvent},
@@ -34,6 +35,7 @@ impl bevy::app::Plugin for Plugin {
             spawn
                 .run_if(Downtown::in_loading_state())
                 .run_if(resource_exists::<TileMap<Downtown>>)
+                .run_if(any_with_component::<MainCamera>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Downtown>()),
         )
         .add_systems(OnExit(Downtown::quitting()), despawn)
@@ -63,6 +65,7 @@ pub(crate) struct LayoutEntity;
 struct Spawner<'a> {
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
+    camera_translation: &'a mut Vec3,
     player_builder: &'a mut CharacterBundleBuilder,
     player_entity: Entity,
     transition: GlobalGameStateTransition,
@@ -81,6 +84,7 @@ fn spawn(
     transition: Res<GlobalGameStateTransition>,
     mut daybar_event: ResMut<Events<UpdateDayBarEvent>>,
 
+    mut camera: Query<&mut Transform, With<MainCamera>>,
     mut q: Query<&mut TscnTreeHandle<Downtown>>,
 ) {
     info!("Spawning downtown scene");
@@ -93,11 +97,12 @@ fn spawn(
     tscn.spawn_into(
         &mut Spawner {
             asset_server: &asset_server,
-            transition: *transition,
             atlases: &mut atlas_layouts,
-            player_entity: player,
+            camera_translation: &mut camera.single_mut().translation,
             daybar_event: &mut daybar_event,
             player_builder: &mut player_builder,
+            player_entity: player,
+            transition: *transition,
             zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
         },
         &mut cmd,
@@ -133,70 +138,34 @@ impl<'a> TscnSpawner for Spawner<'a> {
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
 
+        let position = translation.truncate();
+
         #[allow(clippy::single_match)]
-        match name.as_str() {
-            "Downtown" => {
+        match (name.as_str(), self.transition) {
+            ("Downtown", _) => {
                 cmd.entity(who).insert(LayoutEntity);
                 cmd.entity(who).add_child(self.player_entity);
             }
-            "PlayerApartmentBuildingEntrance"
-                if matches!(
-                    self.transition,
-                    Building1Basement1ToDowntown
-                        | Building1PlayerFloorToDowntown
-                ) =>
-            {
-                self.player_builder.initial_position(translation.truncate());
-                self.player_builder.walking_to(top_down::ActorTarget::new(
-                    LAYOUT.world_pos_to_square(translation.truncate())
-                        + sq(0, -2),
-                ));
 
-                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
-            }
-            "MallEntrance" if self.transition == MallToDowntown => {
-                self.player_builder.initial_position(translation.truncate());
+            // transitions
+            (
+                "PlayerApartmentBuildingEntrance",
+                Building1Basement1ToDowntown | Building1PlayerFloorToDowntown,
+            )
+            | ("MallEntrance", MallToDowntown)
+            | ("TwinpeaksApartmentEntrance", TwinpeaksApartmentToDowntown)
+            | ("PlantShopEntrance", PlantShopToDowntown)
+            | ("SewersEntrance", SewersToDowntown)
+            | ("ClinicEntrance", ClinicToDowntown) => {
+                self.camera_translation.x = position.x;
+                self.camera_translation.y = position.y;
+                // we multiply by 4 because winnie is walking across 2 tiles and
+                // we want her to be extra extra slow because it looks better
+                self.player_builder
+                    .initial_step_time(Character::Winnie.slow_step_time() * 4);
+                self.player_builder.initial_position(position);
                 self.player_builder.walking_to(top_down::ActorTarget::new(
-                    LAYOUT.world_pos_to_square(translation.truncate())
-                        + sq(0, -2),
-                ));
-
-                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
-            }
-            "TwinpeaksApartmentEntrance"
-                if self.transition == TwinpeaksApartmentToDowntown =>
-            {
-                self.player_builder.initial_position(translation.truncate());
-                self.player_builder.walking_to(top_down::ActorTarget::new(
-                    LAYOUT.world_pos_to_square(translation.truncate())
-                        + sq(0, -2),
-                ));
-
-                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
-            }
-            "PlantShopEntrance" if self.transition == PlantShopToDowntown => {
-                self.player_builder.initial_position(translation.truncate());
-                self.player_builder.walking_to(top_down::ActorTarget::new(
-                    LAYOUT.world_pos_to_square(translation.truncate())
-                        + sq(0, -2),
-                ));
-
-                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
-            }
-            "SewersEntrance" if self.transition == SewersToDowntown => {
-                self.player_builder.initial_position(translation.truncate());
-                self.player_builder.walking_to(top_down::ActorTarget::new(
-                    LAYOUT.world_pos_to_square(translation.truncate())
-                        + sq(0, -2),
-                ));
-
-                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
-            }
-            "ClinicExit" if self.transition == ClinicToDowntown => {
-                self.player_builder.initial_position(translation.truncate());
-                self.player_builder.walking_to(top_down::ActorTarget::new(
-                    LAYOUT.world_pos_to_square(translation.truncate())
-                        + sq(0, -2),
+                    LAYOUT.world_pos_to_square(position) + sq(0, -2),
                 ));
 
                 self.daybar_event.send(UpdateDayBarEvent::ChangedScene);

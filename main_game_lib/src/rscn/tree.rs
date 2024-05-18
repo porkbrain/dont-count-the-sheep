@@ -18,6 +18,7 @@ struct Properties {
     visible: bool,
     color: Option<Color>,
     flip_horizontally: bool,
+    flip_vertically: bool,
 }
 
 pub(crate) fn from_state(
@@ -88,6 +89,7 @@ pub(crate) fn from_state(
             visible,
             color,
             flip_horizontally,
+            flip_vertically,
         } = properties;
 
         let in_2d = match parsed_node.kind {
@@ -103,6 +105,7 @@ pub(crate) fn from_state(
                         animation
                     },
                     flip_horizontally,
+                    flip_vertically,
                 }),
             }),
             ParsedNodeKind::Sprite2D => Some(In2D {
@@ -117,6 +120,7 @@ pub(crate) fn from_state(
                         None
                     },
                     flip_horizontally,
+                    flip_vertically,
                 }),
             }),
             ParsedNodeKind::Node2D => Some(In2D {
@@ -184,6 +188,7 @@ fn apply_section_key(
         visible,
         color,
         flip_horizontally,
+        flip_vertically,
     }: &mut Properties,
 ) {
     use intermediate_repr::{Number, SectionKey, X};
@@ -212,6 +217,9 @@ fn apply_section_key(
         }
         SectionKey::FlipHorizontally(flip) => {
             *flip_horizontally = flip;
+        }
+        SectionKey::FlipVertically(flip) => {
+            *flip_vertically = flip;
         }
         SectionKey::Visibility(visibility) => {
             *visible = visibility;
@@ -379,6 +387,7 @@ impl Default for Properties {
             visible: true,
             color: None,
             flip_horizontally: false,
+            flip_vertically: false,
         }
     }
 }

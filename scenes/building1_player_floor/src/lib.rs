@@ -192,8 +192,8 @@ fn smooth_exit(
         // reset local state for next time
         *exit_animation = None;
 
-        // be a good guy and don't invade other game loops with our controls
-        controls.consume_all();
+        // be a good guy and don't invade other game loops with "Enter"
+        controls.consume(&GlobalAction::Interact);
 
         use GlobalGameStateTransition::*;
         match *transition {

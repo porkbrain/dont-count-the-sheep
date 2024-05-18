@@ -71,6 +71,8 @@ pub(crate) enum SectionKey {
     Visibility(bool),
     /// A texture should be flipped horizontally.
     FlipHorizontally(bool),
+    /// A texture should be flipped vertically.
+    FlipVertically(bool),
     /// RGBa
     SelfModulateColor(Number, Number, Number, Number),
 }

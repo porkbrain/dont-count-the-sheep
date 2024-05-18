@@ -7,7 +7,8 @@ use crate::prelude::*;
 /// Transitions between states are controlled by the
 /// [`GlobalGameStateTransition`].
 /// It defines what transitions are allowed.
-#[derive(States, Default, Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
+#[derive(States, Default, Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
 #[allow(missing_docs)]
 pub enum GlobalGameState {
     /// Dummy state so that we can do loading transitions.
@@ -74,7 +75,6 @@ pub enum GlobalGameState {
     Resource,
     Debug,
     Default,
-    Reflect,
     Clone,
     Copy,
     Eq,
@@ -82,7 +82,8 @@ pub enum GlobalGameState {
     strum::EnumString,
     strum::Display,
 )]
-#[reflect(Resource)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
+#[cfg_attr(feature = "devtools", reflect(Resource))]
 pub enum GlobalGameStateTransition {
     #[default]
     BlankToNewGame,

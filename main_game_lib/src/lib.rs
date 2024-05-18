@@ -7,6 +7,7 @@
 
 pub mod cutscene;
 pub mod hud;
+pub mod player_stats;
 pub mod prelude;
 pub mod rscn;
 pub mod state;
@@ -70,6 +71,8 @@ pub fn windowed_app() -> App {
     info!("Initializing Don't Count The Sheep");
 
     app.init_state::<GlobalGameState>()
+        // TODO: load from save file
+        .init_resource::<player_stats::PlayerStats>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
         .init_resource::<GlobalGameStateTransition>()
         .init_asset::<crate::rscn::TscnTree>()
@@ -78,16 +81,19 @@ pub fn windowed_app() -> App {
 
     #[cfg(feature = "devtools")]
     {
-        app.register_type::<GlobalGameStateTransition>()
-            .register_type::<GlobalGameState>();
-
         use bevy_inspector_egui::quick::{
-            StateInspectorPlugin, WorldInspectorPlugin,
+            ResourceInspectorPlugin, StateInspectorPlugin, WorldInspectorPlugin,
         };
+
+        app.register_type::<GlobalGameStateTransition>()
+            .register_type::<GlobalGameState>()
+            .register_type::<player_stats::PlayerStats>();
+
         app.add_plugins((
             bevy_egui::EguiPlugin,
             WorldInspectorPlugin::new(),
             StateInspectorPlugin::<GlobalGameState>::default(),
+            ResourceInspectorPlugin::<player_stats::PlayerStats>::default(),
         ));
     }
 

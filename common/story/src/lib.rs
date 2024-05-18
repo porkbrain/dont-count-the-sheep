@@ -117,6 +117,14 @@ impl Character {
         }
     }
 
+    /// How long does it take to move one square if walking slowly.
+    pub fn slow_step_time(self) -> Duration {
+        match self {
+            Character::Winnie => Duration::from_millis(100),
+            _ => Duration::from_millis(120),
+        }
+    }
+
     /// Static str name of the character.
     pub fn name(self) -> &'static str {
         match self {
