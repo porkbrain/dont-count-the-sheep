@@ -138,7 +138,7 @@ impl Character {
             Character::Bolt => "Bolt",
             Character::Capy => "Capy",
             Character::Cat => "Cat",
-            Character::GingerCat => "Grunfeld",
+            Character::GingerCat => "Rolo",
             Character::Emil => "Emil",
             Character::Pooper => "Pooper",
             Character::Samizdat => "Samizdat",

@@ -267,12 +267,12 @@ metadata/label = "Exit"
 metadata/category = "Default"
 
 [node name="GingerCatDialog" type="Node2D" parent="Points"]
-position = Vector2(-54, -138)
+position = Vector2(-65, -141)
 
 [node name="Point" type="Node" parent="Points/GingerCatDialog"]
 
 [node name="InspectLabel" type="Node" parent="Points/GingerCatDialog"]
 metadata/zone = "GoodWater"
 metadata/action = "StartGingerCatDialog"
-metadata/label = "You  want  some  water  or  what?"
+metadata/label = "Good  Water  stand"
 metadata/category = "Npc"

@@ -1,20 +1,29 @@
 [root]
 who = "GingerCat"
-en = "I'm selling water. Good Water."
+en = """*With what you percieved as a substantial effort the cat's eyes meet yours.
+This cat is clearly out of it.*"""
 [[node]]
-en = "You want some?"
-next = ["yes_water", "is_it_free", "no_water"]
+en = "Good Water."
+[[node]]
+en = "You buy some?"
+next = ["taste_test", "yes_water", "no_water"]
 
 [[node]]
 name = "yes_water"
 who = "Winnie"
-en = "Sure, let me have some."
+en = "Sure, let me have some. How much is it?"
 next = "cost"
 
 [[node]]
-name = "is_it_free"
+name = "taste_test"
 who = "Winnie"
-en = "How much is it?"
+en = "Isn't this a taste test stand?"
+# TODO: here's where we can add a roll
+[[node]]
+who = "GingerCat"
+en = "No, it's a water stand."
+next = "cost"
+
 [[node]]
 who = "GingerCat"
 name = "cost"
@@ -24,13 +33,16 @@ who = "Winnie"
 en = "Peas? Do you not accept cash?"
 [[node]]
 who = "GingerCat"
-en = "I won't accept your cash without the peas."
+en = "No peas no cash, please."
 [[node]]
 who = "Winnie"
-en = "I don't have no peas."
+en = "What? Anyway, I don't have no peas."
+# TODO: We can add a note to the player's quest log here, and if they come with
+# peas that can be obtained in the cult's garden, they can go to the next dialog
+# with the cat.
 [[node]]
 who = "GingerCat"
-en = "Then you don't have no water."
+en = "Then no water, please."
 next = "get_ignored"
 
 [[node]]
