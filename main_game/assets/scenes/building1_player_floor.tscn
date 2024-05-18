@@ -1,4 +1,4 @@
-[gd_scene load_steps=102 format=3 uid="uid://dyrtqlwb1xtvf"]
+[gd_scene load_steps=103 format=3 uid="uid://dyrtqlwb1xtvf"]
 
 [ext_resource type="Texture2D" uid="uid://bnqtsambvpfxr" path="res://assets/residential/indoors/player_apartment_bg.png" id="1_70osf"]
 [ext_resource type="Texture2D" uid="uid://vjrort40gbtp" path="res://assets/residential/indoors/cloud_atlas.png" id="2_yacc0"]
@@ -35,6 +35,7 @@
 [ext_resource type="Texture2D" uid="uid://dwvjh1ee1wsy7" path="res://assets/environment/room_light.png" id="31_wa4ug"]
 [ext_resource type="Texture2D" uid="uid://onhq7srypccg" path="res://assets/residential/indoors/router_atlas.png" id="32_0gd0c"]
 [ext_resource type="Texture2D" uid="uid://fsryrryb0rff" path="res://assets/environment/room_light_half.png" id="33_dgul6"]
+[ext_resource type="Texture2D" uid="uid://qul8hwvlompw" path="res://assets/residential/indoors/side_table1.png" id="36_458u3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nte4w"]
 atlas = ExtResource("2_yacc0")
@@ -809,3 +810,7 @@ texture = ExtResource("31_wa4ug")
 z_index = 2
 position = Vector2(92, -91)
 texture = ExtResource("33_dgul6")
+
+[node name="SideTable1" type="Sprite2D" parent="."]
+position = Vector2(-228, 128)
+texture = ExtResource("36_458u3")
