@@ -15,7 +15,7 @@ use common_ext::QueryExt;
 use common_store::{DialogStore, GlobalStore};
 use common_story::dialog::{self, StartDialogWhenLoaded};
 
-use super::BeginDialogEvent;
+use super::{ActorOrCharacter, BeginDialogEvent};
 use crate::top_down::{
     inspect_and_interact::ReadyForInteraction, layout::ZoneTile, Actor,
     ActorTarget, Player, TileMap, TopDownScene,
@@ -310,51 +310,68 @@ pub(crate) fn begin_dialog(
     mut player: Query<&mut Actor, With<Player>>,
     mut actors: Query<&mut Actor, Without<Player>>,
 ) {
-    let Some(BeginDialogEvent(entity)) = events.read().last() else {
-        return;
-    };
-    let entity = *entity;
-
-    let Ok(mut actor) = actors.get_mut(entity) else {
-        // might've just despawned - e.g. walked away
-        return;
-    };
-
     let Some(mut player) = player.get_single_mut_or_none() else {
         warn!("Cannot begin dialog without a player");
         return;
     };
 
-    let character = actor.character;
+    match events.read().last() {
+        Some(BeginDialogEvent(ActorOrCharacter::Actor(entity))) => {
+            let entity = *entity;
 
-    let dialogs = store.list_dialogs_for_npc::<dialog::Namespace>(character);
+            let Ok(mut actor) = actors.get_mut(entity) else {
+                // might've just despawned - e.g. walked away
+                return;
+            };
 
-    if dialogs.is_empty() {
-        return;
-    }
+            let character = actor.character;
 
-    let start_dialog = StartDialogWhenLoaded::portrait()
-        .on_finished(Box::new(move |cmd: &mut Commands| {
-            trace!("Removing BehaviorPaused from {character}");
-            cmd.entity(entity).remove::<BehaviorPaused>();
-        }))
-        .add_namespaces(dialogs);
-    cmd.insert_resource(start_dialog);
+            let dialogs =
+                store.list_dialogs_for_npc::<dialog::Namespace>(character);
 
-    {
-        // stops the NPC from moving
+            if dialogs.is_empty() {
+                return;
+            }
 
-        cmd.entity(entity).insert(BehaviorPaused);
+            let start_dialog = StartDialogWhenLoaded::portrait()
+                .on_finished(Box::new(move |cmd: &mut Commands| {
+                    trace!("Removing BehaviorPaused from {character}");
+                    cmd.entity(entity).remove::<BehaviorPaused>();
+                }))
+                .add_namespaces(dialogs);
+            cmd.insert_resource(start_dialog);
 
-        actor.remove_planned_step();
-        actor.direction = actor
-            .current_square()
-            .direction_to(player.current_square())
-            .unwrap_or(actor.direction);
+            {
+                // stops the NPC from moving
 
-        player.remove_planned_step();
-        player.direction = actor.direction.opposite();
-    }
+                cmd.entity(entity).insert(BehaviorPaused);
+
+                actor.remove_planned_step();
+                actor.direction = actor
+                    .current_square()
+                    .direction_to(player.current_square())
+                    .unwrap_or(actor.direction);
+
+                player.remove_planned_step();
+                player.direction = actor.direction.opposite();
+            }
+        }
+        Some(BeginDialogEvent(ActorOrCharacter::Character(character))) => {
+            let dialogs =
+                store.list_dialogs_for_npc::<dialog::Namespace>(character);
+
+            if dialogs.is_empty() {
+                return;
+            }
+
+            let start_dialog =
+                StartDialogWhenLoaded::portrait().add_namespaces(dialogs);
+            cmd.insert_resource(start_dialog);
+
+            player.remove_planned_step();
+        }
+        None => (),
+    };
 }
 
 impl BehaviorLeaf {

@@ -134,6 +134,9 @@ pub(crate) struct InspectLabelBg;
 ///
 /// When entities are mapped this way, they are assigned the
 /// [`ReadyForInteraction`] component when the player enters the given zone.
+///
+/// In godot, this is done by using InspectLabel node with specific metadata.
+/// See the wiki for more information.
 #[derive(Resource, Reflect, Default)]
 pub struct ZoneToInspectLabelEntity<L> {
     /// The key is the local tile kind, the value is some entity that has

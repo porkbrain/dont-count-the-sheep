@@ -79,6 +79,7 @@ pub mod portraits {
     pub const BOLT: &str = "characters/portraits/bolt1.png";
     pub const CAPY: &str = "characters/portraits/capy1.png";
     pub const CAT: &str = "characters/portraits/cat1.png";
+    pub const GINGER_CAT: &str = "characters/portraits/gingercat1.png";
     pub const EMIL: &str = "characters/portraits/emil1.png";
     pub const MASTER: &str = "characters/portraits/master1.png";
     pub const POOPER: &str = "characters/portraits/pooper1.png";

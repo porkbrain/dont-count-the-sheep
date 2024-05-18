@@ -1,0 +1,57 @@
+[root]
+who = "GingerCat"
+en = "I'm selling water. Good Water."
+[[node]]
+en = "You want some?"
+next = ["yes_water", "is_it_free", "no_water"]
+
+[[node]]
+name = "yes_water"
+who = "Winnie"
+en = "Sure, let me have some."
+next = "cost"
+
+[[node]]
+name = "is_it_free"
+who = "Winnie"
+en = "How much is it?"
+[[node]]
+who = "GingerCat"
+name = "cost"
+en = "A bag of peas, please."
+[[node]]
+who = "Winnie"
+en = "Peas? Do you not accept cash?"
+[[node]]
+who = "GingerCat"
+en = "I won't accept your cash without the peas."
+[[node]]
+who = "Winnie"
+en = "I don't have no peas."
+[[node]]
+who = "GingerCat"
+en = "Then you don't have no water."
+next = "get_ignored"
+
+[[node]]
+name = "no_water"
+who = "Winnie"
+en = "I'm good, thanks."
+next = "get_ignored"
+
+[[node]]
+name = "get_ignored"
+who = "GingerCat"
+en = "*proceeds to stare past you as if you weren't even there*"
+next = ["aggressive_leave", "leave"]
+
+[[node]]
+name = "aggressive_leave"
+who = "Winne"
+en = "One rude little kitty"
+next = "_end_dialog"
+
+[[node]]
+name = "leave"
+en = "*leave*"
+next = "_end_dialog"
