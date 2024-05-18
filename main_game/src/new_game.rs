@@ -21,5 +21,5 @@ pub(crate) fn on_enter(
         dialog::TypedNamespace::MrGoodWater,
     );
 
-    next_state.set(GlobalGameState::LoadingMall);
+    next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
 }
