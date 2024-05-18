@@ -75,7 +75,7 @@ struct Spawner<'a> {
 }
 
 /// The names are stored in the scene file.
-/// See the [`Downtown`] implementation of [`SpriteScene`].
+/// See Godot scene file for details.
 fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,

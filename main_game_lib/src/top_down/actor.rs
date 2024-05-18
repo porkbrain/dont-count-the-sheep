@@ -151,8 +151,19 @@ pub struct CharacterBundleBuilder {
 }
 
 /// Event that's emitted when the player clicks interaction near an NPC.
+///
+/// The entity must be an [`Actor`] but not the player.
 #[derive(Event, Reflect, Clone)]
-pub(crate) struct BeginDialogEvent(Entity);
+pub struct BeginDialogEvent(pub ActorOrCharacter);
+
+/// Identify an NPC by entity or character.
+#[derive(Reflect, Clone)]
+pub enum ActorOrCharacter {
+    /// Identify by entity.
+    Actor(Entity),
+    /// Identify by character.
+    Character(Character),
+}
 
 /// Sends events when an actor does something interesting.
 /// This system is registered on call to
@@ -566,7 +577,7 @@ impl CharacterBundleBuilder {
                 NpcInTheMap::default(),
                 InspectLabelCategory::Npc
                     .into_label(character.name())
-                    .with_emit_event_on_interacted(BeginDialogEvent(id)),
+                    .with_emit_event_on_interacted(BeginDialogEvent(id.into())),
             ));
         }
 
@@ -1042,5 +1053,17 @@ mod tests {
                 move_actor(*actor, *direction);
             }
         }
+    }
+}
+
+impl From<Entity> for ActorOrCharacter {
+    fn from(entity: Entity) -> Self {
+        Self::Actor(entity)
+    }
+}
+
+impl From<Character> for ActorOrCharacter {
+    fn from(character: Character) -> Self {
+        Self::Character(character)
     }
 }

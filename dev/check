@@ -8,4 +8,4 @@ cargo clippy -- -D warnings
 
 cargo test
 
-RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --offline
+RUSTDOCFLAGS="-D warnings" cargo doc --document-private-items --no-deps --offline

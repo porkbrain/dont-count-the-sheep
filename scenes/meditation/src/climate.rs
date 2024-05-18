@@ -23,20 +23,25 @@ const OCCLUDER_SIZE: f32 = 18.0;
 /// Determines the ray slope.
 const OCCLUDER_DISTANCE: f32 = 40.0;
 /// Occluders are evenly distributed around the climate.
-/// We calculate the distribution around for the occluder[1] (0th starts at 0).
+/// We calculate the distribution around for the `occluder[1]` (0th starts at
+/// 0).
 const INITIAL_ROTATION: f32 = 2.0 * PI / OCCLUDER_COUNT as f32;
 const INITIAL_HALF_ROTATION: f32 = INITIAL_ROTATION / 2.0;
-/// When the mode is [`LightMode::Hot`], we deduct this much from the score.
+/// When the mode is [`ClimateLightMode::Hot`], we deduct this much from the
+/// score.
 const HOT_DEDUCTION: usize = 80;
-/// How often do we deduct from the score when the mode is [`LightMode::Hot`].
+/// How often do we deduct from the score when the mode is
+/// [`ClimateLightMode::Hot`].
 const HOT_DEDUCTION_INTERVAL: Duration = from_millis(5_000);
 /// Burns Polpos, so should reflect that.
 const LIGHT_COLOR_HOT: Color = Color::rgb(0.6, 0.3, 0.1);
 /// Purply cold color.
 const LIGHT_COLOR_COLD: Color = crate::background::COLOR;
-/// When the mode is [`LightMode::Cold`], we deduct this much from the score.
+/// When the mode is [`ClimateLightMode::Cold`], we deduct this much from the
+/// score.
 const COLD_DEDUCTION: usize = 100;
-/// How often do we deduct from the score when the mode is [`LightMode::Cold`].
+/// How often do we deduct from the score when the mode is
+/// [`ClimateLightMode::Cold`].
 const COLD_DEDUCTION_INTERVAL: Duration = from_millis(10_000);
 /// How long does it take for the light to change color when changing mode.
 const LIGHT_COLOR_TRANSITION: Duration = from_millis(2500);

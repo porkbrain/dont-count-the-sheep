@@ -36,6 +36,7 @@ pub struct Namespace {
 pub enum TypedNamespace {
     BoltIsMean,
     MarieBlabbering,
+    MrGoodWater,
 
     // --------------------------------------------------------------
     //
@@ -53,6 +54,7 @@ impl AsRef<str> for TypedNamespace {
     fn as_ref(&self) -> &str {
         use TypedNamespace::*;
         match self {
+            MrGoodWater => "mr_good_water",
             BoltIsMean => "bolt_is_mean",
             MarieBlabbering => "marie_blabbering",
             InElevator => "in_elevator",

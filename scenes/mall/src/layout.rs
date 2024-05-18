@@ -1,7 +1,8 @@
 use bevy::render::view::RenderLayers;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
+use common_story::Character;
 use common_visuals::camera::render_layer;
-use main_game_lib::cutscene::in_cutscene;
+use main_game_lib::{cutscene::in_cutscene, top_down::actor::BeginDialogEvent};
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use strum::IntoEnumIterator;
 use top_down::{
@@ -30,7 +31,8 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(Mall::quitting()), despawn)
         .add_systems(
             Update,
-            exit.run_if(on_event::<MallAction>())
+            (exit, talk_to_ginger_cat)
+                .run_if(on_event::<MallAction>())
                 .run_if(Mall::in_running_state())
                 .run_if(not(in_cutscene())),
         );
@@ -150,7 +152,7 @@ impl top_down::layout::Tile for MallTileKind {
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::ExitZone => true,
+            Self::GoodWater | Self::ExitZone => true,
         }
     }
 
@@ -182,5 +184,18 @@ fn exit(
 
         *transition = GlobalGameStateTransition::MallToDowntown;
         next_state.set(Mall::quitting());
+    }
+}
+
+fn talk_to_ginger_cat(
+    mut action_events: EventReader<MallAction>,
+    mut begin_dialog_event: EventWriter<BeginDialogEvent>,
+) {
+    let is_triggered = action_events
+        .read()
+        .any(|action| matches!(action, MallAction::StartGingerCatDialog));
+
+    if is_triggered {
+        begin_dialog_event.send(BeginDialogEvent(Character::GingerCat.into()));
     }
 }
