@@ -1,9 +1,170 @@
-[gd_scene load_steps=2 format=3 uid="uid://e5yy5730l3t2"]
+[gd_scene load_steps=24 format=3 uid="uid://e5yy5730l3t2"]
 
-[ext_resource type="Texture2D" uid="uid://x6i0asq43o78" path="res://assets/residential/indoors/basement.png" id="1_ikw8b"]
+[ext_resource type="Texture2D" uid="uid://bhm1hunmc2ejn" path="res://assets/residential/indoors/basement.png" id="1_ikw8b"]
+[ext_resource type="Texture2D" uid="uid://bdn0jfgw4tpeg" path="res://assets/downtown/trashcan_tables.png" id="2_307ea"]
+[ext_resource type="Texture2D" uid="uid://bcs5gw33o4yel" path="res://assets/residential/indoors/utility_door_atlas.png" id="2_ax6ay"]
+[ext_resource type="Texture2D" uid="uid://dmrem43l81ule" path="res://assets/residential/indoors/pc_chair.png" id="2_mwdls"]
+[ext_resource type="Texture2D" uid="uid://b0rhkoqcmyfnk" path="res://assets/residential/indoors/sofa_purple_plain_back.png" id="3_jbnw3"]
+[ext_resource type="Texture2D" uid="uid://ck0d0ox20muxk" path="res://assets/residential/indoors/cupboard2.png" id="4_vjqda"]
+[ext_resource type="Texture2D" uid="uid://cnmyw04hi2g0s" path="res://assets/environment/box_cardboard.png" id="5_g708p"]
+[ext_resource type="Texture2D" uid="uid://cf4vsx36spow3" path="res://assets/environment/box_cardboard_sideways.png" id="6_fhjnm"]
+[ext_resource type="Texture2D" uid="uid://bx8bftj8gtpq7" path="res://assets/residential/indoors/laundry_basket.png" id="7_fp4my"]
+[ext_resource type="Texture2D" uid="uid://bhm8ysatxb48c" path="res://assets/environment/bike.png" id="8_oo0vm"]
+[ext_resource type="Texture2D" uid="uid://de8tpcfp4krml" path="res://assets/residential/indoors/shelf_back.png" id="9_8loxm"]
+[ext_resource type="Texture2D" uid="uid://b2k6tb2xitvs4" path="res://assets/environment/beach_chair_blue.png" id="10_a3q4r"]
+[ext_resource type="Texture2D" uid="uid://ddweg7jqtp7sg" path="res://assets/residential/indoors/basement_cage.png" id="12_0q1qf"]
+[ext_resource type="Texture2D" uid="uid://cgp8i1y6iq4aa" path="res://assets/residential/indoors/basement_shadow.png" id="13_jkjdy"]
+[ext_resource type="Texture2D" uid="uid://bthus13w1bjrk" path="res://assets/residential/indoors/washing_machine.png" id="15_yrorx"]
+[ext_resource type="Texture2D" uid="uid://bnjtrujdg2l5p" path="res://assets/downtown/no_smoking_sign.png" id="16_i4abj"]
+[ext_resource type="Texture2D" uid="uid://b8xgrwspdhoao" path="res://assets/downtown/cone.png" id="17_tggjk"]
+[ext_resource type="Texture2D" uid="uid://b4n3d4xbt3n7t" path="res://assets/downtown/fire_ex.png" id="18_u63js"]
+[ext_resource type="Texture2D" uid="uid://c6m7em4ed56mk" path="res://assets/residential/indoors/cactus1.png" id="19_bc6gn"]
+[ext_resource type="Texture2D" uid="uid://co7ah503swc3n" path="res://assets/residential/indoors/tissues.png" id="20_kuec5"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rnymp"]
+atlas = ExtResource("2_ax6ay")
+region = Rect2(0, 0, 27, 52)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r4c07"]
+atlas = ExtResource("2_ax6ay")
+region = Rect2(27, 0, 27, 52)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_h4rj3"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rnymp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r4c07")
+}],
+"loop": false,
+"name": &"default",
+"speed": 1.0
+}]
 
 [node name="Building1Basement2" type="Node2D"]
 
 [node name="Basement" type="Sprite2D" parent="."]
 position = Vector2(43, -31)
 texture = ExtResource("1_ikw8b")
+
+[node name="TrashcanTables" type="Sprite2D" parent="."]
+position = Vector2(46, -9)
+texture = ExtResource("2_307ea")
+
+[node name="PcChair" type="Sprite2D" parent="."]
+position = Vector2(-155, 81)
+texture = ExtResource("2_mwdls")
+
+[node name="SofaPurplePlainBack" type="Sprite2D" parent="."]
+position = Vector2(166, -11)
+texture = ExtResource("3_jbnw3")
+
+[node name="Cupboard2" type="Sprite2D" parent="."]
+position = Vector2(80, -7)
+texture = ExtResource("4_vjqda")
+
+[node name="BoxCardboard" type="Sprite2D" parent="."]
+position = Vector2(-227, 89)
+texture = ExtResource("5_g708p")
+
+[node name="BoxCardboardSideways" type="Sprite2D" parent="."]
+position = Vector2(213, -6)
+texture = ExtResource("6_fhjnm")
+
+[node name="BoxCardboard2" type="Sprite2D" parent="."]
+position = Vector2(118, -10)
+texture = ExtResource("5_g708p")
+
+[node name="LaundryBasket" type="Sprite2D" parent="."]
+position = Vector2(118, -32)
+texture = ExtResource("7_fp4my")
+
+[node name="Bike" type="Sprite2D" parent="."]
+position = Vector2(-191, 86)
+texture = ExtResource("8_oo0vm")
+
+[node name="ShelfBack" type="Sprite2D" parent="."]
+position = Vector2(15, 71)
+texture = ExtResource("9_8loxm")
+
+[node name="BeachChairBlue" type="Sprite2D" parent="."]
+position = Vector2(-107, 81)
+texture = ExtResource("10_a3q4r")
+
+[node name="BeachChairBlue2" type="Sprite2D" parent="."]
+position = Vector2(-77, 79)
+texture = ExtResource("10_a3q4r")
+
+[node name="BasementDoor" type="AnimatedSprite2D" parent="."]
+position = Vector2(-206, -30)
+sprite_frames = SubResource("SpriteFrames_h4rj3")
+
+[node name="BasementCage" type="Sprite2D" parent="."]
+position = Vector2(-190, 71)
+texture = ExtResource("12_0q1qf")
+
+[node name="BasementCage2" type="Sprite2D" parent="."]
+position = Vector2(-84, 71)
+texture = ExtResource("12_0q1qf")
+
+[node name="BasementCage3" type="Sprite2D" parent="."]
+position = Vector2(22, 71)
+texture = ExtResource("12_0q1qf")
+
+[node name="BasementShadow" type="Sprite2D" parent="."]
+position = Vector2(186, -25)
+texture = ExtResource("13_jkjdy")
+
+[node name="BasementCage4" type="Sprite2D" parent="BasementShadow"]
+position = Vector2(1, -1)
+texture = ExtResource("12_0q1qf")
+
+[node name="BasementShadow2" type="Sprite2D" parent="."]
+position = Vector2(80, -25)
+texture = ExtResource("13_jkjdy")
+
+[node name="BasementCage4" type="Sprite2D" parent="BasementShadow2"]
+position = Vector2(1, -1)
+texture = ExtResource("12_0q1qf")
+
+[node name="WashingMachine" type="Sprite2D" parent="."]
+position = Vector2(11, -13)
+texture = ExtResource("15_yrorx")
+
+[node name="WashingMachine2" type="Sprite2D" parent="."]
+position = Vector2(-16, -13)
+texture = ExtResource("15_yrorx")
+
+[node name="WashingMachine3" type="Sprite2D" parent="."]
+position = Vector2(-43, -13)
+texture = ExtResource("15_yrorx")
+
+[node name="NoSmokingSign" type="Sprite2D" parent="."]
+position = Vector2(11, -49)
+texture = ExtResource("16_i4abj")
+
+[node name="Cone" type="Sprite2D" parent="."]
+position = Vector2(83, 92)
+texture = ExtResource("17_tggjk")
+
+[node name="Cone2" type="Sprite2D" parent="Cone"]
+position = Vector2(0, -4)
+texture = ExtResource("17_tggjk")
+
+[node name="Cone3" type="Sprite2D" parent="Cone/Cone2"]
+position = Vector2(0, -4)
+texture = ExtResource("17_tggjk")
+
+[node name="FireEx" type="Sprite2D" parent="."]
+position = Vector2(-6, -50)
+texture = ExtResource("18_u63js")
+
+[node name="Cactus1" type="Sprite2D" parent="."]
+position = Vector2(-49, -32)
+texture = ExtResource("19_bc6gn")
+
+[node name="Tissues" type="Sprite2D" parent="."]
+position = Vector2(11, -30)
+texture = ExtResource("20_kuec5")
