@@ -9,6 +9,7 @@ devtools = ["bevy-inspector-egui"]
 
 
 [dependencies]
+bevy_grid_squared.workspace = true
 bevy-inspector-egui = { workspace = true, optional = true }
 bevy.workspace = true
 common_action.workspace = true

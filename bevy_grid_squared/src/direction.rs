@@ -113,6 +113,18 @@ impl Square {
             .map(move |direction| self.neighbor(direction))
     }
 
+    /// These are the only 4 diagonal neighbors of a square with manhattan
+    /// distance 2: ↖, ↗, ↙, ↘
+    #[inline]
+    pub fn neighbors_only_diagonal(self) -> impl Iterator<Item = Self> {
+        use GridDirection::*;
+
+        [TopLeft, TopRight, BottomLeft, BottomRight]
+            .iter()
+            .copied()
+            .map(move |direction| self.neighbor(direction))
+    }
+
     /// Given a square, returns the direction to the other square.
     /// They don't have to be neighbors, works at arbitrary distance.
     /// If they are the same square then returns `None`.

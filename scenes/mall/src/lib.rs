@@ -70,6 +70,12 @@ pub enum MallTileKind {
     #[default]
     ExitZone,
     GoodWater,
+    FruitsAndVeggies,
+    Aisle1,
+    Aisle2,
+    Aisle3,
+    Aisle4,
+    Fridges,
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString)]
