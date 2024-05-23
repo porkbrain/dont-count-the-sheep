@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://b4jfxrl5rqnne"]
+[gd_scene load_steps=34 format=3 uid="uid://b4jfxrl5rqnne"]
 
 [ext_resource type="Texture2D" uid="uid://c3bviqtax6ykr" path="res://assets/residential/indoors/hallway2.png" id="1_hc42t"]
 [ext_resource type="Texture2D" uid="uid://746dhnn7rf8e" path="res://assets/residential/indoors/brown_dark_door_atlas.png" id="2_hgy38"]
@@ -11,6 +11,13 @@
 [ext_resource type="Texture2D" uid="uid://pwjry0rycru6" path="res://assets/residential/indoors/sofa_purple.png" id="9_eaole"]
 [ext_resource type="Texture2D" uid="uid://cw3pr54lpwq8h" path="res://assets/residential/indoors/kredenc.png" id="10_77ua5"]
 [ext_resource type="Texture2D" uid="uid://qul8hwvlompw" path="res://assets/residential/indoors/side_table1.png" id="11_vbwku"]
+[ext_resource type="Texture2D" uid="uid://ccx5r0kml8m34" path="res://assets/residential/indoors/bath_horizontal.png" id="12_6odtv"]
+[ext_resource type="Texture2D" uid="uid://brdoi6htsrkpx" path="res://assets/residential/indoors/sink.png" id="13_5srwn"]
+[ext_resource type="Texture2D" uid="uid://cy2uenx3ka0m7" path="res://assets/residential/indoors/toilet.png" id="14_uwy0d"]
+[ext_resource type="Texture2D" uid="uid://p7avilo44i34" path="res://assets/residential/indoors/side_table2_back.png" id="15_ctho0"]
+[ext_resource type="Texture2D" uid="uid://mbpwq7bk7qsi" path="res://assets/environment/toilet_paper.png" id="16_g87gh"]
+[ext_resource type="Texture2D" uid="uid://1ebfmy34d0fc" path="res://assets/residential/indoors/tv_withcable.png" id="17_wf30n"]
+[ext_resource type="Texture2D" uid="uid://dgh7pxmg8k4yg" path="res://assets/twinpeaks_apartment/bed_plain.png" id="18_ntw1u"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0m8kt"]
 atlas = ExtResource("2_hgy38")
@@ -186,13 +193,41 @@ position = Vector2(161, -115)
 texture = ExtResource("8_xnu6d")
 
 [node name="SofaPurple" type="Sprite2D" parent="."]
-position = Vector2(107, -84)
+position = Vector2(109, -84)
 texture = ExtResource("9_eaole")
 
 [node name="Kredenc" type="Sprite2D" parent="."]
-position = Vector2(107, -24)
+position = Vector2(110, -26)
 texture = ExtResource("10_77ua5")
 
 [node name="SideTable1" type="Sprite2D" parent="."]
-position = Vector2(154, -78)
+position = Vector2(155, -78)
 texture = ExtResource("11_vbwku")
+
+[node name="BathHorizontal" type="Sprite2D" parent="."]
+position = Vector2(-195, -79)
+texture = ExtResource("12_6odtv")
+
+[node name="Sink" type="Sprite2D" parent="."]
+position = Vector2(-150, -87)
+texture = ExtResource("13_5srwn")
+
+[node name="Toilet" type="Sprite2D" parent="."]
+position = Vector2(-214, -29)
+texture = ExtResource("14_uwy0d")
+
+[node name="SideTable2Back" type="Sprite2D" parent="."]
+position = Vector2(-182, -28)
+texture = ExtResource("15_ctho0")
+
+[node name="ToiletPaper" type="Sprite2D" parent="."]
+position = Vector2(-187, -43)
+texture = ExtResource("16_g87gh")
+
+[node name="TvWithcable" type="Sprite2D" parent="."]
+position = Vector2(140, -33)
+texture = ExtResource("17_wf30n")
+
+[node name="BedPlain" type="Sprite2D" parent="."]
+position = Vector2(146, 33)
+texture = ExtResource("18_ntw1u")
