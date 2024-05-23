@@ -21,6 +21,7 @@ use lazy_static::lazy_static;
 use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
 
+use self::npc::BehaviorTree;
 use crate::top_down::{
     layout::{ysort, Tile, TileIndex, TopDownScene, LAYOUT},
     npc::NpcInTheMap,
@@ -148,6 +149,7 @@ pub struct CharacterBundleBuilder {
     walking_to: Option<ActorTarget>,
     initial_step_time: Option<Duration>,
     color: Option<Color>,
+    behavior_tree: Option<BehaviorTree>,
 }
 
 /// Event that's emitted when the player clicks interaction near an NPC.
@@ -319,6 +321,7 @@ pub fn animate_movement<T: TopDownScene>(
     }
 }
 
+/// Moves the actor on screen and changes frames for the sprite.
 fn animate_movement_for_actor<T: TopDownScene>(
     time: &Time,
     tilemap: &mut TileMap<T>,
@@ -331,12 +334,9 @@ fn animate_movement_for_actor<T: TopDownScene>(
 
     let current_direction = actor.direction;
     let step_time = actor.step_time;
-    let standing_still_sprite_index = match current_direction {
-        Bottom => 0,
-        Top => 1,
-        Right | TopRight | BottomRight => 6,
-        Left | TopLeft | BottomLeft => 9,
-    };
+    let standing_still_sprite_index = actor
+        .character
+        .standing_sprite_atlas_index(current_direction);
 
     let Some(walking_to) = actor.walking_to.as_mut() else {
         // actor is standing still
@@ -404,18 +404,11 @@ fn animate_movement_for_actor<T: TopDownScene>(
     } else {
         // we're still walking to the target square, do the animation
 
-        let animation_step_time =
-            animation_step_secs(step_time.as_secs_f32(), current_direction);
-        let extra = (time.elapsed_seconds_wrapped() / animation_step_time)
-            .floor() as usize
-            % 2;
-
-        sprite.index = match current_direction {
-            Top => 2 + extra,
-            Bottom => 4 + extra,
-            Right | TopRight | BottomRight => 7 + extra,
-            Left | TopLeft | BottomLeft => 10 + extra,
-        };
+        sprite.index = actor.character.walking_sprite_atlas_index(
+            current_direction,
+            time,
+            step_time,
+        );
 
         let from = LAYOUT.square_to_world_pos(actor.walking_from);
         let precise = from.lerp(to, lerp_factor);
@@ -423,16 +416,6 @@ fn animate_movement_for_actor<T: TopDownScene>(
         let rounded = (precise * PIXEL_ZOOM as f32).round() / PIXEL_ZOOM as f32;
         transform.translation = rounded.extend(ysort(rounded));
     }
-}
-
-/// How often we change walking frame based on how fast we're walking from
-/// square to square.
-fn animation_step_secs(step_secs: f32, dir: GridDirection) -> f32 {
-    match dir {
-        GridDirection::Top | GridDirection::Bottom => step_secs * 5.0,
-        _ => step_secs * 3.5,
-    }
-    .clamp(0.2, 0.5)
 }
 
 impl<T> ActorMovementEvent<T> {
@@ -513,6 +496,7 @@ impl CharacterBundleBuilder {
             walking_to: default(),
             initial_step_time: default(),
             color: default(),
+            behavior_tree: default(),
         }
     }
 
@@ -523,6 +507,11 @@ impl CharacterBundleBuilder {
     /// [`CharacterBundleBuilder::insert_bundle_into`] method's `T`.
     pub fn initial_position(&mut self, initial_position: Vec2) {
         self.initial_position = initial_position;
+    }
+
+    /// Where to spawn the character.
+    pub fn initial_square(&mut self, initial_square: Square) {
+        self.initial_position = LAYOUT.square_to_world_pos(initial_square);
     }
 
     /// When the map is loaded, the character is spawned facing this
@@ -541,7 +530,12 @@ impl CharacterBundleBuilder {
         self.initial_step_time = Some(step_time);
     }
 
-    /// Returns a bundle that can be spawned.
+    /// What behavior tree to use for the NPC.
+    pub fn behavior_tree(&mut self, behavior_tree: impl Into<BehaviorTree>) {
+        self.behavior_tree = Some(behavior_tree.into());
+    }
+
+    /// Spawns a bundle into the provided entity command queue.
     /// The bundle includes:
     /// - [`Name`] component with the character's name
     /// - [`Actor`] component with the character's movement data
@@ -566,6 +560,7 @@ impl CharacterBundleBuilder {
             walking_to,
             initial_step_time: step_time,
             color,
+            behavior_tree,
         } = self;
 
         let step_time = step_time.unwrap_or(character.default_step_time());
@@ -579,6 +574,10 @@ impl CharacterBundleBuilder {
                     .into_label(character.name())
                     .with_emit_event_on_interacted(BeginDialogEvent(id.into())),
             ));
+        }
+
+        if let Some(behavior_tree) = behavior_tree {
+            cmd.insert(behavior_tree);
         }
 
         cmd.insert((

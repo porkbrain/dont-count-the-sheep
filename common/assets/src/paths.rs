@@ -80,6 +80,7 @@ pub mod portraits {
     pub const CAPY: &str = "characters/portraits/capy1.png";
     pub const CAT: &str = "characters/portraits/cat1.png";
     pub const GINGER_CAT: &str = "characters/portraits/gingercat1.png";
+    pub const WHITE_CAT: &str = "characters/portraits/whitecat1.png";
     pub const EMIL: &str = "characters/portraits/emil1.png";
     pub const MASTER: &str = "characters/portraits/master1.png";
     pub const POOPER: &str = "characters/portraits/pooper1.png";
@@ -98,6 +99,7 @@ pub mod character_atlases {
     pub const MARIE: &str = "characters/atlases/marie1.png";
     pub const SAMIZDAT: &str = "characters/atlases/samizdat1.png";
     pub const BOLT: &str = "characters/atlases/bolt1.png";
+    pub const WHITE_CAT: &str = "characters/atlases/whitecat1.png";
 }
 
 pub mod misc {

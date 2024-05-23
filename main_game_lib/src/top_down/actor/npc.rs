@@ -84,6 +84,8 @@ pub enum BehaviorNode {
     Repeat(Box<BehaviorNode>),
     /// Inverts the result of the child.
     Invert(Box<BehaviorNode>),
+    /// Regardless of whether child fails or not, this node always succeeds.
+    Infallible(Box<BehaviorNode>),
 
     /// Leaf node that performs an action.
     Leaf(BehaviorLeaf),
@@ -452,6 +454,17 @@ impl BehaviorTree {
                     let node_to_invert = (**node).clone();
                     self.visiting_stack.push((0, node_to_invert));
                 }
+                BehaviorNode::Infallible(node) => {
+                    if !is_first_visit {
+                        self.last_result = Some(BehaviorResult::Ok);
+                        self.visiting_stack.pop();
+                        continue;
+                    }
+
+                    visits.add_assign(1);
+                    let infallible_node = (**node).clone();
+                    self.visiting_stack.push((0, infallible_node));
+                }
 
                 // ~
                 // we found a leaf, it's time to do some actual work
@@ -529,5 +542,14 @@ impl Not for BehaviorResult {
             Self::Ok => Self::Failed,
             Self::Failed => Self::Ok,
         }
+    }
+}
+
+impl<T> From<T> for BehaviorTree
+where
+    T: Into<BehaviorNode>,
+{
+    fn from(tree: T) -> Self {
+        Self::new(tree)
     }
 }

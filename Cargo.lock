@@ -1482,11 +1482,12 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_grid_squared",
  "common_action",
  "common_assets",
  "common_store",
  "common_visuals",
- "itertools",
+ "itertools 0.13.0",
  "serde",
  "serde_json",
  "serde_with",
@@ -2655,6 +2656,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2750,7 +2760,7 @@ dependencies = [
  "bevy",
  "bevy_egui 0.25.0",
  "derive_more",
- "itertools",
+ "itertools 0.12.1",
  "leafwing_input_manager_macros",
  "serde",
 ]
@@ -2934,7 +2944,7 @@ dependencies = [
  "common_story",
  "common_visuals",
  "graphviz-rust",
- "itertools",
+ "itertools 0.13.0",
  "lazy_static",
  "leafwing-input-manager",
  "logos",
@@ -3792,7 +3802,7 @@ dependencies = [
  "common_store",
  "common_story",
  "common_visuals",
- "itertools",
+ "itertools 0.13.0",
  "lazy_static",
  "main_game_lib",
  "rand",
@@ -3814,7 +3824,7 @@ dependencies = [
  "common_store",
  "common_story",
  "common_visuals",
- "itertools",
+ "itertools 0.13.0",
  "lazy_static",
  "main_game_lib",
  "rand",
@@ -3836,7 +3846,7 @@ dependencies = [
  "common_store",
  "common_story",
  "common_visuals",
- "itertools",
+ "itertools 0.13.0",
  "lazy_static",
  "main_game_lib",
  "rand",
@@ -3876,7 +3886,7 @@ dependencies = [
  "common_store",
  "common_story",
  "common_visuals",
- "itertools",
+ "itertools 0.13.0",
  "lazy_static",
  "main_game_lib",
  "rand",
@@ -3898,7 +3908,7 @@ dependencies = [
  "common_loading_screen",
  "common_physics",
  "common_visuals",
- "itertools",
+ "itertools 0.13.0",
  "lazy_static",
  "leafwing-input-manager",
  "main_game_lib",
@@ -3918,7 +3928,7 @@ dependencies = [
  "common_store",
  "common_story",
  "common_visuals",
- "itertools",
+ "itertools 0.13.0",
  "lazy_static",
  "main_game_lib",
  "rand",
@@ -3940,7 +3950,7 @@ dependencies = [
  "common_store",
  "common_story",
  "common_visuals",
- "itertools",
+ "itertools 0.13.0",
  "lazy_static",
  "main_game_lib",
  "rand",
@@ -3962,7 +3972,7 @@ dependencies = [
  "common_store",
  "common_story",
  "common_visuals",
- "itertools",
+ "itertools 0.13.0",
  "lazy_static",
  "main_game_lib",
  "rand",
