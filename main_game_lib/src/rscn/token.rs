@@ -50,7 +50,7 @@ enum TscnToken {
 
     #[regex(r#"-?\d+(\.\d+)?"#, priority = 3)]
     Number,
-    #[regex(r#"[A-Za-z0-9_/]+|"[A-Za-z0-9_/ ]+""#, priority = 2)]
+    #[regex(r#"[A-Za-z0-9_/]+|"[A-Za-z0-9_/? ]+""#, priority = 2)]
     String,
     #[token("true")]
     True,

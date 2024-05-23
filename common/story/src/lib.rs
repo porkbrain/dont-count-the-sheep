@@ -61,6 +61,8 @@ pub enum Character {
     /// A character.
     Cat,
     /// A character.
+    GingerCat,
+    /// A character.
     Emil,
     /// A character.
     Pooper,
@@ -136,6 +138,7 @@ impl Character {
             Character::Bolt => "Bolt",
             Character::Capy => "Capy",
             Character::Cat => "Cat",
+            Character::GingerCat => "Rolo",
             Character::Emil => "Emil",
             Character::Pooper => "Pooper",
             Character::Samizdat => "Samizdat",
@@ -185,6 +188,7 @@ impl Character {
             Character::Bolt => BOLT,
             Character::Capy => CAPY,
             Character::Cat => CAT,
+            Character::GingerCat => GINGER_CAT,
             Character::Emil => EMIL,
             Character::Master => MASTER,
             Character::Pooper => POOPER,

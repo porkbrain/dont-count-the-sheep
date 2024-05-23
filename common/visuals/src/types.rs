@@ -78,7 +78,7 @@ pub enum AtlasAnimationEnd {
 pub struct AtlasAnimationTimer {
     pub(crate) inner: Timer,
     /// 0 => means current is [`AtlasAnimation::play`].
-    /// 1 => extra_steps[0]
+    /// 1 => `extra_steps[0]`
     /// and so on...
     pub(crate) current_step: usize,
 }

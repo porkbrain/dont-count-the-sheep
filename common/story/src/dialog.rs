@@ -469,10 +469,10 @@ impl Dialog {
                     cmd,
                     store,
                     if self.current_node == NodeName::Root {
-                        error!("NextNodes::None in the root");
+                        error!("Branching::None in the root");
                         NodeName::EndDialog
                     } else {
-                        warn!("NextNodes::None, emerging");
+                        warn!("Branching::None, emerging");
                         NodeName::Root
                     },
                 );
@@ -519,7 +519,7 @@ impl Dialog {
                         AdvanceOutcome::AwaitingPlayerChoice
                     }
                 } else {
-                    warn!("NextNodes::Choice stopped all branches, emerging");
+                    warn!("Branching::Choice stopped all branches, emerging");
                     self.transition_to(cmd, store, NodeName::Root);
                     AdvanceOutcome::Transition
                 }

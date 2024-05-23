@@ -16,6 +16,10 @@ pub(crate) fn on_enter(
     );
     store
         .add_dialog_to_npc(Character::Bolt, dialog::TypedNamespace::BoltIsMean);
+    store.add_dialog_to_npc(
+        Character::GingerCat,
+        dialog::TypedNamespace::MrGoodWater,
+    );
 
     next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
 }

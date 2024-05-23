@@ -95,7 +95,8 @@ fn spawn_cameras(mut cmd: Commands) {
 }
 
 /// This camera does not render into a window, but into a quad that's then
-/// rendered by whichever camera renders the layer [`LightScene::render_layer`].
+/// rendered by whichever camera renders the layer
+/// [`LightScene::render_layer_index`].
 fn spawn_bg_render_camera(
     mut cmd: Commands,
     bg_camera_targets: Res<CameraTargets<BackgroundLightScene>>,
