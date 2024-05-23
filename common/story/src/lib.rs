@@ -13,6 +13,7 @@ pub mod emoji;
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy_grid_squared::GridDirection;
 use common_assets::store::AssetList;
 use serde::{Deserialize, Serialize};
 use strum::{
@@ -60,8 +61,10 @@ pub enum Character {
     Capy,
     /// A character.
     Cat,
-    /// A character.
+    /// Sits in the mall at the Good Water stand.
     GingerCat,
+    /// Walks around the mall with a pushcart.
+    WhiteCat,
     /// A character.
     Emil,
     /// A character.
@@ -111,22 +114,6 @@ impl AssetList for StoryAssets {
 }
 
 impl Character {
-    /// How long does it take to move one square.
-    pub fn default_step_time(self) -> Duration {
-        match self {
-            Character::Winnie => Duration::from_millis(35),
-            _ => Duration::from_millis(50),
-        }
-    }
-
-    /// How long does it take to move one square if walking slowly.
-    pub fn slow_step_time(self) -> Duration {
-        match self {
-            Character::Winnie => Duration::from_millis(100),
-            _ => Duration::from_millis(120),
-        }
-    }
-
     /// Static str name of the character.
     pub fn name(self) -> &'static str {
         match self {
@@ -139,6 +126,7 @@ impl Character {
             Character::Capy => "Capy",
             Character::Cat => "Cat",
             Character::GingerCat => "Rolo",
+            Character::WhiteCat => "Fluffy",
             Character::Emil => "Emil",
             Character::Pooper => "Pooper",
             Character::Samizdat => "Samizdat",
@@ -162,6 +150,7 @@ impl Character {
             Character::Winnie => WINNIE,
             Character::Marie => MARIE,
             Character::Samizdat => SAMIZDAT,
+            Character::WhiteCat => WHITE_CAT,
             Character::Bolt => BOLT,
             _ => unimplemented!(),
         }
@@ -189,6 +178,7 @@ impl Character {
             Character::Capy => CAPY,
             Character::Cat => CAT,
             Character::GingerCat => GINGER_CAT,
+            Character::WhiteCat => WHITE_CAT,
             Character::Emil => EMIL,
             Character::Master => MASTER,
             Character::Pooper => POOPER,
@@ -198,16 +188,24 @@ impl Character {
         }
     }
 
-    /// Returns arguments to [`TextureAtlasLayout::from_grid`].
+    /// Returns arguments to [`TextureAtlasLayout::from_grid`]:
+    ///
+    /// * `tile_size` - Each layout grid cell size
+    /// * `columns` - Grid column count
+    /// * `rows` - Grid row count
+    /// * `padding` - Optional padding between cells
     #[inline]
     fn sprite_atlas(self) -> Option<(Vec2, usize, usize, Vec2)> {
         const STANDARD_SIZE: Vec2 = Vec2::new(25.0, 46.0);
 
         match self {
             Character::Winnie => Some((STANDARD_SIZE, 12, 1, default())),
+            Character::Bolt => Some((STANDARD_SIZE, 12, 1, default())),
             Character::Marie => Some((STANDARD_SIZE, 15, 1, default())),
             Character::Samizdat => Some((STANDARD_SIZE, 15, 1, default())),
-            Character::Bolt => Some((STANDARD_SIZE, 12, 1, default())),
+            Character::WhiteCat => {
+                Some((Vec2::new(48.0, 46.0), 6, 1, default()))
+            }
             _ => None,
         }
     }
@@ -230,5 +228,79 @@ impl Character {
         );
 
         texture_atlases.insert(self.sprite_atlas_layout_handle(), atlas);
+    }
+
+    /// How long does it take to move one square.
+    pub fn default_step_time(self) -> Duration {
+        match self {
+            Character::Winnie => Duration::from_millis(35),
+            Character::WhiteCat => Duration::from_millis(120),
+            _ => Duration::from_millis(50),
+        }
+    }
+
+    /// How long does it take to move one square if walking slowly.
+    pub fn slow_step_time(self) -> Duration {
+        match self {
+            Character::Winnie => Duration::from_millis(100),
+            _ => Duration::from_millis(120),
+        }
+    }
+
+    /// Based on the current character and direction they are facing, what's the
+    /// current sprite index in the atlas if they are standing and not moving.
+    pub fn standing_sprite_atlas_index(
+        self,
+        direction: GridDirection,
+    ) -> usize {
+        use GridDirection::*;
+
+        match (self, direction) {
+            (Self::WhiteCat, Bottom | Left | TopLeft | BottomLeft) => 0,
+            (Self::WhiteCat, Top | Right | TopRight | BottomRight) => 3,
+
+            (_, Bottom) => 0,
+            (_, Top) => 1,
+            (_, Right | TopRight | BottomRight) => 6,
+            (_, Left | TopLeft | BottomLeft) => 9,
+        }
+    }
+
+    /// Based on the current character, direction they are walking,
+    /// how much time has elapsed since the beginning and how fast they
+    /// walk, returns the index of the sprite in the atlas.
+    #[inline]
+    pub fn walking_sprite_atlas_index(
+        self,
+        direction: GridDirection,
+        time: &Time,
+        step_time: Duration,
+    ) -> usize {
+        use GridDirection::*;
+
+        // How often we change walking frame based on how fast we're walking
+        // from square to square.
+        let step_secs = step_time.as_secs_f32();
+        let animation_step_time = match direction {
+            Top | Bottom => step_secs * 5.0,
+            _ => step_secs * 3.5,
+        }
+        .clamp(0.2, 0.5);
+
+        // right now, each sprite has 3 walking frames
+        let extra = (time.elapsed_seconds_wrapped() / animation_step_time)
+            .floor() as usize
+            % 2;
+
+        match (self, direction) {
+            (Self::WhiteCat, Bottom | Left | TopLeft | BottomLeft) => 1 + extra,
+            (Self::WhiteCat, Top | Right | TopRight | BottomRight) => 4 + extra,
+
+            // defaults
+            (_, Top) => 2 + extra,
+            (_, Bottom) => 4 + extra,
+            (_, Right | TopRight | BottomRight) => 7 + extra,
+            (_, Left | TopLeft | BottomLeft) => 10 + extra,
+        }
     }
 }

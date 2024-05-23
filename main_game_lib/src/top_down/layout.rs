@@ -639,10 +639,19 @@ where
             &from,
             // successors
             |square: &Square| {
-                square.neighbors_with_diagonal().filter_map(|neighbor| {
-                    self.walk_cost(neighbor, who)
-                        .map(|cost| (neighbor, cost as i32))
-                })
+                square
+                    .neighbors_no_diagonal()
+                    .filter_map(|neighbor| {
+                        self.walk_cost(neighbor, who)
+                            .map(|cost| (neighbor, cost as i32))
+                    })
+                    .chain(square.neighbors_only_diagonal().filter_map(
+                        // diagonal movement is costs more
+                        |neighbor| {
+                            self.walk_cost(neighbor, who)
+                                .map(|cost| (neighbor, cost as i32 + 1))
+                        },
+                    ))
             },
             // heuristic
             |square: &Square| square.manhattan_distance(to),
@@ -676,11 +685,20 @@ where
             // successors
             |square: &Square| {
                 square
-                    .neighbors_with_diagonal()
-                    .filter(|neighbor| self.is_on(*neighbor, zone_to_stay_in))
+                    .neighbors_no_diagonal()
                     .filter_map(|neighbor| {
                         self.walk_cost(neighbor, who)
                             .map(|cost| (neighbor, cost as i32))
+                    })
+                    .chain(square.neighbors_only_diagonal().filter_map(
+                        // diagonal movement is costs more
+                        |neighbor| {
+                            self.walk_cost(neighbor, who)
+                                .map(|cost| (neighbor, cost as i32 + 1))
+                        },
+                    ))
+                    .filter(|(neighbor, _)| {
+                        self.is_on(*neighbor, zone_to_stay_in)
                     })
             },
             // heuristic
@@ -704,15 +722,22 @@ where
             // successors
             |square: &Square| {
                 square
-                    .neighbors_with_diagonal()
-                    .filter(|neighbor| {
-                        self.any_on(*neighbor, |tile| {
-                            allowed_zones.contains(&tile)
-                        })
-                    })
+                    .neighbors_no_diagonal()
                     .filter_map(|neighbor| {
                         self.walk_cost(neighbor, who)
                             .map(|cost| (neighbor, cost as i32))
+                    })
+                    .chain(square.neighbors_only_diagonal().filter_map(
+                        // diagonal movement is costs more
+                        |neighbor| {
+                            self.walk_cost(neighbor, who)
+                                .map(|cost| (neighbor, cost as i32 + 1))
+                        },
+                    ))
+                    .filter(|(neighbor, _)| {
+                        self.any_on(*neighbor, |tile| {
+                            allowed_zones.contains(&tile)
+                        })
                     })
             },
             // heuristic

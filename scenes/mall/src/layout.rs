@@ -1,8 +1,15 @@
 use bevy::render::view::RenderLayers;
+use bevy_grid_squared::Square;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_story::Character;
 use common_visuals::camera::render_layer;
-use main_game_lib::{cutscene::in_cutscene, top_down::actor::BeginDialogEvent};
+use main_game_lib::{
+    cutscene::in_cutscene,
+    top_down::{
+        actor::BeginDialogEvent, layout::LAYOUT, npc::behaviors::PatrolSequence,
+    },
+};
+use rand::prelude::SliceRandom;
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use strum::IntoEnumIterator;
 use top_down::{
@@ -45,6 +52,8 @@ impl bevy::app::Plugin for Plugin {
 pub(crate) struct LayoutEntity;
 
 struct Spawner<'a> {
+    white_cat_entity: Entity,
+    white_cat_patrol_points: &'a mut Vec<Square>,
     player_entity: Entity,
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
@@ -70,10 +79,17 @@ fn spawn(
     let player = cmd.spawn_empty().id();
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
+    let white_cat = cmd.spawn_empty().id();
+    let mut white_cat_builder =
+        common_story::Character::WhiteCat.bundle_builder();
+    let mut white_cat_patrol_points = Vec::new();
+
     tscn.spawn_into(
         &mut Spawner {
             player_entity: player,
+            white_cat_patrol_points: &mut white_cat_patrol_points,
             player_builder: &mut player_builder,
+            white_cat_entity: white_cat,
             asset_server: &asset_server,
             atlases: &mut atlas_layouts,
             zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
@@ -82,6 +98,31 @@ fn spawn(
     );
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
+
+    let points = {
+        let mut rng = rand::thread_rng();
+        assert!(
+            !white_cat_patrol_points.is_empty(),
+            "No patrol points for white cat"
+        );
+
+        // double the patrol points for greater variety
+        white_cat_patrol_points.extend(white_cat_patrol_points.clone());
+
+        // shuffle them
+        white_cat_patrol_points.shuffle(&mut rng);
+
+        white_cat_patrol_points
+    };
+    // SAFETY: we just checked that the vec is not empty
+    white_cat_builder.initial_square(points.last().copied().unwrap());
+    white_cat_builder.behavior_tree(PatrolSequence {
+        timeout_if_inaccessible: Some(from_millis(5_000)),
+        wait_at_each: from_millis(10_000),
+        points,
+    });
+    white_cat_builder
+        .insert_bundle_into(&asset_server, &mut cmd.entity(white_cat));
 
     cmd.insert_resource(zone_to_inspect_label_entity);
 }
@@ -115,9 +156,14 @@ impl<'a> TscnSpawner for Spawner<'a> {
             "Mall" => {
                 cmd.entity(who).insert(LayoutEntity);
                 cmd.entity(who).add_child(self.player_entity);
+                cmd.entity(who).add_child(self.white_cat_entity);
             }
             "Entrance" => {
                 self.player_builder.initial_position(translation.truncate());
+            }
+            s if s.starts_with("WhiteCatPatrolPoint") => {
+                self.white_cat_patrol_points
+                    .push(LAYOUT.world_pos_to_square(translation.truncate()));
             }
             _ => {}
         }
@@ -152,7 +198,14 @@ impl top_down::layout::Tile for MallTileKind {
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::GoodWater | Self::ExitZone => true,
+            Self::FruitsAndVeggies
+            | Self::Aisle1
+            | Self::Aisle2
+            | Self::Aisle3
+            | Self::Aisle4
+            | Self::Fridges
+            | Self::GoodWater
+            | Self::ExitZone => true,
         }
     }
 

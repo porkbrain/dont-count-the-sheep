@@ -276,3 +276,33 @@ metadata/zone = "GoodWater"
 metadata/action = "StartGingerCatDialog"
 metadata/label = "Good  Water  stand"
 metadata/category = "Npc"
+
+[node name="WhiteCatPatrolPoint1" type="Node2D" parent="Points"]
+position = Vector2(-125, -79)
+
+[node name="Point" type="Node" parent="Points/WhiteCatPatrolPoint1"]
+
+[node name="WhiteCatPatrolPoint2" type="Node2D" parent="Points"]
+position = Vector2(25, -95)
+
+[node name="Point" type="Node" parent="Points/WhiteCatPatrolPoint2"]
+
+[node name="WhiteCatPatrolPoint3" type="Node2D" parent="Points"]
+position = Vector2(111, -97)
+
+[node name="Point" type="Node" parent="Points/WhiteCatPatrolPoint3"]
+
+[node name="WhiteCatPatrolPoint4" type="Node2D" parent="Points"]
+position = Vector2(245, -90)
+
+[node name="Point" type="Node" parent="Points/WhiteCatPatrolPoint4"]
+
+[node name="WhiteCatPatrolPoint5" type="Node2D" parent="Points"]
+position = Vector2(50, 35)
+
+[node name="Point" type="Node" parent="Points/WhiteCatPatrolPoint5"]
+
+[node name="WhiteCatPatrolPoint6" type="Node2D" parent="Points"]
+position = Vector2(219, 11)
+
+[node name="Point" type="Node" parent="Points/WhiteCatPatrolPoint6"]
