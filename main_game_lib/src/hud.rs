@@ -17,5 +17,11 @@ impl bevy::app::Plugin for Plugin {
                 daybar::update.run_if(on_event::<daybar::UpdateDayBarEvent>()),
             )
             .add_systems(Update, daybar::interact);
+
+        #[cfg(feature = "devtools")]
+        {
+            app.register_type::<daybar::DayBar>()
+                .register_type::<daybar::Beats>();
+        }
     }
 }
