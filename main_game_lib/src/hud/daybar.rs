@@ -6,11 +6,17 @@
 use std::ops::{Add, AddAssign, Neg, Sub};
 
 use bevy::ui::RelativeCursorPosition;
-use common_assets::fonts;
+use common_assets::{
+    fonts,
+    ui::{HEARTBEAT_ATLAS, HEARTBEAT_ATLAS_SIZE, TIME_ATLAS},
+};
 use common_ext::QueryExt;
-use common_visuals::camera::MainCamera;
+use common_visuals::camera::{MainCamera, PIXEL_ZOOM};
 
 use crate::{player_stats::PlayerStats, prelude::*};
+
+const TOOLTIP_FONT: &str = fonts::PIXEL1;
+const TOOLTIP_FONT_SIZE: f32 = 18.0;
 
 /// Unit of time.
 #[derive(
@@ -59,6 +65,9 @@ pub(crate) struct DayBarRoot;
 
 pub(crate) fn spawn(
     mut cmd: Commands,
+    asset_server: Res<AssetServer>,
+    mut atlases: ResMut<Assets<TextureAtlasLayout>>,
+    daybar: Res<DayBar>,
 
     camera: Query<Entity, With<MainCamera>>,
 ) {
@@ -68,27 +77,59 @@ pub(crate) fn spawn(
         TargetCamera(camera.single()),
         Interaction::default(),
         RelativeCursorPosition::default(),
-        NodeBundle {
+        ImageBundle {
             style: Style {
                 position_type: PositionType::Absolute,
 
+                // TODO: standardized margin
                 top: Val::Px(10.0),
                 left: Val::Px(10.0),
 
-                border: UiRect::all(Val::Px(2.0)),
-
-                width: Val::Px(160.0),
-                min_width: Val::Percent(8.0),
-                height: Val::Px(160.0),
-                min_height: Val::Percent(8.0),
+                width: Val::Px(HEARTBEAT_ATLAS_SIZE.x * PIXEL_ZOOM as f32),
+                height: Val::Px(HEARTBEAT_ATLAS_SIZE.y * PIXEL_ZOOM as f32),
 
                 ..default()
             },
-            background_color: BackgroundColor(Color::RED.with_a(0.75)),
-            border_color: BorderColor(Color::WHITE.with_a(0.75)),
+            image: UiImage::new(asset_server.load(TIME_ATLAS)),
             ..default()
         },
-    ));
+        TextureAtlas {
+            index: daybar.time_atlas_sprite_index(),
+            layout: atlases.add(TextureAtlasLayout::from_grid(
+                HEARTBEAT_ATLAS_SIZE,
+                13,
+                1,
+                default(),
+                default(),
+            )),
+        },
+    ))
+    .with_children(|parent| {
+        parent.spawn((
+            ImageBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+
+                    width: Val::Px(HEARTBEAT_ATLAS_SIZE.x * PIXEL_ZOOM as f32),
+                    height: Val::Px(HEARTBEAT_ATLAS_SIZE.y * PIXEL_ZOOM as f32),
+
+                    ..default()
+                },
+                image: UiImage::new(asset_server.load(HEARTBEAT_ATLAS)),
+                ..default()
+            },
+            TextureAtlas {
+                index: 0,
+                layout: atlases.add(TextureAtlasLayout::from_grid(
+                    HEARTBEAT_ATLAS_SIZE,
+                    3,
+                    1,
+                    default(),
+                    default(),
+                )),
+            },
+        ));
+    });
 }
 
 pub(crate) fn despawn(
@@ -102,6 +143,8 @@ pub(crate) fn update(
     mut events: EventReader<UpdateDayBarEvent>,
     mut daybar: ResMut<DayBar>,
     mut stats: ResMut<PlayerStats>,
+
+    mut daybar_ui: Query<&mut TextureAtlas, With<DayBarRoot>>,
 ) {
     for event in events.read() {
         // beats never go backwards except on a new day
@@ -138,6 +181,10 @@ pub(crate) fn update(
         };
     }
 
+    if let Some(mut daybar_ui) = daybar_ui.get_single_mut_or_none() {
+        daybar_ui.index = daybar.time_atlas_sprite_index();
+    }
+
     // TODO: if tooltip is shown, update it
 }
 
@@ -170,8 +217,8 @@ pub(crate) fn interact(
                         style: Style {
                             padding: UiRect::all(Val::Px(12.5)),
                             position_type: PositionType::Absolute,
-                            left: Val::Percent(75.0),
-                            top: Val::Percent(105.0),
+                            left: Val::Percent(65.0),
+                            top: Val::Percent(65.0),
                             aspect_ratio: Some(10.0),
                             border: UiRect::all(Val::Px(2.5)),
                             ..default()
@@ -195,9 +242,8 @@ pub(crate) fn interact(
                             ),
                             TextStyle {
                                 color: Color::WHITE,
-                                // TODO
-                                font_size: 18.0,
-                                font: asset_server.load(fonts::PIXEL1),
+                                font_size: TOOLTIP_FONT_SIZE,
+                                font: asset_server.load(TOOLTIP_FONT),
                             },
                         )
                         .with_justify(JustifyText::Center),
@@ -252,6 +298,28 @@ impl DayBar {
         };
 
         range.contains(&self.progress)
+    }
+
+    /// There are 13 sprite frames in the atlas representing these percentages:
+    /// `100%, 94%, 87%, 75%, 63%, 50%, 38%, 25%, 17%, 13%, 10%, 5%, 0%`
+    /// We want to change the sprite index when the fraction gets half way
+    /// to the next percentage
+    fn time_atlas_sprite_index(&self) -> usize {
+        match self.progress.as_fraction_of_day() {
+            0.0..=0.025 => 0,
+            0.025..=0.075 => 1,
+            0.075..=0.125 => 2,
+            0.125..=0.16 => 3,
+            0.16..=0.23 => 4,
+            0.23..=0.33 => 5,
+            0.33..=0.45 => 6,
+            0.45..=0.58 => 7,
+            0.58..=0.68 => 8,
+            0.68..=0.80 => 9,
+            0.80..=0.90 => 10,
+            0.90..=0.96 => 11,
+            _ => 12,
+        }
     }
 }
 
