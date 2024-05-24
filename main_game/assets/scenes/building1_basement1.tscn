@@ -163,14 +163,14 @@ metadata/label = "Basement"
 metadata/category = "Default"
 
 [node name="RecycleBin" type="Sprite2D" parent="."]
-position = Vector2(-262, 65.5)
+position = Vector2(-262, 68.5)
 texture = ExtResource("5_0eq5h")
 
 [node name="YSort" type="Node2D" parent="RecycleBin"]
 position = Vector2(0, 12)
 
 [node name="BlackBin" type="Sprite2D" parent="."]
-position = Vector2(-243, 65.5)
+position = Vector2(-243, 68.5)
 texture = ExtResource("6_sj14k")
 
 [node name="YSort" type="Node2D" parent="BlackBin"]
