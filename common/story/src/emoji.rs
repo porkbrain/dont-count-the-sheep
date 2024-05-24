@@ -5,7 +5,7 @@ use bevy::{
     prelude::*,
     utils::{Duration, Instant},
 };
-use common_assets::paths::EMOJI_ATLAS;
+use common_assets::paths::misc::EMOJI_ATLAS;
 use common_visuals::{
     AtlasAnimation, AtlasAnimationEnd, AtlasAnimationStep, AtlasAnimationTimer,
 };

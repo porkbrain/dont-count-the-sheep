@@ -111,6 +111,14 @@ pub mod misc {
         "misc/loading_screens/winnie_in_bathroom_atlas.png";
     pub const LOADING_SCREEN_HEDGEHOG_ATLAS: &str =
         "misc/loading_screens/hedgehog_atlas.png";
+    pub const EMOJI_ATLAS: &str = "misc/emoji_atlas.png";
 }
 
-pub const EMOJI_ATLAS: &str = "misc/emoji_atlas.png";
+pub mod ui {
+    use bevy::math::Vec2;
+
+    pub const HEARTBEAT_ATLAS: &str = "hud/heartbeat_atlas.png";
+    pub const TIME_ATLAS: &str = "hud/time_atlas.png";
+
+    pub const HEARTBEAT_ATLAS_SIZE: Vec2 = Vec2::splat(70.0);
+}
