@@ -44,6 +44,20 @@ pub fn in_portrait_dialog() -> impl FnMut(
     }
 }
 
+impl Dialog {
+    /// Spawns the dialog UI and inserts all necessary resources.
+    pub(crate) fn spawn_with_portrait_fe(
+        self,
+        cmd: &mut Commands,
+        asset_server: &AssetServer,
+    ) {
+        let speaker = self.current_node_info().who;
+        PortraitDialog::spawn(cmd, asset_server, speaker);
+
+        self.spawn(cmd);
+    }
+}
+
 /// If inserted, then the game is in the dialog UI.
 #[derive(Resource)]
 pub struct PortraitDialog {
@@ -61,20 +75,6 @@ pub struct PortraitDialog {
     /// children).
     /// The node is always present, but can have no children.
     choices_box: Entity,
-}
-
-impl Dialog {
-    /// Spawns the dialog UI and inserts all necessary resources.
-    pub(crate) fn spawn_with_portrait_fe(
-        self,
-        cmd: &mut Commands,
-        asset_server: &AssetServer,
-    ) {
-        let speaker = self.current_node_info().who;
-        PortraitDialog::spawn(cmd, asset_server, speaker);
-
-        self.spawn(cmd);
-    }
 }
 
 #[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash)]
@@ -105,6 +105,11 @@ enum PortraitDialogState {
     /// - no choices have been rendered yet
     RenderChoicesIfNoMoreTextToRender,
 }
+
+/// Emitted when the player clicks the interact key or uses the mouse to confirm
+/// their selection.
+#[derive(Event)]
+struct PlayerAdvancesDialogEvent;
 
 /// Marks the dialog camera.
 #[derive(Component)]
@@ -140,7 +145,8 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<PortraitDialogState>();
+        app.init_state::<PortraitDialogState>()
+            .add_event::<PlayerAdvancesDialogEvent>();
 
         app.add_systems(
             First,
@@ -151,7 +157,7 @@ impl bevy::app::Plugin for Plugin {
             Last,
             player_wishes_to_continue
                 .run_if(in_state(PortraitDialogState::PlayerControl))
-                .run_if(common_action::interaction_just_pressed()),
+                .run_if(on_event::<PlayerAdvancesDialogEvent>()),
         )
         .add_systems(
             Update,
@@ -161,9 +167,26 @@ impl bevy::app::Plugin for Plugin {
         )
         .add_systems(
             Update,
-            change_selection
+            confirm_selection
+                .run_if(in_state(PortraitDialogState::PlayerControl))
+                .run_if(common_action::interaction_just_pressed()),
+        )
+        .add_systems(
+            Update,
+            change_selection_with_arrows
                 .run_if(in_state(PortraitDialogState::PlayerControl))
                 .run_if(common_action::move_action_just_pressed()),
+        )
+        .add_systems(
+            Update,
+            change_selection_with_numbers
+                .run_if(in_state(PortraitDialogState::PlayerControl))
+                .run_if(common_action::numeric_key_pressed()),
+        )
+        .add_systems(
+            Update,
+            handle_mouse_input
+                .run_if(in_state(PortraitDialogState::PlayerControl)),
         )
         .add_systems(
             Update,
@@ -485,10 +508,80 @@ fn cancel(
     next_dialog_state.set(PortraitDialogState::NotInDialog);
 }
 
+/// The player can hover over a choice to select it and/or click to confirm.
+fn handle_mouse_input(
+    mut events: EventWriter<PlayerAdvancesDialogEvent>,
+
+    mut choices: Query<(
+        &Interaction,
+        &Children,
+        &mut DialogChoice,
+        &mut BackgroundColor,
+    )>,
+    mut texts: Query<&mut Text>,
+) {
+    let any_pressed = choices.iter().any(|(interaction, ..)| {
+        matches!(interaction, Interaction::Hovered | Interaction::Pressed)
+    });
+
+    if !any_pressed {
+        return;
+    }
+
+    // if true then we fire a confirm event
+    let mut was_pressed = false;
+    // there's always at least one active choice
+    let mut old_active_order = 0;
+    // there's always going to be a new active choice because we just
+    // checked that the interaction is either hovered or pressed
+    let mut new_active_order = 0;
+    let mut choice_map: BTreeMap<_, _> = {
+        choices
+            .iter_mut()
+            .map(|(interaction, children, choice, bg_color)| {
+                if choice.is_selected {
+                    old_active_order = choice.order;
+                }
+
+                match interaction {
+                    Interaction::Pressed => {
+                        new_active_order = choice.order;
+                        was_pressed = true;
+                    }
+                    Interaction::Hovered => {
+                        new_active_order = choice.order;
+                    }
+                    _ => {}
+                };
+
+                (choice.order, (children, choice, bg_color))
+            })
+            .collect()
+    };
+
+    if was_pressed {
+        events.send(PlayerAdvancesDialogEvent);
+    }
+
+    if old_active_order == new_active_order {
+        return;
+    }
+
+    // highlight new choice
+    set_choice_highlight(true, new_active_order, &mut choice_map, &mut texts);
+    // unhighlight old choice
+    set_choice_highlight(false, old_active_order, &mut choice_map, &mut texts);
+}
+
+/// Runs when the user presses the interact key.
+fn confirm_selection(mut events: EventWriter<PlayerAdvancesDialogEvent>) {
+    events.send(PlayerAdvancesDialogEvent);
+}
+
 /// Run if pressed some movement key.
 /// If there are choices, then the selection will be changed if the movement
 /// was either up or down.
-fn change_selection(
+fn change_selection_with_arrows(
     controls: Res<ActionState<GlobalAction>>,
 
     mut choices: Query<(&Children, &mut DialogChoice, &mut BackgroundColor)>,
@@ -510,7 +603,7 @@ fn change_selection(
         return;
     }
 
-    let (active_order, mut choice_map) = {
+    let (old_active_order, mut choice_map) = {
         let mut active = 0;
         let choice_map: BTreeMap<_, _> = choices
             .iter_mut()
@@ -527,52 +620,112 @@ fn change_selection(
 
     let new_active_order = if up {
         // previous
-        if active_order == 0 {
+        if old_active_order == 0 {
             choice_map.len() - 1
         } else {
-            active_order - 1
+            old_active_order - 1
         }
     } else {
         // next
-        if active_order == choice_map.len() - 1 {
+        if old_active_order == choice_map.len() - 1 {
             0
         } else {
-            active_order + 1
+            old_active_order + 1
         }
     };
 
     // highlight new choice
-    if let Some((children, new_choice, bg_color)) =
-        choice_map.get_mut(&new_active_order)
-    {
-        new_choice.is_selected = true;
+    set_choice_highlight(true, new_active_order, &mut choice_map, &mut texts);
+    // unhighlight old choice
+    set_choice_highlight(false, old_active_order, &mut choice_map, &mut texts);
+}
 
-        debug_assert_eq!(1, children.len());
-        if let Ok(mut text) = texts.get_mut(children[0]) {
-            text.sections[0].style.color = Color::BLACK;
-            **bg_color = CHOICE_HIGHLIGHT_COLOR.into();
-        } else {
-            error!("Cannot find text for choice with order {new_active_order}");
-        }
-    } else {
-        error!("Cannot find choice with order {new_active_order}");
+fn change_selection_with_numbers(
+    controls: Res<ActionState<GlobalAction>>,
+
+    mut choices: Query<(&Children, &mut DialogChoice, &mut BackgroundColor)>,
+    mut texts: Query<&mut Text>,
+) {
+    if choices.is_empty() {
+        return;
     }
 
-    // unhighlight old choice
-    if let Some((children, old_choice, bg_color)) =
-        choice_map.get_mut(&active_order)
+    let mut new_active_order = None;
+    // get all numerical actions (ordered) from 1 to 9
+    for (i, action) in GlobalAction::numerical().into_iter().enumerate().skip(1)
     {
-        old_choice.is_selected = false;
+        if controls.pressed(&action) {
+            new_active_order = Some(i - 1);
+            break;
+        }
+    }
+
+    if let Some(new_active_order) = new_active_order {
+        let (old_active_order, mut choice_map) = {
+            let mut active = 0;
+            let choice_map: BTreeMap<_, _> = choices
+                .iter_mut()
+                .map(|(children, choice, bg_color)| {
+                    if choice.is_selected {
+                        active = choice.order;
+                    }
+                    (choice.order, (children, choice, bg_color))
+                })
+                .collect();
+
+            (active, choice_map)
+        };
+
+        if choice_map.len() > new_active_order
+            && old_active_order != new_active_order
+        {
+            // highlight new choice
+            set_choice_highlight(
+                true,
+                new_active_order,
+                &mut choice_map,
+                &mut texts,
+            );
+            // unhighlight old choice
+            set_choice_highlight(
+                false,
+                old_active_order,
+                &mut choice_map,
+                &mut texts,
+            );
+        }
+    }
+}
+
+/// Either highlights or unhighlights a choice.
+fn set_choice_highlight(
+    highlighted: bool,
+    order: usize,
+    choice_map: &mut BTreeMap<
+        usize,
+        (&Children, Mut<DialogChoice>, Mut<BackgroundColor>),
+    >,
+    texts: &mut Query<&mut Text>,
+) {
+    // highlight new choice
+    if let Some((children, new_choice, bg_color)) = choice_map.get_mut(&order) {
+        new_choice.is_selected = highlighted;
+
+        let (new_text_color, new_bg_color) = if highlighted {
+            (Color::BLACK, CHOICE_HIGHLIGHT_COLOR)
+        } else {
+            (Color::WHITE, Color::NONE)
+        };
 
         debug_assert_eq!(1, children.len());
         if let Ok(mut text) = texts.get_mut(children[0]) {
-            text.sections[0].style.color = Color::WHITE;
-            **bg_color = Color::NONE.into();
+            text.sections[0].style.color = new_text_color;
+            **bg_color = new_bg_color.into();
         } else {
-            error!("Cannot find text for choice with order {active_order}");
+            error!("Cannot find text for choice with order {order}");
         }
     } else {
-        error!("Cannot find choice with order {active_order}");
+        error!("Cannot find choice with order {order}");
     }
 }
 
@@ -685,7 +838,8 @@ impl PortraitDialog {
                 .with_children(|parent| {
                     // of the whole box, 70% is usable space for
                     // text and choices
-                    const TEXT_HEIGHT_PERCENT: f32 = 25.0;
+                    const TEXT_HEIGHT_PERCENT: f32 = 23.0;
+                    const TEXT_MARGIN_TOP_PERCENT: f32 = 2.0;
                     const CHOICES_HEIGHT_PERCENT: f32 = 45.0;
 
                     parent.spawn((
@@ -697,7 +851,11 @@ impl PortraitDialog {
                             style: Style {
                                 width: Val::Percent(90.0),
                                 height: Val::Percent(TEXT_HEIGHT_PERCENT),
-                                margin: UiRect::bottom(Val::Px(10.0)),
+                                margin: UiRect {
+                                    top: Val::Percent(TEXT_MARGIN_TOP_PERCENT),
+                                    bottom: Val::Px(10.0),
+                                    ..default()
+                                },
                                 ..default()
                             },
                             ..default()
@@ -709,7 +867,7 @@ impl PortraitDialog {
                             Name::new("Dialog choices"),
                             NodeBundle {
                                 style: Style {
-                                    width: Val::Percent(90.0),
+                                    width: Val::Percent(85.0),
                                     height: Val::Percent(
                                         CHOICES_HEIGHT_PERCENT,
                                     ),
@@ -790,6 +948,7 @@ fn spawn_choice(
         Name::new(format!("Choice {order}: {node_name:?}")),
         RenderLayers::layer(render_layer::DIALOG),
         choice,
+        Interaction::default(),
         NodeBundle {
             background_color: if is_first {
                 CHOICE_HIGHLIGHT_COLOR.into()

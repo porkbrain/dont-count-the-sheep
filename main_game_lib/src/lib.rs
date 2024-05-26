@@ -32,6 +32,7 @@ pub fn windowed_app() -> App {
                 level: bevy::log::Level::INFO,
                 filter: "\
                 info,\
+                bevy_ui=debug,\
                 game=trace,\
                 bevy_magic_light_2d=trace,\
                 common_action=trace,\
