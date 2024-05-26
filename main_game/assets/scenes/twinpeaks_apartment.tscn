@@ -98,6 +98,5 @@ position = Vector2(49, -14)
 texture = ExtResource("14_w5d20")
 
 [node name="Popelnik" type="Sprite2D" parent="."]
-position = Vector2(72, -27)
+position = Vector2(72, -26.5)
 texture = ExtResource("15_xnd7r")
-offset = Vector2(0, 0.5)

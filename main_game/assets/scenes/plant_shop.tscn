@@ -57,9 +57,8 @@ texture = ExtResource("7_2xqcs")
 
 [node name="Shelf" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(29, -86)
+position = Vector2(29, -85.5)
 texture = ExtResource("8_52cf7")
-offset = Vector2(0, 0.5)
 
 [node name="Plant2" type="Sprite2D" parent="Shelf"]
 z_index = 1
