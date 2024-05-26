@@ -11,6 +11,7 @@ use bevy::{
     utils::Instant,
 };
 use common_action::{ActionState, GlobalAction};
+use common_assets::ui::DIALOG_BOX;
 use common_store::GlobalStore;
 use common_visuals::camera::{render_layer, PIXEL_ZOOM};
 
@@ -654,8 +655,7 @@ impl PortraitDialog {
                 .spawn((
                     Name::new("Dialog Box"),
                     RenderLayers::layer(render_layer::DIALOG),
-                    // TODO
-                    UiImage::new(asset_server.load("misc/dialog_box.png")),
+                    UiImage::new(asset_server.load(DIALOG_BOX)),
                     NodeBundle {
                         style: Style {
                             width: Val::Px(350.0 * PIXEL_ZOOM as f32),

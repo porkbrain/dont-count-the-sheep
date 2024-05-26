@@ -117,6 +117,7 @@ pub mod misc {
 pub mod ui {
     use bevy::math::Vec2;
 
+    pub const DIALOG_BOX: &str = "ui/dialog_box.png";
     pub const HEARTBEAT_ATLAS: &str = "hud/heartbeat_atlas.png";
     pub const TIME_ATLAS: &str = "hud/time_atlas.png";
 
