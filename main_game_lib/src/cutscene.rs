@@ -16,17 +16,19 @@ use std::sync::OnceLock;
 
 use bevy::{ecs::system::SystemId, prelude::*, render::view::RenderLayers};
 use bevy_grid_squared::{GridDirection, Square};
+use common_ext::QueryExt;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_store::GlobalStore;
 use common_story::dialog::{
     self, fe::portrait::PortraitDialog, StartDialogWhenLoaded,
 };
 use common_visuals::{
-    camera::{order, render_layer},
+    camera::{order, render_layer, MainCamera},
     AtlasAnimation, AtlasAnimationStep, AtlasAnimationTimer,
     BeginInterpolationEvent,
 };
 
+use self::top_down::cameras::{ManualControl, SyncWithPlayer};
 use crate::{
     prelude::*,
     top_down::{actor::player::TakeAwayPlayerControl, Actor, ActorTarget},
@@ -196,6 +198,16 @@ pub enum CutsceneStep {
     /// Sets the [`Actor::direction`] property to the given value.
     /// This will be overwritten if the actor starts walking.
     SetActorFacingDirection(Entity, GridDirection),
+    /// Removes the [`SyncWithPlayer`] component from [`MainCamera`] entity and
+    /// adds [`ManualControl`] component. This is useful for manual camera
+    /// control.
+    ///
+    /// [`ManualControl`] must be returned with
+    /// [`ReleaseManualMainCameraControl`].
+    ClaimManualMainCameraControl,
+    /// Undoes [`ClaimManualMainCameraControl`] by inserting [`ManualControl`]
+    /// to the [`MainCamera`] entity.
+    ReleaseManualMainCameraControl,
 }
 
 /// Marks a destination.
@@ -424,6 +436,8 @@ struct CutsceneSystems {
     begin_moving_entity: SystemId,
     set_actor_facing_direction: SystemId,
     schedule_commands: SystemId,
+    claim_manual_main_camera_control: SystemId,
+    release_manual_main_camera_control: SystemId,
 }
 
 impl CutsceneSystems {
@@ -450,6 +464,10 @@ impl CutsceneSystems {
             set_actor_facing_direction: w
                 .register_system(set_actor_facing_direction),
             schedule_commands: w.register_system(schedule_commands),
+            claim_manual_main_camera_control: w
+                .register_system(claim_manual_main_camera_control),
+            release_manual_main_camera_control: w
+                .register_system(release_manual_main_camera_control),
         }
     }
 }
@@ -479,6 +497,8 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         BeginMovingEntity { .. } => s.begin_moving_entity,
         SetActorFacingDirection(_, _) => s.set_actor_facing_direction,
         ScheduleCommands(_) => s.schedule_commands,
+        ClaimManualMainCameraControl => s.claim_manual_main_camera_control,
+        ReleaseManualMainCameraControl => s.release_manual_main_camera_control,
     }
 }
 
@@ -775,6 +795,44 @@ fn schedule_commands(
     };
 
     f(&mut cmd, &store);
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn claim_manual_main_camera_control(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+
+    camera: Query<Entity, With<MainCamera>>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::ClaimManualMainCameraControl = &step else {
+        panic!("Expected ClaimManualMainCameraControl step, got {step}");
+    };
+
+    if let Some(entity) = camera.get_single_or_none() {
+        cmd.entity(entity)
+            .remove::<SyncWithPlayer>()
+            .insert(ManualControl);
+    }
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn release_manual_main_camera_control(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+
+    camera: Query<Entity, With<MainCamera>>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::ReleaseManualMainCameraControl = &step else {
+        panic!("Expected ReleaseManualMainCameraControl step, got {step}");
+    };
+
+    if let Some(entity) = camera.get_single_or_none() {
+        cmd.entity(entity).remove::<ManualControl>();
+    }
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }
