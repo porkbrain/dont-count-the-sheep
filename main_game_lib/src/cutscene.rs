@@ -203,10 +203,10 @@ pub enum CutsceneStep {
     /// control.
     ///
     /// [`ManualControl`] must be returned with
-    /// [`ReleaseManualMainCameraControl`].
+    /// [`Self::ReleaseManualMainCameraControl`].
     ClaimManualMainCameraControl,
-    /// Undoes [`ClaimManualMainCameraControl`] by inserting [`ManualControl`]
-    /// to the [`MainCamera`] entity.
+    /// Undoes [`Self::ClaimManualMainCameraControl`] by inserting
+    /// [`ManualControl`] to the [`MainCamera`] entity.
     ReleaseManualMainCameraControl,
 }
 

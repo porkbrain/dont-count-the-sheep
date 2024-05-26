@@ -757,6 +757,8 @@ impl PortraitDialog {
 
         // Spawns the dialog camera which has a high order and only renders the
         // dialog entities.
+        //
+        // TODO: https://github.com/bevyengine/bevy/issues/13517
         let camera = cmd
             .spawn((
                 Name::from("Portrait dialog camera"),
