@@ -7,12 +7,13 @@
 use std::{collections::BTreeMap, time::Duration};
 
 use bevy::{
-    math::vec2, prelude::*, render::view::RenderLayers, text::TextLayoutInfo,
+    prelude::*, render::view::RenderLayers, text::TextLayoutInfo,
     utils::Instant,
 };
 use common_action::{ActionState, GlobalAction};
+use common_assets::ui::DIALOG_BOX;
 use common_store::GlobalStore;
-use common_visuals::camera::render_layer;
+use common_visuals::camera::{render_layer, PIXEL_ZOOM};
 
 use super::DialogFrontend;
 use crate::{
@@ -23,12 +24,11 @@ use crate::{
     Character,
 };
 
-const DIALOG_LEFT: Val = Val::Vw(10.0);
 const FONT_SIZE: f32 = 21.0;
 const CHOICE_FONT_SIZE: f32 = 17.0;
 const FONT: &str = common_assets::fonts::PENCIL1;
-const TEXT_BOUNDS: Vec2 = vec2(250.0, 120.0);
-const CHOICE_TEXT_BOUNDS: Vec2 = vec2(250.0, 50.0);
+/// Dark orange
+const CHOICE_HIGHLIGHT_COLOR: Color = Color::rgb(0.789, 0.455, 0.007);
 const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 
 /// Will be true if in a dialog that takes away player control.
@@ -44,18 +44,6 @@ pub fn in_portrait_dialog() -> impl FnMut(
     }
 }
 
-/// If inserted, then the game is in the dialog UI.
-#[derive(Resource, Reflect)]
-#[reflect(Resource)]
-pub struct PortraitDialog {
-    /// We force a small delay between frames to prevent the player from
-    /// skipping through the dialog way too fast.
-    /// The tiny delay lets the brain to at least get the gist of what's
-    /// being said.
-    last_frame_shown_at: Instant,
-    last_rendered_node: Option<NodeName>,
-}
-
 impl Dialog {
     /// Spawns the dialog UI and inserts all necessary resources.
     pub(crate) fn spawn_with_portrait_fe(
@@ -64,13 +52,33 @@ impl Dialog {
         asset_server: &AssetServer,
     ) {
         let speaker = self.current_node_info().who;
-        PortraitDialog::default().spawn(cmd, asset_server, speaker);
+        PortraitDialog::spawn(cmd, asset_server, speaker);
 
         self.spawn(cmd);
     }
 }
 
-#[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash, Reflect)]
+/// If inserted, then the game is in the dialog UI.
+#[derive(Resource)]
+pub struct PortraitDialog {
+    /// We force a small delay between frames to prevent the player from
+    /// skipping through the dialog way too fast.
+    /// The tiny delay lets the brain to at least get the gist of what's
+    /// being said.
+    last_frame_shown_at: Instant,
+    last_rendered_node: Option<NodeName>,
+    /// Holds the whole dialog UI.
+    root: Entity,
+    /// The dialog camera entity.
+    camera: Entity,
+    /// Contains the list of dialog choices (those are going to be the
+    /// children).
+    /// The node is always present, but can have no children.
+    choices_box: Entity,
+}
+
+#[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
 enum PortraitDialogState {
     /// This is the initial state.
     /// When in this state, no systems run.
@@ -98,15 +106,23 @@ enum PortraitDialogState {
     RenderChoicesIfNoMoreTextToRender,
 }
 
+/// Emitted when the player clicks the interact key or uses the mouse to confirm
+/// their selection.
+#[derive(Event)]
+struct PlayerAdvancesDialogEvent;
+
 /// Marks the dialog camera.
 #[derive(Component)]
 struct DialogCamera;
 /// The root entity of the dialog UI.
 #[derive(Component)]
 struct DialogUiRoot;
-/// A child of the root entity that contains the text.
+/// A child of the dialog box entity that contains the text.
 #[derive(Component)]
 struct DialogText;
+/// A child of the dialog box entity that contains list of choices if any.
+#[derive(Component)]
+struct DialogChoicesBox;
 /// A child of the root entity that contains the portrait image.
 #[derive(Component)]
 struct DialogPortrait;
@@ -114,7 +130,8 @@ struct DialogPortrait;
 /// Entities that render choices in dialogs.
 /// When advancing the dialog, the selected choice will be used to determine
 /// the next sequence.
-#[derive(Component, Clone, Debug, Reflect)]
+#[derive(Component, Clone, Debug)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
 struct DialogChoice {
     of: NodeName,
     /// Starts at 0.
@@ -128,7 +145,8 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<PortraitDialogState>();
+        app.init_state::<PortraitDialogState>()
+            .add_event::<PlayerAdvancesDialogEvent>();
 
         app.add_systems(
             First,
@@ -139,7 +157,7 @@ impl bevy::app::Plugin for Plugin {
             Last,
             player_wishes_to_continue
                 .run_if(in_state(PortraitDialogState::PlayerControl))
-                .run_if(common_action::interaction_just_pressed()),
+                .run_if(on_event::<PlayerAdvancesDialogEvent>()),
         )
         .add_systems(
             Update,
@@ -149,9 +167,26 @@ impl bevy::app::Plugin for Plugin {
         )
         .add_systems(
             Update,
-            change_selection
+            confirm_selection
+                .run_if(in_state(PortraitDialogState::PlayerControl))
+                .run_if(common_action::interaction_just_pressed()),
+        )
+        .add_systems(
+            Update,
+            change_selection_with_arrows
                 .run_if(in_state(PortraitDialogState::PlayerControl))
                 .run_if(common_action::move_action_just_pressed()),
+        )
+        .add_systems(
+            Update,
+            change_selection_with_numbers
+                .run_if(in_state(PortraitDialogState::PlayerControl))
+                .run_if(common_action::numeric_key_pressed()),
+        )
+        .add_systems(
+            Update,
+            handle_mouse_input
+                .run_if(in_state(PortraitDialogState::PlayerControl)),
         )
         .add_systems(
             Update,
@@ -163,7 +198,6 @@ impl bevy::app::Plugin for Plugin {
         #[cfg(feature = "devtools")]
         {
             app.register_type::<PortraitDialogState>()
-                .register_type::<PortraitDialog>()
                 .register_type::<DialogChoice>();
 
             use bevy_inspector_egui::quick::StateInspectorPlugin;
@@ -188,8 +222,6 @@ fn player_wishes_to_continue(
     store: Res<GlobalStore>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 
-    camera: Query<Entity, With<DialogCamera>>,
-    root: Query<Entity, With<DialogUiRoot>>,
     mut text: Query<(&mut Text, &TextLayoutInfo), With<DialogText>>,
     mut portrait: Query<&mut UiImage, With<DialogPortrait>>,
     choices: Query<(Entity, &DialogChoice)>,
@@ -218,8 +250,6 @@ fn player_wishes_to_continue(
         &mut dialog_fe,
         &asset_server,
         &mut controls,
-        camera.single(),
-        root.single(),
         &mut text,
         &mut portrait.single_mut(),
         choices,
@@ -249,8 +279,6 @@ fn await_portrait_async_ops(
     store: Res<GlobalStore>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 
-    camera: Query<Entity, With<DialogCamera>>,
-    root: Query<Entity, With<DialogUiRoot>>,
     mut text: Query<&mut Text, With<DialogText>>,
     mut portrait: Query<&mut UiImage, With<DialogPortrait>>,
     choices: Query<(Entity, &DialogChoice)>,
@@ -262,8 +290,6 @@ fn await_portrait_async_ops(
         &mut dialog_fe,
         &asset_server,
         &mut controls,
-        camera.single(),
-        root.single(),
         &mut text.single_mut(),
         &mut portrait.single_mut(),
         choices,
@@ -281,10 +307,10 @@ fn render_choices_if_no_more_text_to_render(
     mut cmd: Commands,
     mut next_dialog_state: ResMut<NextState<PortraitDialogState>>,
     dialog_be: ResMut<Dialog>,
+    dialog_fe: Res<PortraitDialog>,
     asset_server: Res<AssetServer>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 
-    root: Query<Entity, With<DialogUiRoot>>,
     text: Query<(&Text, &TextLayoutInfo), With<DialogText>>,
     choices: Query<(Entity, &DialogChoice)>,
 ) {
@@ -311,13 +337,7 @@ fn render_choices_if_no_more_text_to_render(
             // choices are still loading, try again next tick
         }
         Some(Ok(branches)) => {
-            show_player_choices(
-                &mut cmd,
-                &asset_server,
-                &dialog_be,
-                root.single(),
-                &branches,
-            );
+            show_player_choices(&mut cmd, &asset_server, &dialog_fe, &branches);
 
             controls.consume_all();
             next_dialog_state.set(PortraitDialogState::PlayerControl);
@@ -365,8 +385,6 @@ fn advance_dialog(
     dialog_fe: &mut PortraitDialog,
     asset_server: &AssetServer,
     controls: &mut ActionState<GlobalAction>,
-    camera: Entity,
-    root: Entity,
     text: &mut Text,
     portrait: &mut UiImage,
     choices: Query<(Entity, &DialogChoice)>,
@@ -402,7 +420,7 @@ fn advance_dialog(
             AdvanceOutcome::ScheduledDespawn => {
                 trace!("Despawning portrait dialog FE");
 
-                dialog_fe.despawn(cmd, controls, camera, root);
+                dialog_fe.despawn(cmd, controls);
 
                 // the dialog is over
                 break PortraitDialogState::NotInDialog;
@@ -414,8 +432,7 @@ fn advance_dialog(
                     show_player_choices(
                         cmd,
                         asset_server,
-                        dialog_be,
-                        root,
+                        dialog_fe,
                         &dialog_be
                             .get_choices()
                             .expect("choices present on AwaitingPlayerChoice")
@@ -483,25 +500,91 @@ fn cancel(
     mut dialog_be: ResMut<Dialog>,
     mut dialog_fe: ResMut<PortraitDialog>,
     mut controls: ResMut<ActionState<GlobalAction>>,
-
-    root: Query<Entity, With<DialogUiRoot>>,
-    camera: Query<Entity, With<DialogCamera>>,
 ) {
     trace!("Cancelling dialog");
     dialog_be.despawn(&mut cmd);
-    dialog_fe.despawn(&mut cmd, &mut controls, camera.single(), root.single());
+    dialog_fe.despawn(&mut cmd, &mut controls);
 
     next_dialog_state.set(PortraitDialogState::NotInDialog);
+}
+
+/// The player can hover over a choice to select it and/or click to confirm.
+fn handle_mouse_input(
+    mut events: EventWriter<PlayerAdvancesDialogEvent>,
+
+    mut choices: Query<(
+        &Interaction,
+        &Children,
+        &mut DialogChoice,
+        &mut BackgroundColor,
+    )>,
+    mut texts: Query<&mut Text>,
+) {
+    let any_pressed = choices.iter().any(|(interaction, ..)| {
+        matches!(interaction, Interaction::Hovered | Interaction::Pressed)
+    });
+
+    if !any_pressed {
+        return;
+    }
+
+    // if true then we fire a confirm event
+    let mut was_pressed = false;
+    // there's always at least one active choice
+    let mut old_active_order = 0;
+    // there's always going to be a new active choice because we just
+    // checked that the interaction is either hovered or pressed
+    let mut new_active_order = 0;
+    let mut choice_map: BTreeMap<_, _> = {
+        choices
+            .iter_mut()
+            .map(|(interaction, children, choice, bg_color)| {
+                if choice.is_selected {
+                    old_active_order = choice.order;
+                }
+
+                match interaction {
+                    Interaction::Pressed => {
+                        new_active_order = choice.order;
+                        was_pressed = true;
+                    }
+                    Interaction::Hovered => {
+                        new_active_order = choice.order;
+                    }
+                    _ => {}
+                };
+
+                (choice.order, (children, choice, bg_color))
+            })
+            .collect()
+    };
+
+    if was_pressed {
+        events.send(PlayerAdvancesDialogEvent);
+    }
+
+    if old_active_order == new_active_order {
+        return;
+    }
+
+    // highlight new choice
+    set_choice_highlight(true, new_active_order, &mut choice_map, &mut texts);
+    // unhighlight old choice
+    set_choice_highlight(false, old_active_order, &mut choice_map, &mut texts);
+}
+
+/// Runs when the user presses the interact key.
+fn confirm_selection(mut events: EventWriter<PlayerAdvancesDialogEvent>) {
+    events.send(PlayerAdvancesDialogEvent);
 }
 
 /// Run if pressed some movement key.
 /// If there are choices, then the selection will be changed if the movement
 /// was either up or down.
-fn change_selection(
+fn change_selection_with_arrows(
     controls: Res<ActionState<GlobalAction>>,
-    asset_server: Res<AssetServer>,
 
-    mut choices: Query<(&Children, &mut DialogChoice, &mut UiImage)>,
+    mut choices: Query<(&Children, &mut DialogChoice, &mut BackgroundColor)>,
     mut texts: Query<&mut Text>,
 ) {
     if choices.is_empty() {
@@ -520,15 +603,15 @@ fn change_selection(
         return;
     }
 
-    let (active_order, mut choice_map) = {
+    let (old_active_order, mut choice_map) = {
         let mut active = 0;
         let choice_map: BTreeMap<_, _> = choices
             .iter_mut()
-            .map(|(children, choice, image)| {
+            .map(|(children, choice, bg_color)| {
                 if choice.is_selected {
                     active = choice.order;
                 }
-                (choice.order, (children, choice, image))
+                (choice.order, (children, choice, bg_color))
             })
             .collect();
 
@@ -537,56 +620,112 @@ fn change_selection(
 
     let new_active_order = if up {
         // previous
-        if active_order == 0 {
+        if old_active_order == 0 {
             choice_map.len() - 1
         } else {
-            active_order - 1
+            old_active_order - 1
         }
     } else {
         // next
-        if active_order == choice_map.len() - 1 {
+        if old_active_order == choice_map.len() - 1 {
             0
         } else {
-            active_order + 1
+            old_active_order + 1
         }
     };
 
-    // set the active order's font to WHITE and the image to highlighted option
-    if let Some((children, new_choice, image)) =
-        choice_map.get_mut(&new_active_order)
-    {
-        new_choice.is_selected = true;
+    // highlight new choice
+    set_choice_highlight(true, new_active_order, &mut choice_map, &mut texts);
+    // unhighlight old choice
+    set_choice_highlight(false, old_active_order, &mut choice_map, &mut texts);
+}
 
-        image.texture =
-            asset_server.load(common_assets::dialog::DIALOG_CHOICE_HIGHLIGHTED);
+fn change_selection_with_numbers(
+    controls: Res<ActionState<GlobalAction>>,
 
-        debug_assert_eq!(1, children.len());
-        if let Ok(mut text) = texts.get_mut(children[0]) {
-            text.sections[0].style.color = Color::WHITE;
-        } else {
-            error!("Cannot find text for choice with order {new_active_order}");
-        }
-    } else {
-        error!("Cannot find choice with order {new_active_order}");
+    mut choices: Query<(&Children, &mut DialogChoice, &mut BackgroundColor)>,
+    mut texts: Query<&mut Text>,
+) {
+    if choices.is_empty() {
+        return;
     }
 
-    // now set the old active order's font to BLACK and the image to normal
-    // option
-    if let Some((children, old_choice, image)) =
-        choice_map.get_mut(&active_order)
+    let mut new_active_order = None;
+    // get all numerical actions (ordered) from 1 to 9
+    for (i, action) in GlobalAction::numerical().into_iter().enumerate().skip(1)
     {
-        old_choice.is_selected = false;
+        if controls.pressed(&action) {
+            new_active_order = Some(i - 1);
+            break;
+        }
+    }
 
-        image.texture = asset_server.load(common_assets::dialog::DIALOG_CHOICE);
+    if let Some(new_active_order) = new_active_order {
+        let (old_active_order, mut choice_map) = {
+            let mut active = 0;
+            let choice_map: BTreeMap<_, _> = choices
+                .iter_mut()
+                .map(|(children, choice, bg_color)| {
+                    if choice.is_selected {
+                        active = choice.order;
+                    }
+                    (choice.order, (children, choice, bg_color))
+                })
+                .collect();
+
+            (active, choice_map)
+        };
+
+        if choice_map.len() > new_active_order
+            && old_active_order != new_active_order
+        {
+            // highlight new choice
+            set_choice_highlight(
+                true,
+                new_active_order,
+                &mut choice_map,
+                &mut texts,
+            );
+            // unhighlight old choice
+            set_choice_highlight(
+                false,
+                old_active_order,
+                &mut choice_map,
+                &mut texts,
+            );
+        }
+    }
+}
+
+/// Either highlights or unhighlights a choice.
+fn set_choice_highlight(
+    highlighted: bool,
+    order: usize,
+    choice_map: &mut BTreeMap<
+        usize,
+        (&Children, Mut<DialogChoice>, Mut<BackgroundColor>),
+    >,
+    texts: &mut Query<&mut Text>,
+) {
+    // highlight new choice
+    if let Some((children, new_choice, bg_color)) = choice_map.get_mut(&order) {
+        new_choice.is_selected = highlighted;
+
+        let (new_text_color, new_bg_color) = if highlighted {
+            (Color::BLACK, CHOICE_HIGHLIGHT_COLOR)
+        } else {
+            (Color::WHITE, Color::NONE)
+        };
 
         debug_assert_eq!(1, children.len());
         if let Ok(mut text) = texts.get_mut(children[0]) {
-            text.sections[0].style.color = Color::BLACK;
+            text.sections[0].style.color = new_text_color;
+            **bg_color = new_bg_color.into();
         } else {
-            error!("Cannot find text for choice with order {active_order}");
+            error!("Cannot find text for choice with order {order}");
         }
     } else {
-        error!("Cannot find choice with order {active_order}");
+        error!("Cannot find choice with order {order}");
     }
 }
 
@@ -595,11 +734,9 @@ impl PortraitDialog {
         &mut self,
         cmd: &mut Commands,
         controls: &mut ActionState<GlobalAction>,
-        camera: Entity,
-        root: Entity,
     ) {
-        cmd.entity(camera).despawn_recursive();
-        cmd.entity(root).despawn_recursive();
+        cmd.entity(self.camera).despawn_recursive();
+        cmd.entity(self.root).despawn_recursive();
         cmd.remove_resource::<PortraitDialog>();
 
         controls.consume_all();
@@ -607,12 +744,10 @@ impl PortraitDialog {
 
     /// Spawns [`PortraitDialog`] resource and all the necessary UI components.
     fn spawn(
-        self,
         cmd: &mut Commands,
         asset_server: &AssetServer,
         speaker: Character,
     ) {
-        cmd.insert_resource(self);
         // this transitions into the first dialog node
         cmd.add(|w: &mut World| {
             w.get_resource_mut::<NextState<PortraitDialogState>>()
@@ -622,6 +757,8 @@ impl PortraitDialog {
 
         // Spawns the dialog camera which has a high order and only renders the
         // dialog entities.
+        //
+        // TODO: https://github.com/bevyengine/bevy/issues/13517
         let camera = cmd
             .spawn((
                 Name::from("Portrait dialog camera"),
@@ -644,7 +781,7 @@ impl PortraitDialog {
             TextStyle {
                 font: asset_server.load(FONT),
                 font_size: FONT_SIZE,
-                color: Color::BLACK,
+                color: Color::WHITE,
             },
         );
 
@@ -654,10 +791,13 @@ impl PortraitDialog {
                 DialogUiRoot,
                 TargetCamera(camera),
                 NodeBundle {
+                    // centers the content
                     style: Style {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(100.0),
-                        left: DIALOG_LEFT,
+                        width: Val::Vw(100.0),
+                        bottom: Val::Px(0.0),
+                        position_type: PositionType::Absolute,
+                        flex_direction: FlexDirection::RowReverse,
+
                         ..default()
                     },
                     ..default()
@@ -665,24 +805,29 @@ impl PortraitDialog {
             ))
             .id();
 
+        // written into with the with_children command
+        let mut choices_box = Entity::PLACEHOLDER;
         cmd.entity(root).with_children(|parent| {
             parent
                 .spawn((
-                    Name::new("Bubble"),
+                    Name::new("Dialog Box"),
                     RenderLayers::layer(render_layer::DIALOG),
-                    UiImage::new(
-                        asset_server.load(common_assets::dialog::DIALOG_BUBBLE),
-                    ),
+                    UiImage::new(asset_server.load(DIALOG_BOX)),
                     NodeBundle {
                         style: Style {
-                            position_type: PositionType::Absolute,
-                            width: Val::Px(400.0),
-                            height: Val::Px(414.0),
-                            bottom: Val::Px(290.0),
+                            width: Val::Px(350.0 * PIXEL_ZOOM as f32),
+                            height: Val::Px(107.0 * PIXEL_ZOOM as f32),
+                            margin: UiRect {
+                                left: Val::Px(0.0),
+                                right: Val::Auto,
+                                top: Val::Auto,
+                                bottom: Val::Auto,
+                            },
                             justify_content: JustifyContent::Center,
                             justify_items: JustifyItems::Center,
                             align_content: AlignContent::Center,
                             align_items: AlignItems::Center,
+                            flex_direction: FlexDirection::Column,
                             ..default()
                         },
                         // a `NodeBundle` is transparent by default, so to see
@@ -693,6 +838,12 @@ impl PortraitDialog {
                     },
                 ))
                 .with_children(|parent| {
+                    // of the whole box, 70% is usable space for
+                    // text and choices
+                    const TEXT_HEIGHT_PERCENT: f32 = 23.0;
+                    const TEXT_MARGIN_TOP_PERCENT: f32 = 2.0;
+                    const CHOICES_HEIGHT_PERCENT: f32 = 45.0;
+
                     parent.spawn((
                         DialogText,
                         Name::new("Dialog text"),
@@ -700,13 +851,35 @@ impl PortraitDialog {
                         TextBundle {
                             text,
                             style: Style {
-                                width: Val::Px(TEXT_BOUNDS.x),
-                                height: Val::Px(TEXT_BOUNDS.y),
+                                width: Val::Percent(90.0),
+                                height: Val::Percent(TEXT_HEIGHT_PERCENT),
+                                margin: UiRect {
+                                    top: Val::Percent(TEXT_MARGIN_TOP_PERCENT),
+                                    bottom: Val::Px(10.0),
+                                    ..default()
+                                },
                                 ..default()
                             },
                             ..default()
                         },
                     ));
+                    choices_box = parent
+                        .spawn((
+                            DialogChoicesBox,
+                            Name::new("Dialog choices"),
+                            NodeBundle {
+                                style: Style {
+                                    width: Val::Percent(85.0),
+                                    height: Val::Percent(
+                                        CHOICES_HEIGHT_PERCENT,
+                                    ),
+                                    flex_direction: FlexDirection::Column,
+                                    ..default()
+                                },
+                                ..default()
+                            },
+                        ))
+                        .id();
                 });
 
             parent.spawn((
@@ -717,8 +890,12 @@ impl PortraitDialog {
                     style: Style {
                         width: Val::Px(common_assets::portraits::SIZE_PX.x),
                         height: Val::Px(common_assets::portraits::SIZE_PX.y),
-                        position_type: PositionType::Absolute,
-                        bottom: Val::Px(0.0),
+                        margin: UiRect {
+                            right: Val::Px(0.0),
+                            left: Val::Auto,
+                            top: Val::Auto,
+                            bottom: Val::Auto,
+                        },
                         ..default()
                     },
                     // a `NodeBundle` is transparent by default, so to see the
@@ -729,6 +906,14 @@ impl PortraitDialog {
                 UiImage::new(asset_server.load(speaker.portrait_asset_path())),
             ));
         });
+
+        cmd.insert_resource(Self {
+            camera,
+            choices_box,
+            last_frame_shown_at: Instant::now(),
+            last_rendered_node: default(),
+            root,
+        });
     }
 }
 
@@ -736,71 +921,56 @@ impl PortraitDialog {
 fn show_player_choices(
     cmd: &mut Commands,
     asset_server: &AssetServer,
-    dialog_be: &Dialog,
-    root: Entity,
+    dialog_fe: &PortraitDialog,
     between: &[(&NodeName, &str)],
 ) {
-    let node = dialog_be.current_node_info();
-
-    let transform_manager = node.who.choice_transform_manager(between.len());
-
     for (order, (node_name, choice_text)) in between.iter().enumerate() {
-        let choice = spawn_choice(
-            cmd,
-            asset_server,
-            &transform_manager,
-            order,
-            node_name,
-            choice_text,
-        );
-        cmd.entity(root).add_child(choice);
+        let choice =
+            spawn_choice(cmd, asset_server, order, node_name, choice_text);
+        cmd.entity(dialog_fe.choices_box).add_child(choice);
     }
 }
 
 fn spawn_choice(
     cmd: &mut Commands,
     asset_server: &AssetServer,
-    transform_manager: &ChoicePositionManager,
     order: usize,
     node_name: &NodeName,
     choice_text: &str,
 ) -> Entity {
-    let (asset, color) = if order == 0 {
-        (
-            common_assets::dialog::DIALOG_CHOICE_HIGHLIGHTED,
-            Color::WHITE,
-        )
-    } else {
-        (common_assets::dialog::DIALOG_CHOICE, Color::BLACK)
-    };
+    let is_first = order == 0;
 
     let choice = DialogChoice {
         of: node_name.clone(),
         order,
-        is_selected: order == 0,
+        is_selected: is_first,
     };
-
-    let Vec2 { x: left, y: bottom } = transform_manager.get(order);
 
     cmd.spawn((
         Name::new(format!("Choice {order}: {node_name:?}")),
         RenderLayers::layer(render_layer::DIALOG),
         choice,
-        UiImage::new(asset_server.load(asset)),
+        Interaction::default(),
         NodeBundle {
-            z_index: ZIndex::Local(1 + order as i32),
+            background_color: if is_first {
+                CHOICE_HIGHLIGHT_COLOR.into()
+            } else {
+                Color::NONE.into()
+            },
             style: Style {
-                width: Val::Px(350.0),
-                height: Val::Px(92.0),
-                position_type: PositionType::Absolute,
-                left: Val::Px(left),
-                bottom: Val::Px(bottom),
-                justify_content: JustifyContent::Center,
+                margin: if is_first {
+                    default()
+                } else {
+                    UiRect::top(Val::Px(2.5))
+                },
+                padding: UiRect {
+                    left: Val::Px(10.0),
+                    right: Val::Px(10.0),
+                    top: Val::Px(7.5),
+                    bottom: Val::Px(10.0),
+                },
                 ..default()
             },
-            // a `NodeBundle` is transparent by default, so to see the
-            // image we have to its color to `WHITE`
-            background_color: Color::WHITE.into(),
             ..default()
         },
     ))
@@ -810,74 +980,20 @@ fn spawn_choice(
             RenderLayers::layer(render_layer::DIALOG),
             TextBundle {
                 text: Text::from_section(
-                    choice_text,
+                    format!("{}. {choice_text}", order + 1),
                     TextStyle {
                         font: asset_server.load(FONT),
                         font_size: CHOICE_FONT_SIZE,
-                        color,
+                        color: if is_first {
+                            Color::BLACK
+                        } else {
+                            Color::WHITE
+                        },
                     },
                 ),
-                style: Style {
-                    max_width: Val::Px(CHOICE_TEXT_BOUNDS.x),
-                    max_height: Val::Px(CHOICE_TEXT_BOUNDS.y),
-                    align_self: AlignSelf::Center,
-                    ..default()
-                },
                 ..default()
             },
         ));
     })
     .id()
-}
-
-pub(super) struct ChoicePositionManager {
-    positions: Vec<Vec2>,
-}
-
-impl ChoicePositionManager {
-    fn get(&self, index: usize) -> Vec2 {
-        debug_assert!(
-            index < self.positions.len(),
-            "Cannot get position index for index {index}"
-        );
-        self.positions[index]
-    }
-}
-
-impl Character {
-    fn choice_transform_manager(
-        self,
-        total_choices: usize,
-    ) -> ChoicePositionManager {
-        #[allow(clippy::match_single_binding)]
-        let positions = match total_choices {
-            0 => panic!("0 choices is an oxymoron"),
-            1 => match self {
-                _ => vec![vec2(240.0, 75.0)],
-            },
-            2 => match self {
-                _ => vec![vec2(240.0, 140.0), vec2(260.0, 75.0)],
-            },
-            3 => match self {
-                _ => vec![
-                    vec2(227.0, 145.0),
-                    vec2(240.0, 75.0),
-                    vec2(260.0, 5.0),
-                ],
-            },
-            total => todo!("Cannot handle {total} choices"),
-        };
-        debug_assert_eq!(total_choices, positions.len());
-
-        ChoicePositionManager { positions }
-    }
-}
-
-impl Default for PortraitDialog {
-    fn default() -> Self {
-        Self {
-            last_frame_shown_at: Instant::now(),
-            last_rendered_node: default(),
-        }
-    }
 }

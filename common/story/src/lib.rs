@@ -107,7 +107,6 @@ impl AssetList for StoryAssets {
     fn folders() -> &'static [&'static str] {
         &[
             common_assets::character_atlases::FOLDER,
-            common_assets::dialog::FOLDER,
             common_assets::portraits::FOLDER,
         ]
     }

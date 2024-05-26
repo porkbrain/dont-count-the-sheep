@@ -1,6 +1,6 @@
 [root]
 who = "GingerCat"
-en = """*With what you percieved as a substantial effort the cat's eyes meet yours.
+en = """*With a substantial effort on her part, the cat's eyes meet yours.
 This cat is clearly out of it.*"""
 [[node]]
 en = "Good Water."
@@ -36,7 +36,10 @@ who = "GingerCat"
 en = "No peas no cash, please."
 [[node]]
 who = "Winnie"
-en = "What? Anyway, I don't have no peas."
+en = """What?
+
+Well, anyway, I don't have no peas.
+"""
 # TODO: We can add a note to the player's quest log here, and if they come with
 # peas that can be obtained in the cult's garden, they can go to the next dialog
 # with the cat.

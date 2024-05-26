@@ -71,6 +71,8 @@ impl IntoCutscene for EnterAnElevator {
         vec![
             TakeAwayPlayerControl(player),
             SetActorFacingDirection(player, GridDirection::Top),
+            // take over camera manual control
+            ClaimManualMainCameraControl,
             // move camera to the player
             BeginMovingEntity {
                 who: camera,
@@ -118,6 +120,7 @@ impl IntoCutscene for EnterAnElevator {
                         step_time: Some(STEP_TIME_ON_EXIT_ELEVATOR),
                         planned: None,
                     },
+                    ReleaseManualMainCameraControl,
                     Sleep(from_millis(250)),
                     // closes the elevator door
                     ReverseAtlasAnimation(elevator),

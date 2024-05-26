@@ -52,6 +52,11 @@ pub struct SyncWithPlayer {
     animation_timer: Stopwatch,
 }
 
+/// If this component is present on [`MainCamera`] systems in this module
+/// won't do anything.
+#[derive(Component)]
+pub struct ManualControl;
+
 /// Recommended to run after the player's movement animation:
 ///
 /// ```rust,ignore
@@ -68,7 +73,7 @@ pub fn track_player_with_main_camera(
     player: Query<&GlobalTransform, With<Player>>,
     camera: Query<
         (Entity, &mut Transform, Option<&mut SyncWithPlayer>),
-        With<MainCamera>,
+        (With<MainCamera>, Without<ManualControl>),
     >,
 ) {
     track_player::<MainCamera>(cmd, time, player, camera);
@@ -81,7 +86,7 @@ fn track_player<C: Component>(
     player: Query<&GlobalTransform, With<Player>>,
     mut camera: Query<
         (Entity, &mut Transform, Option<&mut SyncWithPlayer>),
-        With<C>,
+        (With<C>, Without<ManualControl>),
     >,
 ) {
     let Some(player_pos) = player.get_single_or_none() else {

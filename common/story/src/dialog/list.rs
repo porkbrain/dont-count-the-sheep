@@ -24,7 +24,7 @@ pub enum DialogRef {
 /// Namespace represents a dialog toml file with relative path from the root
 /// of the dialog directory.
 /// Each dialog file has a unique name.
-#[derive(PartialEq, Eq, Debug, Clone, Hash, Reflect)]
+#[derive(PartialEq, Eq, Clone, Hash, Reflect)]
 pub struct Namespace {
     /// This can be a file path or a runtime created dialog name.
     unique_name: String,
@@ -117,6 +117,12 @@ impl From<TypedNamespace> for DialogRef {
 impl From<Handle<DialogGraph>> for DialogRef {
     fn from(handle: Handle<DialogGraph>) -> Self {
         DialogRef::Handle(handle)
+    }
+}
+
+impl std::fmt::Debug for Namespace {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "namespace({})", self.unique_name)
     }
 }
 

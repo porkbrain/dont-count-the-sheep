@@ -23,7 +23,7 @@ use bevy::{
     math::vec3, prelude::*, render::view::RenderLayers, utils::Instant,
 };
 use common_visuals::{
-    camera::{order, render_layer, PIXEL_ZOOM},
+    camera::{order, render_layer},
     PRIMARY_COLOR,
 };
 
@@ -32,6 +32,8 @@ pub const DEFAULT_FADE_LOADING_SCREEN_IN: Duration = Duration::from_millis(400);
 /// Fast fade out is the default, can be changed in [`LoadingScreenSettings`].
 pub const DEFAULT_FADE_LOADING_SCREEN_OUT: Duration =
     Duration::from_millis(100);
+/// How many times to scale the original loading image.
+pub const LOADING_IMAGE_TRANSFORM_SCALE: f32 = 5.0;
 
 /// A state machine where the states are the steps of the loading screen.
 /// They are executed in order and loop back to the beginning.
@@ -55,20 +57,20 @@ pub enum LoadingScreenState {
     /// 4.
     FadeInQuadWhileBgLoading,
     /// 5. Wait
-    /// 6. Set visibility of the image to visible
-    /// (if no bg image go to [`LoadingScreenState::StareAtLoadingScreen`])
+    /// 6. Set visibility of the image to visible (if no bg image go to
+    ///    [`LoadingScreenState::StareAtLoadingScreen`])
     WaitForAtlasToLoad,
     /// 7. Fades out and sets the state to
-    ///    [`LoadingScreenState::StareAtLoadingScreen`].
-    /// (skipped if no bg image)
+    ///    [`LoadingScreenState::StareAtLoadingScreen`]. (skipped if no bg
+    ///    image)
     FadeOutQuadToShowAtlas,
     /// 8. If requested, stay on this screen for given amount of time before
     ///    transitioning to [`LoadingScreenState::WaitForSignalToFinish`].
     StareAtLoadingScreen,
     /// 9. Now we wait for the loading to be done, user must [`finish_state`].
     WaitForSignalToFinish,
-    /// 10. Fade in
-    /// (if no bg image go to [`LoadingScreenState::FadeOutQuadToShowGame`])
+    /// 10. Fade in (if no bg image go to
+    ///     [`LoadingScreenState::FadeOutQuadToShowGame`])
     FadeInQuadToRemoveAtlas,
     /// 11.
     /// (skipped if no bg image)
@@ -292,8 +294,8 @@ fn spawn_loading_screen(
                             asset_server.load(atlas.asset_path()),
                         ),
                         transform: Transform::from_scale(vec3(
-                            PIXEL_ZOOM as f32,
-                            PIXEL_ZOOM as f32,
+                            LOADING_IMAGE_TRANSFORM_SCALE,
+                            LOADING_IMAGE_TRANSFORM_SCALE,
                             1.0,
                         )),
                         ..default()
