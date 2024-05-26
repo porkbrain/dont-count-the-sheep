@@ -117,7 +117,6 @@ fn spawn(
     // SAFETY: we just checked that the vec is not empty
     white_cat_builder.initial_square(points.last().copied().unwrap());
     white_cat_builder.behavior_tree(PatrolSequence {
-        timeout_if_inaccessible: Some(from_millis(5_000)),
         wait_at_each: from_millis(10_000),
         points,
     });

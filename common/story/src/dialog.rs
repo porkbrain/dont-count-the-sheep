@@ -84,7 +84,7 @@ pub struct StartDialogWhenLoaded {
 /// Node name uniquely identifies a node across all dialogs.
 /// This is achieved by having namespaces (represent files) and node names or
 /// auto-generated node names.
-#[derive(Debug, Reflect, Clone, Hash, PartialEq, Eq, Default)]
+#[derive(Reflect, Clone, Hash, PartialEq, Eq, Default)]
 pub enum NodeName {
     /// This node has been explicitly named in the dialog file.
     /// If a node is explicitly named, other nodes can refer to it.
@@ -849,6 +849,24 @@ impl Default for Dialog {
             current_node: NodeName::Root,
             branching: default(),
             when_finished: default(),
+        }
+    }
+}
+
+impl std::fmt::Debug for NodeName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Explicit(namespace, name) => {
+                write!(f, "{:?}::{:?}", namespace, name)
+            }
+            Self::Auto(namespace, index) => {
+                write!(f, "{:?}::auto_{:?}", namespace, index)
+            }
+            Self::NamespaceRoot(namespace) => {
+                write!(f, "{:?}::_root", namespace)
+            }
+            Self::Root => write!(f, "_root"),
+            Self::EndDialog => write!(f, "_end_dialog"),
         }
     }
 }

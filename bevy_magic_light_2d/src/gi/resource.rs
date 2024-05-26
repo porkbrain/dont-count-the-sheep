@@ -1,8 +1,4 @@
 use bevy::prelude::*;
-#[cfg(feature = "egui")]
-use bevy_inspector_egui::prelude::ReflectInspectorOptions;
-#[cfg(feature = "egui")]
-use bevy_inspector_egui::InspectorOptions;
 
 use crate::gi::{constants::GI_SCREEN_PROBE_SIZE, util};
 
@@ -26,12 +22,9 @@ pub struct BevyMagicLight2DSettings {
 
 #[rustfmt::skip]
 #[derive(Reflect, Copy, Clone, Debug)]
-#[cfg_attr(feature = "egui", derive(InspectorOptions))]
-#[cfg_attr(feature = "egui", reflect(InspectorOptions))]
 pub struct LightPassParams {
 
     /// Number of previous frames to keep in the reservoir.
-    #[cfg_attr(feature = "egui", inspector(min = 1, max = 64))]
     pub reservoir_size: u32,
 
     /// Size of the bilateral filter kernel used to smooth/denoise
@@ -39,19 +32,15 @@ pub struct LightPassParams {
     pub smooth_kernel_size: (u32, u32),
 
     /// How much of the final light contribution should be direct light.
-    #[cfg_attr(feature = "egui", inspector(min = 0.0, max = 1.0))]
     pub direct_light_contrib: f32,
 
     /// How much of the final light contribution should be indirect light.
-    #[cfg_attr(feature = "egui", inspector(min = 0.0, max = 1.0))]
     pub indirect_light_contrib: f32,
 
     /// Number of rays to cast when sampling the indirect light
     /// from direct light irradiance map.
-    #[cfg_attr(feature = "egui", inspector(min = 0, max = 512))]
     pub indirect_rays_per_sample: i32,
 
-    #[cfg_attr(feature = "egui", inspector(min = 1.0, max = 100.0))]
     pub indirect_rays_radius_factor: f32,
 }
 

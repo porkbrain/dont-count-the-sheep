@@ -70,7 +70,7 @@ impl From<ChangeOfBasis> for GridCoords {
     }
 }
 
-#[cfg(feature = "dev-poissons")]
+#[cfg(feature = "devtools-poissons")]
 impl common_physics::WorldDimensions for ChangeOfBasis {
     #[inline]
     fn width() -> f32 {

@@ -78,6 +78,7 @@ pub(crate) fn spawn(
         Interaction::default(),
         RelativeCursorPosition::default(),
         ImageBundle {
+            focus_policy: bevy::ui::FocusPolicy::Block,
             style: Style {
                 position_type: PositionType::Absolute,
 

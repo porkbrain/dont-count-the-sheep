@@ -69,6 +69,27 @@ pub enum GlobalAction {
     /// This is mainly relevant for actions of gathering information about the
     /// world.
     Inspect,
+
+    /// Numeric input for zero.
+    NumZero,
+    /// Numeric input for one.
+    NumOne,
+    /// Numeric input for two.
+    NumTwo,
+    /// Numeric input for three.
+    NumThree,
+    /// Numeric input for four.
+    NumFour,
+    /// Numeric input for five.
+    NumFive,
+    /// Numeric input for six.
+    NumSix,
+    /// Numeric input for seven.
+    NumSeven,
+    /// Numeric input for eight.
+    NumEight,
+    /// Numeric input for nine.
+    NumNine,
 }
 
 /// Runs a system if cancel action is being held.
@@ -133,6 +154,16 @@ pub fn move_action_pressed(
     }
 }
 
+/// Any numeric key is being held.
+pub fn numeric_key_pressed(
+) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
+    move |action_state: Res<ActionState<GlobalAction>>| {
+        GlobalAction::numerical()
+            .into_iter()
+            .any(|action| action_state.pressed(&action))
+    }
+}
+
 /// Any movement action was just pressed.
 pub fn move_action_just_pressed(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
@@ -171,6 +202,22 @@ impl GlobalAction {
                 | Self::MoveDownLeft
                 | Self::MoveDownRight
         )
+    }
+
+    /// Returns all numeric actions from zero to nine.
+    pub fn numerical() -> Vec<Self> {
+        vec![
+            Self::NumZero,
+            Self::NumOne,
+            Self::NumTwo,
+            Self::NumThree,
+            Self::NumFour,
+            Self::NumFive,
+            Self::NumSix,
+            Self::NumSeven,
+            Self::NumEight,
+            Self::NumNine,
+        ]
     }
 
     fn input_map() -> InputMap<Self> {
@@ -226,6 +273,16 @@ impl GlobalAction {
                 Chord(vec![Kbd(ArrowUp), Kbd(ArrowRight)]),
             ],
             Self::Inspect => vec![Single(Kbd(AltLeft))],
+            Self::NumZero => vec![Single(Kbd(Digit0))],
+            Self::NumOne => vec![Single(Kbd(Digit1))],
+            Self::NumTwo => vec![Single(Kbd(Digit2))],
+            Self::NumThree => vec![Single(Kbd(Digit3))],
+            Self::NumFour => vec![Single(Kbd(Digit4))],
+            Self::NumFive => vec![Single(Kbd(Digit5))],
+            Self::NumSix => vec![Single(Kbd(Digit6))],
+            Self::NumSeven => vec![Single(Kbd(Digit7))],
+            Self::NumEight => vec![Single(Kbd(Digit8))],
+            Self::NumNine => vec![Single(Kbd(Digit9))],
         }
     }
 }
