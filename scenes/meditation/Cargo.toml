@@ -23,4 +23,4 @@ rand.workspace = true
 
 [features]
 devtools = []
-devtools-poisson = ["common_physics/poissons-eq-visualization"]
+devtools-poissons = ["common_physics/poissons-eq-visualization"]

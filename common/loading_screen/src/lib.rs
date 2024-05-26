@@ -57,20 +57,20 @@ pub enum LoadingScreenState {
     /// 4.
     FadeInQuadWhileBgLoading,
     /// 5. Wait
-    /// 6. Set visibility of the image to visible
-    /// (if no bg image go to [`LoadingScreenState::StareAtLoadingScreen`])
+    /// 6. Set visibility of the image to visible (if no bg image go to
+    ///    [`LoadingScreenState::StareAtLoadingScreen`])
     WaitForAtlasToLoad,
     /// 7. Fades out and sets the state to
-    ///    [`LoadingScreenState::StareAtLoadingScreen`].
-    /// (skipped if no bg image)
+    ///    [`LoadingScreenState::StareAtLoadingScreen`]. (skipped if no bg
+    ///    image)
     FadeOutQuadToShowAtlas,
     /// 8. If requested, stay on this screen for given amount of time before
     ///    transitioning to [`LoadingScreenState::WaitForSignalToFinish`].
     StareAtLoadingScreen,
     /// 9. Now we wait for the loading to be done, user must [`finish_state`].
     WaitForSignalToFinish,
-    /// 10. Fade in
-    /// (if no bg image go to [`LoadingScreenState::FadeOutQuadToShowGame`])
+    /// 10. Fade in (if no bg image go to
+    ///     [`LoadingScreenState::FadeOutQuadToShowGame`])
     FadeInQuadToRemoveAtlas,
     /// 11.
     /// (skipped if no bg image)

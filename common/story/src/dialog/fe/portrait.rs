@@ -27,6 +27,7 @@ use crate::{
 const FONT_SIZE: f32 = 21.0;
 const CHOICE_FONT_SIZE: f32 = 17.0;
 const FONT: &str = common_assets::fonts::PENCIL1;
+/// Dark orange
 const CHOICE_HIGHLIGHT_COLOR: Color = Color::rgb(0.789, 0.455, 0.007);
 const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 
@@ -56,8 +57,9 @@ pub struct PortraitDialog {
     root: Entity,
     /// The dialog camera entity.
     camera: Entity,
-    /// Contains the list of dialog choices.
-    /// Always present, but can be empty.
+    /// Contains the list of dialog choices (those are going to be the
+    /// children).
+    /// The node is always present, but can have no children.
     choices_box: Entity,
 }
 
@@ -407,7 +409,7 @@ fn advance_dialog(
                     show_player_choices(
                         cmd,
                         asset_server,
-                        &dialog_fe,
+                        dialog_fe,
                         &dialog_be
                             .get_choices()
                             .expect("choices present on AwaitingPlayerChoice")

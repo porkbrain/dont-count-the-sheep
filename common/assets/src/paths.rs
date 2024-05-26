@@ -60,14 +60,6 @@ pub mod meditation {
         "meditation/textures/polpo/videos/vampire.webp";
 }
 
-pub mod dialog {
-    pub const FOLDER: &str = "dialog";
-
-    pub const DIALOG_BUBBLE: &str = "dialog/bubble.png";
-    pub const DIALOG_CHOICE: &str = "dialog/choice.png";
-    pub const DIALOG_CHOICE_HIGHLIGHTED: &str = "dialog/choice_highlighted.png";
-}
-
 pub mod portraits {
     use bevy::math::Vec2;
 
@@ -118,8 +110,8 @@ pub mod ui {
     use bevy::math::Vec2;
 
     pub const DIALOG_BOX: &str = "ui/dialog_box.png";
-    pub const HEARTBEAT_ATLAS: &str = "hud/heartbeat_atlas.png";
-    pub const TIME_ATLAS: &str = "hud/time_atlas.png";
+    pub const HEARTBEAT_ATLAS: &str = "ui/hud/heartbeat_atlas.png";
+    pub const TIME_ATLAS: &str = "ui/hud/time_atlas.png";
 
     pub const HEARTBEAT_ATLAS_SIZE: Vec2 = Vec2::splat(70.0);
 }

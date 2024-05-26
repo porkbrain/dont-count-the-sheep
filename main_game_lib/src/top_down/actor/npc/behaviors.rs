@@ -29,9 +29,6 @@ pub struct PatrolSequence {
     pub points: Vec<Square>,
     /// How long to wait at each point.
     pub wait_at_each: Duration,
-    /// If a point is unreachable, try to go to the next one.
-    /// If not provided, behavior stops if a point is unreachable.
-    pub timeout_if_inaccessible: Option<Duration>,
 }
 
 impl From<PatrolSequence> for BN {
@@ -39,24 +36,13 @@ impl From<PatrolSequence> for BN {
         PatrolSequence {
             points,
             wait_at_each,
-            timeout_if_inaccessible,
         }: PatrolSequence,
     ) -> Self {
         let points = points.into_iter().map(|point| {
             let goto = BehaviorLeaf::find_path_to(point);
 
             BN::Sequence(vec![
-                if let Some(timeout) = timeout_if_inaccessible {
-                    BN::Infallible(
-                        BN::LeafWithTimeout(
-                            goto,
-                            Timer::new(timeout, TimerMode::Repeating),
-                        )
-                        .into_boxed(),
-                    )
-                } else {
-                    BN::Leaf(goto)
-                },
+                BN::Infallible(BN::Leaf(goto).into_boxed()),
                 IdlyWaiting(wait_at_each).into(),
             ])
         });
