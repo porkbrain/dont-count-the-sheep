@@ -398,8 +398,16 @@ fn export_map<T: TopDownScene>(
 
     let dot_g = g.as_dotgraph(T::name());
     info!("Graphviz dot graph: \n{}", dot_g.as_dot());
-    let svg = dot_g.into_svg().unwrap();
-    fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg).unwrap();
+
+    match dot_g.into_svg() {
+        Ok(svg) => {
+            fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg)
+                .unwrap();
+        }
+        Err(e) => {
+            error!("Could not generate svg from dot graph: {e}");
+        }
+    }
 }
 
 impl<L: Eq> TileKind<L> {
