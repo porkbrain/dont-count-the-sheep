@@ -1,8 +1,46 @@
-[gd_scene load_steps=4 format=3 uid="uid://cehfnn2h1xqt7"]
+[gd_scene load_steps=11 format=3 uid="uid://cehfnn2h1xqt7"]
 
 [ext_resource type="Texture2D" uid="uid://sit53g2cltgl" path="res://assets/downtown/sewers_bg.png" id="1_sy4gy"]
 [ext_resource type="Texture2D" uid="uid://bflcaqeap0y6j" path="res://assets/downtown/bin_bag.png" id="2_w3jta"]
-[ext_resource type="Texture2D" uid="uid://fsryrryb0rff" path="res://assets/environment/room_light_half.png" id="3_lk7hh"]
+[ext_resource type="Texture2D" uid="uid://cs547u64pp8gq" path="res://assets/environment/room_light_half.png" id="3_lk7hh"]
+[ext_resource type="Texture2D" uid="uid://lg7pk65gt1wm" path="res://assets/environment/beerfloating_atlas.png" id="4_4qch5"]
+[ext_resource type="Texture2D" uid="uid://n8ietma8qsly" path="res://assets/downtown/manhole.png" id="5_5t670"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hdhns"]
+atlas = ExtResource("4_4qch5")
+region = Rect2(0, 0, 13, 15)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r2sqn"]
+atlas = ExtResource("4_4qch5")
+region = Rect2(13, 0, 13, 15)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ieo4w"]
+atlas = ExtResource("4_4qch5")
+region = Rect2(26, 0, 13, 15)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iwl2c"]
+atlas = ExtResource("4_4qch5")
+region = Rect2(39, 0, 13, 15)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_1ak07"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hdhns")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r2sqn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ieo4w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iwl2c")
+}],
+"loop": true,
+"name": &"default",
+"speed": 2.0
+}]
 
 [node name="Sewers" type="Node2D"]
 
@@ -11,7 +49,7 @@ position = Vector2(-21, 1)
 texture = ExtResource("1_sy4gy")
 
 [node name="BinBag" type="Sprite2D" parent="."]
-position = Vector2(181, 132)
+position = Vector2(45, 128)
 texture = ExtResource("2_w3jta")
 
 [node name="Points" type="Node2D" parent="."]
@@ -31,3 +69,14 @@ metadata/category = "Default"
 position = Vector2(298, 102)
 texture = ExtResource("3_lk7hh")
 flip_h = true
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+z_index = 1
+position = Vector2(123, 271)
+sprite_frames = SubResource("SpriteFrames_1ak07")
+autoplay = "default"
+frame_progress = 0.47061
+
+[node name="Manhole" type="Sprite2D" parent="."]
+position = Vector2(-333, 196)
+texture = ExtResource("5_5t670")

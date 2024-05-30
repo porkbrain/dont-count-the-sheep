@@ -156,7 +156,7 @@ position = Vector2(-106, -67)
 texture = ExtResource("15_oqnj7")
 
 [node name="HazardousBin" type="Sprite2D" parent="."]
-position = Vector2(66, -30)
+position = Vector2(66, -31)
 texture = ExtResource("17_1fycq")
 
 [node name="Points" type="Node2D" parent="."]

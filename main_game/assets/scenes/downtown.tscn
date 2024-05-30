@@ -1,8 +1,9 @@
-[gd_scene load_steps=86 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=101 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
 [ext_resource type="Texture2D" uid="uid://od7278drijk8" path="res://assets/downtown/water_dispenser.png" id="3_mnq47"]
+[ext_resource type="Texture2D" uid="uid://c26kyxsmcvben" path="res://assets/environment/vending_machine_atlas.png" id="4_fu7bc"]
 [ext_resource type="Texture2D" uid="uid://bwt8l2nfovdrb" path="res://assets/downtown/bamboo_rooftop.png" id="4_uahdt"]
 [ext_resource type="Texture2D" uid="uid://5ywhhdx6rx7r" path="res://assets/downtown/recycle_bin.png" id="5_her3o"]
 [ext_resource type="Texture2D" uid="uid://b8xgrwspdhoao" path="res://assets/downtown/cone.png" id="6_4cklq"]
@@ -10,7 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://cnd2np6d33oqh" path="res://assets/downtown/robot.png" id="8_s4pbl"]
 [ext_resource type="Texture2D" uid="uid://hmoa0kdonp88" path="res://assets/downtown/swing.png" id="9_gwh2v"]
 [ext_resource type="Texture2D" uid="uid://bdn0jfgw4tpeg" path="res://assets/downtown/trashcan_tables.png" id="10_nyc25"]
-[ext_resource type="Texture2D" uid="uid://cskl5m8h5o3n8" path="res://assets/environment/beer.png" id="11_e3pff"]
+[ext_resource type="Texture2D" uid="uid://cl1jvt3bgpnq4" path="res://assets/environment/beer.png" id="11_e3pff"]
 [ext_resource type="Texture2D" uid="uid://qjb3dquepnch" path="res://assets/downtown/truck.png" id="12_mwj3x"]
 [ext_resource type="Texture2D" uid="uid://cs4xyldoxgtxg" path="res://assets/downtown/tree.png" id="13_7q235"]
 [ext_resource type="Texture2D" uid="uid://djrcy48yl8ego" path="res://assets/downtown/mall.png" id="13_jgs6s"]
@@ -27,7 +28,7 @@
 [ext_resource type="Texture2D" uid="uid://brvijlucyh2jx" path="res://assets/downtown/tree_pot.png" id="20_kpivv"]
 [ext_resource type="Texture2D" uid="uid://dcl4guw8e72nh" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
 [ext_resource type="Texture2D" uid="uid://bbvuyahml5l4l" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]
-[ext_resource type="Texture2D" uid="uid://ufn4rnxo8e62" path="res://assets/environment/water_bottle_half.png" id="21_8m32a"]
+[ext_resource type="Texture2D" uid="uid://cbwce0005pies" path="res://assets/environment/water_bottle_half.png" id="21_8m32a"]
 [ext_resource type="Texture2D" uid="uid://bmbgymdlgia22" path="res://assets/downtown/praha_building.png" id="21_sq8gl"]
 [ext_resource type="Texture2D" uid="uid://bs5503nvkypsp" path="res://assets/downtown/building_duo.png" id="22_bl5xi"]
 [ext_resource type="Texture2D" uid="uid://dy8urm75tam2x" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
@@ -51,22 +52,67 @@
 [ext_resource type="Texture2D" uid="uid://brapyya5pqurk" path="res://assets/downtown/potted_bush.png" id="44_d0uug"]
 [ext_resource type="Texture2D" uid="uid://dxx6j71ewje3y" path="res://assets/environment/sand_dollar.png" id="47_y13ek"]
 [ext_resource type="Texture2D" uid="uid://btu6osn2fwawr" path="res://assets/environment/sand_dollar_white.png" id="48_etaxq"]
-[ext_resource type="Texture2D" uid="uid://dldpfwl1q1p20" path="res://assets/environment/butterfly.png" id="49_8f3r3"]
+[ext_resource type="Texture2D" uid="uid://1gtfiil586hv" path="res://assets/environment/butterfly.png" id="49_8f3r3"]
 [ext_resource type="Texture2D" uid="uid://bocqwi765pwlg" path="res://assets/environment/musle.png" id="49_andyj"]
 [ext_resource type="Texture2D" uid="uid://dwpf4k88nn8sd" path="res://assets/downtown/zabradli_blue.png" id="50_q6ssf"]
 [ext_resource type="Texture2D" uid="uid://b4h751x5bs34" path="res://assets/environment/mushroom.png" id="50_ubqu6"]
 [ext_resource type="Texture2D" uid="uid://cb225g1s3oiqo" path="res://assets/downtown/plain_trio.png" id="52_ri67k"]
-[ext_resource type="Texture2D" uid="uid://dpeanyyafcpdk" path="res://assets/environment/beach_chair.png" id="54_3y7cj"]
+[ext_resource type="Texture2D" uid="uid://cw5vpae3pbpys" path="res://assets/environment/beach_chair.png" id="54_3y7cj"]
 [ext_resource type="Texture2D" uid="uid://b2k6tb2xitvs4" path="res://assets/environment/beach_chair_blue.png" id="54_c8hw3"]
-[ext_resource type="Texture2D" uid="uid://bc4ctkjg1r38u" path="res://assets/environment/umbrella.png" id="56_tmimn"]
+[ext_resource type="Texture2D" uid="uid://cjen2gb5c0gtg" path="res://assets/environment/umbrella.png" id="56_tmimn"]
 [ext_resource type="Texture2D" uid="uid://n8ietma8qsly" path="res://assets/downtown/manhole.png" id="57_hq0ra"]
-[ext_resource type="Texture2D" uid="uid://bi5q7b2nayy0w" path="res://assets/environment/water_bottle_empty.png" id="60_7dwn7"]
-[ext_resource type="Texture2D" uid="uid://c28g1gfiyivgd" path="res://assets/environment/water_ripple_atlas.png" id="60_eogli"]
-[ext_resource type="Texture2D" uid="uid://bhm8ysatxb48c" path="res://assets/environment/bike.png" id="62_rdvbw"]
-[ext_resource type="Texture2D" uid="uid://cf4vsx36spow3" path="res://assets/environment/box_cardboard_sideways.png" id="63_vdtxl"]
+[ext_resource type="Texture2D" uid="uid://bowi6vq73crnl" path="res://assets/environment/water_bottle_empty.png" id="60_7dwn7"]
+[ext_resource type="Texture2D" uid="uid://bdb7k6au6jebq" path="res://assets/environment/water_ripple_atlas.png" id="60_eogli"]
+[ext_resource type="Texture2D" uid="uid://cus47vh7v1pqb" path="res://assets/environment/bike.png" id="62_rdvbw"]
+[ext_resource type="Texture2D" uid="uid://cp0rngx6yb8ld" path="res://assets/environment/box_cardboard_sideways.png" id="63_vdtxl"]
 [ext_resource type="Texture2D" uid="uid://ddyls3h5535ci" path="res://assets/downtown/wild_flower1.png" id="64_u50jo"]
 [ext_resource type="Texture2D" uid="uid://cqx60k4oq584k" path="res://assets/downtown/wild_flower2.png" id="65_k5t6a"]
 [ext_resource type="Texture2D" uid="uid://vwk8f81yiltw" path="res://assets/downtown/wild_flower3.png" id="66_53tlk"]
+[ext_resource type="Texture2D" uid="uid://dwx77ptih5vit" path="res://assets/environment/stall_vertical.png" id="68_m4f8x"]
+[ext_resource type="Texture2D" uid="uid://bnul2v680aamd" path="res://assets/environment/plate_cookies.png" id="69_cj3mq"]
+[ext_resource type="Texture2D" uid="uid://cpgga5rohnbeu" path="res://assets/environment/stall_wood2.png" id="70_mmv7u"]
+[ext_resource type="Texture2D" uid="uid://c74anjrdllpf0" path="res://assets/downtown/house_big_lime.png" id="71_4uhpc"]
+[ext_resource type="Texture2D" uid="uid://c7cs1v5tfijrl" path="res://assets/downtown/house_big_sky.png" id="72_nqenj"]
+[ext_resource type="Texture2D" uid="uid://cmawnctkx2s4q" path="res://assets/environment/box_cardboard.png" id="74_v1plk"]
+[ext_resource type="Texture2D" uid="uid://c10hjmowp67x8" path="res://assets/downtown/beach_stairs.png" id="75_kpov5"]
+[ext_resource type="Texture2D" uid="uid://dfhgmfro4r580" path="res://assets/downtown/molo_tile.png" id="76_5i8ym"]
+[ext_resource type="Texture2D" uid="uid://cdj7x8m4pfb55" path="res://assets/downtown/molo_tile_vertical.png" id="77_qpxr7"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
+atlas = ExtResource("4_fu7bc")
+region = Rect2(0, 0, 30, 55)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gox4s"]
+atlas = ExtResource("4_fu7bc")
+region = Rect2(32, 0, 30, 55)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_itvr6"]
+atlas = ExtResource("4_fu7bc")
+region = Rect2(64, 0, 30, 55)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hwg4u"]
+atlas = ExtResource("4_fu7bc")
+region = Rect2(96, 0, 30, 55)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_2ei51"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wx86m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gox4s")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_itvr6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hwg4u")
+}],
+"loop": false,
+"name": &"default",
+"speed": 1.0
+}]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
 atlas = ExtResource("2_vxd7e")
@@ -216,6 +262,13 @@ z_index = -5
 position = Vector2(233, 477)
 texture = ExtResource("1_ac7tb")
 
+[node name="VendingMachine" type="AnimatedSprite2D" parent="DowntownBg"]
+position = Vector2(742, 477)
+sprite_frames = SubResource("SpriteFrames_2ei51")
+
+[node name="YSort" type="Node2D" parent="DowntownBg/VendingMachine"]
+position = Vector2(0, 24)
+
 [node name="CompoundRoot" type="Node2D" parent="."]
 
 [node name="Jehlicnan2" type="Sprite2D" parent="CompoundRoot"]
@@ -305,7 +358,7 @@ texture = ExtResource("29_j62ep")
 flip_h = true
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/JehlicnanFlipped2"]
-position = Vector2(0, 75)
+position = Vector2(-1, 64)
 
 [node name="JehlicnanFlipped3" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(735, -492)
@@ -576,19 +629,48 @@ z_index = -2
 position = Vector2(1133, -332)
 texture = ExtResource("32_01aim")
 
-[node name="FancySloupky" type="Sprite2D" parent="BureauRoot"]
-position = Vector2(1373.5, -254)
+[node name="FancySloupky" type="Sprite2D" parent="BureauRoot/FancyStairs"]
+position = Vector2(240.5, 78)
 texture = ExtResource("33_lx3i7")
 
-[node name="YSort" type="Node2D" parent="BureauRoot/FancySloupky"]
+[node name="YSort" type="Node2D" parent="BureauRoot/FancyStairs/FancySloupky"]
 position = Vector2(0, 8)
 
-[node name="FancySloupky2" type="Sprite2D" parent="BureauRoot"]
-position = Vector2(892.5, -254)
+[node name="FancySloupky2" type="Sprite2D" parent="BureauRoot/FancyStairs"]
+position = Vector2(-240.5, 78)
 texture = ExtResource("33_lx3i7")
 
-[node name="YSort" type="Node2D" parent="BureauRoot/FancySloupky2"]
+[node name="YSort" type="Node2D" parent="BureauRoot/FancyStairs/FancySloupky2"]
 position = Vector2(0, 8)
+
+[node name="FancySloupky3" type="Sprite2D" parent="BureauRoot/FancyStairs"]
+position = Vector2(-237, -156)
+texture = ExtResource("33_lx3i7")
+
+[node name="YSort" type="Node2D" parent="BureauRoot/FancyStairs/FancySloupky3"]
+position = Vector2(0, 8)
+
+[node name="FancySloupky4" type="Sprite2D" parent="BureauRoot/FancyStairs"]
+position = Vector2(-21, -156)
+texture = ExtResource("33_lx3i7")
+
+[node name="YSort" type="Node2D" parent="BureauRoot/FancyStairs/FancySloupky4"]
+position = Vector2(0, 8)
+
+[node name="Lamp5" type="Sprite2D" parent="BureauRoot/FancyStairs"]
+position = Vector2(117, 48)
+texture = ExtResource("14_8uy80")
+
+[node name="YSort" type="Node2D" parent="BureauRoot/FancyStairs/Lamp5"]
+position = Vector2(0, 33)
+
+[node name="Lamp6" type="Sprite2D" parent="BureauRoot/FancyStairs"]
+position = Vector2(-116, 48)
+texture = ExtResource("14_8uy80")
+
+[node name="YSort" type="Node2D" parent="BureauRoot/FancyStairs/Lamp6"]
+z_index = -1
+position = Vector2(0, 33)
 
 [node name="Lavicka4" type="Sprite2D" parent="BureauRoot"]
 position = Vector2(875, -216)
@@ -623,20 +705,6 @@ texture = ExtResource("14_8uy80")
 [node name="YSort" type="Node2D" parent="BureauRoot/Lamp4"]
 position = Vector2(0, 33)
 
-[node name="FancySloupky3" type="Sprite2D" parent="BureauRoot"]
-position = Vector2(896, -488)
-texture = ExtResource("33_lx3i7")
-
-[node name="YSort" type="Node2D" parent="BureauRoot/FancySloupky3"]
-position = Vector2(0, 8)
-
-[node name="FancySloupky4" type="Sprite2D" parent="BureauRoot"]
-position = Vector2(1112, -488)
-texture = ExtResource("33_lx3i7")
-
-[node name="YSort" type="Node2D" parent="BureauRoot/FancySloupky4"]
-position = Vector2(0, 8)
-
 [node name="MallRoot" type="Node2D" parent="."]
 
 [node name="Mall" type="Sprite2D" parent="MallRoot"]
@@ -644,84 +712,139 @@ position = Vector2(-389, 150)
 texture = ExtResource("13_jgs6s")
 
 [node name="YSort" type="Node2D" parent="MallRoot/Mall"]
-position = Vector2(-114, -196)
+position = Vector2(-15, 185)
 
-[node name="TrashcanTables6" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-556, -10)
+[node name="TrashcanTables6" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(-167, -160)
 texture = ExtResource("10_nyc25")
 
-[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables6"]
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/TrashcanTables6"]
 position = Vector2(0, 11)
 
-[node name="TrashcanTables3" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-294, 146)
+[node name="TrashcanTables3" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(95, -4)
 texture = ExtResource("10_nyc25")
 
-[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables3"]
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/TrashcanTables3"]
 position = Vector2(0, 11)
 
-[node name="TrashcanTables5" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-263, 105)
+[node name="TrashcanTables5" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(126, -45)
 texture = ExtResource("10_nyc25")
 
-[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables5"]
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/TrashcanTables5"]
 position = Vector2(0, 11)
 
-[node name="TrashcanTables4" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-632, 29)
+[node name="TrashcanTables4" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(-243, -121)
 texture = ExtResource("10_nyc25")
 
-[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables4"]
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/TrashcanTables4"]
 position = Vector2(0, 11)
 
-[node name="TrashcanTables" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-326, 107)
+[node name="TrashcanTables" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(63, -43)
 texture = ExtResource("10_nyc25")
 
-[node name="Beer" type="Sprite2D" parent="MallRoot/TrashcanTables"]
+[node name="Beer" type="Sprite2D" parent="MallRoot/Mall/TrashcanTables"]
 position = Vector2(-2, -13)
 texture = ExtResource("11_e3pff")
 
-[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables"]
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/TrashcanTables"]
 position = Vector2(0, 11)
 
-[node name="BambooRooftop" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-402, -56)
+[node name="BambooRooftop" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(-13, -206)
 texture = ExtResource("4_uahdt")
 
-[node name="YSort" type="Node2D" parent="MallRoot/BambooRooftop"]
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/BambooRooftop"]
 position = Vector2(0, 19)
 
-[node name="Waterdispenser" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-353, -55)
+[node name="Waterdispenser" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(36, -205)
 texture = ExtResource("3_mnq47")
 
-[node name="YSort" type="Node2D" parent="MallRoot/Waterdispenser"]
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/Waterdispenser"]
 position = Vector2(0, 23)
 
-[node name="RecycleBin" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-67, -40)
+[node name="RecycleBin" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(322, -190)
 texture = ExtResource("5_her3o")
 
-[node name="YSort" type="Node2D" parent="MallRoot/RecycleBin"]
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/RecycleBin"]
 position = Vector2(0, 12)
 
-[node name="Cone" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-67, 42)
+[node name="Cone" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(322, -108)
 texture = ExtResource("6_4cklq")
 
-[node name="YSort" type="Node2D" parent="MallRoot/Cone"]
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/Cone"]
 position = Vector2(0, 8)
 
-[node name="AcAtlas" type="AnimatedSprite2D" parent="MallRoot"]
-position = Vector2(-687, -30)
+[node name="AcAtlas" type="AnimatedSprite2D" parent="MallRoot/Mall"]
+position = Vector2(-298, -180)
 sprite_frames = SubResource("SpriteFrames_q1mli")
 autoplay = "default"
 frame = 2
 frame_progress = 1.0
 
-[node name="YSort" type="Node2D" parent="MallRoot/AcAtlas"]
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/AcAtlas"]
 position = Vector2(0, 16)
+
+[node name="UmbrellaChair2" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(-34, 9)
+texture = ExtResource("20_sy6x1")
+
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/UmbrellaChair2"]
+position = Vector2(0, 41)
+
+[node name="WaterBottleHalf" type="Sprite2D" parent="MallRoot/Mall/UmbrellaChair2"]
+position = Vector2(-13, 25)
+texture = ExtResource("21_8m32a")
+
+[node name="UmbrellaChair" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(-176, -39)
+texture = ExtResource("20_sy6x1")
+
+[node name="Beer2" type="Sprite2D" parent="MallRoot/Mall/UmbrellaChair"]
+position = Vector2(-10, 24)
+texture = ExtResource("11_e3pff")
+
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/UmbrellaChair"]
+position = Vector2(0, 41)
+
+[node name="UmbrellaChair3" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(-43, -119)
+texture = ExtResource("20_sy6x1")
+
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/UmbrellaChair3"]
+position = Vector2(0, 41)
+
+[node name="RoofBuilding" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(226.5, -152)
+texture = ExtResource("36_4dgjx")
+
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/RoofBuilding"]
+position = Vector2(0, 41)
+
+[node name="FireEx" type="Sprite2D" parent="MallRoot/Mall/RoofBuilding"]
+position = Vector2(-69.5, 50)
+texture = ExtResource("24_ohwph")
+
+[node name="NoSmokingSign" type="Sprite2D" parent="MallRoot/Mall/RoofBuilding"]
+position = Vector2(34.5, 48)
+texture = ExtResource("25_1tn82")
+
+[node name="StallVertical" type="Sprite2D" parent="MallRoot/Mall"]
+position = Vector2(119, -160)
+texture = ExtResource("68_m4f8x")
+
+[node name="PlateCookies" type="Sprite2D" parent="MallRoot/Mall/StallVertical"]
+position = Vector2(1, 28)
+texture = ExtResource("69_cj3mq")
+
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/StallVertical"]
+position = Vector2(0, 41)
 
 [node name="MallBins" type="Node2D" parent="MallRoot"]
 position = Vector2(-532, 342)
@@ -729,44 +852,15 @@ position = Vector2(-532, 342)
 [node name="YSort" type="Node2D" parent="MallRoot/MallBins"]
 
 [node name="RecycleBin4" type="Sprite2D" parent="MallRoot/MallBins"]
-position = Vector2(-9, -14)
+position = Vector2(-9, -13)
 texture = ExtResource("5_her3o")
 
 [node name="BlackBin3" type="Sprite2D" parent="MallRoot/MallBins"]
-position = Vector2(9, -14)
+position = Vector2(9, -13)
 texture = ExtResource("7_p1j5y")
 
-[node name="UmbrellaChair2" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-423, 159)
-texture = ExtResource("20_sy6x1")
-
-[node name="YSort" type="Node2D" parent="MallRoot/UmbrellaChair2"]
-position = Vector2(0, 41)
-
-[node name="WaterBottleHalf" type="Sprite2D" parent="MallRoot/UmbrellaChair2"]
-position = Vector2(-13, 25)
-texture = ExtResource("21_8m32a")
-
-[node name="UmbrellaChair" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-565, 111)
-texture = ExtResource("20_sy6x1")
-
-[node name="Beer2" type="Sprite2D" parent="MallRoot/UmbrellaChair"]
-position = Vector2(-10, 24)
-texture = ExtResource("11_e3pff")
-
-[node name="YSort" type="Node2D" parent="MallRoot/UmbrellaChair"]
-position = Vector2(0, 41)
-
-[node name="UmbrellaChair3" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-432, 31)
-texture = ExtResource("20_sy6x1")
-
-[node name="YSort" type="Node2D" parent="MallRoot/UmbrellaChair3"]
-position = Vector2(0, 41)
-
 [node name="MallEntrance" type="Node2D" parent="MallRoot"]
-position = Vector2(-149, 342)
+position = Vector2(-138, 339)
 
 [node name="Point" type="Node" parent="MallRoot/MallEntrance"]
 
@@ -776,21 +870,6 @@ metadata/action = "EnterMall"
 metadata/label = "Go shopping"
 metadata/category = "Default"
 
-[node name="RoofBuilding" type="Sprite2D" parent="MallRoot"]
-position = Vector2(-162.5, -2)
-texture = ExtResource("36_4dgjx")
-
-[node name="YSort" type="Node2D" parent="MallRoot/RoofBuilding"]
-position = Vector2(0, 41)
-
-[node name="FireEx" type="Sprite2D" parent="MallRoot/RoofBuilding"]
-position = Vector2(-69.5, 50)
-texture = ExtResource("24_ohwph")
-
-[node name="NoSmokingSign" type="Sprite2D" parent="MallRoot/RoofBuilding"]
-position = Vector2(34.5, 48)
-texture = ExtResource("25_1tn82")
-
 [node name="Block3Root" type="Node2D" parent="."]
 
 [node name="PlainTrio" type="Sprite2D" parent="Block3Root"]
@@ -798,20 +877,20 @@ position = Vector2(1280, 290)
 texture = ExtResource("52_ri67k")
 
 [node name="YSort" type="Node2D" parent="Block3Root/PlainTrio"]
-position = Vector2(-4, 89)
+position = Vector2(-1, 102)
 
 [node name="Bike" type="Sprite2D" parent="Block3Root/PlainTrio"]
 position = Vector2(173, 93)
 texture = ExtResource("62_rdvbw")
 
-[node name="AcAtlas" type="AnimatedSprite2D" parent="Block3Root"]
-position = Vector2(1436, 172)
+[node name="AcAtlas" type="AnimatedSprite2D" parent="Block3Root/PlainTrio"]
+position = Vector2(156, -118)
 sprite_frames = SubResource("SpriteFrames_q1mli")
 autoplay = "default"
 frame = 2
 frame_progress = 1.0
 
-[node name="YSort" type="Node2D" parent="Block3Root/AcAtlas"]
+[node name="YSort" type="Node2D" parent="Block3Root/PlainTrio/AcAtlas"]
 position = Vector2(0, 16)
 
 [node name="Block2Root" type="Node2D" parent="."]
@@ -819,9 +898,6 @@ position = Vector2(0, 16)
 [node name="HousePlantshoptrio" type="Sprite2D" parent="Block2Root"]
 position = Vector2(301, -297)
 texture = ExtResource("19_fdu3c")
-
-[node name="YSort" type="Node2D" parent="Block2Root/HousePlantshoptrio"]
-position = Vector2(16, 90)
 
 [node name="RecycleBin" type="Sprite2D" parent="Block2Root/HousePlantshoptrio"]
 position = Vector2(66, 80)
@@ -834,6 +910,9 @@ texture = ExtResource("7_p1j5y")
 [node name="PottedBush" type="Sprite2D" parent="Block2Root/HousePlantshoptrio"]
 position = Vector2(157, 82)
 texture = ExtResource("44_d0uug")
+
+[node name="YSort" type="Node2D" parent="Block2Root/HousePlantshoptrio"]
+position = Vector2(-37, 89)
 
 [node name="Tree3" type="Sprite2D" parent="Block2Root"]
 position = Vector2(64, -273)
@@ -888,6 +967,9 @@ metadata/category = "Default"
 [node name="BuildingDuo" type="Sprite2D" parent="Block1Root"]
 position = Vector2(345, 8)
 texture = ExtResource("22_bl5xi")
+
+[node name="YSort" type="Node2D" parent="Block1Root/BuildingDuo"]
+position = Vector2(-5, 96)
 
 [node name="Lamp3" type="Sprite2D" parent="Block1Root"]
 position = Vector2(477, 82)
@@ -1020,18 +1102,18 @@ position = Vector2(0, 11)
 [node name="ShoreRoot" type="Node2D" parent="."]
 
 [node name="ClinicRed" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(-31, 968)
+position = Vector2(-31, 899.5)
 texture = ExtResource("25_ukjmq")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/ClinicRed"]
-position = Vector2(-47, -16)
+position = Vector2(-5, 96)
 
 [node name="PottedBush3" type="Sprite2D" parent="ShoreRoot/ClinicRed"]
 position = Vector2(42, 72)
 texture = ExtResource("44_d0uug")
 
 [node name="ZabradliRed" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(-31, 968)
+position = Vector2(-31, 899.5)
 texture = ExtResource("26_nm5hp")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/ZabradliRed"]
@@ -1045,7 +1127,7 @@ texture = ExtResource("8_s4pbl")
 position = Vector2(-13, 49)
 
 [node name="Lavicka" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(557, 773)
+position = Vector2(561, 773)
 texture = ExtResource("43_ihbqd")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/Lavicka"]
@@ -1059,7 +1141,7 @@ texture = ExtResource("9_gwh2v")
 position = Vector2(0, 24)
 
 [node name="Lamp" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(-1000, 1013)
+position = Vector2(-994, 942.5)
 texture = ExtResource("14_8uy80")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/Lamp"]
@@ -1078,14 +1160,14 @@ position = Vector2(1, 68)
 texture = ExtResource("20_kpivv")
 
 [node name="ZabradliBlue" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(-930, 962)
+position = Vector2(-924, 891.5)
 texture = ExtResource("50_q6ssf")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/ZabradliBlue"]
 position = Vector2(-42, 97)
 
 [node name="BlueClinic" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(-930, 962)
+position = Vector2(-924, 891.5)
 texture = ExtResource("35_ecxbn")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/BlueClinic"]
@@ -1104,7 +1186,7 @@ position = Vector2(296, 1217)
 texture = ExtResource("48_etaxq")
 
 [node name="SandDollar2" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(-986, 1165)
+position = Vector2(-956, 1271)
 texture = ExtResource("47_y13ek")
 
 [node name="Musle" type="Sprite2D" parent="ShoreRoot"]
@@ -1139,6 +1221,10 @@ texture = ExtResource("54_3y7cj")
 [node name="YSort" type="Node2D" parent="ShoreRoot/BeachChair/BeachChair"]
 position = Vector2(-5, 17)
 
+[node name="Beer" type="Sprite2D" parent="ShoreRoot/BeachChair/BeachChair"]
+position = Vector2(14.5, 9.5)
+texture = ExtResource("11_e3pff")
+
 [node name="Umbrella" type="Sprite2D" parent="ShoreRoot/BeachChair"]
 position = Vector2(1232.5, -60.5)
 texture = ExtResource("56_tmimn")
@@ -1161,7 +1247,7 @@ texture = ExtResource("43_ihbqd")
 position = Vector2(0, 13)
 
 [node name="ClinicEntrance" type="Node2D" parent="ShoreRoot"]
-position = Vector2(-59, 971)
+position = Vector2(-57, 844)
 
 [node name="Point" type="Node" parent="ShoreRoot/ClinicEntrance"]
 
@@ -1172,7 +1258,7 @@ metadata/label = "Clinic"
 metadata/category = "Default"
 
 [node name="ClinicExit" type="Node2D" parent="ShoreRoot"]
-position = Vector2(-73, 1059)
+position = Vector2(-73, 996)
 
 [node name="Point" type="Node" parent="ShoreRoot/ClinicExit"]
 
@@ -1189,7 +1275,7 @@ autoplay = "default"
 frame_progress = 0.549895
 
 [node name="BlackBin" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(-1014, 1036)
+position = Vector2(-1008, 965.5)
 texture = ExtResource("7_p1j5y")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/BlackBin"]
@@ -1225,3 +1311,174 @@ metadata/zone = "SewersEntrance"
 metadata/action = "EnterSewers"
 metadata/label = "Go down under"
 metadata/category = "Default"
+
+[node name="StallWood2" type="Sprite2D" parent="."]
+position = Vector2(1321, 1005)
+texture = ExtResource("70_mmv7u")
+
+[node name="YSort" type="Node2D" parent="StallWood2"]
+position = Vector2(1, 33)
+
+[node name="StallWood3" type="Sprite2D" parent="."]
+position = Vector2(1403, 1005)
+texture = ExtResource("70_mmv7u")
+
+[node name="YSort" type="Node2D" parent="StallWood3"]
+position = Vector2(1, 31)
+
+[node name="StallWood4" type="Sprite2D" parent="."]
+position = Vector2(1239, 1005)
+texture = ExtResource("70_mmv7u")
+
+[node name="YSort" type="Node2D" parent="StallWood4"]
+position = Vector2(2, 31)
+
+[node name="HouseBigLime" type="Sprite2D" parent="."]
+position = Vector2(1108, 874)
+texture = ExtResource("71_4uhpc")
+
+[node name="AcAtlas" type="AnimatedSprite2D" parent="HouseBigLime"]
+position = Vector2(-72, -118)
+sprite_frames = SubResource("SpriteFrames_q1mli")
+autoplay = "default"
+frame = 2
+frame_progress = 1.0
+
+[node name="YSort" type="Node2D" parent="HouseBigLime/AcAtlas"]
+position = Vector2(0, 16)
+
+[node name="YSort" type="Node2D" parent="HouseBigLime"]
+position = Vector2(3, 102)
+
+[node name="HouseBigSky" type="Sprite2D" parent="."]
+position = Vector2(1348, 874)
+texture = ExtResource("72_nqenj")
+
+[node name="YSort" type="Node2D" parent="HouseBigSky"]
+position = Vector2(0, 102)
+
+[node name="Weed" type="Sprite2D" parent="."]
+position = Vector2(1285, 1206)
+texture = ExtResource("16_6vem6")
+
+[node name="SandDollar" type="Sprite2D" parent="."]
+position = Vector2(1124, 1287)
+texture = ExtResource("47_y13ek")
+
+[node name="BoxCardboard" type="Sprite2D" parent="."]
+position = Vector2(1457.5, 1016)
+texture = ExtResource("74_v1plk")
+
+[node name="YSort" type="Node2D" parent="BoxCardboard"]
+position = Vector2(0.5, 11)
+
+[node name="BinBag" type="Sprite2D" parent="."]
+position = Vector2(947, 965)
+texture = ExtResource("37_kbqnk")
+
+[node name="BeachStairs" type="Sprite2D" parent="."]
+position = Vector2(859, 1157)
+texture = ExtResource("75_kpov5")
+
+[node name="BeachStairs2" type="Sprite2D" parent="."]
+position = Vector2(-38, 1157)
+texture = ExtResource("75_kpov5")
+
+[node name="BeachStairs3" type="Sprite2D" parent="."]
+position = Vector2(-711, 1157)
+texture = ExtResource("75_kpov5")
+
+[node name="MoloTile" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(-928, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile2" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(-750, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile3" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(-574, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile4" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(-398, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile5" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(-222, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile6" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(-46, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile7" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(130, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile8" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(306, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile9" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(482, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile10" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(658, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile11" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(834, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile12" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(1010, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile13" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(1186, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile14" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(1362, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTile15" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(1538, 1065)
+texture = ExtResource("76_5i8ym")
+
+[node name="MoloTileVertical" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(-401, 1240)
+texture = ExtResource("77_qpxr7")
+
+[node name="MoloTileVertical2" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(-401, 1418)
+texture = ExtResource("77_qpxr7")
+
+[node name="MoloTileVertical3" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(-401, 1596)
+texture = ExtResource("77_qpxr7")
+
+[node name="MoloTileVertical4" type="Sprite2D" parent="."]
+z_index = -3
+position = Vector2(-401, 1720)
+texture = ExtResource("77_qpxr7")

@@ -1,26 +1,30 @@
-[gd_scene load_steps=35 format=3 uid="uid://drnrtwjeis0wl"]
+[gd_scene load_steps=41 format=3 uid="uid://drnrtwjeis0wl"]
 
-[ext_resource type="Texture2D" uid="uid://butuw555fooa1" path="res://assets/mall/mall.png" id="1_py6kn"]
-[ext_resource type="Texture2D" uid="uid://cqsdb5tp644w6" path="res://assets/environment/vending_machine_atlas.png" id="2_83cf2"]
-[ext_resource type="Texture2D" uid="uid://bit4syffi4073" path="res://assets/mall/mallisles.png" id="3_7qiwu"]
-[ext_resource type="Texture2D" uid="uid://ctql8gvld5oyf" path="res://assets/mall/salebox.png" id="4_uvq87"]
-[ext_resource type="Texture2D" uid="uid://qs3pmngv2da2" path="res://assets/mall/selfcheckout.png" id="5_g377o"]
-[ext_resource type="Texture2D" uid="uid://bqc21ow6lrmh" path="res://assets/mall/storage.png" id="6_egw2s"]
-[ext_resource type="Texture2D" uid="uid://b8qjuqrx7mxvg" path="res://assets/mall/mall_gate.png" id="7_34v1c"]
-[ext_resource type="Texture2D" uid="uid://c2hwtbuu2eaot" path="res://assets/environment/snack_machine_atlas.png" id="8_epuyy"]
-[ext_resource type="Texture2D" uid="uid://cmpcrhxx5t7as" path="res://assets/downtown/potted_bush.png" id="10_2mfkd"]
-[ext_resource type="Texture2D" uid="uid://fvsk7527x314" path="res://assets/downtown/water_dispenser.png" id="11_fqe1k"]
-[ext_resource type="Texture2D" uid="uid://dimsxaiqpbmcc" path="res://assets/downtown/no_smoking_sign.png" id="12_sgjlf"]
-[ext_resource type="Texture2D" uid="uid://dnj0hlb6fb6yh" path="res://assets/residential/indoors/utility_door_atlas.png" id="13_qlspq"]
-[ext_resource type="Texture2D" uid="uid://b8tq8n0tjyh1g" path="res://assets/residential/indoors/garland.png" id="14_vhnj1"]
-[ext_resource type="Texture2D" uid="uid://d12k76fyavn8r" path="res://assets/environment/box_cardboard_sideways.png" id="16_2asfm"]
-[ext_resource type="Texture2D" uid="uid://civvvomhubmvi" path="res://assets/environment/box_cardboard.png" id="16_6wj3s"]
-[ext_resource type="Texture2D" uid="uid://d1yew3ulfd387" path="res://assets/residential/indoors/chair_orange.png" id="16_ohokb"]
-[ext_resource type="Texture2D" uid="uid://bkhrbsy2krgi3" path="res://assets/residential/indoors/counter_wide.png" id="17_8tma2"]
-[ext_resource type="Texture2D" uid="uid://rfn41l0gfwls" path="res://assets/residential/indoors/sofa_yellow_vertical.png" id="18_5n63i"]
-[ext_resource type="Texture2D" uid="uid://dhaf0k2asaokq" path="res://assets/residential/indoors/kasa.png" id="19_kni5m"]
-[ext_resource type="Texture2D" uid="uid://b4a3whtmf6xdw" path="res://assets/residential/indoors/bonsai1.png" id="20_lrmvj"]
-[ext_resource type="Texture2D" uid="uid://dafyw1xcbd0da" path="res://assets/environment/bike.png" id="21_fl3xv"]
+[ext_resource type="Texture2D" uid="uid://cgvnw3xu0g55c" path="res://assets/mall/mall.png" id="1_py6kn"]
+[ext_resource type="Texture2D" uid="uid://c26kyxsmcvben" path="res://assets/environment/vending_machine_atlas.png" id="2_83cf2"]
+[ext_resource type="Texture2D" uid="uid://ckr3s6a6pkgh8" path="res://assets/mall/mallisles.png" id="3_7qiwu"]
+[ext_resource type="Texture2D" uid="uid://ctx6632qwroaa" path="res://assets/mall/salebox.png" id="4_uvq87"]
+[ext_resource type="Texture2D" uid="uid://kk1gkcrurjt8" path="res://assets/mall/selfcheckout.png" id="5_g377o"]
+[ext_resource type="Texture2D" uid="uid://b8xjoqkbaiqyp" path="res://assets/mall/storage.png" id="6_egw2s"]
+[ext_resource type="Texture2D" uid="uid://b3kynf8hs73" path="res://assets/mall/mall_gate.png" id="7_34v1c"]
+[ext_resource type="Texture2D" uid="uid://cn1n1shruw5xn" path="res://assets/environment/snack_machine_atlas.png" id="8_epuyy"]
+[ext_resource type="Texture2D" uid="uid://brapyya5pqurk" path="res://assets/downtown/potted_bush.png" id="10_2mfkd"]
+[ext_resource type="Texture2D" uid="uid://od7278drijk8" path="res://assets/downtown/water_dispenser.png" id="11_fqe1k"]
+[ext_resource type="Texture2D" uid="uid://bnjtrujdg2l5p" path="res://assets/downtown/no_smoking_sign.png" id="12_sgjlf"]
+[ext_resource type="Texture2D" uid="uid://bcs5gw33o4yel" path="res://assets/residential/indoors/utility_door_atlas.png" id="13_qlspq"]
+[ext_resource type="Texture2D" uid="uid://b0pfippwkkdhi" path="res://assets/residential/indoors/garland.png" id="14_vhnj1"]
+[ext_resource type="Texture2D" uid="uid://cp0rngx6yb8ld" path="res://assets/environment/box_cardboard_sideways.png" id="16_2asfm"]
+[ext_resource type="Texture2D" uid="uid://cmawnctkx2s4q" path="res://assets/environment/box_cardboard.png" id="16_6wj3s"]
+[ext_resource type="Texture2D" uid="uid://cdjms83eablk0" path="res://assets/residential/indoors/chair_orange.png" id="16_ohokb"]
+[ext_resource type="Texture2D" uid="uid://b5b8jfmoq2513" path="res://assets/residential/indoors/counter_wide.png" id="17_8tma2"]
+[ext_resource type="Texture2D" uid="uid://4xex1q0625dd" path="res://assets/residential/indoors/sofa_yellow_vertical.png" id="18_5n63i"]
+[ext_resource type="Texture2D" uid="uid://bsle4hh6l11lu" path="res://assets/residential/indoors/kasa.png" id="19_kni5m"]
+[ext_resource type="Texture2D" uid="uid://ddlopdfvnk2le" path="res://assets/residential/indoors/bonsai1.png" id="20_lrmvj"]
+[ext_resource type="Texture2D" uid="uid://cus47vh7v1pqb" path="res://assets/environment/bike.png" id="21_fl3xv"]
+[ext_resource type="Texture2D" uid="uid://dkec74g2nkeo5" path="res://assets/residential/indoors/room_light_big.png" id="22_cvdsm"]
+[ext_resource type="Texture2D" uid="uid://cw3pr54lpwq8h" path="res://assets/residential/indoors/kredenc.png" id="23_0ffn3"]
+[ext_resource type="Texture2D" uid="uid://b4n3d4xbt3n7t" path="res://assets/downtown/fire_ex.png" id="24_m52ke"]
+[ext_resource type="Texture2D" uid="uid://ddsv1ik5iuj57" path="res://assets/environment/scooter_atlas.png" id="25_28lq7"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("2_83cf2")
@@ -116,6 +120,21 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_qh6ip"]
+atlas = ExtResource("25_28lq7")
+region = Rect2(0, 0, 31, 27)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_kfyw2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qh6ip")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
 [node name="Mall" type="Node2D"]
 
 [node name="MallBg" type="Sprite2D" parent="."]
@@ -171,20 +190,6 @@ sprite_frames = SubResource("SpriteFrames_t6d3n")
 [node name="YSort" type="Node2D" parent="SnackMachineAtlas"]
 position = Vector2(0, 24)
 
-[node name="PottedBush" type="Sprite2D" parent="."]
-position = Vector2(-311, 76)
-texture = ExtResource("10_2mfkd")
-
-[node name="YSort" type="Node2D" parent="PottedBush"]
-position = Vector2(0, 12)
-
-[node name="WaterDispenser" type="Sprite2D" parent="."]
-position = Vector2(-257.5, 67.5)
-texture = ExtResource("11_fqe1k")
-
-[node name="YSort" type="Node2D" parent="WaterDispenser"]
-position = Vector2(0.5, 20.5)
-
 [node name="NoSmokingSign" type="Sprite2D" parent="."]
 z_index = -1
 position = Vector2(-102, -153)
@@ -192,7 +197,7 @@ texture = ExtResource("12_sgjlf")
 
 [node name="UtilityDoorAtlas" type="AnimatedSprite2D" parent="."]
 z_index = -1
-position = Vector2(-131, -136)
+position = Vector2(-131, -137)
 sprite_frames = SubResource("SpriteFrames_aktpu")
 
 [node name="Garland" type="Sprite2D" parent="."]
@@ -212,42 +217,35 @@ texture = ExtResource("16_2asfm")
 position = Vector2(0, 9)
 
 [node name="ChairOrange2" type="Sprite2D" parent="."]
-position = Vector2(-231.5, 74.5)
+position = Vector2(-231.5, 79.5)
 texture = ExtResource("16_ohokb")
 
 [node name="YSort" type="Node2D" parent="ChairOrange2"]
 position = Vector2(0.5, 12.5)
 
-[node name="ChairOrange" type="Sprite2D" parent="."]
-position = Vector2(-282.5, 74.5)
-texture = ExtResource("16_ohokb")
-
-[node name="YSort" type="Node2D" parent="ChairOrange"]
-position = Vector2(0.5, 12.5)
-
 [node name="SofaYellowVertical" type="Sprite2D" parent="."]
-z_index = -1
-position = Vector2(-312, 116)
+z_index = 1
+position = Vector2(-312, 121)
 texture = ExtResource("18_5n63i")
 flip_h = true
 
 [node name="CounterWide" type="Sprite2D" parent="."]
-position = Vector2(-241, -91)
+position = Vector2(-241, -85)
 texture = ExtResource("17_8tma2")
 
 [node name="Bonsai1" type="Sprite2D" parent="CounterWide"]
-position = Vector2(32, -22)
+position = Vector2(30, -21)
 texture = ExtResource("20_lrmvj")
 
 [node name="Kasa" type="Sprite2D" parent="CounterWide"]
-position = Vector2(-27, -19)
+position = Vector2(-27, -17)
 texture = ExtResource("19_kni5m")
 
 [node name="YSort" type="Node2D" parent="CounterWide"]
 position = Vector2(1, 16)
 
 [node name="Bike" type="Sprite2D" parent="."]
-position = Vector2(-303, -40)
+position = Vector2(-303, -34)
 texture = ExtResource("21_fl3xv")
 
 [node name="YSort" type="Node2D" parent="Bike"]
@@ -306,3 +304,38 @@ position = Vector2(50, 35)
 position = Vector2(219, 11)
 
 [node name="Point" type="Node" parent="Points/WhiteCatPatrolPoint6"]
+
+[node name="RoomLightBig" type="Sprite2D" parent="."]
+position = Vector2(248, 83)
+texture = ExtResource("22_cvdsm")
+
+[node name="Kredenc" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(-295, 70)
+texture = ExtResource("23_0ffn3")
+
+[node name="ChairOrange" type="Sprite2D" parent="Kredenc"]
+position = Vector2(12.5, 9.5)
+texture = ExtResource("16_ohokb")
+
+[node name="PottedBush" type="Sprite2D" parent="Kredenc"]
+position = Vector2(-16, 10)
+texture = ExtResource("10_2mfkd")
+
+[node name="WaterDispenser" type="Sprite2D" parent="."]
+position = Vector2(-257.5, 72.5)
+texture = ExtResource("11_fqe1k")
+
+[node name="YSort" type="Node2D" parent="WaterDispenser"]
+position = Vector2(0.5, 23.5)
+
+[node name="FireEx" type="Sprite2D" parent="."]
+position = Vector2(157, -139)
+texture = ExtResource("24_m52ke")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(-305, -7)
+sprite_frames = SubResource("SpriteFrames_kfyw2")
+
+[node name="YSort" type="Node2D" parent="AnimatedSprite2D"]
+position = Vector2(0.5, 12.5)
