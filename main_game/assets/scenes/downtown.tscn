@@ -1,4 +1,4 @@
-[gd_scene load_steps=101 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=112 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -77,6 +77,9 @@
 [ext_resource type="Texture2D" uid="uid://c10hjmowp67x8" path="res://assets/downtown/beach_stairs.png" id="75_kpov5"]
 [ext_resource type="Texture2D" uid="uid://dfhgmfro4r580" path="res://assets/downtown/molo_tile.png" id="76_5i8ym"]
 [ext_resource type="Texture2D" uid="uid://cdj7x8m4pfb55" path="res://assets/downtown/molo_tile_vertical.png" id="77_qpxr7"]
+[ext_resource type="Texture2D" uid="uid://7stlavimbvb4" path="res://assets/downtown/escalator_atlas44px.png" id="78_yvctd"]
+[ext_resource type="Texture2D" uid="uid://bv03lx6d3rwr5" path="res://assets/downtown/fence_stone.png" id="79_gmvgg"]
+[ext_resource type="Texture2D" uid="uid://dr0tqt787gslp" path="res://assets/downtown/fence_stone_vertical.png" id="80_uof8l"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("4_fu7bc")
@@ -241,6 +244,64 @@ animations = [{
 "loop": true,
 "name": &"default",
 "speed": 2.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_75hm3"]
+atlas = ExtResource("78_yvctd")
+region = Rect2(44, 0, 44, 146)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qkanl"]
+atlas = ExtResource("78_yvctd")
+region = Rect2(0, 0, 44, 146)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2wl1o"]
+atlas = ExtResource("78_yvctd")
+region = Rect2(88, 0, 44, 146)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_22xry"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_75hm3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qkanl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2wl1o")
+}],
+"loop": true,
+"name": &"default",
+"speed": 3.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_68qh8"]
+atlas = ExtResource("78_yvctd")
+region = Rect2(0, 0, 44, 146)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v1ur0"]
+atlas = ExtResource("78_yvctd")
+region = Rect2(44, 0, 44, 146)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f31b2"]
+atlas = ExtResource("78_yvctd")
+region = Rect2(88, 0, 44, 146)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ngv4b"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_68qh8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v1ur0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f31b2")
+}],
+"loop": true,
+"name": &"default",
+"speed": 3.0
 }]
 
 [node name="Downtown" type="Node2D"]
@@ -413,6 +474,9 @@ position = Vector2(0, 13)
 [node name="Sipek2" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-404, -830)
 texture = ExtResource("14_6c1wy")
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/Sipek2"]
+position = Vector2(-3, 22)
 
 [node name="Jehlicnan4" type="Sprite2D" parent="CompoundRoot"]
 z_index = -1
@@ -712,139 +776,7 @@ position = Vector2(-389, 150)
 texture = ExtResource("13_jgs6s")
 
 [node name="YSort" type="Node2D" parent="MallRoot/Mall"]
-position = Vector2(-15, 185)
-
-[node name="TrashcanTables6" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(-167, -160)
-texture = ExtResource("10_nyc25")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/TrashcanTables6"]
-position = Vector2(0, 11)
-
-[node name="TrashcanTables3" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(95, -4)
-texture = ExtResource("10_nyc25")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/TrashcanTables3"]
-position = Vector2(0, 11)
-
-[node name="TrashcanTables5" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(126, -45)
-texture = ExtResource("10_nyc25")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/TrashcanTables5"]
-position = Vector2(0, 11)
-
-[node name="TrashcanTables4" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(-243, -121)
-texture = ExtResource("10_nyc25")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/TrashcanTables4"]
-position = Vector2(0, 11)
-
-[node name="TrashcanTables" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(63, -43)
-texture = ExtResource("10_nyc25")
-
-[node name="Beer" type="Sprite2D" parent="MallRoot/Mall/TrashcanTables"]
-position = Vector2(-2, -13)
-texture = ExtResource("11_e3pff")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/TrashcanTables"]
-position = Vector2(0, 11)
-
-[node name="BambooRooftop" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(-13, -206)
-texture = ExtResource("4_uahdt")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/BambooRooftop"]
-position = Vector2(0, 19)
-
-[node name="Waterdispenser" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(36, -205)
-texture = ExtResource("3_mnq47")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/Waterdispenser"]
-position = Vector2(0, 23)
-
-[node name="RecycleBin" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(322, -190)
-texture = ExtResource("5_her3o")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/RecycleBin"]
-position = Vector2(0, 12)
-
-[node name="Cone" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(322, -108)
-texture = ExtResource("6_4cklq")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/Cone"]
-position = Vector2(0, 8)
-
-[node name="AcAtlas" type="AnimatedSprite2D" parent="MallRoot/Mall"]
-position = Vector2(-298, -180)
-sprite_frames = SubResource("SpriteFrames_q1mli")
-autoplay = "default"
-frame = 2
-frame_progress = 1.0
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/AcAtlas"]
-position = Vector2(0, 16)
-
-[node name="UmbrellaChair2" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(-34, 9)
-texture = ExtResource("20_sy6x1")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/UmbrellaChair2"]
-position = Vector2(0, 41)
-
-[node name="WaterBottleHalf" type="Sprite2D" parent="MallRoot/Mall/UmbrellaChair2"]
-position = Vector2(-13, 25)
-texture = ExtResource("21_8m32a")
-
-[node name="UmbrellaChair" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(-176, -39)
-texture = ExtResource("20_sy6x1")
-
-[node name="Beer2" type="Sprite2D" parent="MallRoot/Mall/UmbrellaChair"]
-position = Vector2(-10, 24)
-texture = ExtResource("11_e3pff")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/UmbrellaChair"]
-position = Vector2(0, 41)
-
-[node name="UmbrellaChair3" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(-43, -119)
-texture = ExtResource("20_sy6x1")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/UmbrellaChair3"]
-position = Vector2(0, 41)
-
-[node name="RoofBuilding" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(226.5, -152)
-texture = ExtResource("36_4dgjx")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/RoofBuilding"]
-position = Vector2(0, 41)
-
-[node name="FireEx" type="Sprite2D" parent="MallRoot/Mall/RoofBuilding"]
-position = Vector2(-69.5, 50)
-texture = ExtResource("24_ohwph")
-
-[node name="NoSmokingSign" type="Sprite2D" parent="MallRoot/Mall/RoofBuilding"]
-position = Vector2(34.5, 48)
-texture = ExtResource("25_1tn82")
-
-[node name="StallVertical" type="Sprite2D" parent="MallRoot/Mall"]
-position = Vector2(119, -160)
-texture = ExtResource("68_m4f8x")
-
-[node name="PlateCookies" type="Sprite2D" parent="MallRoot/Mall/StallVertical"]
-position = Vector2(1, 28)
-texture = ExtResource("69_cj3mq")
-
-[node name="YSort" type="Node2D" parent="MallRoot/Mall/StallVertical"]
-position = Vector2(0, 41)
+position = Vector2(-65, -187)
 
 [node name="MallBins" type="Node2D" parent="MallRoot"]
 position = Vector2(-532, 342)
@@ -869,6 +801,138 @@ metadata/zone = "MallEntrance"
 metadata/action = "EnterMall"
 metadata/label = "Go shopping"
 metadata/category = "Default"
+
+[node name="BambooRooftop" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-402, -56)
+texture = ExtResource("4_uahdt")
+
+[node name="YSort" type="Node2D" parent="MallRoot/BambooRooftop"]
+position = Vector2(-1, 21)
+
+[node name="Waterdispenser" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-353, -55)
+texture = ExtResource("3_mnq47")
+
+[node name="YSort" type="Node2D" parent="MallRoot/Waterdispenser"]
+position = Vector2(0, 19)
+
+[node name="AcAtlas" type="AnimatedSprite2D" parent="MallRoot"]
+position = Vector2(-687, -30)
+sprite_frames = SubResource("SpriteFrames_q1mli")
+autoplay = "default"
+frame = 2
+frame_progress = 1.0
+
+[node name="YSort" type="Node2D" parent="MallRoot/AcAtlas"]
+position = Vector2(-9, 18)
+
+[node name="UmbrellaChair2" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-423, 159)
+texture = ExtResource("20_sy6x1")
+
+[node name="YSort" type="Node2D" parent="MallRoot/UmbrellaChair2"]
+position = Vector2(0, 41)
+
+[node name="WaterBottleHalf" type="Sprite2D" parent="MallRoot/UmbrellaChair2"]
+position = Vector2(-13, 25)
+texture = ExtResource("21_8m32a")
+
+[node name="UmbrellaChair" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-565, 111)
+texture = ExtResource("20_sy6x1")
+
+[node name="Beer2" type="Sprite2D" parent="MallRoot/UmbrellaChair"]
+position = Vector2(-10, 24)
+texture = ExtResource("11_e3pff")
+
+[node name="YSort" type="Node2D" parent="MallRoot/UmbrellaChair"]
+position = Vector2(0, 41)
+
+[node name="UmbrellaChair3" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-432, 31)
+texture = ExtResource("20_sy6x1")
+
+[node name="YSort" type="Node2D" parent="MallRoot/UmbrellaChair3"]
+position = Vector2(0, 41)
+
+[node name="TrashcanTables6" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-556, -10)
+texture = ExtResource("10_nyc25")
+
+[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables6"]
+position = Vector2(0, 11)
+
+[node name="TrashcanTables3" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-294, 146)
+texture = ExtResource("10_nyc25")
+
+[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables3"]
+position = Vector2(0, 11)
+
+[node name="TrashcanTables5" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-263, 105)
+texture = ExtResource("10_nyc25")
+
+[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables5"]
+position = Vector2(0, 11)
+
+[node name="TrashcanTables4" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-632, 29)
+texture = ExtResource("10_nyc25")
+
+[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables4"]
+position = Vector2(0, 11)
+
+[node name="TrashcanTables" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-326, 107)
+texture = ExtResource("10_nyc25")
+
+[node name="Beer" type="Sprite2D" parent="MallRoot/TrashcanTables"]
+position = Vector2(-2, -13)
+texture = ExtResource("11_e3pff")
+
+[node name="YSort" type="Node2D" parent="MallRoot/TrashcanTables"]
+position = Vector2(0, 11)
+
+[node name="RecycleBin" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-67, -40)
+texture = ExtResource("5_her3o")
+
+[node name="YSort" type="Node2D" parent="MallRoot/RecycleBin"]
+position = Vector2(0, 12)
+
+[node name="Cone" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-67, 42)
+texture = ExtResource("6_4cklq")
+
+[node name="YSort" type="Node2D" parent="MallRoot/Cone"]
+position = Vector2(0, 8)
+
+[node name="RoofBuilding" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-162.5, -2)
+texture = ExtResource("36_4dgjx")
+
+[node name="YSort" type="Node2D" parent="MallRoot/RoofBuilding"]
+position = Vector2(0, 41)
+
+[node name="FireEx" type="Sprite2D" parent="MallRoot/RoofBuilding"]
+position = Vector2(-69.5, 50)
+texture = ExtResource("24_ohwph")
+
+[node name="NoSmokingSign" type="Sprite2D" parent="MallRoot/RoofBuilding"]
+position = Vector2(34.5, 48)
+texture = ExtResource("25_1tn82")
+
+[node name="StallVertical" type="Sprite2D" parent="MallRoot"]
+position = Vector2(-270, -10)
+texture = ExtResource("68_m4f8x")
+
+[node name="PlateCookies" type="Sprite2D" parent="MallRoot/StallVertical"]
+position = Vector2(1, 28)
+texture = ExtResource("69_cj3mq")
+
+[node name="YSort" type="Node2D" parent="MallRoot/StallVertical"]
+position = Vector2(0, 41)
 
 [node name="Block3Root" type="Node2D" parent="."]
 
@@ -1482,3 +1546,49 @@ texture = ExtResource("77_qpxr7")
 z_index = -3
 position = Vector2(-401, 1720)
 texture = ExtResource("77_qpxr7")
+
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="."]
+position = Vector2(-702, 290)
+sprite_frames = SubResource("SpriteFrames_22xry")
+autoplay = "default"
+frame_progress = 0.716567
+
+[node name="YSort" type="Node2D" parent="AnimatedSprite2D2"]
+position = Vector2(-1, -68)
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(-667, 290)
+sprite_frames = SubResource("SpriteFrames_ngv4b")
+autoplay = "default"
+frame_progress = 0.508642
+
+[node name="YSort" type="Node2D" parent="AnimatedSprite2D"]
+position = Vector2(-1, -68)
+
+[node name="FenceStone" type="Sprite2D" parent="."]
+position = Vector2(-550, -854)
+texture = ExtResource("79_gmvgg")
+
+[node name="YSort" type="Node2D" parent="FenceStone"]
+position = Vector2(-4, 28)
+
+[node name="FenceStone2" type="Sprite2D" parent="."]
+position = Vector2(-381, -854)
+texture = ExtResource("79_gmvgg")
+
+[node name="YSort" type="Node2D" parent="FenceStone2"]
+position = Vector2(2, 26)
+
+[node name="FenceStoneVertical" type="Sprite2D" parent="."]
+position = Vector2(-298, -939)
+texture = ExtResource("80_uof8l")
+
+[node name="YSort" type="Node2D" parent="FenceStoneVertical"]
+position = Vector2(0, 59)
+
+[node name="FenceStoneVertical2" type="Sprite2D" parent="."]
+position = Vector2(-298, -1132)
+texture = ExtResource("80_uof8l")
+
+[node name="YSort" type="Node2D" parent="FenceStoneVertical2"]
+position = Vector2(0, 114)
