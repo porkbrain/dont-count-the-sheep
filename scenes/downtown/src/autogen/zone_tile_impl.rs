@@ -19,6 +19,7 @@ Self::TwinpeaksApartmentEntrance => Some(ZoneGroup(5)),
     { Self::Building1Entrance => Some(33),
 Self::SewersEntrance => Some(60),
 Self::MallEntrance => Some(145),
+Self::ClinicEntrance => Some(6),
 Self::PlantShopEntrance => Some(44),
 Self::TwinpeaksApartmentEntrance => Some(44),
  #[allow(unreachable_patterns)] _ => None, }

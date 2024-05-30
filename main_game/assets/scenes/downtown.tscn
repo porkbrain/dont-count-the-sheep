@@ -1106,7 +1106,7 @@ position = Vector2(-31, 899.5)
 texture = ExtResource("25_ukjmq")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/ClinicRed"]
-position = Vector2(-47, -16)
+position = Vector2(-5, 96)
 
 [node name="PottedBush3" type="Sprite2D" parent="ShoreRoot/ClinicRed"]
 position = Vector2(42, 72)
@@ -1247,7 +1247,7 @@ texture = ExtResource("43_ihbqd")
 position = Vector2(0, 13)
 
 [node name="ClinicEntrance" type="Node2D" parent="ShoreRoot"]
-position = Vector2(-59, 971)
+position = Vector2(-57, 844)
 
 [node name="Point" type="Node" parent="ShoreRoot/ClinicEntrance"]
 
@@ -1258,7 +1258,7 @@ metadata/label = "Clinic"
 metadata/category = "Default"
 
 [node name="ClinicExit" type="Node2D" parent="ShoreRoot"]
-position = Vector2(-73, 1059)
+position = Vector2(-73, 996)
 
 [node name="Point" type="Node" parent="ShoreRoot/ClinicExit"]
 
