@@ -11,3 +11,4 @@
 - [Devtools](devtools.md)
   - [Godot](devtools_godot.md)
   - [Dialog](devtools_dialog.md)
+  - [Map maker](devtools_map_maker.md)
