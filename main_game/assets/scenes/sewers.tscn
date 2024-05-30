@@ -2,8 +2,8 @@
 
 [ext_resource type="Texture2D" uid="uid://sit53g2cltgl" path="res://assets/downtown/sewers_bg.png" id="1_sy4gy"]
 [ext_resource type="Texture2D" uid="uid://bflcaqeap0y6j" path="res://assets/downtown/bin_bag.png" id="2_w3jta"]
-[ext_resource type="Texture2D" uid="uid://fsryrryb0rff" path="res://assets/environment/room_light_half.png" id="3_lk7hh"]
-[ext_resource type="Texture2D" uid="uid://bmuo6rgnfl1w2" path="res://assets/environment/beerfloating_atlas.png" id="4_4qch5"]
+[ext_resource type="Texture2D" uid="uid://cs547u64pp8gq" path="res://assets/environment/room_light_half.png" id="3_lk7hh"]
+[ext_resource type="Texture2D" uid="uid://lg7pk65gt1wm" path="res://assets/environment/beerfloating_atlas.png" id="4_4qch5"]
 [ext_resource type="Texture2D" uid="uid://n8ietma8qsly" path="res://assets/downtown/manhole.png" id="5_5t670"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hdhns"]
@@ -71,6 +71,7 @@ texture = ExtResource("3_lk7hh")
 flip_h = true
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+z_index = 1
 position = Vector2(123, 271)
 sprite_frames = SubResource("SpriteFrames_1ak07")
 autoplay = "default"
