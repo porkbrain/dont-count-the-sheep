@@ -609,11 +609,12 @@ fn begin_simple_walk_to(
         if let Some(step_time) = step_time {
             actor.step_time = *step_time;
         }
-        actor.walking_to = Some(ActorTarget {
+        actor.walking_to = ActorTarget {
             square: *square,
             planned: *planned,
             since: Stopwatch::new(),
-        });
+        }
+        .into();
     }
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
@@ -631,7 +632,7 @@ fn wait_until_actor_at_rest(
     };
 
     if let Ok(actor) = actors.get(*entity) {
-        if actor.walking_to.is_none() {
+        if actor.walking_to.is_still() {
             cutscene.schedule_next_step_or_despawn(&mut cmd);
         }
     }

@@ -255,12 +255,17 @@ impl Character {
 
     /// Based on the current character and direction they are facing, what's the
     /// current sprite index in the atlas if they are standing and not moving.
+    ///
+    /// You can also provide how long the character has been standing still.
     pub fn standing_sprite_atlas_index(
         self,
         direction: GridDirection,
         time: &Time,
+        how_long: Option<Duration>,
     ) -> usize {
         use GridDirection::*;
+
+        let how_long = how_long.unwrap_or_default();
 
         match (self, direction) {
             (Self::WhiteCat, Bottom | Left | TopLeft | BottomLeft) => 0,
@@ -273,10 +278,9 @@ impl Character {
 
             (Self::Winnie, TopRight) => WINNIE_COLS + 6,
             (Self::Winnie, TopLeft) => WINNIE_COLS + 9,
-            // (Self::Winnie, Bottom) => {
-            //     WINNIE_COLS
-            //         * ((time.elapsed_wrapped().as_secs() as usize % 16) / 8)
-            // }
+            // after a few seconds, winnie puts her hands in her pockets
+            (Self::Winnie, Bottom) if how_long.as_secs() > 5 => WINNIE_COLS,
+
             (_, Bottom) => 0,
             (_, Top) => 1,
             (_, Right | TopRight | BottomRight) => 6,

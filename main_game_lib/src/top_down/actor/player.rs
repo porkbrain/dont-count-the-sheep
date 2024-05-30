@@ -56,7 +56,7 @@ pub fn move_around<T: TopDownScene>(
     // who doesn't yet have all the movement planned
     if player
         .walking_to
-        .as_ref()
+        .target()
         .and_then(|to| to.planned)
         .is_some()
     {
@@ -99,11 +99,11 @@ pub fn move_around<T: TopDownScene>(
     if let Some((target_square, direction)) = target {
         player.direction = direction;
 
-        if let Some(walking_to) = &mut player.walking_to {
+        if let Some(walking_to) = &mut player.walking_to.target_mut() {
             debug_assert!(walking_to.planned.is_none());
             walking_to.planned = Some((target_square, direction));
         } else {
-            player.walking_to = Some(ActorTarget::new(target_square));
+            player.walking_to = ActorTarget::new(target_square).into();
         }
     } else {
         // Cannot move anywhere, but would like to? At least direction the

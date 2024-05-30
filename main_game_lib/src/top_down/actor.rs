@@ -35,36 +35,6 @@ pub fn movement_event_emitted<T: TopDownScene>(
     on_event::<ActorMovementEvent<T::LocalTileKind>>()
 }
 
-/// Whether the actor is moving (and to where) or standing still (and for how
-/// long).
-pub enum ActorMovement {
-    /// Where's the actor going
-    Target(ActorTarget),
-    /// Standing still
-    Still {
-        /// How long we've been standing still.
-        since: Stopwatch,
-    },
-}
-
-impl ActorMovement {
-    /// Gets mutable reference to the actor target if moving.
-    pub fn target_mut(&mut self) -> Option<&mut ActorTarget> {
-        match self {
-            Self::Target(target) => Some(target),
-            _ => None,
-        }
-    }
-
-    /// Gets reference to the actor target if moving.
-    pub fn target(&self) -> Option<&ActorTarget> {
-        match self {
-            Self::Target(target) => Some(target),
-            _ => None,
-        }
-    }
-}
-
 /// Entity with this component can be moved around.
 #[derive(Component, Reflect, Debug, Deserialize, Serialize)]
 pub struct Actor {
@@ -77,7 +47,7 @@ pub struct Actor {
     /// the target.
     pub walking_from: Square,
     /// Target to walk towards.
-    pub walking_to: Option<ActorTarget>,
+    pub walking_to: ActorMovement,
     /// Used for animations.
     pub direction: GridDirection,
     /// Squares that the actor currently occupies, along with the layer that
@@ -99,6 +69,19 @@ pub struct Actor {
     /// It's necessary therefore to check the index before mutating it to
     /// confirm the escape hatch did not change it.
     occupies: Vec<TileIndex>,
+}
+
+/// Whether the actor is moving (and to where) or standing still (and for how
+/// long).
+#[derive(Component, Reflect, Debug, Deserialize, Serialize)]
+pub enum ActorMovement {
+    /// Where's the actor going
+    Target(ActorTarget),
+    /// Standing still
+    Still {
+        /// How long we've been standing still.
+        since: Stopwatch,
+    },
 }
 
 /// Target for an actor to walk towards.
@@ -176,7 +159,7 @@ pub struct CharacterBundleBuilder {
     character: common_story::Character,
     initial_position: Vec2,
     initial_direction: GridDirection,
-    walking_to: Option<ActorTarget>,
+    walking_to: ActorMovement,
     initial_step_time: Option<Duration>,
     color: Option<Color>,
     behavior_tree: Option<BehaviorTree>,
@@ -364,23 +347,27 @@ fn animate_movement_for_actor<T: TopDownScene>(
 
     let current_direction = actor.direction;
     let step_time = actor.step_time;
-    let standing_still_sprite_index = actor
-        .character
-        .standing_sprite_atlas_index(current_direction, time);
 
-    let Some(walking_to) = actor.walking_to.as_mut() else {
-        // actor is standing still
+    let walking_to = match &mut actor.walking_to {
+        ActorMovement::Target(walking_to) => walking_to,
+        ActorMovement::Still { since } => {
+            since.tick(time.delta());
 
-        sprite.index = standing_still_sprite_index;
+            sprite.index = actor.character.standing_sprite_atlas_index(
+                current_direction,
+                time,
+                Some(since.elapsed()),
+            );
 
-        // we need to update the tiles that the actor occupies because other
-        // actors might be moving around it, freeing up some space
-        // OPTIMIZE: the logic for replacing standing still tiles can be
-        // simplified, and if it was, we could also run it when moving
-        tilemap.replace_actor_tiles(entity, actor);
+            // we need to update the tiles that the actor occupies because other
+            // actors might be moving around it, freeing up some space
+            // OPTIMIZE: the logic for replacing standing still tiles can be
+            // simplified, and if it was, we could also run it when moving
+            tilemap.replace_actor_tiles(entity, actor);
 
-        // nowhere to move
-        return;
+            // nowhere to move
+            return;
+        }
     };
 
     walking_to.since.tick(time.delta());
@@ -407,6 +394,10 @@ fn animate_movement_for_actor<T: TopDownScene>(
         // prevents fractions if camera would want to follow the player
         transform.translation = rounded.extend(ysort(rounded));
 
+        let standing_still_sprite_index = actor
+            .character
+            .standing_sprite_atlas_index(current_direction, time, None);
+
         if let Some((new_square, new_direction)) = walking_to.planned.take() {
             // there's still next target to walk to, let's check whether it's
             // still available
@@ -419,13 +410,13 @@ fn animate_movement_for_actor<T: TopDownScene>(
                 // can't go there anymore
 
                 sprite.index = standing_still_sprite_index;
-                actor.walking_to = None;
+                actor.walking_to = default();
             }
         } else {
             // nowhere else to walk to, standing still
 
             sprite.index = standing_still_sprite_index;
-            actor.walking_to = None;
+            actor.walking_to = default();
         }
 
         actor.walking_from = new_from;
@@ -465,7 +456,7 @@ impl Actor {
     /// walking, or the square they're standing on if they're not walking.
     pub fn current_square(&self) -> Square {
         self.walking_to
-            .as_ref()
+            .target()
             .map(|to| to.square)
             .unwrap_or(self.walking_from)
     }
@@ -480,7 +471,7 @@ impl Actor {
     /// Lets actor finish walking to the current target, but doesn't let them
     /// take the next planned step.
     fn remove_planned_step(&mut self) {
-        if let Some(target) = &mut self.walking_to {
+        if let Some(target) = self.walking_to.target_mut() {
             target.planned = None;
         }
     }
@@ -552,7 +543,7 @@ impl CharacterBundleBuilder {
 
     /// Where to walk to initially.
     pub fn walking_to(&mut self, walking_to: ActorTarget) {
-        self.walking_to = Some(walking_to);
+        self.walking_to = ActorMovement::Target(walking_to);
     }
 
     /// How long does it take to move one square.
@@ -731,7 +722,7 @@ impl<T: TopDownScene> TileMap<T> {
 
             // pick a random index from candidates
             if let Some(new_target) = candidates.choose(&mut thread_rng()) {
-                actor.walking_to = Some(ActorTarget::new(*new_target));
+                actor.walking_to = ActorTarget::new(*new_target).into();
             } else {
                 // Spawned in the middle of a nowhere? All directions
                 // are unwalkable.
@@ -983,7 +974,7 @@ mod tests {
                 step_time: STEP_TIME,
                 direction: GridDirection::Bottom,
                 walking_from: sq(0, 0),
-                walking_to: None, // we get them moving later
+                walking_to: default(), // we get them moving later
                 occupies: vec![],
             })
             .insert(SpatialBundle::default())
@@ -998,7 +989,7 @@ mod tests {
                 step_time: STEP_TIME,
                 direction: GridDirection::Bottom,
                 walking_from: sq(0, 0),
-                walking_to: None, // we get them moving later
+                walking_to: default(), // we get them moving later
                 occupies: vec![],
             })
             .insert(SpatialBundle::default())
@@ -1052,7 +1043,7 @@ mod tests {
                     let mut entity_ref =
                         w.get_entity_mut(actor_entity).unwrap();
                     let mut actor_comp = entity_ref.get_mut::<Actor>().unwrap();
-                    if actor_comp.walking_to.is_none() {
+                    if actor_comp.walking_to.is_still() {
                         let random_direction = GridDirection::iter()
                             .choose(&mut rand::thread_rng())
                             .unwrap();
@@ -1071,7 +1062,7 @@ mod tests {
                                 trace!("Goto {goto}");
                                 // go in direction if possible
                                 actor_comp.walking_to =
-                                    Some(ActorTarget::new(goto));
+                                    ActorTarget::new(goto).into();
                                 break;
                             }
                         }
@@ -1082,6 +1073,43 @@ mod tests {
                 move_actor(*actor, *direction);
             }
         }
+    }
+}
+
+impl ActorMovement {
+    /// Gets mutable reference to the actor target if moving.
+    pub fn target_mut(&mut self) -> Option<&mut ActorTarget> {
+        match self {
+            Self::Target(target) => Some(target),
+            _ => None,
+        }
+    }
+
+    /// Gets reference to the actor target if moving.
+    pub fn target(&self) -> Option<&ActorTarget> {
+        match self {
+            Self::Target(target) => Some(target),
+            _ => None,
+        }
+    }
+
+    /// Whether the actor is not moving.
+    pub fn is_still(&self) -> bool {
+        matches!(self, Self::Still { .. })
+    }
+}
+
+impl Default for ActorMovement {
+    fn default() -> Self {
+        Self::Still {
+            since: Stopwatch::new(),
+        }
+    }
+}
+
+impl From<ActorTarget> for ActorMovement {
+    fn from(target: ActorTarget) -> Self {
+        Self::Target(target)
     }
 }
 
