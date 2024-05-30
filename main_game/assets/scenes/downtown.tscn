@@ -1,4 +1,4 @@
-[gd_scene load_steps=112 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=113 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -80,6 +80,7 @@
 [ext_resource type="Texture2D" uid="uid://7stlavimbvb4" path="res://assets/downtown/escalator_atlas44px.png" id="78_yvctd"]
 [ext_resource type="Texture2D" uid="uid://bv03lx6d3rwr5" path="res://assets/downtown/fence_stone.png" id="79_gmvgg"]
 [ext_resource type="Texture2D" uid="uid://dr0tqt787gslp" path="res://assets/downtown/fence_stone_vertical.png" id="80_uof8l"]
+[ext_resource type="Texture2D" uid="uid://d0xnefcqqm1wo" path="res://assets/environment/paper_side.png" id="81_0yc4q"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("4_fu7bc")
@@ -1551,7 +1552,7 @@ texture = ExtResource("77_qpxr7")
 position = Vector2(-702, 290)
 sprite_frames = SubResource("SpriteFrames_22xry")
 autoplay = "default"
-frame_progress = 0.716567
+frame_progress = 0.989842
 
 [node name="YSort" type="Node2D" parent="AnimatedSprite2D2"]
 position = Vector2(-1, -68)
@@ -1560,7 +1561,7 @@ position = Vector2(-1, -68)
 position = Vector2(-667, 290)
 sprite_frames = SubResource("SpriteFrames_ngv4b")
 autoplay = "default"
-frame_progress = 0.508642
+frame_progress = 0.781913
 
 [node name="YSort" type="Node2D" parent="AnimatedSprite2D"]
 position = Vector2(-1, -68)
@@ -1592,3 +1593,7 @@ texture = ExtResource("80_uof8l")
 
 [node name="YSort" type="Node2D" parent="FenceStoneVertical2"]
 position = Vector2(0, 114)
+
+[node name="PaperSide" type="Sprite2D" parent="."]
+position = Vector2(-186, 200)
+texture = ExtResource("81_0yc4q")
