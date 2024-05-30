@@ -14,7 +14,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_grid_squared::GridDirection;
-use common_assets::store::AssetList;
+use common_assets::{character_atlases::WINNIE_COLS, store::AssetList};
 use serde::{Deserialize, Serialize};
 use strum::{
     AsRefStr, Display, EnumCount, EnumIter, EnumString, IntoEnumIterator,
@@ -68,7 +68,7 @@ pub enum Character {
     /// A character.
     Emil,
     /// A character.
-    Pooper,
+    Cooper,
     /// A character.
     Samizdat,
     /// A character.
@@ -127,7 +127,7 @@ impl Character {
             Character::GingerCat => "Rolo",
             Character::WhiteCat => "Fluffy",
             Character::Emil => "Emil",
-            Character::Pooper => "Pooper",
+            Character::Cooper => "Cooper",
             Character::Samizdat => "Samizdat",
             Character::Otter => "Otter",
         }
@@ -151,6 +151,7 @@ impl Character {
             Character::Samizdat => SAMIZDAT,
             Character::WhiteCat => WHITE_CAT,
             Character::Bolt => BOLT,
+            Character::Cooper => COOPER,
             _ => unimplemented!(),
         }
     }
@@ -180,7 +181,7 @@ impl Character {
             Character::WhiteCat => WHITE_CAT,
             Character::Emil => EMIL,
             Character::Master => MASTER,
-            Character::Pooper => POOPER,
+            Character::Cooper => COOPER,
             Character::Redhead => REDHEAD,
             Character::Samizdat => SAMIZDAT,
             Character::Otter => OTTER,
@@ -198,13 +199,16 @@ impl Character {
         const STANDARD_SIZE: Vec2 = Vec2::new(25.0, 46.0);
 
         match self {
-            Character::Winnie => Some((STANDARD_SIZE, 12, 1, default())),
+            Character::Winnie => {
+                Some((STANDARD_SIZE, WINNIE_COLS, 3, default()))
+            }
             Character::Bolt => Some((STANDARD_SIZE, 12, 1, default())),
             Character::Marie => Some((STANDARD_SIZE, 15, 1, default())),
             Character::Samizdat => Some((STANDARD_SIZE, 15, 1, default())),
             Character::WhiteCat => {
                 Some((Vec2::new(48.0, 46.0), 6, 1, default()))
             }
+            Character::Cooper => Some((Vec2::new(25.0, 29.0), 2, 1, default())),
             _ => None,
         }
     }
@@ -234,6 +238,7 @@ impl Character {
         match self {
             Character::Winnie => Duration::from_millis(35),
             Character::WhiteCat => Duration::from_millis(120),
+            Character::Cooper => Duration::from_millis(150),
             _ => Duration::from_millis(50),
         }
     }
@@ -242,6 +247,8 @@ impl Character {
     pub fn slow_step_time(self) -> Duration {
         match self {
             Character::Winnie => Duration::from_millis(100),
+            Character::WhiteCat => Duration::from_millis(180),
+            Character::Cooper => Duration::from_millis(300),
             _ => Duration::from_millis(120),
         }
     }
@@ -251,6 +258,7 @@ impl Character {
     pub fn standing_sprite_atlas_index(
         self,
         direction: GridDirection,
+        time: &Time,
     ) -> usize {
         use GridDirection::*;
 
@@ -258,6 +266,17 @@ impl Character {
             (Self::WhiteCat, Bottom | Left | TopLeft | BottomLeft) => 0,
             (Self::WhiteCat, Top | Right | TopRight | BottomRight) => 3,
 
+            // two standing still frames
+            (Self::Cooper, _) => {
+                (3 * time.elapsed_wrapped().as_secs() as usize / 4) % 2
+            }
+
+            (Self::Winnie, TopRight) => WINNIE_COLS + 6,
+            (Self::Winnie, TopLeft) => WINNIE_COLS + 9,
+            // (Self::Winnie, Bottom) => {
+            //     WINNIE_COLS
+            //         * ((time.elapsed_wrapped().as_secs() as usize % 16) / 8)
+            // }
             (_, Bottom) => 0,
             (_, Top) => 1,
             (_, Right | TopRight | BottomRight) => 6,
@@ -294,6 +313,11 @@ impl Character {
         match (self, direction) {
             (Self::WhiteCat, Bottom | Left | TopLeft | BottomLeft) => 1 + extra,
             (Self::WhiteCat, Top | Right | TopRight | BottomRight) => 4 + extra,
+
+            (Self::Cooper, _) => 0,
+
+            (Self::Winnie, TopRight) => WINNIE_COLS + 7 + extra,
+            (Self::Winnie, TopLeft) => WINNIE_COLS + 10 + extra,
 
             // defaults
             (_, Top) => 2 + extra,

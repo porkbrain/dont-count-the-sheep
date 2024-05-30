@@ -35,6 +35,36 @@ pub fn movement_event_emitted<T: TopDownScene>(
     on_event::<ActorMovementEvent<T::LocalTileKind>>()
 }
 
+/// Whether the actor is moving (and to where) or standing still (and for how
+/// long).
+pub enum ActorMovement {
+    /// Where's the actor going
+    Target(ActorTarget),
+    /// Standing still
+    Still {
+        /// How long we've been standing still.
+        since: Stopwatch,
+    },
+}
+
+impl ActorMovement {
+    /// Gets mutable reference to the actor target if moving.
+    pub fn target_mut(&mut self) -> Option<&mut ActorTarget> {
+        match self {
+            Self::Target(target) => Some(target),
+            _ => None,
+        }
+    }
+
+    /// Gets reference to the actor target if moving.
+    pub fn target(&self) -> Option<&ActorTarget> {
+        match self {
+            Self::Target(target) => Some(target),
+            _ => None,
+        }
+    }
+}
+
 /// Entity with this component can be moved around.
 #[derive(Component, Reflect, Debug, Deserialize, Serialize)]
 pub struct Actor {
@@ -336,7 +366,7 @@ fn animate_movement_for_actor<T: TopDownScene>(
     let step_time = actor.step_time;
     let standing_still_sprite_index = actor
         .character
-        .standing_sprite_atlas_index(current_direction);
+        .standing_sprite_atlas_index(current_direction, time);
 
     let Some(walking_to) = actor.walking_to.as_mut() else {
         // actor is standing still
