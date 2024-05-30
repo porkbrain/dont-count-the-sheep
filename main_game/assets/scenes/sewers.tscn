@@ -48,25 +48,28 @@ animations = [{
 position = Vector2(-21, 1)
 texture = ExtResource("1_sy4gy")
 
-[node name="BinBag" type="Sprite2D" parent="."]
-position = Vector2(45, 128)
-texture = ExtResource("2_w3jta")
-
-[node name="RoomLightHalf" type="Sprite2D" parent="."]
-position = Vector2(298, 102)
+[node name="RoomLightHalf" type="Sprite2D" parent="SewersBg"]
+position = Vector2(319, 101)
 texture = ExtResource("3_lk7hh")
 flip_h = true
 
-[node name="FloatingBottle" type="AnimatedSprite2D" parent="."]
+[node name="Manhole" type="Sprite2D" parent="SewersBg"]
+position = Vector2(-312, 195)
+texture = ExtResource("5_5t670")
+
+[node name="FloatingBottle" type="AnimatedSprite2D" parent="SewersBg"]
 z_index = 1
-position = Vector2(123, 271)
+position = Vector2(144, 270)
 sprite_frames = SubResource("SpriteFrames_1ak07")
 autoplay = "default"
 frame_progress = 0.47061
 
-[node name="Manhole" type="Sprite2D" parent="."]
-position = Vector2(-333, 196)
-texture = ExtResource("5_5t670")
+[node name="BinBag" type="Sprite2D" parent="."]
+position = Vector2(45, 128)
+texture = ExtResource("2_w3jta")
+
+[node name="YSort" type="Node2D" parent="BinBag"]
+position = Vector2(0, 16)
 
 [node name="Points" type="Node2D" parent="."]
 

@@ -20,6 +20,10 @@ pub(crate) fn on_enter(
         Character::GingerCat,
         dialog::TypedNamespace::MrGoodWater,
     );
+    store.add_dialog_to_npc(
+        Character::Cooper,
+        dialog::TypedNamespace::InitialCooper,
+    );
 
-    next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
+    next_state.set(GlobalGameState::LoadingSewers);
 }

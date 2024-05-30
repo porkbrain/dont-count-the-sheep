@@ -411,8 +411,72 @@ impl Dialog {
         }
     }
 
+    /// If the current node is a guard, we must transition to it and it will
+    /// send us to the next node based on its state.
+    ///
+    /// However, if the current not is not a guard, we can go directly to the
+    /// next node.
+    fn run_current_guard_or_go_to_node(
+        &mut self,
+        cmd: &mut Commands,
+        store: &GlobalStore,
+        next_node: &NodeName,
+    ) -> AdvanceOutcome {
+        if let Some(guard_system) = self.guard_systems.get(&self.current_node) {
+            trace!(
+                "Transitioning to the next node by running current guard {:?}",
+                self.current_node
+            );
+            // current node is a guard, we must not skip its transition
+            cmd.run_system_with_input(
+                guard_system.entity,
+                GuardCmd::TryTransition(self.current_node.clone()),
+            );
+            AdvanceOutcome::WaitUntilNextTick
+        } else {
+            trace!("Going directly to the next node {next_node:?}");
+            // current node is not a guard, we go directly to the
+            // next node
+            self.transition_to(cmd, store, next_node.clone());
+            AdvanceOutcome::Transition
+        }
+    }
+
     fn current_node_info(&self) -> &Node {
         self.graph.nodes.get(&self.current_node).unwrap()
+    }
+
+    fn is_current_node_guard(&self) -> bool {
+        matches!(self.current_node_info().kind, NodeKind::Guard { .. })
+    }
+
+    fn confirm_player_choice(
+        &mut self,
+        cmd: &mut Commands,
+        store: &GlobalStore,
+        chosen_node_name: NodeName,
+    ) {
+        trace!("Player chose {chosen_node_name:?}");
+        self.transition_to(cmd, store, chosen_node_name);
+
+        if !self.is_current_node_guard()
+            && let Branching::Single(next_node_name) = &self.branching
+        {
+            // If the next node has no choices, run transition_to.
+            // This is because all the text has been rendered as
+            // option, so no need to repeat it.
+            //
+            // However, do this only if the current node is not a guard because
+            // guards will transition themselves.
+
+            let next_node = self.graph.nodes.get(next_node_name).unwrap();
+            if matches!(
+                &next_node.kind,
+                NodeKind::Vocative { .. } | NodeKind::Blank
+            ) {
+                self.transition_to(cmd, store, next_node_name.clone());
+            }
+        }
     }
 
     fn transition_to(
@@ -478,10 +542,12 @@ impl Dialog {
                 );
                 AdvanceOutcome::Transition
             }
-            Branching::Single(next_node) => {
-                self.transition_to(cmd, store, next_node.clone());
-                AdvanceOutcome::Transition
-            }
+            Branching::Single(next_node) => self
+                .run_current_guard_or_go_to_node(
+                    cmd,
+                    store,
+                    &next_node.clone(),
+                ),
             Branching::Choice(branches) => {
                 let any_pending = branches
                     .iter()
@@ -513,8 +579,13 @@ impl Dialog {
                             .get(first_choice_branch_index)
                             .unwrap()
                             .clone();
-                        self.transition_to(cmd, store, first_choice_node_name);
-                        AdvanceOutcome::Transition
+                        trace!("All but one branches canceled, going with {first_choice_node_name:?}");
+
+                        self.run_current_guard_or_go_to_node(
+                            cmd,
+                            store,
+                            &first_choice_node_name,
+                        )
                     } else {
                         AdvanceOutcome::AwaitingPlayerChoice
                     }

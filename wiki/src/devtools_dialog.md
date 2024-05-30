@@ -185,6 +185,13 @@ Same parameters as [`add_dialog_to_npc`](#add_dialog_to_npc).
 
 The dialog file will not be attached to the NPC anymore.
 
+#### `visit_once`
+
+No parameters.
+
+If the node is visited, next time it will stop the dialog.
+Useful as a choice guard if we want to show some branch only once.
+
 ### Emerging
 
 NPCs can have multiple dialog files attached to them.

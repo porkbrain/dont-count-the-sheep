@@ -1,6 +1,7 @@
 mod dialog_for_npc;
 mod exhaustive_alternatives;
 mod reach_last_alternative;
+mod visit_once;
 
 use bevy::{
     ecs::{
@@ -53,6 +54,7 @@ pub(crate) enum GuardCmd {
 pub enum GuardKind {
     ExhaustiveAlternatives,
     ReachLastAlternative,
+    VisitOnce,
 
     AddDialogToNpc,
     RemoveDialogFromNpc,
@@ -71,6 +73,7 @@ impl GuardKind {
                 Self::ReachLastAlternative => {
                     w.register_system(reach_last_alternative::system)
                 }
+                Self::VisitOnce => w.register_system(visit_once::system),
                 Self::AddDialogToNpc => w.register_system(dialog_for_npc::add),
                 Self::RemoveDialogFromNpc => {
                     w.register_system(dialog_for_npc::remove)
