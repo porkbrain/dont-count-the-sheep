@@ -25,5 +25,5 @@ pub(crate) fn on_enter(
         dialog::TypedNamespace::InitialCooper,
     );
 
-    next_state.set(GlobalGameState::LoadingSewers);
+    next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
 }
