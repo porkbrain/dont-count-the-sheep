@@ -18,8 +18,7 @@ use common_visuals::camera::{render_layer, PIXEL_ZOOM};
 use super::DialogFrontend;
 use crate::{
     dialog::{
-        AdvanceOutcome, Branching, Dialog, NodeKind, NodeName,
-        StartDialogWhenLoaded,
+        AdvanceOutcome, Dialog, NodeKind, NodeName, StartDialogWhenLoaded,
     },
     Character,
 };
@@ -455,31 +454,15 @@ fn advance_dialog(
                         cmd.entity(entity).despawn_recursive()
                     });
 
-                    trace!("Player chose {chosen_node_name:?}");
-                    dialog_be.transition_to(cmd, store, chosen_node_name);
+                    dialog_be.confirm_player_choice(
+                        cmd,
+                        store,
+                        chosen_node_name,
+                    );
 
-                    if let Branching::Single(next_node_name) =
-                        &dialog_be.branching
-                    {
-                        // If the next node has no choices, run transition_to.
-                        // This is because all t he text has been rendered as
-                        // option, so no need to repeat it.
-
-                        let next_node =
-                            dialog_be.graph.nodes.get(next_node_name).unwrap();
-                        if matches!(
-                            &next_node.kind,
-                            NodeKind::Vocative { .. } | NodeKind::Blank
-                        ) {
-                            portrait.texture = asset_server
-                                .load(next_node.who.portrait_asset_path());
-                            dialog_be.transition_to(
-                                cmd,
-                                store,
-                                next_node_name.clone(),
-                            );
-                        }
-                    }
+                    portrait.texture = asset_server.load(
+                        dialog_be.current_node_info().who.portrait_asset_path(),
+                    );
 
                     // run `advance` again
                 }

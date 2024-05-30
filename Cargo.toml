@@ -40,7 +40,6 @@ features = [
     "bevy_text",
     "bevy_ui",
     "bevy_winit",
-    "dynamic_linking",    # speeds up compile times
     "hdr",
     "multi-threaded",
     "png",
