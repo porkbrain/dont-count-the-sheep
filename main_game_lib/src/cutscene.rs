@@ -75,6 +75,12 @@ pub trait IntoCutscene {
     }
 }
 
+impl IntoCutscene for Vec<CutsceneStep> {
+    fn sequence(self) -> Vec<CutsceneStep> {
+        self
+    }
+}
+
 /// There can be at most one cutscene running at a time.
 /// Cutscene can be connected with a dialog though.
 #[derive(Resource, Reflect)]

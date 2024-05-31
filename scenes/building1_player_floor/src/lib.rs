@@ -10,8 +10,7 @@ mod autogen;
 mod layout;
 mod prelude;
 
-use bevy::utils::Instant;
-use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
+use common_loading_screen::LoadingScreenState;
 use prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -19,7 +18,7 @@ use crate::layout::LayoutEntity;
 
 /// Important scene struct.
 /// We use it as identifiable generic in common logic.
-#[derive(TypePath, Default)]
+#[derive(TypePath, Default, Debug)]
 pub struct Building1PlayerFloor;
 
 impl TopDownScene for Building1PlayerFloor {
@@ -91,7 +90,7 @@ pub enum Building1PlayerFloorAction {
 }
 
 pub fn add(app: &mut App) {
-    info!("Adding Building1PlayerFloor to app");
+    info!("Adding {Building1PlayerFloor:?} to app");
 
     app.add_event::<Building1PlayerFloorAction>();
 
@@ -125,15 +124,18 @@ pub fn add(app: &mut App) {
         Update,
         common_loading_screen::finish
             .run_if(Building1PlayerFloor::in_running_state())
-            .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
+            .run_if(in_state(common_loading_screen::wait_state())),
     );
 
     app.add_systems(
         Update,
-        smooth_exit.run_if(Building1PlayerFloor::in_quitting_state()),
+        // wait for the loading screen to fade in before changing state,
+        // otherwise the player might see a flicker
+        exit.run_if(in_state(common_loading_screen::wait_state()))
+            .run_if(Building1PlayerFloor::in_quitting_state()),
     );
 
-    info!("Added Building1PlayerFloor to app");
+    info!("Added {Building1PlayerFloor:?} to app");
 }
 
 fn finish_when_everything_loaded(
@@ -150,70 +152,38 @@ fn finish_when_everything_loaded(
 }
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
-    info!("Entering Building1PlayerFloor");
+    info!("Entering {Building1PlayerFloor:?}");
     next_state.set(Building1PlayerFloor::running());
 }
 
-struct ExitAnimation {
-    since: Instant,
-    loading_screen_started: bool,
-}
-
-fn smooth_exit(
+fn exit(
     transition: Res<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
-    settings: Res<LoadingScreenSettings>,
-
-    mut exit_animation: Local<Option<ExitAnimation>>,
 ) {
-    // this resets to None when we're done with the exit animation
-    let ExitAnimation {
-        since,
-        loading_screen_started,
-    } = exit_animation.get_or_insert_with(|| ExitAnimation {
-        since: Instant::now(),
-        loading_screen_started: false,
-    });
+    info!("Leaving {Building1PlayerFloor:?}");
 
-    if !*loading_screen_started && since.elapsed() > START_LOADING_SCREEN_AFTER
-    {
-        debug!("Transitioning to first loading screen state");
-        next_loading_screen_state.set(common_loading_screen::start_state());
-        *loading_screen_started = true;
-    }
+    // be a good guy and don't invade other game loops with "Enter"
+    controls.consume(&GlobalAction::Interact);
 
-    if since.elapsed()
-        > START_LOADING_SCREEN_AFTER + settings.fade_loading_screen_in * 2
-    {
-        info!("Leaving Building1PlayerFloor");
-
-        // reset local state for next time
-        *exit_animation = None;
-
-        // be a good guy and don't invade other game loops with "Enter"
-        controls.consume(&GlobalAction::Interact);
-
-        use GlobalGameStateTransition::*;
-        match *transition {
-            Building1PlayerFloorToBuilding1Basement1 => {
-                next_state.set(GlobalGameState::LoadingBuilding1Basement1);
-            }
-            Building1PlayerFloorToMeditation => {
-                next_state.set(GlobalGameState::LoadingMeditation);
-            }
-            Building1PlayerFloorToDowntown => {
-                next_state.set(GlobalGameState::LoadingDowntown);
-            }
-            Sleeping => {
-                next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
-            }
-            _ => {
-                unreachable!(
-                    "Invalid Building1PlayerFloor transition {transition:?}"
-                );
-            }
+    use GlobalGameStateTransition::*;
+    match *transition {
+        Building1PlayerFloorToBuilding1Basement1 => {
+            next_state.set(GlobalGameState::LoadingBuilding1Basement1);
+        }
+        Building1PlayerFloorToMeditation => {
+            next_state.set(GlobalGameState::LoadingMeditation);
+        }
+        Building1PlayerFloorToDowntown => {
+            next_state.set(GlobalGameState::LoadingDowntown);
+        }
+        Sleeping => {
+            next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
+        }
+        _ => {
+            unreachable!(
+                "Invalid {Building1PlayerFloor:?} transition {transition:?}"
+            );
         }
     }
 }
