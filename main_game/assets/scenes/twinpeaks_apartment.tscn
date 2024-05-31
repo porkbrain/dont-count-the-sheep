@@ -3,8 +3,8 @@
 [ext_resource type="Texture2D" uid="uid://p2vei5la1m3i" path="res://assets/twinpeaks_apartment/twinpeaks_bg.png" id="1_cqoh4"]
 [ext_resource type="Texture2D" uid="uid://dgh7pxmg8k4yg" path="res://assets/twinpeaks_apartment/bed_plain.png" id="2_x34s0"]
 [ext_resource type="Texture2D" uid="uid://c40aoo40c6ysm" path="res://assets/twinpeaks_apartment/shower.png" id="3_i5k2w"]
-[ext_resource type="Texture2D" uid="uid://ufn4rnxo8e62" path="res://assets/environment/water_bottle_half.png" id="4_8j1mb"]
-[ext_resource type="Texture2D" uid="uid://cf4vsx36spow3" path="res://assets/environment/box_cardboard_sideways.png" id="5_l06fy"]
+[ext_resource type="Texture2D" uid="uid://cbwce0005pies" path="res://assets/environment/water_bottle_half.png" id="4_8j1mb"]
+[ext_resource type="Texture2D" uid="uid://cp0rngx6yb8ld" path="res://assets/environment/box_cardboard_sideways.png" id="5_l06fy"]
 [ext_resource type="Texture2D" uid="uid://uy06ivqk8lwk" path="res://assets/residential/indoors/plant1.png" id="6_1lf6j"]
 [ext_resource type="Texture2D" uid="uid://dmrem43l81ule" path="res://assets/residential/indoors/pc_chair.png" id="7_q3pv5"]
 [ext_resource type="Texture2D" uid="uid://2wr58b6rdevo" path="res://assets/residential/indoors/plant3.png" id="7_t6oyq"]
@@ -44,7 +44,7 @@ texture = ExtResource("4_8j1mb")
 [node name="Points" type="Node2D" parent="."]
 
 [node name="Entrance" type="Node2D" parent="Points"]
-position = Vector2(-131, 82)
+position = Vector2(-112, 88)
 
 [node name="Point" type="Node" parent="Points/Entrance"]
 

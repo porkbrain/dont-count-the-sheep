@@ -18,7 +18,7 @@ Self::TwinpeaksApartmentEntrance => Some(ZoneGroup(5)),
     #[allow(clippy::match_single_binding)] match self
     { Self::Building1Entrance => Some(33),
 Self::SewersEntrance => Some(60),
-Self::MallEntrance => Some(145),
+Self::MallEntrance => Some(165),
 Self::ClinicEntrance => Some(6),
 Self::PlantShopEntrance => Some(44),
 Self::TwinpeaksApartmentEntrance => Some(44),
