@@ -43,6 +43,8 @@ impl bevy::app::Plugin for Plugin {
 pub(crate) struct LayoutEntity;
 
 struct Spawner<'a> {
+    cooper_entity: Entity,
+    cooper_builder: &'a mut CharacterBundleBuilder,
     player_entity: Entity,
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
@@ -68,8 +70,13 @@ fn spawn(
     let player = cmd.spawn_empty().id();
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
+    let cooper = cmd.spawn_empty().id();
+    let mut cooper_builder = common_story::Character::Cooper.bundle_builder();
+
     tscn.spawn_into(
         &mut Spawner {
+            cooper_entity: cooper,
+            cooper_builder: &mut cooper_builder,
             player_entity: player,
             player_builder: &mut player_builder,
             asset_server: &asset_server,
@@ -80,6 +87,7 @@ fn spawn(
     );
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
+    cooper_builder.insert_bundle_into(&asset_server, &mut cmd.entity(cooper));
 
     cmd.insert_resource(zone_to_inspect_label_entity);
 }
@@ -112,10 +120,14 @@ impl<'a> TscnSpawner for Spawner<'a> {
         match name.as_str() {
             "Sewers" => {
                 cmd.entity(who).insert(LayoutEntity);
+                cmd.entity(who).add_child(self.cooper_entity);
                 cmd.entity(who).add_child(self.player_entity);
             }
             "Entrance" => {
                 self.player_builder.initial_position(translation.truncate());
+            }
+            "CooperSpawn" => {
+                self.cooper_builder.initial_position(translation.truncate());
             }
             _ => {}
         }

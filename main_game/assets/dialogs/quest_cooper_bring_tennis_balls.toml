@@ -1,0 +1,12 @@
+[root]
+who = "Cooper"
+en = "You have my tennis balls?"
+# TODO: put tennis balls in the world
+
+[[node]]
+who = "Winnie"
+en = "I'm sorry, not yet"
+[[node]]
+who = "Cooper"
+en = "Please please bring them soon *haf* *haf*"
+next = "_end_dialog"

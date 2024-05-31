@@ -75,7 +75,7 @@ pub mod portraits {
     pub const WHITE_CAT: &str = "characters/portraits/whitecat1.png";
     pub const EMIL: &str = "characters/portraits/emil1.png";
     pub const MASTER: &str = "characters/portraits/master1.png";
-    pub const POOPER: &str = "characters/portraits/pooper1.png";
+    pub const COOPER: &str = "characters/portraits/cooper1.png";
     pub const REDHEAD: &str = "characters/portraits/redhead1.png";
     pub const SAMIZDAT: &str = "characters/portraits/samizdat1.png";
     pub const OTTER: &str = "characters/portraits/otter1.png";
@@ -92,6 +92,9 @@ pub mod character_atlases {
     pub const SAMIZDAT: &str = "characters/atlases/samizdat1.png";
     pub const BOLT: &str = "characters/atlases/bolt1.png";
     pub const WHITE_CAT: &str = "characters/atlases/whitecat1.png";
+    pub const COOPER: &str = "characters/atlases/cooper1.png";
+
+    pub const WINNIE_COLS: usize = 12;
 }
 
 pub mod misc {

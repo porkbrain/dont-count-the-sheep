@@ -1,0 +1,87 @@
+[root]
+who = "Cooper"
+en = "I can fit three tennis balls in my mouth"
+next = [
+    "am_i_supposed_to_believe_that",
+    "very_useful_skill",
+    "one_up_him",
+    "why_are_you_here",
+]
+
+[[node]]
+name = "am_i_supposed_to_believe_that"
+who = "Winnie"
+en = "I don't believe you"
+[[node]]
+who = "Cooper"
+en = "I can show you *haf* *haf*"
+next = "bring_balls_please"
+
+[[node]]
+name = "very_useful_skill"
+who = "Winnie"
+en = "That is a very useful skill, good boy"
+[[node]]
+who = "Cooper"
+en = "Yes yes but I cannot practice it as much as I would like *sad haf*"
+[[node]]
+en = "I lost all three of my tenis balls you see"
+next = "bring_balls_please"
+
+[[node]]
+name = "one_up_him"
+who = "Winnie"
+en = "I can fit four tennis balls in my mouth"
+[[node]]
+who = "Cooper"
+en = "That is amazing *haf* *haf* *haf*"
+[[node]]
+en = "Pity you cannot show me *sad haf*, unless ..."
+next = "bring_balls_please"
+
+[[node]]
+name = "why_are_you_here"
+who = "Winnie"
+guard = "visit_once"
+[[node]]
+en = "Why are you in here? It smells pretty bad"
+[[node]]
+who = "Cooper"
+en = "More smells to smell *haf* *haf* no smells is hell"
+[[node]]
+en = "Anyway, staying here because I must stay low right now. Complex matter you see *haf*"
+[[node]]
+en = "But did you even hear me? Three balls at once *proud haf*"
+next = ["am_i_supposed_to_believe_that", "very_useful_skill", "one_up_him"]
+
+[[node]]
+name = "bring_balls_please"
+who = "Cooper"
+en = "Do you think you could bring me some tennis balls?"
+[[node]]
+en = "Let's say four? *haf*"
+next = ["yes", "where_to_look"]
+
+[[node]]
+name = "where_to_look"
+who = "Winnie"
+en = "Where should I look for them?"
+[[node]]
+who = "Cooper"
+en = "Sorry *shamful haf* I only know where to fit tennis balls, not where to find tennis balls"
+next = "yes"
+
+[[node]]
+name = "yes"
+who = "Winnie"
+en = "I will see what I can do"
+[[node]]
+guard = "add_dialog_to_npc"
+params = { npc = "Cooper", file_path = "quest_cooper_bring_tennis_balls.toml" }
+[[node]]
+guard = "remove_dialog_from_npc"
+params = { npc = "Cooper", file_path = "initial_cooper.toml" }
+[[node]]
+who = "Cooper"
+en = "*haf* *haf* *haf* Please please"
+next = "_end_dialog"

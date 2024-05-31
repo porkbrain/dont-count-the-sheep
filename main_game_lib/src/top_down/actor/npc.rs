@@ -163,7 +163,7 @@ pub fn drive_behavior(
 
                 // nowhere planned and nowhere walking, yet not at target
                 if npc_in_the_map.planned_path.is_empty()
-                    && actor.walking_to.is_none()
+                    && actor.walking_to.is_still()
                 {
                     plan_path.send(PlanPathEvent(tree_entity, *to));
                     *last_attempt = Some(Instant::now());
@@ -222,7 +222,7 @@ pub fn run_path<T: TopDownScene>(
             continue;
         }
 
-        match &mut actor.walking_to {
+        match actor.walking_to.target_mut() {
             Some(target) if target.planned.is_some() => continue,
 
             // there's next square but we can even add a new plan
@@ -261,7 +261,7 @@ pub fn run_path<T: TopDownScene>(
                     continue;
                 };
 
-                actor.walking_to = Some(ActorTarget::new(planned_square));
+                actor.walking_to = ActorTarget::new(planned_square).into();
                 actor.direction = direction;
             }
         }

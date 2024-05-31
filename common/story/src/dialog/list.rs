@@ -37,6 +37,7 @@ pub enum TypedNamespace {
     BoltIsMean,
     MarieBlabbering,
     MrGoodWater,
+    InitialCooper,
 
     // --------------------------------------------------------------
     //
@@ -58,6 +59,7 @@ impl AsRef<str> for TypedNamespace {
             BoltIsMean => "bolt_is_mean",
             MarieBlabbering => "marie_blabbering",
             InElevator => "in_elevator",
+            InitialCooper => "initial_cooper",
         }
     }
 }
