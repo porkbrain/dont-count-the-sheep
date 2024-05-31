@@ -140,7 +140,10 @@ z_index = -1
 position = Vector2(-201.5, 49.5)
 sprite_frames = SubResource("SpriteFrames_yt0x5")
 
-[node name="InspectLabel" type="Node" parent="Elevator"]
+[node name="Label" type="Node2D" parent="Elevator"]
+position = Vector2(0, 21)
+
+[node name="InspectLabel" type="Node" parent="Elevator/Label"]
 metadata/zone = "ElevatorZone"
 metadata/action = "EnterElevator"
 metadata/label = "Elevator"
@@ -150,6 +153,15 @@ metadata/category = "Default"
 z_index = -1
 position = Vector2(-291, 55)
 sprite_frames = SubResource("SpriteFrames_lgcyy")
+
+[node name="Label" type="Node2D" parent="BasementDoor"]
+position = Vector2(0, -31)
+
+[node name="InspectLabel" type="Node" parent="BasementDoor/Label"]
+metadata/zone = "BasementDoorZone"
+metadata/action = "EnterBasement"
+metadata/label = "Storage Room"
+metadata/category = "Default"
 
 [node name="RecycleBin" type="Sprite2D" parent="."]
 position = Vector2(-262, 68.5)
@@ -260,16 +272,7 @@ position = Vector2(-192, 76)
 
 [node name="Point" type="Node" parent="Points/InElevator"]
 
-[node name="BasementEntrance" type="Node2D" parent="Points"]
-position = Vector2(-291, 23)
-
-[node name="InspectLabel" type="Node" parent="Points/BasementEntrance"]
-metadata/zone = "BasementDoorZone"
-metadata/action = "EnterBasement"
-metadata/label = "Storage Room"
-metadata/category = "Default"
-
 [node name="BasementExit" type="Node2D" parent="Points"]
-position = Vector2(-291, 81)
+position = Vector2(-288, 81)
 
 [node name="Point" type="Node" parent="Points/BasementExit"]

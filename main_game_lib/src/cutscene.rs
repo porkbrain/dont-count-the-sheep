@@ -143,6 +143,8 @@ pub enum CutsceneStep {
     /// Transitions to the given state.
     /// Typically, this despawns the whole scene so it can be the last step
     /// in the cutscene.
+    ///
+    /// You might want to couple this with [`StartLoadingScreen`].
     ChangeGlobalState {
         /// The state to change to.
         /// Typically this would be a quitting state so that we transition into
@@ -152,12 +154,23 @@ pub enum CutsceneStep {
         /// Pair this with the `to` field to guide the game into the next
         /// scene.
         with: GlobalGameStateTransition,
-        /// If provided then this resource is inserted.
-        loading_screen: Option<LoadingScreenSettings>,
-        /// If true loading screen state is changed.
-        /// It's important that the state is not changed twice.
-        change_loading_screen_state_to_start: bool,
     },
+    /// Sets the loading screen state to start and inserts the given loading
+    /// settings.
+    ///
+    /// # Important
+    /// Depending on the scene system setup, you might need to first
+    /// [`Self::ChangeGlobalState`] before starting the loading screen.
+    /// Otherwise the current scene might think that it's the one being loaded.
+    ///
+    /// # Panics
+    /// If the loading screen state is not ready to start.
+    StartLoadingScreen {
+        /// The loading screen settings to use.
+        settings: Option<LoadingScreenSettings>,
+    },
+    /// Waits until loading screen is loaded.
+    WaitForLoadingScreen,
     /// Gives the actor a new target to walk to.
     /// No path finding or iteration is done here, the actor will transition
     /// to the new target immediately.
@@ -440,6 +453,8 @@ struct CutsceneSystems {
     sleep: SystemId,
     insert_atlas_animation_timer_to: SystemId,
     change_global_state: SystemId,
+    start_loading_screen: SystemId,
+    wait_for_loading_screen: SystemId,
     begin_simple_walk_to: SystemId,
     wait_until_actor_at_rest: SystemId,
     begin_portrait_dialog: SystemId,
@@ -465,6 +480,8 @@ impl CutsceneSystems {
             insert_atlas_animation_timer_to: w
                 .register_system(insert_atlas_animation_timer_to),
             change_global_state: w.register_system(change_global_state),
+            start_loading_screen: w.register_system(start_loading_screen),
+            wait_for_loading_screen: w.register_system(wait_for_loading_screen),
             begin_simple_walk_to: w.register_system(begin_simple_walk_to),
             wait_until_actor_at_rest: w
                 .register_system(wait_until_actor_at_rest),
@@ -504,6 +521,8 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         Sleep(_) => s.sleep,
         InsertAtlasAnimationTimerTo { .. } => s.insert_atlas_animation_timer_to,
         ChangeGlobalState { .. } => s.change_global_state,
+        StartLoadingScreen { .. } => s.start_loading_screen,
+        WaitForLoadingScreen => s.wait_for_loading_screen,
         BeginSimpleWalkTo { .. } => s.begin_simple_walk_to,
         WaitUntilActorAtRest(_) => s.wait_until_actor_at_rest,
         BeginPortraitDialog(_) => s.begin_portrait_dialog,
@@ -575,34 +594,59 @@ fn change_global_state(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
     mut transition: ResMut<GlobalGameStateTransition>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
-    let CutsceneStep::ChangeGlobalState {
-        to,
-        with,
-        loading_screen,
-        change_loading_screen_state_to_start,
-    } = &step
-    else {
+    let CutsceneStep::ChangeGlobalState { to, with } = &step else {
         panic!("Expected ChangeGlobalState step, got {step}");
     };
-
-    if let Some(setting) = loading_screen {
-        trace!("[ChangeGlobalState] Inserting loading screen settings");
-        cmd.insert_resource(setting.clone());
-    }
-
-    if *change_loading_screen_state_to_start {
-        trace!("[ChangeGlobalState] Setting loading screen state to start");
-        next_loading_screen_state.set(common_loading_screen::start_state());
-    }
 
     next_state.set(*to);
     *transition = *with;
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn start_loading_screen(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+    existing_loading_screen_settings: Option<Res<LoadingScreenSettings>>,
+    current_loading_screen_state: Res<State<LoadingScreenState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::StartLoadingScreen { settings } = &step else {
+        panic!("Expected StartLoadingScreen step, got {step}");
+    };
+
+    if !current_loading_screen_state.is_ready_to_start() {
+        panic!("Loading screen state is not ready to start");
+    }
+    next_loading_screen_state.set(common_loading_screen::start_state());
+
+    if let Some(settings) = settings {
+        if existing_loading_screen_settings.is_some() {
+            error!("Overwriting loading screen settings");
+        }
+        cmd.insert_resource(settings.clone());
+    };
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn wait_for_loading_screen(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+    current_loading_screen_state: Res<State<LoadingScreenState>>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::WaitForLoadingScreen = &step else {
+        panic!("Expected WaitForLoadingScreen step, got {step}");
+    };
+
+    if current_loading_screen_state.is_waiting_for_signal() {
+        cutscene.schedule_next_step_or_despawn(&mut cmd);
+    }
 }
 
 fn begin_simple_walk_to(

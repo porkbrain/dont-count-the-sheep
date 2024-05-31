@@ -1441,6 +1441,7 @@ name = "common_loading_screen"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-inspector-egui",
  "common_assets",
  "common_visuals",
  "rand",

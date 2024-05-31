@@ -118,7 +118,10 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         Update,
-        exit.run_if(Building1Basement1::in_quitting_state()),
+        // wait for the loading screen to fade in before changing state,
+        // otherwise the player might see a flicker
+        exit.run_if(in_state(common_loading_screen::wait_state()))
+            .run_if(Building1Basement1::in_quitting_state()),
     );
 
     info!("Added {Building1Basement1:?} to app");

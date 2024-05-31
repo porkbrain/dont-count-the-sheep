@@ -312,10 +312,7 @@ fn enter_basement2(
             change_global_state_to: Building1Basement1::quitting(),
             transition:
                 GlobalGameStateTransition::Building1Basement1ToBasement2,
-            loading_screen: LoadingScreenSettings {
-                stare_at_loading_screen_for_at_least: Some(from_millis(10_000)),
-                ..default()
-            },
+            loading_screen: LoadingScreenSettings { ..default() },
         }
         .spawn(&mut cmd);
     }

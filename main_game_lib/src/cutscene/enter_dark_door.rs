@@ -77,8 +77,9 @@ impl IntoCutscene for EnterDarkDoor {
             ChangeGlobalState {
                 to: change_global_state_to,
                 with: transition,
-                change_loading_screen_state_to_start: true,
-                loading_screen: Some(loading_screen),
+            },
+            StartLoadingScreen {
+                settings: Some(loading_screen),
             },
         ]
     }

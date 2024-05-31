@@ -9,6 +9,7 @@ devtools = [
     "bevy_egui",
     "bevy-inspector-egui",
     "bevy/glam_assert",
+    "common_loading_screen/devtools",
     "common_story/devtools",
     "common_visuals/devtools",
     "graphviz-rust",

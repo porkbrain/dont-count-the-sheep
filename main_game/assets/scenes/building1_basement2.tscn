@@ -198,7 +198,7 @@ texture = ExtResource("21_sxy7u")
 [node name="Points" type="Node2D" parent="."]
 
 [node name="Exit" type="Node2D" parent="Points"]
-position = Vector2(-206, -3)
+position = Vector2(-202, -3)
 
 [node name="InspectLabel" type="Node" parent="Points/Exit"]
 metadata/zone = "ExitZone"
