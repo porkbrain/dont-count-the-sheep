@@ -1,19 +1,19 @@
-[gd_scene load_steps=105 format=3 uid="uid://dyrtqlwb1xtvf"]
+[gd_scene load_steps=106 format=3 uid="uid://dyrtqlwb1xtvf"]
 
 [ext_resource type="Texture2D" uid="uid://bnqtsambvpfxr" path="res://assets/residential/indoors/player_apartment_bg.png" id="1_70osf"]
 [ext_resource type="Texture2D" uid="uid://vjrort40gbtp" path="res://assets/residential/indoors/cloud_atlas.png" id="2_yacc0"]
 [ext_resource type="Texture2D" uid="uid://dw7ycks4ocdi3" path="res://assets/residential/indoors/player_apartment_backwall_furniture.png" id="3_e2w78"]
-[ext_resource type="Texture2D" uid="uid://bt7s2d3mqb5q5" path="res://assets/residential/indoors/meditation_chair.png" id="4_njet2"]
+[ext_resource type="Texture2D" uid="uid://c272cvnpjoeq8" path="res://assets/residential/indoors/meditation_chair.png" id="4_njet2"]
 [ext_resource type="Texture2D" uid="uid://chxk4vf038lwr" path="res://assets/residential/indoors/winnie_sleeping.png" id="5_u86a4"]
-[ext_resource type="Texture2D" uid="uid://bub5mvfhprlwr" path="res://assets/residential/indoors/winnie_meditating.png" id="6_5id1h"]
+[ext_resource type="Texture2D" uid="uid://c6hyqw0ehthj2" path="res://assets/residential/indoors/winnie_meditating.png" id="6_5id1h"]
 [ext_resource type="Texture2D" uid="uid://cy2uenx3ka0m7" path="res://assets/residential/indoors/toilet.png" id="7_3q0vg"]
 [ext_resource type="Texture2D" uid="uid://y5376bcjajjs" path="res://assets/residential/indoors/candle_atlas.png" id="7_qu8yb"]
 [ext_resource type="Texture2D" uid="uid://bwnf0jk7b6fjo" path="res://assets/residential/indoors/hallway1.png" id="8_uh48f"]
 [ext_resource type="Texture2D" uid="uid://bfqm58ggdqvps" path="res://assets/residential/indoors/elevator_atlas.png" id="9_hc3bl"]
-[ext_resource type="Texture2D" uid="uid://cxputysce3uy3" path="res://assets/residential/indoors/toileteye_atlas.png" id="9_x3rb8"]
+[ext_resource type="Texture2D" uid="uid://c25p051xbu2qw" path="res://assets/residential/indoors/toileteye_atlas.png" id="9_x3rb8"]
 [ext_resource type="Texture2D" uid="uid://c26kyxsmcvben" path="res://assets/environment/vending_machine_atlas.png" id="10_sp5dx"]
 [ext_resource type="Texture2D" uid="uid://isvggywplh28" path="res://assets/residential/indoors/cupboard1.png" id="11_iijqm"]
-[ext_resource type="Texture2D" uid="uid://bx8bftj8gtpq7" path="res://assets/residential/indoors/laundry_basket.png" id="12_b5il1"]
+[ext_resource type="Texture2D" uid="uid://c8wulf7vhol0c" path="res://assets/residential/indoors/laundry_basket.png" id="12_b5il1"]
 [ext_resource type="Texture2D" uid="uid://dvwb0f5ospqe2" path="res://assets/residential/indoors/shoerack.png" id="13_7ojeu"]
 [ext_resource type="Texture2D" uid="uid://bfe326eekse0g" path="res://assets/residential/indoors/kitchen_table.png" id="14_aqp0s"]
 [ext_resource type="Texture2D" uid="uid://o3lvnnwlx58x" path="res://assets/residential/indoors/brown_light_door_atlas.png" id="15_8oxyo"]
@@ -33,11 +33,12 @@
 [ext_resource type="Texture2D" uid="uid://cl1jvt3bgpnq4" path="res://assets/environment/beer.png" id="29_t2bpu"]
 [ext_resource type="Texture2D" uid="uid://douilwmdloht1" path="res://assets/environment/fruit_bowl.png" id="30_3c4bq"]
 [ext_resource type="Texture2D" uid="uid://c3q6v2fxobnd2" path="res://assets/environment/room_light.png" id="31_wa4ug"]
-[ext_resource type="Texture2D" uid="uid://onhq7srypccg" path="res://assets/residential/indoors/router_atlas.png" id="32_0gd0c"]
-[ext_resource type="Texture2D" uid="uid://cs547u64pp8gq" path="res://assets/environment/room_light_half.png" id="33_dgul6"]
-[ext_resource type="Texture2D" uid="uid://qul8hwvlompw" path="res://assets/residential/indoors/side_table1.png" id="36_458u3"]
+[ext_resource type="Texture2D" uid="uid://o5gek3y3gg2h" path="res://assets/residential/indoors/router_atlas.png" id="32_0gd0c"]
+[ext_resource type="Texture2D" uid="uid://bcwbsm8bacuwb" path="res://assets/residential/indoors/side_table1.png" id="36_458u3"]
 [ext_resource type="Texture2D" uid="uid://3q8msyn0muxv" path="res://assets/residential/indoors/bed_wooden.png" id="37_6lbmy"]
+[ext_resource type="Texture2D" uid="uid://ch5eiay4o1jhm" path="res://assets/residential/indoors/bathroom light.png" id="38_d4uvy"]
 [ext_resource type="Texture2D" uid="uid://ccx5r0kml8m34" path="res://assets/residential/indoors/bath_horizontal.png" id="38_mdm3q"]
+[ext_resource type="Texture2D" uid="uid://iwdig6lvv41o" path="res://assets/residential/indoors/kitchen_light.png" id="39_ft1ep"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nte4w"]
 atlas = ExtResource("2_yacc0")
@@ -819,11 +820,6 @@ position = Vector2(0, 18)
 
 [node name="HallwayEntity" type="Node" parent="HallwayDoor3"]
 
-[node name="KitchenLight" type="Sprite2D" parent="."]
-z_index = 2
-position = Vector2(92, -91)
-texture = ExtResource("33_dgul6")
-
 [node name="SideTable1" type="Sprite2D" parent="."]
 self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
 position = Vector2(-228, 128)
@@ -840,3 +836,13 @@ texture = ExtResource("38_mdm3q")
 [node name="Toilet2" type="Sprite2D" parent="."]
 position = Vector2(-199, 189)
 texture = ExtResource("7_3q0vg")
+
+[node name="BathroomLight" type="Sprite2D" parent="."]
+z_index = 2
+position = Vector2(-161, -75.5)
+texture = ExtResource("38_d4uvy")
+
+[node name="KitchenLight" type="Sprite2D" parent="."]
+z_index = 2
+position = Vector2(102.5, -89)
+texture = ExtResource("39_ft1ep")

@@ -1,86 +1,124 @@
-[gd_scene load_steps=113 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=120 format=3 uid="uid://dtow2k2vgk8kg"]
 
-[ext_resource type="Texture2D" uid="uid://b5pepyrbokdp7" path="res://assets/downtown/bg.png" id="1_ac7tb"]
-[ext_resource type="Texture2D" uid="uid://dhtpl0f15gojd" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
-[ext_resource type="Texture2D" uid="uid://od7278drijk8" path="res://assets/downtown/water_dispenser.png" id="3_mnq47"]
-[ext_resource type="Texture2D" uid="uid://c26kyxsmcvben" path="res://assets/environment/vending_machine_atlas.png" id="4_fu7bc"]
-[ext_resource type="Texture2D" uid="uid://bwt8l2nfovdrb" path="res://assets/downtown/bamboo_rooftop.png" id="4_uahdt"]
-[ext_resource type="Texture2D" uid="uid://5ywhhdx6rx7r" path="res://assets/downtown/recycle_bin.png" id="5_her3o"]
-[ext_resource type="Texture2D" uid="uid://b8xgrwspdhoao" path="res://assets/downtown/cone.png" id="6_4cklq"]
-[ext_resource type="Texture2D" uid="uid://clp5emmiqqigh" path="res://assets/downtown/black_bin.png" id="7_p1j5y"]
-[ext_resource type="Texture2D" uid="uid://cnd2np6d33oqh" path="res://assets/downtown/robot.png" id="8_s4pbl"]
-[ext_resource type="Texture2D" uid="uid://hmoa0kdonp88" path="res://assets/downtown/swing.png" id="9_gwh2v"]
-[ext_resource type="Texture2D" uid="uid://bdn0jfgw4tpeg" path="res://assets/downtown/trashcan_tables.png" id="10_nyc25"]
-[ext_resource type="Texture2D" uid="uid://cl1jvt3bgpnq4" path="res://assets/environment/beer.png" id="11_e3pff"]
-[ext_resource type="Texture2D" uid="uid://qjb3dquepnch" path="res://assets/downtown/truck.png" id="12_mwj3x"]
-[ext_resource type="Texture2D" uid="uid://cs4xyldoxgtxg" path="res://assets/downtown/tree.png" id="13_7q235"]
-[ext_resource type="Texture2D" uid="uid://djrcy48yl8ego" path="res://assets/downtown/mall.png" id="13_jgs6s"]
-[ext_resource type="Texture2D" uid="uid://bprq7kf7j27if" path="res://assets/downtown/sipek.png" id="14_6c1wy"]
-[ext_resource type="Texture2D" uid="uid://b7r70khewajh0" path="res://assets/downtown/lamp.png" id="14_8uy80"]
-[ext_resource type="Texture2D" uid="uid://ilearc5bolbg" path="res://assets/downtown/bin_big.png" id="15_o3fof"]
-[ext_resource type="Texture2D" uid="uid://c0omccqp4eqfx" path="res://assets/downtown/weed.png" id="16_6vem6"]
-[ext_resource type="Texture2D" uid="uid://b1suw854p3cjo" path="res://assets/downtown/bin_big_empty.png" id="16_x0sc1"]
-[ext_resource type="Texture2D" uid="uid://d3swa0vc5iitv" path="res://assets/downtown/briza.png" id="16_xr53b"]
-[ext_resource type="Texture2D" uid="uid://lgsyrvis4y80" path="res://assets/downtown/wired_fence.png" id="17_5ai3x"]
-[ext_resource type="Texture2D" uid="uid://sdlblu0np1tm" path="res://assets/downtown/sprout.png" id="17_qyuai"]
-[ext_resource type="Texture2D" uid="uid://bneahsxtb6wpe" path="res://assets/downtown/front_field.png" id="18_yr0u5"]
-[ext_resource type="Texture2D" uid="uid://bq3fw5e27w801" path="res://assets/downtown/house_plantshoptrio.png" id="19_fdu3c"]
-[ext_resource type="Texture2D" uid="uid://brvijlucyh2jx" path="res://assets/downtown/tree_pot.png" id="20_kpivv"]
-[ext_resource type="Texture2D" uid="uid://dcl4guw8e72nh" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
-[ext_resource type="Texture2D" uid="uid://bbvuyahml5l4l" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]
-[ext_resource type="Texture2D" uid="uid://cbwce0005pies" path="res://assets/environment/water_bottle_half.png" id="21_8m32a"]
-[ext_resource type="Texture2D" uid="uid://bmbgymdlgia22" path="res://assets/downtown/praha_building.png" id="21_sq8gl"]
-[ext_resource type="Texture2D" uid="uid://bs5503nvkypsp" path="res://assets/downtown/building_duo.png" id="22_bl5xi"]
-[ext_resource type="Texture2D" uid="uid://dy8urm75tam2x" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
-[ext_resource type="Texture2D" uid="uid://bqhuebro50e5n" path="res://assets/downtown/tower.png" id="23_7ng4s"]
-[ext_resource type="Texture2D" uid="uid://closy5vs11rwm" path="res://assets/downtown/barn.png" id="23_av7fi"]
-[ext_resource type="Texture2D" uid="uid://b4n3d4xbt3n7t" path="res://assets/downtown/fire_ex.png" id="24_ohwph"]
-[ext_resource type="Texture2D" uid="uid://bnjtrujdg2l5p" path="res://assets/downtown/no_smoking_sign.png" id="25_1tn82"]
-[ext_resource type="Texture2D" uid="uid://m2ycv8ggd4ho" path="res://assets/downtown/clinic.png" id="25_ukjmq"]
-[ext_resource type="Texture2D" uid="uid://vyq68glbbaiv" path="res://assets/downtown/zabradli.png" id="26_nm5hp"]
-[ext_resource type="Texture2D" uid="uid://uuxhgpjap208" path="res://assets/downtown/big_tree.png" id="28_6tavv"]
-[ext_resource type="Texture2D" uid="uid://c8vxwyyvlctic" path="res://assets/downtown/jehlicnan.png" id="29_j62ep"]
-[ext_resource type="Texture2D" uid="uid://c85luubin2ham" path="res://assets/downtown/fancy_stairs.png" id="32_01aim"]
-[ext_resource type="Texture2D" uid="uid://dxokrosjob4s5" path="res://assets/downtown/fancy_sloupky.png" id="33_lx3i7"]
-[ext_resource type="Texture2D" uid="uid://dsdky0twwr6jh" path="res://assets/downtown/blue_clinic.png" id="35_ecxbn"]
-[ext_resource type="Texture2D" uid="uid://cj7k78j2n48gr" path="res://assets/downtown/roof_building.png" id="36_4dgjx"]
-[ext_resource type="Texture2D" uid="uid://bflcaqeap0y6j" path="res://assets/downtown/bin_bag.png" id="37_kbqnk"]
-[ext_resource type="Texture2D" uid="uid://c140qot1ofdoq" path="res://assets/downtown/red_car.png" id="41_h1vqy"]
-[ext_resource type="Texture2D" uid="uid://b3k4s743uhvpa" path="res://assets/downtown/white_van.png" id="42_gumcj"]
-[ext_resource type="Texture2D" uid="uid://brxo7qp0roc3k" path="res://assets/downtown/lavicka.png" id="43_ihbqd"]
-[ext_resource type="Texture2D" uid="uid://c8evra3g3jreh" path="res://assets/downtown/orange_car.png" id="43_rbmlo"]
-[ext_resource type="Texture2D" uid="uid://brapyya5pqurk" path="res://assets/downtown/potted_bush.png" id="44_d0uug"]
-[ext_resource type="Texture2D" uid="uid://dxx6j71ewje3y" path="res://assets/environment/sand_dollar.png" id="47_y13ek"]
-[ext_resource type="Texture2D" uid="uid://btu6osn2fwawr" path="res://assets/environment/sand_dollar_white.png" id="48_etaxq"]
-[ext_resource type="Texture2D" uid="uid://1gtfiil586hv" path="res://assets/environment/butterfly.png" id="49_8f3r3"]
-[ext_resource type="Texture2D" uid="uid://bocqwi765pwlg" path="res://assets/environment/musle.png" id="49_andyj"]
-[ext_resource type="Texture2D" uid="uid://dwpf4k88nn8sd" path="res://assets/downtown/zabradli_blue.png" id="50_q6ssf"]
-[ext_resource type="Texture2D" uid="uid://b4h751x5bs34" path="res://assets/environment/mushroom.png" id="50_ubqu6"]
-[ext_resource type="Texture2D" uid="uid://cb225g1s3oiqo" path="res://assets/downtown/plain_trio.png" id="52_ri67k"]
-[ext_resource type="Texture2D" uid="uid://cw5vpae3pbpys" path="res://assets/environment/beach_chair.png" id="54_3y7cj"]
-[ext_resource type="Texture2D" uid="uid://b2k6tb2xitvs4" path="res://assets/environment/beach_chair_blue.png" id="54_c8hw3"]
-[ext_resource type="Texture2D" uid="uid://cjen2gb5c0gtg" path="res://assets/environment/umbrella.png" id="56_tmimn"]
-[ext_resource type="Texture2D" uid="uid://n8ietma8qsly" path="res://assets/downtown/manhole.png" id="57_hq0ra"]
-[ext_resource type="Texture2D" uid="uid://bowi6vq73crnl" path="res://assets/environment/water_bottle_empty.png" id="60_7dwn7"]
-[ext_resource type="Texture2D" uid="uid://bdb7k6au6jebq" path="res://assets/environment/water_ripple_atlas.png" id="60_eogli"]
-[ext_resource type="Texture2D" uid="uid://cus47vh7v1pqb" path="res://assets/environment/bike.png" id="62_rdvbw"]
-[ext_resource type="Texture2D" uid="uid://cp0rngx6yb8ld" path="res://assets/environment/box_cardboard_sideways.png" id="63_vdtxl"]
-[ext_resource type="Texture2D" uid="uid://ddyls3h5535ci" path="res://assets/downtown/wild_flower1.png" id="64_u50jo"]
-[ext_resource type="Texture2D" uid="uid://cqx60k4oq584k" path="res://assets/downtown/wild_flower2.png" id="65_k5t6a"]
-[ext_resource type="Texture2D" uid="uid://vwk8f81yiltw" path="res://assets/downtown/wild_flower3.png" id="66_53tlk"]
-[ext_resource type="Texture2D" uid="uid://dwx77ptih5vit" path="res://assets/environment/stall_vertical.png" id="68_m4f8x"]
-[ext_resource type="Texture2D" uid="uid://bnul2v680aamd" path="res://assets/environment/plate_cookies.png" id="69_cj3mq"]
-[ext_resource type="Texture2D" uid="uid://cpgga5rohnbeu" path="res://assets/environment/stall_wood2.png" id="70_mmv7u"]
-[ext_resource type="Texture2D" uid="uid://c74anjrdllpf0" path="res://assets/downtown/house_big_lime.png" id="71_4uhpc"]
-[ext_resource type="Texture2D" uid="uid://c7cs1v5tfijrl" path="res://assets/downtown/house_big_sky.png" id="72_nqenj"]
-[ext_resource type="Texture2D" uid="uid://cmawnctkx2s4q" path="res://assets/environment/box_cardboard.png" id="74_v1plk"]
-[ext_resource type="Texture2D" uid="uid://c10hjmowp67x8" path="res://assets/downtown/beach_stairs.png" id="75_kpov5"]
-[ext_resource type="Texture2D" uid="uid://dfhgmfro4r580" path="res://assets/downtown/molo_tile.png" id="76_5i8ym"]
-[ext_resource type="Texture2D" uid="uid://cdj7x8m4pfb55" path="res://assets/downtown/molo_tile_vertical.png" id="77_qpxr7"]
-[ext_resource type="Texture2D" uid="uid://7stlavimbvb4" path="res://assets/downtown/escalator_atlas44px.png" id="78_yvctd"]
-[ext_resource type="Texture2D" uid="uid://bv03lx6d3rwr5" path="res://assets/downtown/fence_stone.png" id="79_gmvgg"]
-[ext_resource type="Texture2D" uid="uid://dr0tqt787gslp" path="res://assets/downtown/fence_stone_vertical.png" id="80_uof8l"]
-[ext_resource type="Texture2D" uid="uid://d0xnefcqqm1wo" path="res://assets/environment/paper_side.png" id="81_0yc4q"]
+[ext_resource type="Texture2D" uid="uid://5dhtpbjd5ool" path="res://assets/downtown/bg.png" id="1_ac7tb"]
+[ext_resource type="Texture2D" uid="uid://be3fpbxbvdxtb" path="res://assets/downtown/banner_froggy.png" id="1_qba5p"]
+[ext_resource type="Texture2D" uid="uid://kkt2uh6il68y" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
+[ext_resource type="Texture2D" uid="uid://0vkwf2mn877u" path="res://assets/downtown/water_dispenser.png" id="3_mnq47"]
+[ext_resource type="Texture2D" uid="uid://drbv1a7tnye2r" path="res://assets/environment/vending_machine_atlas.png" id="4_fu7bc"]
+[ext_resource type="Texture2D" uid="uid://rjhnkkan4j1y" path="res://assets/downtown/bamboo_rooftop.png" id="4_uahdt"]
+[ext_resource type="Texture2D" uid="uid://wm712yivg1yb" path="res://assets/downtown/recycle_bin.png" id="5_her3o"]
+[ext_resource type="Texture2D" uid="uid://ka3he6042xeq" path="res://assets/downtown/cone.png" id="6_4cklq"]
+[ext_resource type="Texture2D" uid="uid://bfp6cm2hbyswi" path="res://assets/downtown/black_bin.png" id="7_p1j5y"]
+[ext_resource type="Texture2D" uid="uid://ce11mm3208hdl" path="res://assets/downtown/robot.png" id="8_s4pbl"]
+[ext_resource type="Texture2D" uid="uid://bb4ashsorvv3u" path="res://assets/downtown/swing.png" id="9_gwh2v"]
+[ext_resource type="Texture2D" uid="uid://cn8rbfh0g5jtm" path="res://assets/downtown/trashcan_tables.png" id="10_nyc25"]
+[ext_resource type="Texture2D" uid="uid://cvqttpt4js7nr" path="res://assets/environment/beer.png" id="11_e3pff"]
+[ext_resource type="Texture2D" uid="uid://bmybrcvgmdare" path="res://assets/downtown/truck.png" id="12_mwj3x"]
+[ext_resource type="Texture2D" uid="uid://c2holbiooq66e" path="res://assets/downtown/tree.png" id="13_7q235"]
+[ext_resource type="Texture2D" uid="uid://dklaahdj6xvkv" path="res://assets/downtown/mall.png" id="13_jgs6s"]
+[ext_resource type="Texture2D" uid="uid://rubffqe3yvyi" path="res://assets/downtown/sipek.png" id="14_6c1wy"]
+[ext_resource type="Texture2D" uid="uid://mlu5itw12by4" path="res://assets/downtown/lamp.png" id="14_8uy80"]
+[ext_resource type="Texture2D" uid="uid://brw8tejlmaepf" path="res://assets/downtown/bin_big.png" id="15_o3fof"]
+[ext_resource type="Texture2D" uid="uid://d8husw4hmr2h" path="res://assets/downtown/weed.png" id="16_6vem6"]
+[ext_resource type="Texture2D" uid="uid://ftbx3dalbpqs" path="res://assets/downtown/bin_big_empty.png" id="16_x0sc1"]
+[ext_resource type="Texture2D" uid="uid://ccrqu7brpxu7y" path="res://assets/downtown/briza.png" id="16_xr53b"]
+[ext_resource type="Texture2D" uid="uid://55bv3muhverw" path="res://assets/downtown/wired_fence.png" id="17_5ai3x"]
+[ext_resource type="Texture2D" uid="uid://de31fggumfc0p" path="res://assets/downtown/sprout.png" id="17_qyuai"]
+[ext_resource type="Texture2D" uid="uid://n6aj3pk0tnh7" path="res://assets/downtown/front_field.png" id="18_yr0u5"]
+[ext_resource type="Texture2D" uid="uid://b5rfulejwitm5" path="res://assets/downtown/house_plantshoptrio.png" id="19_fdu3c"]
+[ext_resource type="Texture2D" uid="uid://ckivtc3yhuvgk" path="res://assets/downtown/tree_pot.png" id="20_kpivv"]
+[ext_resource type="Texture2D" uid="uid://b3oqveyqc28bb" path="res://assets/downtown/compound_gate.png" id="20_o0xfm"]
+[ext_resource type="Texture2D" uid="uid://henjuttnw4sw" path="res://assets/downtown/umbrella_chair.png" id="20_sy6x1"]
+[ext_resource type="Texture2D" uid="uid://d10ch25r3r18b" path="res://assets/environment/water_bottle_half.png" id="21_8m32a"]
+[ext_resource type="Texture2D" uid="uid://dlwhq574htyil" path="res://assets/downtown/praha_building.png" id="21_sq8gl"]
+[ext_resource type="Texture2D" uid="uid://b3evryinrtfti" path="res://assets/downtown/building_duo.png" id="22_bl5xi"]
+[ext_resource type="Texture2D" uid="uid://cjp58rv6tiftg" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
+[ext_resource type="Texture2D" uid="uid://dmxhhw1gpf0ei" path="res://assets/downtown/tower.png" id="23_7ng4s"]
+[ext_resource type="Texture2D" uid="uid://dpw0so54j4i6f" path="res://assets/downtown/barn.png" id="23_av7fi"]
+[ext_resource type="Texture2D" uid="uid://bgxjf52tb71jx" path="res://assets/downtown/fire_ex.png" id="24_ohwph"]
+[ext_resource type="Texture2D" uid="uid://bfsjjxsecplka" path="res://assets/downtown/no_smoking_sign.png" id="25_1tn82"]
+[ext_resource type="Texture2D" uid="uid://b6h2kkj1snwbj" path="res://assets/downtown/clinic.png" id="25_ukjmq"]
+[ext_resource type="Texture2D" uid="uid://b6vwlvel0ekvg" path="res://assets/downtown/zabradli.png" id="26_nm5hp"]
+[ext_resource type="Texture2D" uid="uid://p1r60ldiusc3" path="res://assets/downtown/big_tree.png" id="28_6tavv"]
+[ext_resource type="Texture2D" uid="uid://kwawmchdlk5m" path="res://assets/downtown/jehlicnan.png" id="29_j62ep"]
+[ext_resource type="Texture2D" uid="uid://cabvc3252tk16" path="res://assets/downtown/fancy_stairs.png" id="32_01aim"]
+[ext_resource type="Texture2D" uid="uid://dfwegu3ice3jk" path="res://assets/downtown/fancy_sloupky.png" id="33_lx3i7"]
+[ext_resource type="Texture2D" uid="uid://ccy4pegu723dq" path="res://assets/downtown/blue_clinic.png" id="35_ecxbn"]
+[ext_resource type="Texture2D" uid="uid://hkejlm0tcbcs" path="res://assets/downtown/roof_building.png" id="36_4dgjx"]
+[ext_resource type="Texture2D" uid="uid://chs5dvlpi8pvq" path="res://assets/downtown/bin_bag.png" id="37_kbqnk"]
+[ext_resource type="Texture2D" uid="uid://j7gfd3f7k1pd" path="res://assets/downtown/red_car.png" id="41_h1vqy"]
+[ext_resource type="Texture2D" uid="uid://d3whutak78qg1" path="res://assets/downtown/white_van.png" id="42_gumcj"]
+[ext_resource type="Texture2D" uid="uid://dcvjb2idu2x6r" path="res://assets/downtown/lavicka.png" id="43_ihbqd"]
+[ext_resource type="Texture2D" uid="uid://ccbd174qjnpqf" path="res://assets/downtown/orange_car.png" id="43_rbmlo"]
+[ext_resource type="Texture2D" uid="uid://vi408ocivnm8" path="res://assets/downtown/potted_bush.png" id="44_d0uug"]
+[ext_resource type="Texture2D" uid="uid://n2x30b3ha2bm" path="res://assets/environment/sand_dollar.png" id="47_y13ek"]
+[ext_resource type="Texture2D" uid="uid://bgdfhtdc4b8hm" path="res://assets/environment/sand_dollar_white.png" id="48_etaxq"]
+[ext_resource type="Texture2D" uid="uid://e34irrb1v1hm" path="res://assets/environment/butterfly.png" id="49_8f3r3"]
+[ext_resource type="Texture2D" uid="uid://begpjn6nkfboi" path="res://assets/environment/musle.png" id="49_andyj"]
+[ext_resource type="Texture2D" uid="uid://cclej3wgepatg" path="res://assets/downtown/zabradli_blue.png" id="50_q6ssf"]
+[ext_resource type="Texture2D" uid="uid://bchlvd31glw75" path="res://assets/environment/mushroom.png" id="50_ubqu6"]
+[ext_resource type="Texture2D" uid="uid://kbiswlluoks" path="res://assets/downtown/plain_trio.png" id="52_ri67k"]
+[ext_resource type="Texture2D" uid="uid://d15ns425ghlje" path="res://assets/environment/beach_chair.png" id="54_3y7cj"]
+[ext_resource type="Texture2D" uid="uid://cembili6qtat2" path="res://assets/environment/beach_chair_blue.png" id="54_c8hw3"]
+[ext_resource type="Texture2D" uid="uid://du62a8okal6bm" path="res://assets/environment/umbrella.png" id="56_tmimn"]
+[ext_resource type="Texture2D" uid="uid://brjenh23364bg" path="res://assets/downtown/manhole.png" id="57_hq0ra"]
+[ext_resource type="Texture2D" uid="uid://2b0o1wvmujta" path="res://assets/environment/water_bottle_empty.png" id="60_7dwn7"]
+[ext_resource type="Texture2D" uid="uid://djk0rjfbu2eea" path="res://assets/environment/water_ripple_atlas.png" id="60_eogli"]
+[ext_resource type="Texture2D" uid="uid://dpn1c5p2bektv" path="res://assets/environment/bike.png" id="62_rdvbw"]
+[ext_resource type="Texture2D" uid="uid://dolvlk268uyvh" path="res://assets/environment/box_cardboard_sideways.png" id="63_vdtxl"]
+[ext_resource type="Texture2D" uid="uid://dqecycv2rciur" path="res://assets/downtown/wild_flower1.png" id="64_u50jo"]
+[ext_resource type="Texture2D" uid="uid://bmqvkhh7b67tv" path="res://assets/downtown/wild_flower2.png" id="65_k5t6a"]
+[ext_resource type="Texture2D" uid="uid://2xrsen51r5v0" path="res://assets/downtown/wild_flower3.png" id="66_53tlk"]
+[ext_resource type="Texture2D" uid="uid://bbjw7b33gc14x" path="res://assets/environment/stall_vertical.png" id="68_m4f8x"]
+[ext_resource type="Texture2D" uid="uid://bl6casbqthnd3" path="res://assets/environment/plate_cookies.png" id="69_cj3mq"]
+[ext_resource type="Texture2D" uid="uid://b0ls8k5r72cdt" path="res://assets/environment/stall_wood2.png" id="70_mmv7u"]
+[ext_resource type="Texture2D" uid="uid://bm7x0ir8m07ov" path="res://assets/downtown/house_big_lime.png" id="71_4uhpc"]
+[ext_resource type="Texture2D" uid="uid://cyia66sb17vbl" path="res://assets/downtown/house_big_sky.png" id="72_nqenj"]
+[ext_resource type="Texture2D" uid="uid://dffjpcbft7jgu" path="res://assets/environment/box_cardboard.png" id="74_v1plk"]
+[ext_resource type="Texture2D" uid="uid://c7tggmfjjae34" path="res://assets/downtown/beach_stairs.png" id="75_kpov5"]
+[ext_resource type="Texture2D" uid="uid://cchf2p76aqldj" path="res://assets/downtown/molo_tile.png" id="76_5i8ym"]
+[ext_resource type="Texture2D" uid="uid://vr0jh6dvrnoj" path="res://assets/downtown/molo_tile_vertical.png" id="77_qpxr7"]
+[ext_resource type="Texture2D" uid="uid://8rph7gfxl4yj" path="res://assets/downtown/escalator_atlas44px.png" id="78_yvctd"]
+[ext_resource type="Texture2D" uid="uid://cfg13e2oo8f38" path="res://assets/downtown/fence_stone.png" id="79_gmvgg"]
+[ext_resource type="Texture2D" uid="uid://3crc63wvqylb" path="res://assets/downtown/fence_stone_vertical.png" id="80_uof8l"]
+[ext_resource type="Texture2D" uid="uid://b03nw20yownw0" path="res://assets/environment/paper_side.png" id="81_0yc4q"]
+[ext_resource type="Texture2D" uid="uid://dpf6cfjwmikfu" path="res://assets/downtown/dlazdicky.png" id="82_65uwp"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c52mq"]
+atlas = ExtResource("1_qba5p")
+region = Rect2(0, 0, 26, 54)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_atxeo"]
+atlas = ExtResource("1_qba5p")
+region = Rect2(26, 0, 26, 54)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qwx8y"]
+atlas = ExtResource("1_qba5p")
+region = Rect2(52, 0, 26, 54)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ptkgf"]
+atlas = ExtResource("1_qba5p")
+region = Rect2(78, 0, 26, 54)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_1guag"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c52mq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_atxeo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qwx8y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ptkgf")
+}],
+"loop": true,
+"name": &"default",
+"speed": 4.0
+}]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("4_fu7bc")
@@ -306,6 +344,15 @@ animations = [{
 }]
 
 [node name="Downtown" type="Node2D"]
+
+[node name="banner" type="AnimatedSprite2D" parent="."]
+position = Vector2(-244, 328)
+sprite_frames = SubResource("SpriteFrames_1guag")
+autoplay = "default"
+frame_progress = 0.0209165
+
+[node name="YSort" type="Node2D" parent="banner"]
+position = Vector2(0, 24)
 
 [node name="UnderConstruction" type="Sprite2D" parent="."]
 position = Vector2(64, 508)
@@ -1061,7 +1108,7 @@ position = Vector2(58, -28)
 texture = ExtResource("17_5ai3x")
 
 [node name="FieldFrontFence" type="Sprite2D" parent="Block1Root"]
-position = Vector2(630, 7)
+position = Vector2(630, 7.5)
 texture = ExtResource("18_yr0u5")
 
 [node name="YSort" type="Node2D" parent="Block1Root/FieldFrontFence"]
@@ -1597,3 +1644,6408 @@ position = Vector2(0, 114)
 [node name="PaperSide" type="Sprite2D" parent="."]
 position = Vector2(-186, 200)
 texture = ExtResource("81_0yc4q")
+
+[node name="Dlazdicky" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(212, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky2" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(236, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky3" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(164, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky4" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(188, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky5" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(212, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky6" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(236, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky7" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(164, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky8" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(188, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky9" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(212, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky10" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(236, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky11" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(164, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky12" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(188, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky13" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(212, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky14" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(236, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky15" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(164, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky16" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(188, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky17" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(308, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky18" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(332, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky19" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(260, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky20" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(284, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky21" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(308, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky22" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(332, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky23" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(260, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky24" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(284, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky25" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(308, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky26" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(332, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky27" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(260, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky28" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(284, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky506" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(68, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky507" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(92, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky508" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(20, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky509" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(44, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky510" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(68, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky511" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(92, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky512" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(20, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky513" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(44, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky514" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(68, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky515" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(92, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky516" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(20, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky517" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(44, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky518" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(116, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky519" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(140, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky520" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(116, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky521" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(140, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky522" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(116, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky523" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(140, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky29" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(308, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky30" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(332, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky31" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(260, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky32" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(284, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky33" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(404, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky34" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(428, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky35" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(356, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky36" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(380, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky37" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(404, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky38" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(428, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky39" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(356, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky40" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(380, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky41" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(404, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky42" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(428, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky43" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(356, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky44" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(380, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky45" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(404, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky46" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(428, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky47" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(356, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky48" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(380, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky49" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(500, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky50" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(524, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky51" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(452, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky52" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(476, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky53" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(500, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky54" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(524, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky55" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(452, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky56" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(476, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky57" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(500, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky58" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(524, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky59" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(452, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky60" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(476, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky61" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(500, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky62" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(524, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky63" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(452, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky64" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(476, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky65" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(596, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky66" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(620, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky67" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(548, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky68" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(572, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky69" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(596, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky70" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(620, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky71" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(548, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky72" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(572, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky73" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(596, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky74" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(620, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky75" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(548, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky76" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(572, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky77" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(596, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky78" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(620, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky79" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(548, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky80" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(572, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky81" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(692, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky82" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(716, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky83" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(644, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky84" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(668, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky85" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(692, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky86" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(716, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky87" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(644, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky88" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(668, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky89" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(692, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky90" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(716, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky91" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(644, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky92" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(668, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky93" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(692, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky94" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(716, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky95" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(644, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky96" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(668, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky257" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(212, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky258" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(236, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky259" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(164, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky260" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(188, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky406" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky407" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky408" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky409" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky410" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky411" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky412" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky413" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky414" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky415" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky524" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky592" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky593" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky594" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky595" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky596" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky525" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky526" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky527" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky528" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(224, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky529" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(248, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky530" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(224, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky531" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(248, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky532" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(224, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky533" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(248, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky534" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(224, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky535" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(248, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky536" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(272, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky537" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(296, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky538" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(272, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky539" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(296, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky540" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(272, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky541" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(296, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky542" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(272, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky543" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(296, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky544" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(320, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky545" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(344, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky546" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(320, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky547" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(344, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky548" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(320, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky549" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(344, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky550" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(320, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky597" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky598" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky599" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky600" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky601" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky602" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky603" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky604" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky605" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky606" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky815" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-166, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky816" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-142, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky817" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-76, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky818" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-52, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky819" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-118, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky820" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-94, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky821" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-28, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky822" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-4, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky823" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-70, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky824" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-70, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky799" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-100, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky800" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-76, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky801" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-100, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky802" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-76, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky803" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-52, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky804" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-28, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky805" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-52, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky806" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-28, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky807" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-4, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky808" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-4, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky809" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-172, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky810" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-148, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky811" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-172, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky830" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-190, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky831" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-196, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky832" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-196, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky812" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-148, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky813" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-124, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky825" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-124, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky826" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-100, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky827" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-196, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky828" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-172, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky829" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-148, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky833" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(68, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky834" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(92, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky835" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(20, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky836" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(44, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky837" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-76, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky838" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-52, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky839" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-28, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky840" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-4, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky841" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-124, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky842" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-100, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky843" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-196, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky844" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-172, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky845" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-148, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky846" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(68, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky847" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(92, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky848" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(20, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky849" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(44, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky850" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-76, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky851" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-52, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky852" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-28, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky853" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-4, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky854" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-124, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky855" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-100, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky856" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-196, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky857" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-172, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky858" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-148, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky859" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(68, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky860" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(92, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky861" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(20, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky862" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(44, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky863" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-76, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky864" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-52, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky865" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-28, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky866" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-4, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky867" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-124, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky868" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-100, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky869" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-196, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky870" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-172, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky871" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-148, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky872" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(68, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky873" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(92, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky874" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(20, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky875" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(44, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky876" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-76, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky877" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-52, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky878" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-28, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky879" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-4, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky880" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-124, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky881" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-100, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky882" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-196, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky883" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-172, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky884" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-148, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky885" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-244, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky886" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-220, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky887" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-292, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky888" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-268, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky889" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-388, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky890" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-364, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky891" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-340, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky892" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-316, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky893" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-436, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky894" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-412, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky895" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-508, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky896" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-484, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky897" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-460, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky898" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-244, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky899" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-220, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky900" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-292, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky901" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-268, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky902" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-388, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky903" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-364, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky904" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-340, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky905" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-316, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky906" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-436, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky907" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-412, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky908" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-508, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky909" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-484, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky910" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-460, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky911" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-556, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky912" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-532, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky913" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-604, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky914" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-580, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky915" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-700, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky916" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-676, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky917" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-652, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky918" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-628, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky919" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky920" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky921" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-820, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky922" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky923" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky924" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-556, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky925" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-532, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky926" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-604, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky927" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-580, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky928" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-700, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky929" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-676, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky930" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-652, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky931" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-628, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky932" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky933" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky934" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-820, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky935" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky936" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky937" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-868, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky938" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-844, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky939" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-916, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky940" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-892, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky941" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-1012, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky942" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-988, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky943" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-964, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky944" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-940, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky945" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(248, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky946" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-1036, -292)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky947" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky948" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky949" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(224, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky950" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-868, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky951" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-844, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky952" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-916, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky953" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-892, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky954" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-1012, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky955" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-988, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky956" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-964, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky957" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-940, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky958" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(248, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky959" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-1036, -328)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky960" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky961" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky962" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(224, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky814" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-124, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky607" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky608" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky609" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky610" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky611" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky612" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky613" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky614" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky615" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky616" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky617" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky618" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky619" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky620" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky621" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky622" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky623" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky624" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky625" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky626" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky627" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky628" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky629" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky630" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky631" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky632" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky633" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky634" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky635" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky636" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky637" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky638" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky639" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky640" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky641" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky642" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky643" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky644" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky645" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky646" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky647" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky648" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky649" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky650" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky651" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky652" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky653" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky654" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky655" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky656" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky657" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky658" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky659" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky660" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky661" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky662" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky663" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky664" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky665" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky666" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1280" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(74, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1281" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(74, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky667" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-262, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky668" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-238, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky669" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-166, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky670" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-142, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky671" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-214, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky672" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-190, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky673" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-118, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky674" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-94, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky675" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-70, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky676" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-70, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky677" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-46, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky678" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-22, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky679" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(2, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky680" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(26, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky681" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(50, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky682" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-262, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky683" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-238, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky684" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-166, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky685" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-142, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky686" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-214, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky687" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-190, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky688" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-118, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky689" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-94, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky690" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-70, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky691" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-382, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky692" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-358, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky693" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-334, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky694" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-310, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky695" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-286, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky696" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-598, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky697" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-574, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky698" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-502, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky699" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-478, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky700" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-550, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky701" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-526, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky702" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-454, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky703" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-430, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky704" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-406, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky705" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-382, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky706" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-358, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky707" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-334, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky708" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-310, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky709" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-286, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky710" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-598, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky711" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-574, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky712" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-502, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky713" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-478, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky714" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-550, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky715" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-526, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky716" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-454, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky717" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-430, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky718" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-406, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky719" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-316, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky720" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-292, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky721" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-268, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky722" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-244, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky723" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-220, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky724" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-532, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky725" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-508, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky726" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-436, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky727" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-412, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky728" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-484, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky729" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-460, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky730" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-388, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky731" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-364, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky732" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-340, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky733" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-652, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky734" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-628, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky735" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-604, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky736" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-580, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky737" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-556, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky738" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky739" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky740" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky741" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky742" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky747" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky748" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-700, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky749" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-676, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky793" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky794" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky795" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky796" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky797" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-700, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky798" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-676, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky750" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-670, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky751" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-646, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky752" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-622, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky743" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky744" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky753" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky754" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky755" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky756" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky757" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky758" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky759" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky760" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky761" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky762" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky763" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky764" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky765" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky766" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky767" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky768" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky769" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky770" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky771" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky772" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky773" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky774" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky775" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky776" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky777" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky778" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky779" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky780" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky781" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky782" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky783" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky784" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky785" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky786" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky787" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-772, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky788" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky789" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-748, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky790" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky791" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-796, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky792" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-724, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky745" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-700, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky746" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(-676, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky551" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(344, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky552" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(368, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky553" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(392, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky554" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(368, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky555" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(392, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky556" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(368, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky557" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(392, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky558" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(368, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky559" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(392, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky560" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(416, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky561" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(440, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky562" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(416, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky563" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(440, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky564" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(416, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky565" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(440, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky566" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(416, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky567" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(440, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky568" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(464, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky569" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(488, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky570" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(464, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky571" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(488, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky572" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(464, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky573" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(488, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky574" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(464, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky575" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(488, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky576" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(512, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky577" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(536, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky578" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(512, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky579" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(536, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky580" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(512, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky581" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(536, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky582" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(512, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky583" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(536, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky584" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(560, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky585" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(584, 116)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky586" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(560, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky587" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(584, 152)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky588" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(560, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky589" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(584, 188)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky590" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(560, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky591" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(584, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky992" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky993" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky994" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky995" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky996" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(224, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky997" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(248, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky998" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(224, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky999" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(248, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1000" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(272, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1001" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(296, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1002" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(272, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1003" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(296, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1004" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(320, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1005" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(344, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1006" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(320, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1007" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(344, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1008" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(368, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1009" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(392, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1010" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(368, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1011" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(392, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1012" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(416, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1013" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(440, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1014" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(416, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1015" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(440, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1016" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(464, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1017" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(488, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1018" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(464, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1019" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(488, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1020" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(512, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1021" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(536, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1022" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(512, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1023" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(536, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1245" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(272, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1246" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(296, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1247" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(272, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1248" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(296, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1249" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(320, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1250" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(344, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1251" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(320, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1252" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(344, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1253" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(368, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1254" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(392, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1255" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(368, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1256" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(392, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1257" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(416, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1258" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(440, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1259" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(416, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1260" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(440, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1261" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(464, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1262" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(488, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1263" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(464, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1264" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(488, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1265" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(512, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1266" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(536, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1267" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(512, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1268" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(536, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1024" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1025" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1026" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(176, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1274" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1275" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1276" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1277" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1278" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1279" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(152, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1027" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(200, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1028" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(224, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1029" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(248, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1030" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(224, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1031" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(248, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1032" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(272, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1033" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(296, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1034" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(272, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1035" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(296, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1036" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(320, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1037" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(344, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1038" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(320, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1039" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(344, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1040" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(368, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1041" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(392, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1042" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(368, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1043" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(392, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1044" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(416, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1045" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(440, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1046" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(416, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1047" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(440, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1048" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(464, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1049" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(488, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1050" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(464, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1051" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(488, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1052" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(512, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1053" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(536, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1054" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(512, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1055" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(536, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1056" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(560, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1057" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(584, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1058" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(560, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1059" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(584, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1060" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(608, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1061" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(632, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1062" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(608, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1063" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(632, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1064" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(656, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1065" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(680, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1066" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(656, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1067" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(680, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1068" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(704, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1069" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(728, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1070" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(704, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1071" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(728, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1072" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(752, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1073" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(776, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1074" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(752, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1075" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(776, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1076" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(800, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1077" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(824, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1078" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(800, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1079" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(824, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1080" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(848, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1081" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(872, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1082" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(848, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1083" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(872, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1084" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(896, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1085" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(920, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1086" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(896, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1087" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(920, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1088" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(560, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1089" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(584, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1090" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(560, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1091" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(584, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1092" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(608, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1093" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(632, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1094" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(608, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1095" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(632, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1096" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(656, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1097" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(680, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1098" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(656, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1099" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(680, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1100" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(704, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1101" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(728, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1102" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(704, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1103" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(728, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1104" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(752, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1105" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(776, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1106" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(752, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1107" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(776, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1108" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(800, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1109" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(824, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1110" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(800, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1111" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(824, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1112" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(848, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1113" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(872, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1114" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(848, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1115" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(872, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1116" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(896, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1117" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(920, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1118" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(896, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1119" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(920, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1152" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(944, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1153" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(968, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1154" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(944, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1155" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(968, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1156" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(992, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1157" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1016, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1158" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(992, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1159" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1016, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1160" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1040, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1161" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1064, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1162" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1040, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1163" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1064, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1209" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1088, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1210" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1112, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1211" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1088, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1212" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1112, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1213" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1136, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1214" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1160, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1215" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1136, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1216" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1160, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1217" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1184, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1218" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1208, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1219" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1184, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1220" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1208, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1221" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1232, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1222" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1256, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1223" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1232, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1224" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1256, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1225" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1280, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1226" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1304, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1227" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1280, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1228" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1304, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1229" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1328, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1230" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1352, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1231" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1328, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1232" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1352, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1233" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1376, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1234" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1400, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1235" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1376, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1236" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1400, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1237" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1424, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1238" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1448, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1239" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1424, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1240" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1448, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1241" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1472, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1242" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1496, 386)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1243" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1472, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1244" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1496, 422)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1269" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1490, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1270" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1490, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1271" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1490, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1273" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1490, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1272" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1490, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1164" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(944, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1165" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(968, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1166" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(944, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1167" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(968, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1168" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(992, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1169" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1016, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1170" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(992, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1171" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1016, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1172" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1040, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1173" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1064, 314)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1174" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1040, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1175" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1064, 350)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1176" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(944, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1177" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(968, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1178" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(800, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1179" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(824, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1180" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(992, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1181" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1016, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1182" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(848, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1183" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(872, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1200" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(728, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1201" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(752, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1202" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(776, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1203" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(800, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1184" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1040, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1185" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1064, 278)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1186" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(896, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1187" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(920, 224)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1204" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(824, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1205" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(848, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1206" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(872, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1207" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(896, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1208" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(920, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1188" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(944, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1189" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(968, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1190" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(944, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1191" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(968, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1192" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(992, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1193" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1016, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1194" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(992, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1195" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1016, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1196" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1040, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1197" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1064, 206)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1198" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1040, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1199" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1064, 242)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1120" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(560, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1121" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(584, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1122" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(560, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1123" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(584, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1124" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(608, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1125" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(632, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1126" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(608, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1127" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(632, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1128" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(656, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1129" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(680, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1130" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(656, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1131" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(680, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1132" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(704, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1133" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(728, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1134" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(704, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1135" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(728, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1136" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(752, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1137" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(776, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1138" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(752, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1139" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(776, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1140" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(800, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1141" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(824, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1142" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(800, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1143" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(824, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1144" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(848, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1145" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(872, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1146" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(848, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1147" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(872, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1148" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(896, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1149" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(920, 260)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1150" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(896, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky1151" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(920, 296)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky963" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(608, 122)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky964" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(608, 158)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky965" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(608, 194)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky966" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(608, 230)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky967" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(632, 122)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky968" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(656, 122)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky969" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(632, 158)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky970" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(656, 158)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky971" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(632, 194)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky972" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(656, 194)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky973" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(632, 230)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky974" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(656, 230)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky975" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(680, 122)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky976" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(704, 122)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky977" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(680, 158)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky978" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(704, 158)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky979" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(680, 194)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky980" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(704, 194)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky981" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(680, 230)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky982" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(704, 230)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky261" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(308, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky262" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(332, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky263" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(260, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky264" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(284, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky265" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(404, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky266" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(428, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky267" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(356, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky268" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(380, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky269" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(500, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky270" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(524, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky271" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(452, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky272" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(476, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky273" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(596, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky274" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(620, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky275" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(548, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky276" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(572, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky277" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(644, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky278" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(668, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky97" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky98" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky99" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(740, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky100" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(764, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky101" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky102" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky103" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(740, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky104" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(764, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky105" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky106" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky107" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(740, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky108" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(764, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky109" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky110" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky111" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(740, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky112" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(764, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky113" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky114" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky115" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky116" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky117" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky118" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky119" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky120" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky121" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky122" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky123" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky124" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky125" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky126" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky127" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky128" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky129" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky130" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky131" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky132" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky133" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky134" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky135" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky136" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky137" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky138" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky139" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky140" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky141" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky142" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky143" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky144" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky145" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky146" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky147" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky148" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky384" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky385" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky386" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky387" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky388" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky389" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky390" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky391" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky392" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky393" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky394" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky149" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky150" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky151" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky152" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky153" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky154" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky155" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky156" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky157" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky158" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky159" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky160" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky161" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky162" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky163" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky164" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky165" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky166" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky167" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky168" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky169" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky170" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky171" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky172" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky173" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky174" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky175" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky176" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky177" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky178" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky179" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky180" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky181" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky182" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky183" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky184" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky185" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky186" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky187" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky188" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky189" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky190" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky191" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky192" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky193" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky194" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky195" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky196" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky197" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky198" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky199" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky200" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky201" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky202" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky203" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky204" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky205" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky206" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky207" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky208" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky209" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky210" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky211" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky212" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, -190)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky213" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky214" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky215" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky216" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, -154)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky217" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky218" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky219" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky220" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, -118)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky221" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky222" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky223" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky224" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, -82)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky225" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky226" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky227" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky228" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky229" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky230" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky231" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky232" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky233" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky234" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky235" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky236" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky237" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky238" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky239" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky240" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky241" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky242" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky243" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky244" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky245" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky246" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky247" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky248" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky249" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky250" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky251" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky252" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky253" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky254" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky255" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky256" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky279" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky280" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky281" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky282" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky283" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky284" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky285" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky286" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky287" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky288" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky289" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky290" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky291" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky292" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky293" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky294" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky295" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky296" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky297" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky298" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky299" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky300" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky301" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky302" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky303" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky304" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky305" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky306" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky307" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky308" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky309" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky310" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky311" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky312" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky313" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky314" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky315" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky316" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky317" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky318" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky319" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky320" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky321" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky322" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky323" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky324" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky325" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky326" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky327" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky328" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky329" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky330" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky331" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky332" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky333" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky334" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky335" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky336" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky337" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky338" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky339" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky340" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky341" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky342" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky343" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky344" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky345" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(739, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky346" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(763, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky375" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(692, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky376" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(716, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky347" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky348" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky349" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(614, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky377" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(566, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky350" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(590, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky351" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky352" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky353" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(614, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky354" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(566, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky355" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky356" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky357" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(590, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky358" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(614, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky378" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(518, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky379" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(542, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky380" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(566, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky381" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(518, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky382" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(542, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky395" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(518, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky396" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(542, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky397" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(518, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky402" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(494, -262)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky403" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(494, -226)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky404" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(494, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky405" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(494, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky398" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(542, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky383" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(590, -298)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky399" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(614, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky400" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(566, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky401" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(590, -334)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky359" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky360" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky361" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky362" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, -46)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky363" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky364" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky365" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky366" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, -10)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky367" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky368" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky369" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky370" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, 26)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky371" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky372" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky373" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky374" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, 62)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky416" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky417" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky418" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky419" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky420" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky421" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky422" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky423" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky424" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky425" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky426" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky427" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky428" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky429" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky430" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky431" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky432" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky433" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky434" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky435" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky436" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky437" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky438" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky439" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky440" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky441" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky442" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky443" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky444" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky445" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, 98)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky446" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky447" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky448" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky449" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky450" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky451" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky452" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky453" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky454" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky455" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky456" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky457" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky458" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky459" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky460" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky461" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky462" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky463" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky464" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky465" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky466" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky467" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky468" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky469" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky470" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky471" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky472" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky473" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky474" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky475" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, 134)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky476" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1364, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky477" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1388, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky478" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1316, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky479" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1340, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky480" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1460, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky481" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1484, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky482" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1412, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky483" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1436, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky484" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1172, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky485" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1196, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky486" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1124, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky487" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1148, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky488" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1268, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky489" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1292, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky490" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1220, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky491" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1244, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky492" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(980, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky493" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1004, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky494" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(932, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky495" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(956, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky496" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1076, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky497" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1100, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky498" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1028, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky499" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(1052, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky500" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(788, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky501" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(812, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky502" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(884, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky503" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(908, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky504" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(836, 170)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky983" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(728, 122)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky984" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(752, 122)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky985" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(776, 122)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky986" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(728, 158)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky987" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(752, 158)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky988" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(776, 158)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky989" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(728, 194)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky990" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(752, 194)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky991" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(776, 194)
+texture = ExtResource("82_65uwp")
+
+[node name="Dlazdicky505" type="Sprite2D" parent="."]
+z_index = -6
+position = Vector2(860, 170)
+texture = ExtResource("82_65uwp")

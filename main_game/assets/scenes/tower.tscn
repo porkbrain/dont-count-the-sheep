@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://d10laqanju67f"]
+
+[ext_resource type="Texture2D" uid="uid://cy7cwfigylkyd" path="res://assets/compound/tower_inside.png" id="1_wqvew"]
+[ext_resource type="Texture2D" uid="uid://b3pn5mvb3111b" path="res://assets/compound/tower_inside_wall.png" id="2_tvn07"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="TowerInside" type="Sprite2D" parent="."]
+position = Vector2(-29, 16)
+texture = ExtResource("1_wqvew")
+
+[node name="TowerInsideWall" type="Sprite2D" parent="."]
+position = Vector2(59, 56)
+texture = ExtResource("2_tvn07")
+
+[node name="TowerInsideWall2" type="Sprite2D" parent="."]
+position = Vector2(-73, 56)
+texture = ExtResource("2_tvn07")
+flip_h = true
