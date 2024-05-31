@@ -3,7 +3,13 @@ name = "common_loading_screen"
 version.workspace = true
 edition.workspace = true
 
+
+[features]
+devtools = ["bevy-inspector-egui"]
+
+
 [dependencies]
+bevy-inspector-egui = { workspace = true, optional = true }
 bevy.workspace = true
 common_assets.workspace = true
 common_visuals.workspace = true

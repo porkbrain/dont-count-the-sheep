@@ -11,6 +11,7 @@
 //! Specifically, those systems that don't wait for anything.
 
 pub mod enter_an_elevator;
+pub mod enter_dark_door;
 
 use std::sync::OnceLock;
 
@@ -71,6 +72,12 @@ pub trait IntoCutscene {
         Self: Sized,
     {
         spawn_cutscene(cmd, self);
+    }
+}
+
+impl IntoCutscene for Vec<CutsceneStep> {
+    fn sequence(self) -> Vec<CutsceneStep> {
+        self
     }
 }
 
@@ -142,6 +149,8 @@ pub enum CutsceneStep {
     /// Transitions to the given state.
     /// Typically, this despawns the whole scene so it can be the last step
     /// in the cutscene.
+    ///
+    /// You might want to couple this with [`Self::StartLoadingScreen`].
     ChangeGlobalState {
         /// The state to change to.
         /// Typically this would be a quitting state so that we transition into
@@ -151,12 +160,23 @@ pub enum CutsceneStep {
         /// Pair this with the `to` field to guide the game into the next
         /// scene.
         with: GlobalGameStateTransition,
-        /// If provided then this resource is inserted.
-        loading_screen: Option<LoadingScreenSettings>,
-        /// If true loading screen state is changed.
-        /// It's important that the state is not changed twice.
-        change_loading_screen_state_to_start: bool,
     },
+    /// Sets the loading screen state to start and inserts the given loading
+    /// settings.
+    ///
+    /// # Important
+    /// Depending on the scene system setup, you might need to first
+    /// [`Self::ChangeGlobalState`] before starting the loading screen.
+    /// Otherwise the current scene might think that it's the one being loaded.
+    ///
+    /// # Panics
+    /// If the loading screen state is not ready to start.
+    StartLoadingScreen {
+        /// The loading screen settings to use.
+        settings: Option<LoadingScreenSettings>,
+    },
+    /// Waits until loading screen is loaded.
+    WaitForLoadingScreen,
     /// Gives the actor a new target to walk to.
     /// No path finding or iteration is done here, the actor will transition
     /// to the new target immediately.
@@ -190,6 +210,18 @@ pub enum CutsceneStep {
         who: Entity,
         /// Where to go.
         to: Destination,
+        /// How long should this translation take.
+        over: Duration,
+        /// By default linear interpolation is used.
+        animation_curve: Option<CubicSegment<Vec2>>,
+    },
+    /// Starts color interpolation on the given entity.
+    BeginColorInterpolation {
+        /// Which entity to color.
+        /// Must work with [`BeginInterpolationEvent`].
+        who: Entity,
+        /// What is the target color.
+        to: Color,
         /// How long should this translation take.
         over: Duration,
         /// By default linear interpolation is used.
@@ -427,6 +459,8 @@ struct CutsceneSystems {
     sleep: SystemId,
     insert_atlas_animation_timer_to: SystemId,
     change_global_state: SystemId,
+    start_loading_screen: SystemId,
+    wait_for_loading_screen: SystemId,
     begin_simple_walk_to: SystemId,
     wait_until_actor_at_rest: SystemId,
     begin_portrait_dialog: SystemId,
@@ -438,6 +472,7 @@ struct CutsceneSystems {
     schedule_commands: SystemId,
     claim_manual_main_camera_control: SystemId,
     release_manual_main_camera_control: SystemId,
+    begin_color_interpolation: SystemId,
 }
 
 impl CutsceneSystems {
@@ -451,6 +486,8 @@ impl CutsceneSystems {
             insert_atlas_animation_timer_to: w
                 .register_system(insert_atlas_animation_timer_to),
             change_global_state: w.register_system(change_global_state),
+            start_loading_screen: w.register_system(start_loading_screen),
+            wait_for_loading_screen: w.register_system(wait_for_loading_screen),
             begin_simple_walk_to: w.register_system(begin_simple_walk_to),
             wait_until_actor_at_rest: w
                 .register_system(wait_until_actor_at_rest),
@@ -468,6 +505,8 @@ impl CutsceneSystems {
                 .register_system(claim_manual_main_camera_control),
             release_manual_main_camera_control: w
                 .register_system(release_manual_main_camera_control),
+            begin_color_interpolation: w
+                .register_system(begin_color_interpolation),
         }
     }
 }
@@ -488,6 +527,8 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         Sleep(_) => s.sleep,
         InsertAtlasAnimationTimerTo { .. } => s.insert_atlas_animation_timer_to,
         ChangeGlobalState { .. } => s.change_global_state,
+        StartLoadingScreen { .. } => s.start_loading_screen,
+        WaitForLoadingScreen => s.wait_for_loading_screen,
         BeginSimpleWalkTo { .. } => s.begin_simple_walk_to,
         WaitUntilActorAtRest(_) => s.wait_until_actor_at_rest,
         BeginPortraitDialog(_) => s.begin_portrait_dialog,
@@ -498,6 +539,7 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         SetActorFacingDirection(_, _) => s.set_actor_facing_direction,
         ScheduleCommands(_) => s.schedule_commands,
         ClaimManualMainCameraControl => s.claim_manual_main_camera_control,
+        BeginColorInterpolation { .. } => s.begin_color_interpolation,
         ReleaseManualMainCameraControl => s.release_manual_main_camera_control,
     }
 }
@@ -558,34 +600,59 @@ fn change_global_state(
     mut cmd: Commands,
     mut cutscene: ResMut<Cutscene>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
     mut transition: ResMut<GlobalGameStateTransition>,
 ) {
     let step = &cutscene.sequence[cutscene.sequence_index];
-    let CutsceneStep::ChangeGlobalState {
-        to,
-        with,
-        loading_screen,
-        change_loading_screen_state_to_start,
-    } = &step
-    else {
+    let CutsceneStep::ChangeGlobalState { to, with } = &step else {
         panic!("Expected ChangeGlobalState step, got {step}");
     };
-
-    if let Some(setting) = loading_screen {
-        trace!("[ChangeGlobalState] Inserting loading screen settings");
-        cmd.insert_resource(setting.clone());
-    }
-
-    if *change_loading_screen_state_to_start {
-        trace!("[ChangeGlobalState] Setting loading screen state to start");
-        next_loading_screen_state.set(common_loading_screen::start_state());
-    }
 
     next_state.set(*to);
     *transition = *with;
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn start_loading_screen(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+    existing_loading_screen_settings: Option<Res<LoadingScreenSettings>>,
+    current_loading_screen_state: Res<State<LoadingScreenState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::StartLoadingScreen { settings } = &step else {
+        panic!("Expected StartLoadingScreen step, got {step}");
+    };
+
+    if !current_loading_screen_state.is_ready_to_start() {
+        panic!("Loading screen state is not ready to start");
+    }
+    next_loading_screen_state.set(common_loading_screen::start_state());
+
+    if let Some(settings) = settings {
+        if existing_loading_screen_settings.is_some() {
+            error!("Overwriting loading screen settings");
+        }
+        cmd.insert_resource(settings.clone());
+    };
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn wait_for_loading_screen(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+    current_loading_screen_state: Res<State<LoadingScreenState>>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::WaitForLoadingScreen = &step else {
+        panic!("Expected WaitForLoadingScreen step, got {step}");
+    };
+
+    if current_loading_screen_state.is_waiting_for_signal() {
+        cutscene.schedule_next_step_or_despawn(&mut cmd);
+    }
 }
 
 fn begin_simple_walk_to(
@@ -834,6 +901,29 @@ fn release_manual_main_camera_control(
     if let Some(entity) = camera.get_single_or_none() {
         cmd.entity(entity).remove::<ManualControl>();
     }
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn begin_color_interpolation(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::BeginColorInterpolation {
+        who,
+        to,
+        over,
+        animation_curve,
+    } = &step
+    else {
+        panic!("Expected BeginColorInterpolation step, got {step}");
+    };
+
+    BeginInterpolationEvent::of_color(*who, None, *to)
+        .over(*over)
+        .with_animation_opt_curve(animation_curve.clone())
+        .insert(&mut cmd);
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }

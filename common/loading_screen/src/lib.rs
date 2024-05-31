@@ -43,7 +43,7 @@ pub const LOADING_IMAGE_TRANSFORM_SCALE: f32 = 5.0;
 /// Use provided transition systems to change the state:
 /// - [`start_state`] to begin the loading screen process
 /// - [`finish_state`] to finish the loading screen process
-#[derive(States, Default, Debug, Clone, Eq, PartialEq, Hash, Reflect)]
+#[derive(States, Default, Debug, Clone, Copy, Eq, PartialEq, Hash, Reflect)]
 pub enum LoadingScreenState {
     /// This is the state in which the loading screen is not active and waiting
     /// to be activated.
@@ -177,6 +177,20 @@ impl bevy::app::Plugin for Plugin {
             OnEnter(LoadingScreenState::DespawnLoadingScreen),
             despawn_loading_screen,
         );
+
+        #[cfg(feature = "devtools")]
+        {
+            app.register_type::<LoadingScreenState>()
+                .register_type::<LoadingScreenSettings>();
+
+            use bevy_inspector_egui::quick::{
+                ResourceInspectorPlugin, StateInspectorPlugin,
+            };
+            app.add_plugins((
+                StateInspectorPlugin::<LoadingScreenState>::default(),
+                ResourceInspectorPlugin::<LoadingScreenSettings>::default(),
+            ));
+        }
     }
 }
 
@@ -383,6 +397,7 @@ fn stare_at_loading_screen(
     *since = None;
 
     // now we wait for the user to call change from state
+    trace!("Waiting for a signal to finish loading screen");
     next_state.set(LoadingScreenState::WaitForSignalToFinish);
 }
 
@@ -393,6 +408,8 @@ fn fade_in_quad_that_hides_atlas(
 
     query: Query<&mut BackgroundColor, With<LoadingQuad>>,
 ) {
+    trace!("Received signal to finish the loading screen");
+
     if settings.atlas.is_none() {
         next_state.set(LoadingScreenState::FadeOutQuadToShowGame);
         return;
@@ -499,5 +516,18 @@ impl Default for LoadingScreenSettings {
             fade_loading_screen_out: DEFAULT_FADE_LOADING_SCREEN_OUT,
             stare_at_loading_screen_for_at_least: None,
         }
+    }
+}
+
+impl LoadingScreenState {
+    /// Returns true if the loading screen is ready to start.
+    pub fn is_ready_to_start(self) -> bool {
+        matches!(self, LoadingScreenState::DoNothing)
+    }
+
+    /// Returns true if the loading screen is waiting for the user to advance
+    /// it.
+    pub fn is_waiting_for_signal(self) -> bool {
+        matches!(self, LoadingScreenState::WaitForSignalToFinish)
     }
 }

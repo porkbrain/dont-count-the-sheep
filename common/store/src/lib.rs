@@ -172,7 +172,11 @@ mod dialog {
         /// an option to start from this dialog.
         ///
         /// Idempotent.
-        fn add_dialog_to_npc(&self, npc: impl Display, namespace: impl Display);
+        fn add_dialog_to_npc(
+            &self,
+            npc: impl Display,
+            namespace: impl Display,
+        ) -> &Self;
 
         /// Remove the dialog from the NPC's list of dialogs.
         ///
@@ -263,7 +267,7 @@ mod dialog {
             &self,
             npc: impl Display,
             namespace: impl Display,
-        ) {
+        ) -> &Self {
             let conn = self.conn.lock().unwrap();
 
             let now = Instant::now();
@@ -281,6 +285,8 @@ mod dialog {
             if ms > 1 {
                 warn!("add_dialog_to_npc took {ms}ms");
             }
+
+            self
         }
 
         fn remove_dialog_from_npc(

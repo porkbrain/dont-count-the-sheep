@@ -4,7 +4,7 @@
 use std::{iter, str::FromStr};
 
 use bevy_grid_squared::{GridDirection, Square};
-use common_loading_screen::LoadingScreenSettings;
+use common_loading_screen::{LoadingScreenAtlas, LoadingScreenSettings};
 use common_store::{DialogStore, GlobalStore};
 use common_story::{
     dialog::{self, DialogGraph},
@@ -136,7 +136,18 @@ impl IntoCutscene for EnterAnElevator {
                     ReturnPlayerControl(player),
                 ]),
                 // else transition
-                Box::new(vec![ScheduleCommands(change_global_state)]),
+                Box::new(vec![
+                    ScheduleCommands(change_global_state),
+                    StartLoadingScreen {
+                        settings: Some(LoadingScreenSettings {
+                            atlas: Some(LoadingScreenAtlas::random()),
+                            stare_at_loading_screen_for_at_least: Some(
+                                from_millis(1500),
+                            ),
+                            ..default()
+                        }),
+                    },
+                ]),
             ),
         ]
     }
@@ -229,12 +240,6 @@ pub fn spawn(
     }
 
     fn on_took_the_elevator(cmd: &mut Commands, store: &GlobalStore) {
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(2000)),
-            ..default()
-        });
-
         // get current state, from that infer quitting state
         cmd.add(|w: &mut World| {
             let quitting_state = w
@@ -247,7 +252,6 @@ pub fn spawn(
             // SAFETY: always present
             let mut next_state =
                 w.get_resource_mut::<NextState<GlobalGameState>>().unwrap();
-
             next_state.set(quitting_state);
         });
 

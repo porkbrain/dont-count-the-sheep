@@ -8,7 +8,7 @@ use common_story::{
 use common_visuals::camera::MainCamera;
 use main_game_lib::{
     common_ext::QueryExt,
-    cutscene::{self, in_cutscene},
+    cutscene::{self, in_cutscene, CutsceneStep, IntoCutscene},
     hud::daybar::DayBar,
     top_down::inspect_and_interact::{
         ChangeHighlightedInspectLabelEvent,
@@ -59,8 +59,6 @@ fn start_meditation_minigame(
     mut action_events: EventReader<Building1PlayerFloorAction>,
     mut emoji_events: EventWriter<DisplayEmojiEvent>,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
     zone_to_inspect_label_entity: Res<
         ZoneToInspectLabelEntity<Building1PlayerFloorTileKind>,
     >,
@@ -105,21 +103,31 @@ fn start_meditation_minigame(
             error!("Cannot find player entity");
         }
     } else {
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::Space),
-            stare_at_loading_screen_for_at_least: Some(
-                WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
-            ),
-            ..default()
-        });
+        let Some(player) = player.get_single_or_none() else {
+            return;
+        };
 
-        *transition =
-            GlobalGameStateTransition::Building1PlayerFloorToMeditation;
-        next_state.set(Building1PlayerFloor::quitting());
+        vec![
+            CutsceneStep::TakeAwayPlayerControl(player),
+            CutsceneStep::ChangeGlobalState {
+                to: Building1PlayerFloor::quitting(),
+                with:
+                    GlobalGameStateTransition::Building1PlayerFloorToMeditation,
+            },
+            CutsceneStep::StartLoadingScreen {
+                settings: Some(LoadingScreenSettings {
+                    atlas: Some(common_loading_screen::LoadingScreenAtlas::Space),
+                    stare_at_loading_screen_for_at_least: Some(
+                        WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
+                    ),
+                    ..default()
+                })
+            }
+        ].spawn(&mut cmd);
     }
 }
 
-/// By entering the elevator, the player can this scene.
+/// By entering the elevator, the player can leave this scene.
 fn enter_the_elevator(
     mut cmd: Commands,
     mut action_events: EventReader<Building1PlayerFloorAction>,
@@ -211,8 +219,8 @@ fn toggle_zone_hints(
 fn sleep(
     mut cmd: Commands,
     mut action_events: EventReader<Building1PlayerFloorAction>,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
+
+    player: Query<Entity, With<Player>>,
 ) {
     let is_triggered = action_events
         .read()
@@ -222,16 +230,27 @@ fn sleep(
         return;
     }
 
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(
-            common_loading_screen::LoadingScreenAtlas::WinnieInBathroom,
-        ),
-        stare_at_loading_screen_for_at_least: Some(
-            WINNIE_IN_BATHROOM_TRANSITION_FOR_AT_LEAST,
-        ),
-        ..default()
-    });
+    let Some(player) = player.get_single_or_none() else {
+        return;
+    };
 
-    *transition = GlobalGameStateTransition::Sleeping;
-    next_state.set(Building1PlayerFloor::quitting());
+    vec![
+        CutsceneStep::TakeAwayPlayerControl(player),
+        CutsceneStep::ChangeGlobalState {
+            to: Building1PlayerFloor::quitting(),
+            with: GlobalGameStateTransition::Sleeping,
+        },
+        CutsceneStep::StartLoadingScreen {
+            settings: Some(LoadingScreenSettings {
+                atlas: Some(
+                    common_loading_screen::LoadingScreenAtlas::WinnieInBathroom,
+                ),
+                stare_at_loading_screen_for_at_least: Some(
+                    WINNIE_IN_BATHROOM_TRANSITION_FOR_AT_LEAST,
+                ),
+                ..default()
+            }),
+        },
+    ]
+    .spawn(&mut cmd);
 }
