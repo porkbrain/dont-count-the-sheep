@@ -249,6 +249,8 @@ pub fn spawn(
                 w.get_resource_mut::<NextState<GlobalGameState>>().unwrap();
 
             next_state.set(quitting_state);
+
+            // TODO: change loading screen state
         });
 
         match store

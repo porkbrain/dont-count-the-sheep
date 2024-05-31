@@ -11,6 +11,7 @@
 //! Specifically, those systems that don't wait for anything.
 
 pub mod enter_an_elevator;
+pub mod enter_dark_door;
 
 use std::sync::OnceLock;
 
@@ -190,6 +191,18 @@ pub enum CutsceneStep {
         who: Entity,
         /// Where to go.
         to: Destination,
+        /// How long should this translation take.
+        over: Duration,
+        /// By default linear interpolation is used.
+        animation_curve: Option<CubicSegment<Vec2>>,
+    },
+    /// Starts color interpolation on the given entity.
+    BeginColorInterpolation {
+        /// Which entity to color.
+        /// Must work with [`BeginInterpolationEvent`].
+        who: Entity,
+        /// What is the target color.
+        to: Color,
         /// How long should this translation take.
         over: Duration,
         /// By default linear interpolation is used.
@@ -438,6 +451,7 @@ struct CutsceneSystems {
     schedule_commands: SystemId,
     claim_manual_main_camera_control: SystemId,
     release_manual_main_camera_control: SystemId,
+    begin_color_interpolation: SystemId,
 }
 
 impl CutsceneSystems {
@@ -468,6 +482,8 @@ impl CutsceneSystems {
                 .register_system(claim_manual_main_camera_control),
             release_manual_main_camera_control: w
                 .register_system(release_manual_main_camera_control),
+            begin_color_interpolation: w
+                .register_system(begin_color_interpolation),
         }
     }
 }
@@ -498,6 +514,7 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         SetActorFacingDirection(_, _) => s.set_actor_facing_direction,
         ScheduleCommands(_) => s.schedule_commands,
         ClaimManualMainCameraControl => s.claim_manual_main_camera_control,
+        BeginColorInterpolation { .. } => s.begin_color_interpolation,
         ReleaseManualMainCameraControl => s.release_manual_main_camera_control,
     }
 }
@@ -834,6 +851,29 @@ fn release_manual_main_camera_control(
     if let Some(entity) = camera.get_single_or_none() {
         cmd.entity(entity).remove::<ManualControl>();
     }
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn begin_color_interpolation(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::BeginColorInterpolation {
+        who,
+        to,
+        over,
+        animation_curve,
+    } = &step
+    else {
+        panic!("Expected BeginColorInterpolation step, got {step}");
+    };
+
+    BeginInterpolationEvent::of_color(*who, None, *to)
+        .over(*over)
+        .with_animation_opt_curve(animation_curve.clone())
+        .insert(&mut cmd);
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }

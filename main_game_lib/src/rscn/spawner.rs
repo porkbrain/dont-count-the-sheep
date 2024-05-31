@@ -34,7 +34,8 @@ use crate::{
 /// The implementation aggressively panics on invalid `.tscn` tree.
 /// We recommend to do the same in the hooks.
 pub trait TscnSpawner {
-    /// The kind of action that can be emitted by an `InspectLabel`.
+    /// The kind of action that can be emitted by an
+    /// [`crate::top_down::InspectLabel`].
     type LocalActionKind: FromStr + Event + Clone;
 
     /// The kind of zone that can be entered by the player.
@@ -52,7 +53,7 @@ pub trait TscnSpawner {
         translation: Vec3,
     );
 
-    /// Any plan node (no 2D info) that is not handled by the default
+    /// Any plain node (no 2D info) that is not handled by the default
     /// implementation will be passed to this function.
     /// Runs before [`TscnSpawner::on_spawned`] of the parent.
     /// The parent is already scheduled to spawn and has some components

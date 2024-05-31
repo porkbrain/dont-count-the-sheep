@@ -30,7 +30,7 @@ impl TopDownScene for Building1PlayerFloor {
     }
 
     fn bounds() -> [i32; 4] {
-        [-80, 40, -30, 20]
+        [-150, 150, -150, 150]
     }
 }
 
