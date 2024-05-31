@@ -28,6 +28,10 @@ pub enum GlobalGameState {
     AtBuilding1Basement1,
     QuittingBuilding1Basement1,
 
+    LoadingBuilding1Basement2,
+    AtBuilding1Basement2,
+    QuittingBuilding1Basement2,
+
     LoadingClinic,
     AtClinic,
     QuittingClinic,
@@ -100,6 +104,8 @@ pub enum GlobalGameStateTransition {
 
     Building1Basement1ToPlayerFloor,
     Building1Basement1ToDowntown,
+    Building1Basement1ToBasement2,
+    Building1Basement2ToBasement1,
 
     DowntownToMall,
     MallToDowntown,
@@ -200,6 +206,15 @@ impl GlobalGameState {
                 LoadingBuilding1Basement1,
                 AtBuilding1Basement1,
                 QuittingBuilding1Basement1,
+                None,
+            ),
+
+            LoadingBuilding1Basement2
+            | AtBuilding1Basement2
+            | QuittingBuilding1Basement2 => (
+                LoadingBuilding1Basement2,
+                AtBuilding1Basement2,
+                QuittingBuilding1Basement2,
                 None,
             ),
 

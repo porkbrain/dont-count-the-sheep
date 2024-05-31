@@ -1,0 +1,31 @@
+[package]
+name = "scene_building1_basement2"
+version.workspace = true
+edition.workspace = true
+
+
+[features]
+devtools = [
+    "main_game_lib/devtools",
+    "common_story/devtools",
+    "common_visuals/devtools",
+]
+
+
+[dependencies]
+bevy_grid_squared.workspace = true
+bevy_pixel_camera.workspace = true
+bevy.workspace = true
+common_action.workspace = true
+common_assets.workspace = true
+common_loading_screen.workspace = true
+common_store.workspace = true
+common_story.workspace = true
+common_visuals.workspace = true
+itertools.workspace = true
+lazy_static.workspace = true
+main_game_lib.workspace = true
+rand.workspace = true
+serde.workspace = true
+smallvec.workspace = true
+strum.workspace = true
