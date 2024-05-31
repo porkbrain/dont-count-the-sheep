@@ -150,7 +150,7 @@ pub enum CutsceneStep {
     /// Typically, this despawns the whole scene so it can be the last step
     /// in the cutscene.
     ///
-    /// You might want to couple this with [`StartLoadingScreen`].
+    /// You might want to couple this with [`Self::StartLoadingScreen`].
     ChangeGlobalState {
         /// The state to change to.
         /// Typically this would be a quitting state so that we transition into
