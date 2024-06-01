@@ -5,7 +5,7 @@
 use bevy::prelude::*;
 pub use leafwing_input_manager::{self, action_state::ActionState};
 use leafwing_input_manager::{
-    axislike::DualAxis,
+    axislike::{DualAxis, VirtualDPad},
     input_map::InputMap,
     plugin::InputManagerPlugin,
     user_input::{InputKind, UserInput},
@@ -22,17 +22,6 @@ impl bevy::app::Plugin for Plugin {
         app.init_resource::<ActionState<GlobalAction>>()
             .insert_resource(GlobalAction::input_map())
             .add_plugins(InputManagerPlugin::<GlobalAction>::default());
-
-        app.add_systems(
-            First,
-            emit_left_stick_input_as_action.run_if(
-                move |action_state: Res<ActionState<GlobalAction>>| {
-                    action_state.pressed(&GlobalAction::ControllerLeftStick)
-                        | action_state
-                            .just_released(&GlobalAction::ControllerLeftStick)
-                },
-            ),
-        );
 
         #[cfg(feature = "devtools")]
         {
@@ -56,26 +45,8 @@ pub enum GlobalAction {
     /// Go to menu etc.
     Cancel,
 
-    /// Going only up.
-    MoveUp,
-    /// Going only down.
-    MoveDown,
-    /// Going only left.
-    MoveLeft,
-    /// Going only right.
-    MoveRight,
-    /// Going both up and left.
-    /// Overwrites `MoveUp` and `MoveLeft`.
-    MoveUpLeft,
-    /// Going both up and right.
-    /// Overwrites `MoveUp` and `MoveRight`.
-    MoveUpRight,
-    /// Going both down and left.
-    /// Overwrites `MoveDown` and `MoveLeft`.
-    MoveDownLeft,
-    /// Going both down and right.
-    /// Overwrites `MoveDown` and `MoveRight`.
-    MoveDownRight,
+    /// WASD, arrow keys, controller dpad or left stick.
+    Move,
 
     /// When held, the player is in an inspect mode.
     /// This is mainly relevant for actions of gathering information about the
@@ -102,9 +73,32 @@ pub enum GlobalAction {
     NumEight,
     /// Numeric input for nine.
     NumNine,
+}
 
-    /// The left stick of the controller has been moved.
-    ControllerLeftStick,
+/// You can get this action from a [`GlobalAction::Move`].
+/// It is a discrete form of the "analog" dual axis input.
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect, EnumIter)]
+pub enum MovementAction {
+    /// Going only up.
+    MoveUp,
+    /// Going only down.
+    MoveDown,
+    /// Going only left.
+    MoveLeft,
+    /// Going only right.
+    MoveRight,
+    /// Going both up and left.
+    /// Overwrites `MoveUp` and `MoveLeft`.
+    MoveUpLeft,
+    /// Going both up and right.
+    /// Overwrites `MoveUp` and `MoveRight`.
+    MoveUpRight,
+    /// Going both down and left.
+    /// Overwrites `MoveDown` and `MoveLeft`.
+    MoveDownLeft,
+    /// Going both down and right.
+    /// Overwrites `MoveDown` and `MoveRight`.
+    MoveDownRight,
 }
 
 /// Runs a system if cancel action is being held.
@@ -158,14 +152,7 @@ pub fn interaction_just_pressed(
 pub fn move_action_pressed(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
     move |action_state: Res<ActionState<GlobalAction>>| {
-        action_state.pressed(&GlobalAction::MoveUp)
-            || action_state.pressed(&GlobalAction::MoveDown)
-            || action_state.pressed(&GlobalAction::MoveLeft)
-            || action_state.pressed(&GlobalAction::MoveRight)
-            || action_state.pressed(&GlobalAction::MoveUpLeft)
-            || action_state.pressed(&GlobalAction::MoveUpRight)
-            || action_state.pressed(&GlobalAction::MoveDownLeft)
-            || action_state.pressed(&GlobalAction::MoveDownRight)
+        action_state.pressed(&GlobalAction::Move)
     }
 }
 
@@ -183,56 +170,11 @@ pub fn numeric_key_pressed(
 pub fn move_action_just_pressed(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
     move |action_state: Res<ActionState<GlobalAction>>| {
-        action_state.just_pressed(&GlobalAction::MoveUp)
-            || action_state.just_pressed(&GlobalAction::MoveDown)
-            || action_state.just_pressed(&GlobalAction::MoveLeft)
-            || action_state.just_pressed(&GlobalAction::MoveRight)
-            || action_state.just_pressed(&GlobalAction::MoveUpLeft)
-            || action_state.just_pressed(&GlobalAction::MoveUpRight)
-            || action_state.just_pressed(&GlobalAction::MoveDownLeft)
-            || action_state.just_pressed(&GlobalAction::MoveDownRight)
+        action_state.just_pressed(&GlobalAction::Move)
     }
 }
 
 impl GlobalAction {
-    /// Whether the action is a directional input for movement.
-    /// That's one of
-    /// - [`Self::MoveUp`]
-    /// - [`Self::MoveDown`]
-    /// - [`Self::MoveLeft`]
-    /// - [`Self::MoveRight`]
-    /// - [`Self::MoveUpLeft`]
-    /// - [`Self::MoveUpRight`]
-    /// - [`Self::MoveDownLeft`]
-    /// - [`Self::MoveDownRight`]
-    pub fn is_directional(self) -> bool {
-        matches!(
-            self,
-            Self::MoveUp
-                | Self::MoveDown
-                | Self::MoveLeft
-                | Self::MoveRight
-                | Self::MoveUpLeft
-                | Self::MoveUpRight
-                | Self::MoveDownLeft
-                | Self::MoveDownRight
-        )
-    }
-
-    /// Returns all directional actions.
-    pub fn directional() -> Vec<Self> {
-        vec![
-            Self::MoveUp,
-            Self::MoveDown,
-            Self::MoveLeft,
-            Self::MoveRight,
-            Self::MoveUpLeft,
-            Self::MoveUpRight,
-            Self::MoveDownLeft,
-            Self::MoveDownRight,
-        ]
-    }
-
     /// Returns all numeric actions from zero to nine.
     pub fn numerical() -> Vec<Self> {
         vec![
@@ -265,7 +207,7 @@ impl GlobalAction {
         use GamepadButtonType::*;
         use InputKind::{GamepadButton as GPad, PhysicalKey as Kbd};
         use KeyCode::*;
-        use UserInput::{Chord, Single};
+        use UserInput::Single;
 
         match action {
             Self::Interact => {
@@ -279,56 +221,17 @@ impl GlobalAction {
                 vec![
                     Single(Kbd(Escape)),
                     Single(GPad(North)), // Y
+                    Single(GPad(GamepadButtonType::Select)),
                 ]
             }
-            Self::MoveDown => {
+            Self::Move => {
                 vec![
-                    Single(Kbd(KeyS)),
-                    Single(Kbd(ArrowDown)),
-                    Single(GPad(DPadDown)),
+                    Single(InputKind::DualAxis(DualAxis::left_stick())),
+                    UserInput::VirtualDPad(VirtualDPad::wasd()),
+                    UserInput::VirtualDPad(VirtualDPad::dpad()),
+                    UserInput::VirtualDPad(VirtualDPad::arrow_keys()),
                 ]
             }
-            Self::MoveLeft => {
-                vec![
-                    Single(Kbd(KeyA)),
-                    Single(Kbd(ArrowLeft)),
-                    Single(GPad(DPadLeft)),
-                ]
-            }
-            Self::MoveRight => {
-                vec![
-                    Single(Kbd(KeyD)),
-                    Single(Kbd(ArrowRight)),
-                    Single(GPad(DPadRight)),
-                ]
-            }
-            Self::MoveUp => {
-                vec![
-                    Single(Kbd(KeyW)),
-                    Single(Kbd(ArrowUp)),
-                    Single(GPad(DPadUp)),
-                ]
-            }
-            Self::MoveDownLeft => vec![
-                Chord(vec![Kbd(KeyS), Kbd(KeyA)]),
-                Chord(vec![Kbd(ArrowDown), Kbd(ArrowLeft)]),
-                Chord(vec![GPad(DPadDown), GPad(DPadLeft)]),
-            ],
-            Self::MoveDownRight => vec![
-                Chord(vec![Kbd(KeyS), Kbd(KeyD)]),
-                Chord(vec![Kbd(ArrowDown), Kbd(ArrowRight)]),
-                Chord(vec![GPad(DPadDown), GPad(DPadRight)]),
-            ],
-            Self::MoveUpLeft => vec![
-                Chord(vec![Kbd(KeyW), Kbd(KeyA)]),
-                Chord(vec![Kbd(ArrowUp), Kbd(ArrowLeft)]),
-                Chord(vec![GPad(DPadUp), GPad(DPadLeft)]),
-            ],
-            Self::MoveUpRight => vec![
-                Chord(vec![Kbd(KeyW), Kbd(KeyD)]),
-                Chord(vec![Kbd(ArrowUp), Kbd(ArrowRight)]),
-                Chord(vec![GPad(DPadUp), GPad(DPadRight)]),
-            ],
             Self::Inspect => vec![
                 Single(Kbd(AltLeft)),
                 Single(Kbd(AltRight)),
@@ -345,49 +248,56 @@ impl GlobalAction {
             Self::NumSeven => vec![Single(Kbd(Digit7))],
             Self::NumEight => vec![Single(Kbd(Digit8))],
             Self::NumNine => vec![Single(Kbd(Digit9))],
-            Self::ControllerLeftStick => {
-                vec![Single(InputKind::DualAxis(DualAxis::left_stick()))]
-            }
         }
     }
 }
 
-/// This system converts the analog controller lstick inputs into
-/// our discreet actions.
-///
-/// We must run this on everywhere the controller lstick is used (pressed) or
-/// if it was just released.
-fn emit_left_stick_input_as_action(
-    mut action_state: ResMut<ActionState<GlobalAction>>,
-) {
-    let pressed_action = if !action_state
-        .pressed(&GlobalAction::ControllerLeftStick)
-    {
-        // the simpler scenario: the controller lstick has just been released
-        None
-    } else {
-        action_state
-            .axis_pair(&GlobalAction::ControllerLeftStick)
-            .map(|d| d.xy())
-            .and_then(from_dual_axis)
-    };
+/// Extends [`ActionState`] with methods specific to this game.
+pub trait ActionStateExt {
+    /// Returns the movement action if the action state is in a movement state.
+    fn movement_action(&self) -> Option<MovementAction>;
+}
 
-    for directional_action in GlobalAction::directional() {
-        if Some(directional_action) == pressed_action {
-            trace!(
-                "Pressed {directional_action:?} {:?}",
-                action_state.action_data(&directional_action)
-            );
-            action_state.press(&directional_action);
-        } else if action_state.pressed(&directional_action) {
-            trace!("Released {directional_action:?}");
-            action_state.release(&directional_action);
-        }
+impl ActionStateExt for ActionState<GlobalAction> {
+    fn movement_action(&self) -> Option<MovementAction> {
+        let axis_pair = self.axis_pair(&GlobalAction::Move)?;
+        from_dual_axis(axis_pair.xy())
     }
 }
 
-fn from_dual_axis(left_stick: Vec2) -> Option<GlobalAction> {
-    use GlobalAction::*;
+impl MovementAction {
+    /// ↖↑↗
+    pub fn is_in_up_direction(self) -> bool {
+        matches!(self, Self::MoveUp | Self::MoveUpLeft | Self::MoveUpRight)
+    }
+
+    /// ↘↓↙
+    pub fn is_in_down_direction(self) -> bool {
+        matches!(
+            self,
+            Self::MoveDown | Self::MoveDownLeft | Self::MoveDownRight
+        )
+    }
+
+    /// ↖←↙
+    pub fn is_in_left_direction(self) -> bool {
+        matches!(self, Self::MoveLeft | Self::MoveUpLeft | Self::MoveDownLeft)
+    }
+
+    /// ↗→↘
+    pub fn is_in_right_direction(self) -> bool {
+        matches!(
+            self,
+            Self::MoveRight | Self::MoveUpRight | Self::MoveDownRight
+        )
+    }
+}
+
+fn from_dual_axis(left_stick: Vec2) -> Option<MovementAction> {
+    // Generated by chat-gpt based on my description and example of the output
+    // enum.
+
+    use MovementAction::*;
 
     // Define a small threshold to avoid noise in the analog stick
     let threshold = 0.1;

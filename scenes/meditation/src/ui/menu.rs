@@ -79,15 +79,16 @@ pub(super) fn change_selection(
         With<SelectionMarker>,
     >,
 ) {
+    let Some(action) = controls.movement_action() else {
+        return;
+    };
+
     let mut menu = menu.single_mut();
     let curr_selection = menu.selection;
 
-    let pressed_up = controls.just_pressed(&GlobalAction::MoveUp);
-    let pressed_down = controls.just_pressed(&GlobalAction::MoveDown);
-
-    let new_selection = if pressed_up {
+    let new_selection = if action.is_in_up_direction() {
         Some(curr_selection.prev())
-    } else if pressed_down {
+    } else if action.is_in_down_direction() {
         Some(curr_selection.next())
     } else {
         None

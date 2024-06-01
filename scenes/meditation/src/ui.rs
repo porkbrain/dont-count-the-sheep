@@ -38,7 +38,7 @@ mod consts {
         Val::Px(5.0 * PIXEL_ZOOM as f32);
 }
 
-use common_action::move_action_pressed;
+use common_action::move_action_just_pressed;
 use leafwing_input_manager::common_conditions::action_just_pressed;
 pub(crate) use score::Score;
 
@@ -68,7 +68,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             menu::change_selection
                 .run_if(in_state(GlobalGameState::MeditationInMenu))
-                .run_if(move_action_pressed())
+                .run_if(move_action_just_pressed())
                 .before(menu::select),
         )
         .add_systems(

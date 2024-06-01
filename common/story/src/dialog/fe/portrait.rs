@@ -10,7 +10,7 @@ use bevy::{
     prelude::*, render::view::RenderLayers, text::TextLayoutInfo,
     utils::Instant,
 };
-use common_action::{ActionState, GlobalAction};
+use common_action::{ActionState, ActionStateExt, GlobalAction};
 use common_assets::ui::DIALOG_BOX;
 use common_store::GlobalStore;
 use common_visuals::camera::{render_layer, PIXEL_ZOOM};
@@ -574,13 +574,12 @@ fn change_selection_with_arrows(
         return;
     }
 
-    let up = controls.pressed(&GlobalAction::MoveUp)
-        || controls.pressed(&GlobalAction::MoveUpLeft)
-        || controls.pressed(&GlobalAction::MoveUpRight);
+    let Some(movement_action) = controls.movement_action() else {
+        return;
+    };
 
-    let down = controls.pressed(&GlobalAction::MoveDown)
-        || controls.pressed(&GlobalAction::MoveDownLeft)
-        || controls.pressed(&GlobalAction::MoveDownRight);
+    let up = movement_action.is_in_up_direction();
+    let down = movement_action.is_in_down_direction();
 
     if !up && !down {
         return;
