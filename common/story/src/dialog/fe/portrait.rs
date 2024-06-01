@@ -174,7 +174,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             change_selection_with_arrows
                 .run_if(in_state(PortraitDialogState::PlayerControl))
-                .run_if(common_action::move_action_just_pressed()),
+                .run_if(common_action::move_action_pressed()),
         )
         .add_systems(
             Update,
@@ -569,6 +569,8 @@ fn change_selection_with_arrows(
 
     mut choices: Query<(&Children, &mut DialogChoice, &mut BackgroundColor)>,
     mut texts: Query<&mut Text>,
+
+    mut last_changed: Local<Option<Instant>>,
 ) {
     if choices.is_empty() {
         return;
@@ -577,6 +579,19 @@ fn change_selection_with_arrows(
     let Some(movement_action) = controls.movement_action() else {
         return;
     };
+
+    // The player does not have to release the button to keep changing the
+    // selection, it's enough to hold it as well and we smoothly change the
+    // selection.
+    // Very useful for control sticks.
+    let elapsed_since_changed =
+        last_changed.get_or_insert_with(Instant::now).elapsed();
+    let should_trigger = controls.just_pressed(&GlobalAction::Move)
+        || elapsed_since_changed > Duration::from_millis(250);
+    if !should_trigger {
+        return;
+    }
+    *last_changed = Some(Instant::now());
 
     let up = movement_action.is_in_up_direction();
     let down = movement_action.is_in_down_direction();

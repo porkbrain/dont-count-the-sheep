@@ -5,7 +5,7 @@
 use bevy::prelude::*;
 pub use leafwing_input_manager::{self, action_state::ActionState};
 use leafwing_input_manager::{
-    axislike::{DualAxis, VirtualDPad},
+    axislike::{DeadZoneShape, DualAxis, VirtualDPad},
     input_map::InputMap,
     plugin::InputManagerPlugin,
     user_input::{InputKind, UserInput},
@@ -149,6 +149,9 @@ pub fn interaction_just_pressed(
 }
 
 /// Any movement action is being held.
+///
+/// Prefer this to `just_pressed` because sometimes controller input does not
+/// register as a "just" press although the player did flick.
 pub fn move_action_pressed(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
     move |action_state: Res<ActionState<GlobalAction>>| {
@@ -163,14 +166,6 @@ pub fn numeric_key_pressed(
         GlobalAction::numerical()
             .into_iter()
             .any(|action| action_state.pressed(&action))
-    }
-}
-
-/// Any movement action was just pressed.
-pub fn move_action_just_pressed(
-) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
-    move |action_state: Res<ActionState<GlobalAction>>| {
-        action_state.just_pressed(&GlobalAction::Move)
     }
 }
 
@@ -226,7 +221,14 @@ impl GlobalAction {
             }
             Self::Move => {
                 vec![
-                    Single(InputKind::DualAxis(DualAxis::left_stick())),
+                    Single(InputKind::DualAxis(
+                        DualAxis::left_stick().with_deadzone(
+                            DeadZoneShape::Ellipse {
+                                radius_x: 0.1,
+                                radius_y: 0.1,
+                            },
+                        ),
+                    )),
                     UserInput::VirtualDPad(VirtualDPad::wasd()),
                     UserInput::VirtualDPad(VirtualDPad::dpad()),
                     UserInput::VirtualDPad(VirtualDPad::arrow_keys()),
@@ -310,37 +312,28 @@ fn from_dual_axis(left_stick: Vec2) -> Option<MovementAction> {
     // Calculate the angle in radians
     let angle = left_stick.y.atan2(left_stick.x);
 
-    // Determine the action based on the angle
-    let action = if angle >= -3.0 * std::f32::consts::PI / 8.0
-        && angle < -std::f32::consts::PI / 8.0
-    {
-        MoveDownRight // ↘
-    } else if angle >= -std::f32::consts::PI / 8.0
-        && angle < std::f32::consts::PI / 8.0
-    {
-        MoveRight // →
-    } else if angle >= std::f32::consts::PI / 8.0
-        && angle < 3.0 * std::f32::consts::PI / 8.0
-    {
-        MoveUpRight // ↗
-    } else if angle >= 3.0 * std::f32::consts::PI / 8.0
-        && angle < 5.0 * std::f32::consts::PI / 8.0
-    {
-        MoveUp // ↑
-    } else if angle >= 5.0 * std::f32::consts::PI / 8.0
-        && angle < 7.0 * std::f32::consts::PI / 8.0
-    {
-        MoveUpLeft // ↖
-    } else if angle >= 7.0 * std::f32::consts::PI / 8.0
-        || angle < -7.0 * std::f32::consts::PI / 8.0
-    {
-        MoveLeft // ←
-    } else if angle >= -7.0 * std::f32::consts::PI / 8.0
-        && angle < -5.0 * std::f32::consts::PI / 8.0
-    {
-        MoveDownLeft // ↙
-    } else {
-        MoveDown // ↓
+    use std::f32::consts::PI;
+
+    const PPI_OVER_8: f32 = PI / 8.0;
+    const P3PI_OVER_8: f32 = 3.0 * PPI_OVER_8;
+    const P5PI_OVER_8: f32 = 5.0 * PPI_OVER_8;
+    const P7PI_OVER_8: f32 = 7.0 * PPI_OVER_8;
+    const NPI_OVER_8: f32 = -PPI_OVER_8;
+    const N3PI_OVER_8: f32 = -P3PI_OVER_8;
+    const N5PI_OVER_8: f32 = -P5PI_OVER_8;
+    const N7PI_OVER_8: f32 = -P7PI_OVER_8;
+
+    let action = match angle {
+        N3PI_OVER_8..NPI_OVER_8 => MoveDownRight, // ↘
+        NPI_OVER_8..PPI_OVER_8 => MoveRight,      // →
+        PPI_OVER_8..P3PI_OVER_8 => MoveUpRight,   // ↗
+        P3PI_OVER_8..P5PI_OVER_8 => MoveUp,       // ↑
+        P5PI_OVER_8..P7PI_OVER_8 => MoveUpLeft,   // ↖
+        // left direction wraps around the positive and negative boundaries of
+        // the circle
+        P7PI_OVER_8..=PI | ..N7PI_OVER_8 => MoveLeft, // ←
+        N7PI_OVER_8..N5PI_OVER_8 => MoveDownLeft,     // ↙
+        _ => MoveDown,                                // ↓
     };
 
     Some(action)
