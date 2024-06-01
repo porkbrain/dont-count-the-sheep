@@ -5,6 +5,7 @@
 use bevy::prelude::*;
 pub use leafwing_input_manager::{self, action_state::ActionState};
 use leafwing_input_manager::{
+    axislike::DualAxis,
     input_map::InputMap,
     plugin::InputManagerPlugin,
     user_input::{InputKind, UserInput},
@@ -21,6 +22,17 @@ impl bevy::app::Plugin for Plugin {
         app.init_resource::<ActionState<GlobalAction>>()
             .insert_resource(GlobalAction::input_map())
             .add_plugins(InputManagerPlugin::<GlobalAction>::default());
+
+        app.add_systems(
+            First,
+            emit_left_stick_input_as_action.run_if(
+                move |action_state: Res<ActionState<GlobalAction>>| {
+                    action_state.pressed(&GlobalAction::ControllerLeftStick)
+                        | action_state
+                            .just_released(&GlobalAction::ControllerLeftStick)
+                },
+            ),
+        );
 
         #[cfg(feature = "devtools")]
         {
@@ -90,6 +102,9 @@ pub enum GlobalAction {
     NumEight,
     /// Numeric input for nine.
     NumNine,
+
+    /// The left stick of the controller has been moved.
+    ControllerLeftStick,
 }
 
 /// Runs a system if cancel action is being held.
@@ -204,6 +219,20 @@ impl GlobalAction {
         )
     }
 
+    /// Returns all directional actions.
+    pub fn directional() -> Vec<Self> {
+        vec![
+            Self::MoveUp,
+            Self::MoveDown,
+            Self::MoveLeft,
+            Self::MoveRight,
+            Self::MoveUpLeft,
+            Self::MoveUpRight,
+            Self::MoveDownLeft,
+            Self::MoveDownRight,
+        ]
+    }
+
     /// Returns all numeric actions from zero to nine.
     pub fn numerical() -> Vec<Self> {
         vec![
@@ -233,46 +262,79 @@ impl GlobalAction {
     }
 
     fn default_keyboard_input(action: GlobalAction) -> Vec<UserInput> {
-        use InputKind::PhysicalKey as Kbd;
+        use GamepadButtonType::*;
+        use InputKind::{GamepadButton as GPad, PhysicalKey as Kbd};
         use KeyCode::*;
         use UserInput::{Chord, Single};
 
         match action {
             Self::Interact => {
-                vec![Single(Kbd(Space)), Single(Kbd(Enter))]
+                vec![
+                    Single(Kbd(Space)),
+                    Single(Kbd(Enter)),
+                    Single(GPad(South)), // A
+                ]
             }
             Self::Cancel => {
-                vec![Single(Kbd(Escape))]
+                vec![
+                    Single(Kbd(Escape)),
+                    Single(GPad(North)), // Y
+                ]
             }
             Self::MoveDown => {
-                vec![Single(Kbd(KeyS)), Single(Kbd(ArrowDown))]
+                vec![
+                    Single(Kbd(KeyS)),
+                    Single(Kbd(ArrowDown)),
+                    Single(GPad(DPadDown)),
+                ]
             }
             Self::MoveLeft => {
-                vec![Single(Kbd(KeyA)), Single(Kbd(ArrowLeft))]
+                vec![
+                    Single(Kbd(KeyA)),
+                    Single(Kbd(ArrowLeft)),
+                    Single(GPad(DPadLeft)),
+                ]
             }
             Self::MoveRight => {
-                vec![Single(Kbd(KeyD)), Single(Kbd(ArrowRight))]
+                vec![
+                    Single(Kbd(KeyD)),
+                    Single(Kbd(ArrowRight)),
+                    Single(GPad(DPadRight)),
+                ]
             }
             Self::MoveUp => {
-                vec![Single(Kbd(KeyW)), Single(Kbd(ArrowUp))]
+                vec![
+                    Single(Kbd(KeyW)),
+                    Single(Kbd(ArrowUp)),
+                    Single(GPad(DPadUp)),
+                ]
             }
             Self::MoveDownLeft => vec![
                 Chord(vec![Kbd(KeyS), Kbd(KeyA)]),
                 Chord(vec![Kbd(ArrowDown), Kbd(ArrowLeft)]),
+                Chord(vec![GPad(DPadDown), GPad(DPadLeft)]),
             ],
             Self::MoveDownRight => vec![
                 Chord(vec![Kbd(KeyS), Kbd(KeyD)]),
                 Chord(vec![Kbd(ArrowDown), Kbd(ArrowRight)]),
+                Chord(vec![GPad(DPadDown), GPad(DPadRight)]),
             ],
             Self::MoveUpLeft => vec![
                 Chord(vec![Kbd(KeyW), Kbd(KeyA)]),
                 Chord(vec![Kbd(ArrowUp), Kbd(ArrowLeft)]),
+                Chord(vec![GPad(DPadUp), GPad(DPadLeft)]),
             ],
             Self::MoveUpRight => vec![
                 Chord(vec![Kbd(KeyW), Kbd(KeyD)]),
                 Chord(vec![Kbd(ArrowUp), Kbd(ArrowRight)]),
+                Chord(vec![GPad(DPadUp), GPad(DPadRight)]),
             ],
-            Self::Inspect => vec![Single(Kbd(AltLeft))],
+            Self::Inspect => vec![
+                Single(Kbd(AltLeft)),
+                Single(Kbd(AltRight)),
+                Single(GPad(LeftTrigger)),
+                Single(GPad(LeftTrigger2)),
+            ],
             Self::NumZero => vec![Single(Kbd(Digit0))],
             Self::NumOne => vec![Single(Kbd(Digit1))],
             Self::NumTwo => vec![Single(Kbd(Digit2))],
@@ -283,6 +345,93 @@ impl GlobalAction {
             Self::NumSeven => vec![Single(Kbd(Digit7))],
             Self::NumEight => vec![Single(Kbd(Digit8))],
             Self::NumNine => vec![Single(Kbd(Digit9))],
+            Self::ControllerLeftStick => {
+                vec![Single(InputKind::DualAxis(DualAxis::left_stick()))]
+            }
         }
     }
+}
+
+/// This system converts the analog controller lstick inputs into
+/// our discreet actions.
+///
+/// We must run this on everywhere the controller lstick is used (pressed) or
+/// if it was just released.
+fn emit_left_stick_input_as_action(
+    mut action_state: ResMut<ActionState<GlobalAction>>,
+) {
+    let pressed_action = if !action_state
+        .pressed(&GlobalAction::ControllerLeftStick)
+    {
+        // the simpler scenario: the controller lstick has just been released
+        None
+    } else {
+        action_state
+            .axis_pair(&GlobalAction::ControllerLeftStick)
+            .map(|d| d.xy())
+            .and_then(from_dual_axis)
+    };
+
+    for directional_action in GlobalAction::directional() {
+        if Some(directional_action) == pressed_action {
+            trace!(
+                "Pressed {directional_action:?} {:?}",
+                action_state.action_data(&directional_action)
+            );
+            action_state.press(&directional_action);
+        } else if action_state.pressed(&directional_action) {
+            trace!("Released {directional_action:?}");
+            action_state.release(&directional_action);
+        }
+    }
+}
+
+fn from_dual_axis(left_stick: Vec2) -> Option<GlobalAction> {
+    use GlobalAction::*;
+
+    // Define a small threshold to avoid noise in the analog stick
+    let threshold = 0.1;
+
+    // Check if the stick is within the dead zone
+    if left_stick.x.abs() < threshold && left_stick.y.abs() < threshold {
+        return None;
+    }
+
+    // Calculate the angle in radians
+    let angle = left_stick.y.atan2(left_stick.x);
+
+    // Determine the action based on the angle
+    let action = if angle >= -3.0 * std::f32::consts::PI / 8.0
+        && angle < -std::f32::consts::PI / 8.0
+    {
+        MoveDownRight // ↘
+    } else if angle >= -std::f32::consts::PI / 8.0
+        && angle < std::f32::consts::PI / 8.0
+    {
+        MoveRight // →
+    } else if angle >= std::f32::consts::PI / 8.0
+        && angle < 3.0 * std::f32::consts::PI / 8.0
+    {
+        MoveUpRight // ↗
+    } else if angle >= 3.0 * std::f32::consts::PI / 8.0
+        && angle < 5.0 * std::f32::consts::PI / 8.0
+    {
+        MoveUp // ↑
+    } else if angle >= 5.0 * std::f32::consts::PI / 8.0
+        && angle < 7.0 * std::f32::consts::PI / 8.0
+    {
+        MoveUpLeft // ↖
+    } else if angle >= 7.0 * std::f32::consts::PI / 8.0
+        || angle < -7.0 * std::f32::consts::PI / 8.0
+    {
+        MoveLeft // ←
+    } else if angle >= -7.0 * std::f32::consts::PI / 8.0
+        && angle < -5.0 * std::f32::consts::PI / 8.0
+    {
+        MoveDownLeft // ↙
+    } else {
+        MoveDown // ↓
+    };
+
+    Some(action)
 }

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#
+# Prepares build that can be copied to Steamdeck device with Steam's toolkit
+# for development.
+#
+
+set -e
+
+steamdeck_dir="target/steamdeck"
+
+cargo build --release
+
+# recreate the directory
+rm -rf "${steamdeck_dir}"
+mkdir -p "${steamdeck_dir}"
+
+# the binary will be looking for these assets
+cp -r "main_game/assets" "${steamdeck_dir}/assets"
+# copy the binary
+cp "target/release/game" "${steamdeck_dir}/game"

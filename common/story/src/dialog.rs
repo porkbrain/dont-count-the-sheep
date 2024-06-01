@@ -678,7 +678,9 @@ impl BranchStatus {
         branch_index: usize,
         next_node_name: &NodeName,
     ) -> Self {
-        let next_node = &graph.nodes.get(next_node_name).unwrap();
+        let next_node = &graph.nodes.get(next_node_name).unwrap_or_else(|| {
+            panic!("Node {next_node_name:?} not found in graph {graph:#?}")
+        });
         assert_eq!(
             Character::Winnie,
             next_node.who,
@@ -777,7 +779,9 @@ impl DialogGraph {
     /// # Panics
     /// If a node with the same name already exists.
     pub fn insert_node(&mut self, node: Node) {
-        debug_assert!(self.nodes.insert(node.name.clone(), node).is_none());
+        let was_already_present =
+            self.nodes.insert(node.name.clone(), node).is_none();
+        debug_assert!(was_already_present);
     }
 
     /// A subgraph is not ready to be spawned as a dialog.
