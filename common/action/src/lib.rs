@@ -5,6 +5,7 @@
 use bevy::prelude::*;
 pub use leafwing_input_manager::{self, action_state::ActionState};
 use leafwing_input_manager::{
+    axislike::{DeadZoneShape, DualAxis, VirtualDPad},
     input_map::InputMap,
     plugin::InputManagerPlugin,
     user_input::{InputKind, UserInput},
@@ -44,26 +45,8 @@ pub enum GlobalAction {
     /// Go to menu etc.
     Cancel,
 
-    /// Going only up.
-    MoveUp,
-    /// Going only down.
-    MoveDown,
-    /// Going only left.
-    MoveLeft,
-    /// Going only right.
-    MoveRight,
-    /// Going both up and left.
-    /// Overwrites `MoveUp` and `MoveLeft`.
-    MoveUpLeft,
-    /// Going both up and right.
-    /// Overwrites `MoveUp` and `MoveRight`.
-    MoveUpRight,
-    /// Going both down and left.
-    /// Overwrites `MoveDown` and `MoveLeft`.
-    MoveDownLeft,
-    /// Going both down and right.
-    /// Overwrites `MoveDown` and `MoveRight`.
-    MoveDownRight,
+    /// WASD, arrow keys, controller dpad or left stick.
+    Move,
 
     /// When held, the player is in an inspect mode.
     /// This is mainly relevant for actions of gathering information about the
@@ -90,6 +73,32 @@ pub enum GlobalAction {
     NumEight,
     /// Numeric input for nine.
     NumNine,
+}
+
+/// You can get this action from a [`GlobalAction::Move`].
+/// It is a discrete form of the "analog" dual axis input.
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect, EnumIter)]
+pub enum MovementAction {
+    /// Going only up.
+    MoveUp,
+    /// Going only down.
+    MoveDown,
+    /// Going only left.
+    MoveLeft,
+    /// Going only right.
+    MoveRight,
+    /// Going both up and left.
+    /// Overwrites `MoveUp` and `MoveLeft`.
+    MoveUpLeft,
+    /// Going both up and right.
+    /// Overwrites `MoveUp` and `MoveRight`.
+    MoveUpRight,
+    /// Going both down and left.
+    /// Overwrites `MoveDown` and `MoveLeft`.
+    MoveDownLeft,
+    /// Going both down and right.
+    /// Overwrites `MoveDown` and `MoveRight`.
+    MoveDownRight,
 }
 
 /// Runs a system if cancel action is being held.
@@ -140,17 +149,13 @@ pub fn interaction_just_pressed(
 }
 
 /// Any movement action is being held.
+///
+/// Prefer this to `just_pressed` because sometimes controller input does not
+/// register as a "just" press although the player did flick.
 pub fn move_action_pressed(
 ) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
     move |action_state: Res<ActionState<GlobalAction>>| {
-        action_state.pressed(&GlobalAction::MoveUp)
-            || action_state.pressed(&GlobalAction::MoveDown)
-            || action_state.pressed(&GlobalAction::MoveLeft)
-            || action_state.pressed(&GlobalAction::MoveRight)
-            || action_state.pressed(&GlobalAction::MoveUpLeft)
-            || action_state.pressed(&GlobalAction::MoveUpRight)
-            || action_state.pressed(&GlobalAction::MoveDownLeft)
-            || action_state.pressed(&GlobalAction::MoveDownRight)
+        action_state.pressed(&GlobalAction::Move)
     }
 }
 
@@ -164,46 +169,7 @@ pub fn numeric_key_pressed(
     }
 }
 
-/// Any movement action was just pressed.
-pub fn move_action_just_pressed(
-) -> impl FnMut(Res<ActionState<GlobalAction>>) -> bool {
-    move |action_state: Res<ActionState<GlobalAction>>| {
-        action_state.just_pressed(&GlobalAction::MoveUp)
-            || action_state.just_pressed(&GlobalAction::MoveDown)
-            || action_state.just_pressed(&GlobalAction::MoveLeft)
-            || action_state.just_pressed(&GlobalAction::MoveRight)
-            || action_state.just_pressed(&GlobalAction::MoveUpLeft)
-            || action_state.just_pressed(&GlobalAction::MoveUpRight)
-            || action_state.just_pressed(&GlobalAction::MoveDownLeft)
-            || action_state.just_pressed(&GlobalAction::MoveDownRight)
-    }
-}
-
 impl GlobalAction {
-    /// Whether the action is a directional input for movement.
-    /// That's one of
-    /// - [`Self::MoveUp`]
-    /// - [`Self::MoveDown`]
-    /// - [`Self::MoveLeft`]
-    /// - [`Self::MoveRight`]
-    /// - [`Self::MoveUpLeft`]
-    /// - [`Self::MoveUpRight`]
-    /// - [`Self::MoveDownLeft`]
-    /// - [`Self::MoveDownRight`]
-    pub fn is_directional(self) -> bool {
-        matches!(
-            self,
-            Self::MoveUp
-                | Self::MoveDown
-                | Self::MoveLeft
-                | Self::MoveRight
-                | Self::MoveUpLeft
-                | Self::MoveUpRight
-                | Self::MoveDownLeft
-                | Self::MoveDownRight
-        )
-    }
-
     /// Returns all numeric actions from zero to nine.
     pub fn numerical() -> Vec<Self> {
         vec![
@@ -233,46 +199,47 @@ impl GlobalAction {
     }
 
     fn default_keyboard_input(action: GlobalAction) -> Vec<UserInput> {
-        use InputKind::PhysicalKey as Kbd;
+        use GamepadButtonType::*;
+        use InputKind::{GamepadButton as GPad, PhysicalKey as Kbd};
         use KeyCode::*;
-        use UserInput::{Chord, Single};
+        use UserInput::Single;
 
         match action {
             Self::Interact => {
-                vec![Single(Kbd(Space)), Single(Kbd(Enter))]
+                vec![
+                    Single(Kbd(Space)),
+                    Single(Kbd(Enter)),
+                    Single(GPad(South)), // A
+                ]
             }
             Self::Cancel => {
-                vec![Single(Kbd(Escape))]
+                vec![
+                    Single(Kbd(Escape)),
+                    Single(GPad(North)), // Y
+                    Single(GPad(GamepadButtonType::Select)),
+                ]
             }
-            Self::MoveDown => {
-                vec![Single(Kbd(KeyS)), Single(Kbd(ArrowDown))]
+            Self::Move => {
+                vec![
+                    Single(InputKind::DualAxis(
+                        DualAxis::left_stick().with_deadzone(
+                            DeadZoneShape::Ellipse {
+                                radius_x: 0.1,
+                                radius_y: 0.1,
+                            },
+                        ),
+                    )),
+                    UserInput::VirtualDPad(VirtualDPad::wasd()),
+                    UserInput::VirtualDPad(VirtualDPad::dpad()),
+                    UserInput::VirtualDPad(VirtualDPad::arrow_keys()),
+                ]
             }
-            Self::MoveLeft => {
-                vec![Single(Kbd(KeyA)), Single(Kbd(ArrowLeft))]
-            }
-            Self::MoveRight => {
-                vec![Single(Kbd(KeyD)), Single(Kbd(ArrowRight))]
-            }
-            Self::MoveUp => {
-                vec![Single(Kbd(KeyW)), Single(Kbd(ArrowUp))]
-            }
-            Self::MoveDownLeft => vec![
-                Chord(vec![Kbd(KeyS), Kbd(KeyA)]),
-                Chord(vec![Kbd(ArrowDown), Kbd(ArrowLeft)]),
+            Self::Inspect => vec![
+                Single(Kbd(AltLeft)),
+                Single(Kbd(AltRight)),
+                Single(GPad(LeftTrigger)),
+                Single(GPad(LeftTrigger2)),
             ],
-            Self::MoveDownRight => vec![
-                Chord(vec![Kbd(KeyS), Kbd(KeyD)]),
-                Chord(vec![Kbd(ArrowDown), Kbd(ArrowRight)]),
-            ],
-            Self::MoveUpLeft => vec![
-                Chord(vec![Kbd(KeyW), Kbd(KeyA)]),
-                Chord(vec![Kbd(ArrowUp), Kbd(ArrowLeft)]),
-            ],
-            Self::MoveUpRight => vec![
-                Chord(vec![Kbd(KeyW), Kbd(KeyD)]),
-                Chord(vec![Kbd(ArrowUp), Kbd(ArrowRight)]),
-            ],
-            Self::Inspect => vec![Single(Kbd(AltLeft))],
             Self::NumZero => vec![Single(Kbd(Digit0))],
             Self::NumOne => vec![Single(Kbd(Digit1))],
             Self::NumTwo => vec![Single(Kbd(Digit2))],
@@ -285,4 +252,89 @@ impl GlobalAction {
             Self::NumNine => vec![Single(Kbd(Digit9))],
         }
     }
+}
+
+/// Extends [`ActionState`] with methods specific to this game.
+pub trait ActionStateExt {
+    /// Returns the movement action if the action state is in a movement state.
+    fn movement_action(&self) -> Option<MovementAction>;
+}
+
+impl ActionStateExt for ActionState<GlobalAction> {
+    fn movement_action(&self) -> Option<MovementAction> {
+        let axis_pair = self.axis_pair(&GlobalAction::Move)?;
+        from_dual_axis(axis_pair.xy())
+    }
+}
+
+impl MovementAction {
+    /// ↖↑↗
+    pub fn is_in_up_direction(self) -> bool {
+        matches!(self, Self::MoveUp | Self::MoveUpLeft | Self::MoveUpRight)
+    }
+
+    /// ↘↓↙
+    pub fn is_in_down_direction(self) -> bool {
+        matches!(
+            self,
+            Self::MoveDown | Self::MoveDownLeft | Self::MoveDownRight
+        )
+    }
+
+    /// ↖←↙
+    pub fn is_in_left_direction(self) -> bool {
+        matches!(self, Self::MoveLeft | Self::MoveUpLeft | Self::MoveDownLeft)
+    }
+
+    /// ↗→↘
+    pub fn is_in_right_direction(self) -> bool {
+        matches!(
+            self,
+            Self::MoveRight | Self::MoveUpRight | Self::MoveDownRight
+        )
+    }
+}
+
+fn from_dual_axis(left_stick: Vec2) -> Option<MovementAction> {
+    // Generated by chat-gpt based on my description and example of the output
+    // enum.
+
+    use MovementAction::*;
+
+    // Define a small threshold to avoid noise in the analog stick
+    let threshold = 0.1;
+
+    // Check if the stick is within the dead zone
+    if left_stick.x.abs() < threshold && left_stick.y.abs() < threshold {
+        return None;
+    }
+
+    // Calculate the angle in radians
+    let angle = left_stick.y.atan2(left_stick.x);
+
+    use std::f32::consts::PI;
+
+    const PPI_OVER_8: f32 = PI / 8.0;
+    const P3PI_OVER_8: f32 = 3.0 * PPI_OVER_8;
+    const P5PI_OVER_8: f32 = 5.0 * PPI_OVER_8;
+    const P7PI_OVER_8: f32 = 7.0 * PPI_OVER_8;
+    const NPI_OVER_8: f32 = -PPI_OVER_8;
+    const N3PI_OVER_8: f32 = -P3PI_OVER_8;
+    const N5PI_OVER_8: f32 = -P5PI_OVER_8;
+    const N7PI_OVER_8: f32 = -P7PI_OVER_8;
+
+    let action = match angle {
+        N3PI_OVER_8..NPI_OVER_8 => MoveDownRight, // ↘
+        NPI_OVER_8..PPI_OVER_8 => MoveRight,      // →
+        PPI_OVER_8..P3PI_OVER_8 => MoveUpRight,   // ↗
+        P3PI_OVER_8..P5PI_OVER_8 => MoveUp,       // ↑
+        P5PI_OVER_8..P7PI_OVER_8 => MoveUpLeft,   // ↖
+        // left direction wraps around the positive and negative boundaries of
+        // the circle
+        P7PI_OVER_8..=PI | ..N7PI_OVER_8 => MoveLeft, // ←
+        N7PI_OVER_8..N5PI_OVER_8 => MoveDownLeft,     // ↙
+        _ => MoveDown,                                // ↓
+    };
+
+    Some(action)
 }

@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::PIXEL_ZOOM;
 use main_game_lib::common_ext::QueryExt;
@@ -78,16 +80,32 @@ pub(super) fn change_selection(
         (&mut Style, &mut UiImage),
         With<SelectionMarker>,
     >,
+
+    mut last_changed: Local<Option<Instant>>,
 ) {
+    let Some(action) = controls.movement_action() else {
+        return;
+    };
+
+    // The player does not have to release the button to keep changing the
+    // selection, it's enough to hold it as well and we smoothly change the
+    // selection.
+    // Very useful for control sticks.
+    let elapsed_since_changed =
+        last_changed.get_or_insert_with(Instant::now).elapsed();
+    let should_trigger = controls.just_pressed(&GlobalAction::Move)
+        || elapsed_since_changed > Duration::from_millis(250);
+    if !should_trigger {
+        return;
+    }
+    *last_changed = Some(Instant::now());
+
     let mut menu = menu.single_mut();
     let curr_selection = menu.selection;
 
-    let pressed_up = controls.just_pressed(&GlobalAction::MoveUp);
-    let pressed_down = controls.just_pressed(&GlobalAction::MoveDown);
-
-    let new_selection = if pressed_up {
+    let new_selection = if action.is_in_up_direction() {
         Some(curr_selection.prev())
-    } else if pressed_down {
+    } else if action.is_in_down_direction() {
         Some(curr_selection.next())
     } else {
         None

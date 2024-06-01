@@ -408,8 +408,6 @@ fn fade_in_quad_that_hides_atlas(
 
     query: Query<&mut BackgroundColor, With<LoadingQuad>>,
 ) {
-    trace!("Received signal to finish the loading screen");
-
     if settings.atlas.is_none() {
         next_state.set(LoadingScreenState::FadeOutQuadToShowGame);
         return;
