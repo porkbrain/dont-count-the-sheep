@@ -129,7 +129,7 @@ impl Character {
             Character::Emil => "Emil",
             Character::Cooper => "Cooper",
             Character::Samizdat => "Samizdat",
-            Character::Otter => "Otter",
+            Character::Otter => "Mr Otter",
         }
     }
 
@@ -152,6 +152,8 @@ impl Character {
             Character::WhiteCat => WHITE_CAT,
             Character::Bolt => BOLT,
             Character::Cooper => COOPER,
+            Character::Otter => OTTER,
+            Character::Phoebe => PHOEBE,
             _ => unimplemented!(),
         }
     }
@@ -204,11 +206,15 @@ impl Character {
             }
             Character::Bolt => Some((STANDARD_SIZE, 12, 1, default())),
             Character::Marie => Some((STANDARD_SIZE, 15, 1, default())),
-            Character::Samizdat => Some((STANDARD_SIZE, 15, 1, default())),
+            Character::Samizdat => Some((STANDARD_SIZE, 12, 2, default())),
             Character::WhiteCat => {
                 Some((Vec2::new(48.0, 46.0), 6, 1, default()))
             }
             Character::Cooper => Some((Vec2::new(25.0, 29.0), 2, 1, default())),
+            Character::Otter => Some((Vec2::new(36.0, 46.0), 7, 1, default())),
+            Character::Phoebe => {
+                Some((Vec2::new(25.0, 46.0), 12, 2, default()))
+            }
             _ => None,
         }
     }
@@ -281,6 +287,16 @@ impl Character {
             // after a few seconds, winnie puts her hands in her pockets
             (Self::Winnie, Bottom) if how_long.as_secs() > 5 => WINNIE_COLS,
 
+            (Self::Otter, TopRight | Top | TopLeft | Left) => 2,
+            (Self::Otter, BottomRight | Bottom | BottomLeft | Right) => {
+                (3 * time.elapsed_wrapped().as_secs() as usize / 4) % 2
+            }
+
+            // after a few seconds, samizdat puts her hands in her pockets
+            (Self::Samizdat, _) if how_long.as_secs() > 2 => 12,
+
+            (Self::Phoebe, _) if how_long.as_secs() > 2 => 13,
+
             (_, Bottom) => 0,
             (_, Top) => 1,
             (_, Right | TopRight | BottomRight) => 6,
@@ -322,6 +338,11 @@ impl Character {
 
             (Self::Winnie, TopRight) => WINNIE_COLS + 7 + extra,
             (Self::Winnie, TopLeft) => WINNIE_COLS + 10 + extra,
+
+            (Self::Otter, TopRight | Right | BottomRight) => 3 + extra,
+            (Self::Otter, TopLeft | Left | BottomLeft) => 5 + extra,
+            (Self::Otter, Bottom) => 0 + extra,
+            (Self::Otter, Top) => 2,
 
             // defaults
             (_, Top) => 2 + extra,

@@ -1,20 +1,20 @@
 [gd_scene load_steps=16 format=3 uid="uid://qrq4qd72bkgp"]
 
-[ext_resource type="Texture2D" uid="uid://p2vei5la1m3i" path="res://assets/twinpeaks_apartment/twinpeaks_bg.png" id="1_cqoh4"]
-[ext_resource type="Texture2D" uid="uid://dgh7pxmg8k4yg" path="res://assets/twinpeaks_apartment/bed_plain.png" id="2_x34s0"]
-[ext_resource type="Texture2D" uid="uid://c40aoo40c6ysm" path="res://assets/twinpeaks_apartment/shower.png" id="3_i5k2w"]
-[ext_resource type="Texture2D" uid="uid://cbwce0005pies" path="res://assets/environment/water_bottle_half.png" id="4_8j1mb"]
-[ext_resource type="Texture2D" uid="uid://cp0rngx6yb8ld" path="res://assets/environment/box_cardboard_sideways.png" id="5_l06fy"]
-[ext_resource type="Texture2D" uid="uid://uy06ivqk8lwk" path="res://assets/residential/indoors/plant1.png" id="6_1lf6j"]
-[ext_resource type="Texture2D" uid="uid://dmrem43l81ule" path="res://assets/residential/indoors/pc_chair.png" id="7_q3pv5"]
-[ext_resource type="Texture2D" uid="uid://2wr58b6rdevo" path="res://assets/residential/indoors/plant3.png" id="7_t6oyq"]
-[ext_resource type="Texture2D" uid="uid://brdoi6htsrkpx" path="res://assets/residential/indoors/sink.png" id="8_2n8eo"]
-[ext_resource type="Texture2D" uid="uid://bthus13w1bjrk" path="res://assets/residential/indoors/washing_machine.png" id="9_0jnkc"]
-[ext_resource type="Texture2D" uid="uid://bnjytja6epmhk" path="res://assets/twinpeaks_apartment/purple_rug.png" id="11_0rl6n"]
-[ext_resource type="Texture2D" uid="uid://8v5up8wq5o5i" path="res://assets/residential/indoors/window_blinds.png" id="12_pgxt7"]
-[ext_resource type="Texture2D" uid="uid://kp1m87h0g7ox" path="res://assets/residential/indoors/tv_yellow.png" id="13_rxqmk"]
-[ext_resource type="Texture2D" uid="uid://cw3pr54lpwq8h" path="res://assets/residential/indoors/kredenc.png" id="14_w5d20"]
-[ext_resource type="Texture2D" uid="uid://bp3krmlj4peg0" path="res://assets/twinpeaks_apartment/popelnik.png" id="15_xnd7r"]
+[ext_resource type="Texture2D" uid="uid://bxned4cxwr5oh" path="res://assets/twinpeaks_apartment/twinpeaks_bg.png" id="1_cqoh4"]
+[ext_resource type="Texture2D" uid="uid://c312if8qifaet" path="res://assets/twinpeaks_apartment/bed_plain.png" id="2_x34s0"]
+[ext_resource type="Texture2D" uid="uid://dtninaqnht00i" path="res://assets/twinpeaks_apartment/shower.png" id="3_i5k2w"]
+[ext_resource type="Texture2D" uid="uid://dpj7jnsvxyfvt" path="res://assets/environment/water_bottle_half.png" id="4_8j1mb"]
+[ext_resource type="Texture2D" uid="uid://d12k76fyavn8r" path="res://assets/environment/box_cardboard_sideways.png" id="5_l06fy"]
+[ext_resource type="Texture2D" uid="uid://c07goj3d4hpxn" path="res://assets/residential/indoors/plant1.png" id="6_1lf6j"]
+[ext_resource type="Texture2D" uid="uid://d0s78vuxqqoyd" path="res://assets/residential/indoors/pc_chair.png" id="7_q3pv5"]
+[ext_resource type="Texture2D" uid="uid://bivyqy838wdmo" path="res://assets/residential/indoors/plant3.png" id="7_t6oyq"]
+[ext_resource type="Texture2D" uid="uid://bcnwgs4asdo3o" path="res://assets/residential/indoors/sink.png" id="8_2n8eo"]
+[ext_resource type="Texture2D" uid="uid://dwe8ryv8pvsi4" path="res://assets/residential/indoors/washing_machine.png" id="9_0jnkc"]
+[ext_resource type="Texture2D" uid="uid://bku5kc52cje0v" path="res://assets/twinpeaks_apartment/purple_rug.png" id="11_0rl6n"]
+[ext_resource type="Texture2D" uid="uid://j8306q4xsnvy" path="res://assets/residential/indoors/window_blinds.png" id="12_pgxt7"]
+[ext_resource type="Texture2D" uid="uid://bnnegcdia3k5s" path="res://assets/residential/indoors/tv_yellow.png" id="13_rxqmk"]
+[ext_resource type="Texture2D" uid="uid://cucsq824qpe3w" path="res://assets/residential/indoors/kredenc.png" id="14_w5d20"]
+[ext_resource type="Texture2D" uid="uid://bga8tmp3a2ahb" path="res://assets/twinpeaks_apartment/popelnik.png" id="15_xnd7r"]
 
 [node name="TwinPeaks" type="Node2D"]
 
@@ -53,6 +53,9 @@ metadata/zone = "ExitZone"
 metadata/action = "ExitScene"
 metadata/label = "Exit"
 metadata/category = "Default"
+
+[node name="PhoebeSpawn" type="Node2D" parent="Points"]
+position = Vector2(-113, 21)
 
 [node name="BoxCardboardSideways" type="Sprite2D" parent="."]
 position = Vector2(-57, -14)

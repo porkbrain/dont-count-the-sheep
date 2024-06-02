@@ -526,34 +526,46 @@ impl CharacterBundleBuilder {
     /// the `common_layout` crate).
     /// The specific layout is provided in the
     /// [`CharacterBundleBuilder::insert_bundle_into`] method's `T`.
-    pub fn initial_position(&mut self, initial_position: Vec2) {
+    pub fn initial_position(&mut self, initial_position: Vec2) -> &mut Self {
         self.initial_position = initial_position;
+        self
     }
 
     /// Where to spawn the character.
-    pub fn initial_square(&mut self, initial_square: Square) {
+    pub fn initial_square(&mut self, initial_square: Square) -> &mut Self {
         self.initial_position = LAYOUT.square_to_world_pos(initial_square);
+        self
     }
 
     /// When the map is loaded, the character is spawned facing this
     /// direction.
-    pub fn initial_direction(&mut self, initial_direction: GridDirection) {
+    pub fn initial_direction(
+        &mut self,
+        initial_direction: GridDirection,
+    ) -> &mut Self {
         self.initial_direction = initial_direction;
+        self
     }
 
     /// Where to walk to initially.
-    pub fn walking_to(&mut self, walking_to: ActorTarget) {
+    pub fn walking_to(&mut self, walking_to: ActorTarget) -> &mut Self {
         self.walking_to = ActorMovement::Target(walking_to);
+        self
     }
 
     /// How long does it take to move one square.
-    pub fn initial_step_time(&mut self, step_time: Duration) {
+    pub fn initial_step_time(&mut self, step_time: Duration) -> &mut Self {
         self.initial_step_time = Some(step_time);
+        self
     }
 
     /// What behavior tree to use for the NPC.
-    pub fn behavior_tree(&mut self, behavior_tree: impl Into<BehaviorTree>) {
+    pub fn behavior_tree(
+        &mut self,
+        behavior_tree: impl Into<BehaviorTree>,
+    ) -> &mut Self {
         self.behavior_tree = Some(behavior_tree.into());
+        self
     }
 
     /// Spawns a bundle into the provided entity command queue.

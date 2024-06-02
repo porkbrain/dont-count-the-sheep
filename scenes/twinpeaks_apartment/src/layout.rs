@@ -51,6 +51,9 @@ struct Spawner<'a> {
     atlases: &'a mut Assets<TextureAtlasLayout>,
     zone_to_inspect_label_entity:
         &'a mut ZoneToInspectLabelEntity<TwinpeaksApartmentTileKind>,
+
+    phoebe_entity: Entity,
+    phoebe_builder: &'a mut CharacterBundleBuilder,
 }
 
 /// The names are stored in the scene file.
@@ -70,6 +73,9 @@ fn spawn(
     let player = cmd.spawn_empty().id();
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
+    let phoebe = cmd.spawn_empty().id();
+    let mut phoebe_builder = common_story::Character::Phoebe.bundle_builder();
+
     tscn.spawn_into(
         &mut Spawner {
             player_entity: player,
@@ -77,11 +83,14 @@ fn spawn(
             asset_server: &asset_server,
             atlases: &mut atlas_layouts,
             zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
+            phoebe_entity: phoebe,
+            phoebe_builder: &mut phoebe_builder,
         },
         &mut cmd,
     );
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
+    phoebe_builder.insert_bundle_into(&asset_server, &mut cmd.entity(phoebe));
 
     cmd.insert_resource(zone_to_inspect_label_entity);
 }
@@ -115,9 +124,13 @@ impl<'a> TscnSpawner for Spawner<'a> {
             "TwinPeaks" => {
                 cmd.entity(who).insert(LayoutEntity);
                 cmd.entity(who).add_child(self.player_entity);
+                cmd.entity(who).add_child(self.phoebe_entity);
             }
             "Entrance" => {
                 self.player_builder.initial_position(translation.truncate());
+            }
+            "PhoebeSpawn" => {
+                self.phoebe_builder.initial_position(translation.truncate());
             }
             _ => {}
         }

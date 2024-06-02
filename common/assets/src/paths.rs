@@ -93,6 +93,8 @@ pub mod character_atlases {
     pub const BOLT: &str = "characters/atlases/bolt1.png";
     pub const WHITE_CAT: &str = "characters/atlases/whitecat1.png";
     pub const COOPER: &str = "characters/atlases/cooper1.png";
+    pub const OTTER: &str = "characters/atlases/otter1.png";
+    pub const PHOEBE: &str = "characters/atlases/phoebe1.png";
 
     pub const WINNIE_COLS: usize = 12;
 }
