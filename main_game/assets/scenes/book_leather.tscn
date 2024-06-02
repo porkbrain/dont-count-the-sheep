@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://cktkr17ptufn3"]
+
+[ext_resource type="Texture2D" uid="uid://chsot1nhjc2cr" path="res://assets/ui/hud/book_leather.png" id="1_encne"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="BookLeather" type="Sprite2D" parent="."]
+position = Vector2(1, 1)
+texture = ExtResource("1_encne")
