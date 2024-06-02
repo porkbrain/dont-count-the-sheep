@@ -1,25 +1,25 @@
 [gd_scene load_steps=36 format=3 uid="uid://b4jfxrl5rqnne"]
 
-[ext_resource type="Texture2D" uid="uid://cbouvwlgc3k01" path="res://assets/residential/indoors/hallway2.png" id="1_hc42t"]
-[ext_resource type="Texture2D" uid="uid://3212443mchtu" path="res://assets/residential/indoors/brown_dark_door_atlas.png" id="2_hgy38"]
-[ext_resource type="Texture2D" uid="uid://cq4dga042qxr" path="res://assets/residential/indoors/elevator_atlas.png" id="3_af3up"]
-[ext_resource type="Texture2D" uid="uid://dnj0hlb6fb6yh" path="res://assets/residential/indoors/utility_door_atlas.png" id="4_5p8gt"]
-[ext_resource type="Texture2D" uid="uid://cve0p1fj5bjp3" path="res://assets/downtown/recycle_bin.png" id="5_0eq5h"]
-[ext_resource type="Texture2D" uid="uid://bmy3x3gvi867d" path="res://assets/downtown/black_bin.png" id="6_sj14k"]
-[ext_resource type="Texture2D" uid="uid://qe3r5b1iubhp" path="res://assets/residential/indoors/hallway2_wall.png" id="7_udva6"]
-[ext_resource type="Texture2D" uid="uid://b06q4mk3jgjdn" path="res://assets/residential/indoors/poster_skeleton.png" id="8_xnu6d"]
-[ext_resource type="Texture2D" uid="uid://c7kxndctyvlu0" path="res://assets/residential/indoors/sofa_purple.png" id="9_eaole"]
-[ext_resource type="Texture2D" uid="uid://cucsq824qpe3w" path="res://assets/residential/indoors/kredenc.png" id="10_77ua5"]
-[ext_resource type="Texture2D" uid="uid://dnu54tiuqoh11" path="res://assets/residential/indoors/side_table1.png" id="11_vbwku"]
-[ext_resource type="Texture2D" uid="uid://d00p28mxdb8q6" path="res://assets/residential/indoors/bath_horizontal.png" id="12_6odtv"]
-[ext_resource type="Texture2D" uid="uid://bcnwgs4asdo3o" path="res://assets/residential/indoors/sink.png" id="13_5srwn"]
-[ext_resource type="Texture2D" uid="uid://d07qq5e0nd3h1" path="res://assets/residential/indoors/toilet.png" id="14_uwy0d"]
-[ext_resource type="Texture2D" uid="uid://7l1abjmnq6gp" path="res://assets/residential/indoors/side_table2_back.png" id="15_ctho0"]
-[ext_resource type="Texture2D" uid="uid://dlrneao0sl1dc" path="res://assets/environment/toilet_paper.png" id="16_g87gh"]
-[ext_resource type="Texture2D" uid="uid://cds1sxu666s4i" path="res://assets/residential/indoors/tv_withcable.png" id="17_wf30n"]
-[ext_resource type="Texture2D" uid="uid://c7q4u2hn8t80b" path="res://assets/residential/indoors/bed_wooden_black.png" id="18_i57do"]
-[ext_resource type="Texture2D" uid="uid://bga8tmp3a2ahb" path="res://assets/twinpeaks_apartment/popelnik.png" id="19_axcx5"]
-[ext_resource type="Texture2D" uid="uid://cf47qpcj3xpaq" path="res://assets/twinpeaks_apartment/black_rug.png" id="20_85nrp"]
+[ext_resource type="Texture2D" uid="uid://cbs7hpafjhpxt" path="res://assets/residential/indoors/hallway2.png" id="1_hc42t"]
+[ext_resource type="Texture2D" uid="uid://ds5d1ssvswgsm" path="res://assets/residential/indoors/brown_dark_door_atlas.png" id="2_hgy38"]
+[ext_resource type="Texture2D" uid="uid://hny4j2anps08" path="res://assets/residential/indoors/elevator_atlas.png" id="3_af3up"]
+[ext_resource type="Texture2D" uid="uid://bwlthosxjgc4w" path="res://assets/residential/indoors/utility_door_atlas.png" id="4_5p8gt"]
+[ext_resource type="Texture2D" uid="uid://wm712yivg1yb" path="res://assets/downtown/recycle_bin.png" id="5_0eq5h"]
+[ext_resource type="Texture2D" uid="uid://bfp6cm2hbyswi" path="res://assets/downtown/black_bin.png" id="6_sj14k"]
+[ext_resource type="Texture2D" uid="uid://b6bc70ydbei0g" path="res://assets/residential/indoors/hallway2_wall.png" id="7_udva6"]
+[ext_resource type="Texture2D" uid="uid://bedyh4n5xejgk" path="res://assets/residential/indoors/poster_skeleton.png" id="8_xnu6d"]
+[ext_resource type="Texture2D" uid="uid://y246scmkkl2q" path="res://assets/residential/indoors/sofa_purple.png" id="9_eaole"]
+[ext_resource type="Texture2D" uid="uid://40wrcm5hjv4p" path="res://assets/residential/indoors/kredenc.png" id="10_77ua5"]
+[ext_resource type="Texture2D" uid="uid://dggtq8cr8skng" path="res://assets/residential/indoors/side_table1.png" id="11_vbwku"]
+[ext_resource type="Texture2D" uid="uid://fpc3f14s24e7" path="res://assets/residential/indoors/bath_horizontal.png" id="12_6odtv"]
+[ext_resource type="Texture2D" uid="uid://dbbu6xgobs5xu" path="res://assets/residential/indoors/sink.png" id="13_5srwn"]
+[ext_resource type="Texture2D" uid="uid://cgd4gem7h52i6" path="res://assets/residential/indoors/toilet.png" id="14_uwy0d"]
+[ext_resource type="Texture2D" uid="uid://coox5howsviig" path="res://assets/residential/indoors/side_table2_back.png" id="15_ctho0"]
+[ext_resource type="Texture2D" uid="uid://oiymn7tgnmeq" path="res://assets/environment/toilet_paper.png" id="16_g87gh"]
+[ext_resource type="Texture2D" uid="uid://i5mikktwmb2l" path="res://assets/residential/indoors/tv_withcable.png" id="17_wf30n"]
+[ext_resource type="Texture2D" uid="uid://b54eahl80h2uy" path="res://assets/residential/indoors/bed_wooden_black.png" id="18_i57do"]
+[ext_resource type="Texture2D" uid="uid://bp3krmlj4peg0" path="res://assets/twinpeaks_apartment/popelnik.png" id="19_axcx5"]
+[ext_resource type="Texture2D" uid="uid://b838vr33qe6o8" path="res://assets/twinpeaks_apartment/black_rug.png" id="20_85nrp"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_n0t2h"]
 atlas = ExtResource("3_af3up")
@@ -230,20 +230,20 @@ texture = ExtResource("11_vbwku")
 position = Vector2(-2.5, -11.5)
 texture = ExtResource("19_axcx5")
 
-[node name="TvWithcable" type="Sprite2D" parent="."]
-position = Vector2(-84, -25)
-texture = ExtResource("17_wf30n")
-flip_h = true
-
-[node name="YSort" type="Node2D" parent="TvWithcable"]
-position = Vector2(8, -4)
-
 [node name="Kredenc" type="Sprite2D" parent="."]
 position = Vector2(-55, -18)
 texture = ExtResource("10_77ua5")
 
 [node name="YSort" type="Node2D" parent="Kredenc"]
 position = Vector2(0, 13)
+
+[node name="TvWithcable" type="Sprite2D" parent="Kredenc"]
+position = Vector2(-29, -7)
+texture = ExtResource("17_wf30n")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="Kredenc/TvWithcable"]
+position = Vector2(8, -4)
 
 [node name="BathHorizontal" type="Sprite2D" parent="."]
 z_index = -1
