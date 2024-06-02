@@ -2,7 +2,7 @@
 
 use bevy::prelude::*;
 use bevy_grid_squared::{GridDirection, Square};
-use common_action::GlobalAction;
+use common_action::{ActionStateExt, GlobalAction, MovementAction};
 use common_ext::QueryExt;
 use leafwing_input_manager::action_state::ActionState;
 
@@ -33,13 +33,7 @@ pub fn move_around<T: TopDownScene>(
     >,
 ) {
     // there must be some user action
-    let Some(action) = controls
-        .get_pressed()
-        .iter()
-        .rev() // we care about the last one pressed
-        .find(|c| c.is_directional())
-        .copied()
-    else {
+    let Some(action) = controls.movement_action() else {
         return;
     };
     // that leads to a movement command
@@ -121,15 +115,15 @@ pub fn move_around<T: TopDownScene>(
 /// See the [`move_around`] logic to understand how secondary directions are
 /// used.
 fn to_direction_commands(
-    action: GlobalAction,
+    action: MovementAction,
 ) -> Option<(&'static [GridDirection], Option<&'static [GridDirection]>)> {
     use GridDirection::*;
 
     let steps: (&[_], Option<&[_]>) = match action {
-        GlobalAction::MoveUp => (&[Top, TopLeft, TopRight], None),
-        GlobalAction::MoveDown => (&[Bottom, BottomLeft, BottomRight], None),
-        GlobalAction::MoveLeft => (&[Left, TopLeft, BottomLeft], None),
-        GlobalAction::MoveRight => (&[Right, TopRight, BottomRight], None),
+        MovementAction::MoveUp => (&[Top, TopLeft, TopRight], None),
+        MovementAction::MoveDown => (&[Bottom, BottomLeft, BottomRight], None),
+        MovementAction::MoveLeft => (&[Left, TopLeft, BottomLeft], None),
+        MovementAction::MoveRight => (&[Right, TopRight, BottomRight], None),
 
         // These diagonal movement combined actions can end up getting stuck
         // in diagonal corners, for example:
@@ -143,20 +137,17 @@ fn to_direction_commands(
         // consider Up, Right, UpRight, so let's also consider UpLeft and
         // BottomRight squares.
         // This is analogous for the other diagonal movements.
-        GlobalAction::MoveUpLeft => {
+        MovementAction::MoveUpLeft => {
             (&[TopLeft, Top, Left], Some(&[TopRight, BottomLeft]))
         }
-        GlobalAction::MoveUpRight => {
+        MovementAction::MoveUpRight => {
             (&[TopRight, Top, Right], Some(&[TopLeft, BottomRight]))
         }
-        GlobalAction::MoveDownLeft => {
+        MovementAction::MoveDownLeft => {
             (&[BottomLeft, Bottom, Left], Some(&[TopLeft, BottomRight]))
         }
-        GlobalAction::MoveDownRight => {
+        MovementAction::MoveDownRight => {
             (&[BottomRight, Bottom, Right], Some(&[TopRight, BottomLeft]))
-        }
-        _ => {
-            return None;
         }
     };
 

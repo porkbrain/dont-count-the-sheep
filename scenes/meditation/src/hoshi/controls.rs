@@ -54,18 +54,19 @@ pub(super) fn normal(
         }
     }
 
-    let pressed_left = controls.pressed(&GlobalAction::MoveLeft)
-        || controls.pressed(&GlobalAction::MoveDownLeft)
-        || controls.pressed(&GlobalAction::MoveUpLeft);
-    let pressed_right = controls.pressed(&GlobalAction::MoveRight)
-        || controls.pressed(&GlobalAction::MoveDownRight)
-        || controls.pressed(&GlobalAction::MoveUpRight);
-    let pressed_down = controls.pressed(&GlobalAction::MoveDown)
-        || controls.pressed(&GlobalAction::MoveDownLeft)
-        || controls.pressed(&GlobalAction::MoveDownRight);
-    let pressed_up = controls.pressed(&GlobalAction::MoveUp)
-        || controls.pressed(&GlobalAction::MoveUpLeft)
-        || controls.pressed(&GlobalAction::MoveUpRight);
+    let movement_action = controls.movement_action();
+
+    let pressed_left = movement_action
+        .filter(|a| a.is_in_left_direction())
+        .is_some();
+    let pressed_right = movement_action
+        .filter(|a| a.is_in_right_direction())
+        .is_some();
+    let pressed_down = movement_action
+        .filter(|a| a.is_in_down_direction())
+        .is_some();
+    let pressed_up =
+        movement_action.filter(|a| a.is_in_up_direction()).is_some();
 
     let dt = time.delta_seconds();
     let gvec = gravity.gradient_at(ChangeOfBasis::from(*transform))
@@ -215,26 +216,18 @@ pub(crate) fn loading_special(
 }
 
 fn unit_circle_angle(a: &ActionState<GlobalAction>) -> Option<Radians> {
-    use GlobalAction::*;
+    use MovementAction::*;
+    let a = a.movement_action()?;
 
-    let angle = if a.pressed(&MoveLeft) {
-        PI // ←
-    } else if a.pressed(&MoveRight) {
-        2.0 * PI // →
-    } else if a.pressed(&MoveUp) {
-        PI / 2.0 // ↑
-    } else if a.pressed(&MoveDown) {
-        3.0 * PI / 2.0 // ↓
-    } else if a.pressed(&MoveUpLeft) {
-        3.0 * PI / 4.0 // ↖
-    } else if a.pressed(&MoveUpRight) {
-        PI / 4.0 // ↗
-    } else if a.pressed(&MoveDownRight) {
-        7.0 * PI / 4.0 // ↘
-    } else if a.pressed(&MoveDownLeft) {
-        5.0 * PI / 4.0 // ↙
-    } else {
-        return None;
+    let angle = match a {
+        MoveLeft => PI,                  // ←
+        MoveRight => 2.0 * PI,           // →
+        MoveUp => PI / 2.0,              // ↑
+        MoveDown => 3.0 * PI / 2.0,      // ↓
+        MoveUpLeft => 3.0 * PI / 4.0,    // ↖
+        MoveUpRight => PI / 4.0,         // ↗
+        MoveDownRight => 7.0 * PI / 4.0, // ↘
+        MoveDownLeft => 5.0 * PI / 4.0,  // ↙
     };
 
     Some(Radians::new(angle))
