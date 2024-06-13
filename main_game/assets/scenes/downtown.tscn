@@ -371,6 +371,34 @@ position = Vector2(0, 24)
 
 [node name="CompoundRoot" type="Node2D" parent="."]
 
+[node name="FenceStone" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-550, -854)
+texture = ExtResource("79_gmvgg")
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStone"]
+position = Vector2(-4, 28)
+
+[node name="FenceStone2" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-381, -854)
+texture = ExtResource("79_gmvgg")
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStone2"]
+position = Vector2(2, 26)
+
+[node name="FenceStoneVertical" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-298, -939)
+texture = ExtResource("80_uof8l")
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStoneVertical"]
+position = Vector2(0, 59)
+
+[node name="FenceStoneVertical2" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-298, -1132)
+texture = ExtResource("80_uof8l")
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStoneVertical2"]
+position = Vector2(0, 114)
+
 [node name="Jehlicnan2" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-494, -424)
 texture = ExtResource("29_j62ep")
@@ -389,6 +417,14 @@ position = Vector2(3, 112)
 position = Vector2(38, 106)
 texture = ExtResource("44_d0uug")
 
+[node name="Briza2" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-335, -677)
+texture = ExtResource("16_xr53b")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/Briza2"]
+position = Vector2(6, 71)
+
 [node name="Barn" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-140, -649)
 texture = ExtResource("23_av7fi")
@@ -399,14 +435,6 @@ position = Vector2(-5, 68)
 [node name="Sipek" type="Sprite2D" parent="CompoundRoot/Barn"]
 position = Vector2(3, 77)
 texture = ExtResource("14_6c1wy")
-
-[node name="Briza" type="Sprite2D" parent="CompoundRoot/Barn"]
-position = Vector2(-195, -28)
-texture = ExtResource("16_xr53b")
-flip_h = true
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/Barn/Briza"]
-position = Vector2(6, 71)
 
 [node name="Briza" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-880, -437)
@@ -484,10 +512,12 @@ texture = ExtResource("28_6tavv")
 position = Vector2(0, 75)
 
 [node name="BigTree3" type="Sprite2D" parent="CompoundRoot"]
-z_index = -1
 position = Vector2(-222, -439)
 texture = ExtResource("28_6tavv")
 flip_h = true
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/BigTree3"]
+position = Vector2(-1, 78)
 
 [node name="Lavicka3" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-338, -819)
@@ -504,9 +534,11 @@ texture = ExtResource("14_6c1wy")
 position = Vector2(-3, 22)
 
 [node name="Jehlicnan4" type="Sprite2D" parent="CompoundRoot"]
-z_index = -1
 position = Vector2(-807, -454)
 texture = ExtResource("29_j62ep")
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/Jehlicnan4"]
+position = Vector2(1, 63)
 
 [node name="Podrost" type="Node2D" parent="CompoundRoot"]
 z_index = -1
@@ -724,34 +756,6 @@ texture = ExtResource("63_vdtxl")
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/BoxCardboardSideways"]
 position = Vector2(-4, 9)
-
-[node name="FenceStone" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-550, -854)
-texture = ExtResource("79_gmvgg")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStone"]
-position = Vector2(-4, 28)
-
-[node name="FenceStone2" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-381, -854)
-texture = ExtResource("79_gmvgg")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStone2"]
-position = Vector2(2, 26)
-
-[node name="FenceStoneVertical" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-298, -939)
-texture = ExtResource("80_uof8l")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStoneVertical"]
-position = Vector2(0, 59)
-
-[node name="FenceStoneVertical2" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-298, -1132)
-texture = ExtResource("80_uof8l")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStoneVertical2"]
-position = Vector2(0, 114)
 
 [node name="BureauRoot" type="Node2D" parent="."]
 
@@ -1081,7 +1085,7 @@ position = Vector2(64, -273)
 texture = ExtResource("13_7q235")
 
 [node name="YSort" type="Node2D" parent="Block2Root/Tree3"]
-position = Vector2(0, 69)
+position = Vector2(0, 70)
 
 [node name="TreePot" type="Sprite2D" parent="Block2Root/Tree3"]
 z_index = -1
@@ -1092,8 +1096,8 @@ texture = ExtResource("20_kpivv")
 position = Vector2(97, -227)
 texture = ExtResource("14_8uy80")
 
-[node name="Ysort" type="Node2D" parent="Block2Root/Lamp"]
-position = Vector2(0, 33)
+[node name="YSort" type="Node2D" parent="Block2Root/Lamp"]
+position = Vector2(0, 22)
 
 [node name="Lavicka2" type="Sprite2D" parent="Block2Root"]
 position = Vector2(549, -333)

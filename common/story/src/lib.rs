@@ -341,7 +341,7 @@ impl Character {
 
             (Self::Otter, TopRight | Right | BottomRight) => 3 + extra,
             (Self::Otter, TopLeft | Left | BottomLeft) => 5 + extra,
-            (Self::Otter, Bottom) => 0 + extra,
+            (Self::Otter, Bottom) => extra,
             (Self::Otter, Top) => 2,
 
             // defaults
