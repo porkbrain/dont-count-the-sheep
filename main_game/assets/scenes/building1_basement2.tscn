@@ -1,26 +1,26 @@
 [gd_scene load_steps=25 format=3 uid="uid://e5yy5730l3t2"]
 
-[ext_resource type="Texture2D" uid="uid://x6i0asq43o78" path="res://assets/residential/indoors/basement.png" id="1_ikw8b"]
-[ext_resource type="Texture2D" uid="uid://b75yq8snj53yw" path="res://assets/downtown/trashcan_tables.png" id="2_307ea"]
-[ext_resource type="Texture2D" uid="uid://dnj0hlb6fb6yh" path="res://assets/residential/indoors/utility_door_atlas.png" id="2_ax6ay"]
-[ext_resource type="Texture2D" uid="uid://d0s78vuxqqoyd" path="res://assets/residential/indoors/pc_chair.png" id="2_mwdls"]
-[ext_resource type="Texture2D" uid="uid://bb3xdbpo6o8vr" path="res://assets/residential/indoors/sofa_purple_plain_back.png" id="3_jbnw3"]
-[ext_resource type="Texture2D" uid="uid://bkv7f7wxjfce5" path="res://assets/residential/indoors/cupboard2.png" id="4_vjqda"]
-[ext_resource type="Texture2D" uid="uid://civvvomhubmvi" path="res://assets/environment/box_cardboard.png" id="5_g708p"]
-[ext_resource type="Texture2D" uid="uid://d12k76fyavn8r" path="res://assets/environment/box_cardboard_sideways.png" id="6_fhjnm"]
-[ext_resource type="Texture2D" uid="uid://btsd7or6tk701" path="res://assets/residential/indoors/laundry_basket.png" id="7_fp4my"]
-[ext_resource type="Texture2D" uid="uid://dafyw1xcbd0da" path="res://assets/environment/bike.png" id="8_oo0vm"]
-[ext_resource type="Texture2D" uid="uid://bx3yun47ioafw" path="res://assets/residential/indoors/shelf_back.png" id="9_8loxm"]
-[ext_resource type="Texture2D" uid="uid://cpnl2bbxaqhv1" path="res://assets/environment/beach_chair_blue.png" id="10_a3q4r"]
-[ext_resource type="Texture2D" uid="uid://bv6euky0l2nmm" path="res://assets/residential/indoors/basement_cage.png" id="12_0q1qf"]
-[ext_resource type="Texture2D" uid="uid://c1bj7i1u78tvi" path="res://assets/residential/indoors/basement_shadow.png" id="13_jkjdy"]
-[ext_resource type="Texture2D" uid="uid://dwe8ryv8pvsi4" path="res://assets/residential/indoors/washing_machine.png" id="15_yrorx"]
-[ext_resource type="Texture2D" uid="uid://dimsxaiqpbmcc" path="res://assets/downtown/no_smoking_sign.png" id="16_i4abj"]
-[ext_resource type="Texture2D" uid="uid://c7pfatjf403l5" path="res://assets/downtown/cone.png" id="17_tggjk"]
-[ext_resource type="Texture2D" uid="uid://d2vp7noe41pcw" path="res://assets/downtown/fire_ex.png" id="18_u63js"]
-[ext_resource type="Texture2D" uid="uid://bsonlbmrwtun4" path="res://assets/residential/indoors/cactus1.png" id="19_bc6gn"]
-[ext_resource type="Texture2D" uid="uid://gcq6oilow74x" path="res://assets/residential/indoors/tissues.png" id="20_kuec5"]
-[ext_resource type="Texture2D" uid="uid://cgestp8suj742" path="res://assets/residential/indoors/pc_table.png" id="21_sxy7u"]
+[ext_resource type="Texture2D" uid="uid://b286ya8t5yw16" path="res://assets/residential/indoors/basement.png" id="1_ikw8b"]
+[ext_resource type="Texture2D" uid="uid://cn8rbfh0g5jtm" path="res://assets/downtown/trashcan_tables.png" id="2_307ea"]
+[ext_resource type="Texture2D" uid="uid://bwlthosxjgc4w" path="res://assets/residential/indoors/utility_door_atlas.png" id="2_ax6ay"]
+[ext_resource type="Texture2D" uid="uid://bnj1ctr6x5e68" path="res://assets/residential/indoors/pc_chair.png" id="2_mwdls"]
+[ext_resource type="Texture2D" uid="uid://dev1b8nwikh7k" path="res://assets/residential/indoors/sofa_purple_plain_back.png" id="3_jbnw3"]
+[ext_resource type="Texture2D" uid="uid://c7dracayybs03" path="res://assets/residential/indoors/cupboard2.png" id="4_vjqda"]
+[ext_resource type="Texture2D" uid="uid://dffjpcbft7jgu" path="res://assets/environment/box_cardboard.png" id="5_g708p"]
+[ext_resource type="Texture2D" uid="uid://dolvlk268uyvh" path="res://assets/environment/box_cardboard_sideways.png" id="6_fhjnm"]
+[ext_resource type="Texture2D" uid="uid://dofwik4dielt4" path="res://assets/residential/indoors/laundry_basket.png" id="7_fp4my"]
+[ext_resource type="Texture2D" uid="uid://dpn1c5p2bektv" path="res://assets/environment/bike.png" id="8_oo0vm"]
+[ext_resource type="Texture2D" uid="uid://6x6hfb02k1ib" path="res://assets/residential/indoors/shelf_back.png" id="9_8loxm"]
+[ext_resource type="Texture2D" uid="uid://cembili6qtat2" path="res://assets/environment/beach_chair_blue.png" id="10_a3q4r"]
+[ext_resource type="Texture2D" uid="uid://ddm13iwkeaukv" path="res://assets/residential/indoors/basement_cage.png" id="12_0q1qf"]
+[ext_resource type="Texture2D" uid="uid://dvatbj7f4r6l4" path="res://assets/residential/indoors/basement_shadow.png" id="13_jkjdy"]
+[ext_resource type="Texture2D" uid="uid://bt4q1rbdj7tdg" path="res://assets/residential/indoors/washing_machine.png" id="15_yrorx"]
+[ext_resource type="Texture2D" uid="uid://bfsjjxsecplka" path="res://assets/downtown/no_smoking_sign.png" id="16_i4abj"]
+[ext_resource type="Texture2D" uid="uid://ka3he6042xeq" path="res://assets/downtown/cone.png" id="17_tggjk"]
+[ext_resource type="Texture2D" uid="uid://bgxjf52tb71jx" path="res://assets/downtown/fire_ex.png" id="18_u63js"]
+[ext_resource type="Texture2D" uid="uid://b6vfhqu2lc543" path="res://assets/residential/indoors/cactus1.png" id="19_bc6gn"]
+[ext_resource type="Texture2D" uid="uid://h03jwe4lr73k" path="res://assets/residential/indoors/tissues.png" id="20_kuec5"]
+[ext_resource type="Texture2D" uid="uid://dhfgp56ya8s8v" path="res://assets/residential/indoors/pc_table.png" id="21_sxy7u"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_rnymp"]
 atlas = ExtResource("2_ax6ay")
@@ -192,7 +192,7 @@ texture = ExtResource("17_tggjk")
 
 [node name="PcTable" type="Sprite2D" parent="."]
 z_index = 2
-position = Vector2(236, 76)
+position = Vector2(236, 78)
 texture = ExtResource("21_sxy7u")
 
 [node name="Points" type="Node2D" parent="."]
@@ -207,3 +207,7 @@ metadata/label = "Exit"
 metadata/category = "Default"
 
 [node name="Point" type="Node" parent="Points/Exit"]
+
+[node name="PcChair" type="Sprite2D" parent="."]
+position = Vector2(242, 65)
+texture = ExtResource("2_mwdls")
