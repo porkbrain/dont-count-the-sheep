@@ -38,6 +38,9 @@ pub enum TypedNamespace {
     MarieBlabbering,
     MrGoodWater,
     InitialCooper,
+    InitialSamizdat,
+    InitialOtter,
+    InitialPhoebe,
 
     // --------------------------------------------------------------
     //
@@ -60,6 +63,9 @@ impl AsRef<str> for TypedNamespace {
             MarieBlabbering => "marie_blabbering",
             InElevator => "in_elevator",
             InitialCooper => "initial_cooper",
+            InitialSamizdat => "initial_samizdat",
+            InitialOtter => "initial_otter",
+            InitialPhoebe => "initial_phoebe",
         }
     }
 }

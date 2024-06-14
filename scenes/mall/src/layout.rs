@@ -97,6 +97,8 @@ fn spawn(
         &mut cmd,
     );
 
+    cmd.insert_resource(zone_to_inspect_label_entity);
+
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
 
     let points = {
@@ -115,15 +117,14 @@ fn spawn(
         white_cat_patrol_points
     };
     // SAFETY: we just checked that the vec is not empty
-    white_cat_builder.initial_square(points.last().copied().unwrap());
-    white_cat_builder.behavior_tree(PatrolSequence {
-        wait_at_each: from_millis(10_000),
-        points,
-    });
+    white_cat_builder
+        .initial_square(points.last().copied().unwrap())
+        .behavior_tree(PatrolSequence {
+            wait_at_each: from_millis(10_000),
+            points,
+        });
     white_cat_builder
         .insert_bundle_into(&asset_server, &mut cmd.entity(white_cat));
-
-    cmd.insert_resource(zone_to_inspect_label_entity);
 }
 
 fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {

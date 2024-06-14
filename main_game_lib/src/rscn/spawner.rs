@@ -200,7 +200,7 @@ fn node_to_entity<T: TscnSpawner>(
             ) => {
                 assert!(
                     virtual_z_index.is_none(),
-                    "YSort must child of a node with no zindex"
+                    "Node {name:?} has YSort child node and zindex at the same time"
                 );
                 virtual_z_index = Some(ysort(position + *child_position));
             }

@@ -1,35 +1,35 @@
 [gd_scene load_steps=31 format=3 uid="uid://dek7ps022pco7"]
 
-[ext_resource type="Texture2D" uid="uid://c116mof5v4lgc" path="res://assets/downtown/plantshop_bg.png" id="1_bruju"]
-[ext_resource type="Texture2D" uid="uid://5ywhhdx6rx7r" path="res://assets/downtown/recycle_bin.png" id="2_gim71"]
-[ext_resource type="Texture2D" uid="uid://bsle4hh6l11lu" path="res://assets/residential/indoors/kasa.png" id="3_7v53w"]
-[ext_resource type="Texture2D" uid="uid://brapyya5pqurk" path="res://assets/downtown/potted_bush.png" id="6_uoc65"]
-[ext_resource type="Texture2D" uid="uid://b4n3d4xbt3n7t" path="res://assets/downtown/fire_ex.png" id="7_2xqcs"]
-[ext_resource type="Texture2D" uid="uid://ccxxljf8a5ca6" path="res://assets/residential/indoors/shelf.png" id="8_52cf7"]
-[ext_resource type="Texture2D" uid="uid://byf72ah4t7wx6" path="res://assets/residential/indoors/plant2.png" id="9_5sdla"]
-[ext_resource type="Texture2D" uid="uid://2wr58b6rdevo" path="res://assets/residential/indoors/plant3.png" id="10_ejop8"]
-[ext_resource type="Texture2D" uid="uid://b7pcljq1g8mjx" path="res://assets/environment/cactus.png" id="10_n7jia"]
-[ext_resource type="Texture2D" uid="uid://uy06ivqk8lwk" path="res://assets/residential/indoors/plant1.png" id="11_xm18b"]
-[ext_resource type="Texture2D" uid="uid://d3e4b27xcbekt" path="res://assets/residential/indoors/plant1_pink.png" id="12_8vj2d"]
-[ext_resource type="Texture2D" uid="uid://b5b8jfmoq2513" path="res://assets/residential/indoors/counter_wide.png" id="13_f2gnt"]
-[ext_resource type="Texture2D" uid="uid://xbqsfm2abqm5" path="res://assets/residential/indoors/plantshop_painting.png" id="13_fsohl"]
-[ext_resource type="Texture2D" uid="uid://dvx0l0dj2hcr3" path="res://assets/residential/indoors/shelf_wide.png" id="14_afqnm"]
-[ext_resource type="Texture2D" uid="uid://dw2ugjewuepxm" path="res://assets/residential/indoors/counter_wide_purple.png" id="15_c65y4"]
-[ext_resource type="Texture2D" uid="uid://b5h8bfeq3owjd" path="res://assets/environment/seedlings.png" id="17_5kiyl"]
-[ext_resource type="Texture2D" uid="uid://ck0d0ox20muxk" path="res://assets/residential/indoors/cupboard2.png" id="17_xg3n8"]
-[ext_resource type="Texture2D" uid="uid://bkaiirf71lsu5" path="res://assets/residential/indoors/sign_seedling.png" id="18_mulg4"]
-[ext_resource type="Texture2D" uid="uid://cp0rngx6yb8ld" path="res://assets/environment/box_cardboard_sideways.png" id="20_ewfv5"]
-[ext_resource type="Texture2D" uid="uid://bprq7kf7j27if" path="res://assets/downtown/sipek.png" id="21_7cf1p"]
-[ext_resource type="Texture2D" uid="uid://bwopuawk238e4" path="res://assets/residential/indoors/plant4.png" id="23_6cdwa"]
-[ext_resource type="Texture2D" uid="uid://bwhroeinh4ybc" path="res://assets/downtown/hanging_plants.png" id="24_0wcvj"]
-[ext_resource type="Texture2D" uid="uid://ddlopdfvnk2le" path="res://assets/residential/indoors/bonsai1.png" id="25_5xd81"]
-[ext_resource type="Texture2D" uid="uid://cjcrvju1iauih" path="res://assets/residential/indoors/bonsai2.png" id="26_kqran"]
-[ext_resource type="Texture2D" uid="uid://ce4pfgsj2qsk1" path="res://assets/residential/indoors/plant_price_white.png" id="27_rp2pe"]
-[ext_resource type="Texture2D" uid="uid://d4jtwd7wy3t6f" path="res://assets/residential/indoors/scissors.png" id="28_inwkg"]
-[ext_resource type="Texture2D" uid="uid://c6m7em4ed56mk" path="res://assets/residential/indoors/cactus1.png" id="29_4bhrk"]
-[ext_resource type="Texture2D" uid="uid://dkec74g2nkeo5" path="res://assets/residential/indoors/room_light_big.png" id="29_huixs"]
-[ext_resource type="Texture2D" uid="uid://dnq05rev77npy" path="res://assets/residential/indoors/room_light_wide.png" id="29_ngqf5"]
-[ext_resource type="Texture2D" uid="uid://5a1cq3m6asc2" path="res://assets/residential/indoors/room_light_wide_down.png" id="30_5faay"]
+[ext_resource type="Texture2D" uid="uid://y85joqp8cjui" path="res://assets/downtown/plantshop_bg.png" id="1_bruju"]
+[ext_resource type="Texture2D" uid="uid://cve0p1fj5bjp3" path="res://assets/downtown/recycle_bin.png" id="2_gim71"]
+[ext_resource type="Texture2D" uid="uid://dhaf0k2asaokq" path="res://assets/residential/indoors/kasa.png" id="3_7v53w"]
+[ext_resource type="Texture2D" uid="uid://cmpcrhxx5t7as" path="res://assets/downtown/potted_bush.png" id="6_uoc65"]
+[ext_resource type="Texture2D" uid="uid://d2vp7noe41pcw" path="res://assets/downtown/fire_ex.png" id="7_2xqcs"]
+[ext_resource type="Texture2D" uid="uid://n7a6tiu6ldos" path="res://assets/residential/indoors/shelf.png" id="8_52cf7"]
+[ext_resource type="Texture2D" uid="uid://b8hs5svb3tnxq" path="res://assets/residential/indoors/plant2.png" id="9_5sdla"]
+[ext_resource type="Texture2D" uid="uid://bivyqy838wdmo" path="res://assets/residential/indoors/plant3.png" id="10_ejop8"]
+[ext_resource type="Texture2D" uid="uid://bbfjt8xxpma87" path="res://assets/environment/cactus.png" id="10_n7jia"]
+[ext_resource type="Texture2D" uid="uid://c07goj3d4hpxn" path="res://assets/residential/indoors/plant1.png" id="11_xm18b"]
+[ext_resource type="Texture2D" uid="uid://f3fdi3udqdyk" path="res://assets/residential/indoors/plant1_pink.png" id="12_8vj2d"]
+[ext_resource type="Texture2D" uid="uid://bkhrbsy2krgi3" path="res://assets/residential/indoors/counter_wide.png" id="13_f2gnt"]
+[ext_resource type="Texture2D" uid="uid://c1dw7702bh2v4" path="res://assets/residential/indoors/plantshop_painting.png" id="13_fsohl"]
+[ext_resource type="Texture2D" uid="uid://dwdxmv6sakwvv" path="res://assets/residential/indoors/shelf_wide.png" id="14_afqnm"]
+[ext_resource type="Texture2D" uid="uid://em4ccqpcl5lf" path="res://assets/residential/indoors/counter_wide_purple.png" id="15_c65y4"]
+[ext_resource type="Texture2D" uid="uid://6hbgcmhcpcc2" path="res://assets/environment/seedlings.png" id="17_5kiyl"]
+[ext_resource type="Texture2D" uid="uid://bkv7f7wxjfce5" path="res://assets/residential/indoors/cupboard2.png" id="17_xg3n8"]
+[ext_resource type="Texture2D" uid="uid://bm2mbjo28hf6p" path="res://assets/residential/indoors/sign_seedling.png" id="18_mulg4"]
+[ext_resource type="Texture2D" uid="uid://d12k76fyavn8r" path="res://assets/environment/box_cardboard_sideways.png" id="20_ewfv5"]
+[ext_resource type="Texture2D" uid="uid://binrcblg113cg" path="res://assets/downtown/sipek.png" id="21_7cf1p"]
+[ext_resource type="Texture2D" uid="uid://ctld20njtutkn" path="res://assets/residential/indoors/plant4.png" id="23_6cdwa"]
+[ext_resource type="Texture2D" uid="uid://djmvsrpel7581" path="res://assets/downtown/hanging_plants.png" id="24_0wcvj"]
+[ext_resource type="Texture2D" uid="uid://b4a3whtmf6xdw" path="res://assets/residential/indoors/bonsai1.png" id="25_5xd81"]
+[ext_resource type="Texture2D" uid="uid://cg8d5fjpqggrn" path="res://assets/residential/indoors/bonsai2.png" id="26_kqran"]
+[ext_resource type="Texture2D" uid="uid://b14mlmbyhohro" path="res://assets/residential/indoors/plant_price_white.png" id="27_rp2pe"]
+[ext_resource type="Texture2D" uid="uid://071uthjg3rjk" path="res://assets/residential/indoors/scissors.png" id="28_inwkg"]
+[ext_resource type="Texture2D" uid="uid://bsonlbmrwtun4" path="res://assets/residential/indoors/cactus1.png" id="29_4bhrk"]
+[ext_resource type="Texture2D" uid="uid://5egjodqauotm" path="res://assets/residential/indoors/room_light_big.png" id="29_huixs"]
+[ext_resource type="Texture2D" uid="uid://ditvesqsh354d" path="res://assets/residential/indoors/room_light_wide.png" id="29_ngqf5"]
+[ext_resource type="Texture2D" uid="uid://cgw4pux24k3id" path="res://assets/residential/indoors/room_light_wide_down.png" id="30_5faay"]
 
 [node name="PlantShop" type="Node2D"]
 
@@ -94,6 +94,22 @@ texture = ExtResource("10_ejop8")
 position = Vector2(-5, 22)
 texture = ExtResource("10_n7jia")
 
+[node name="Bonsai3" type="Sprite2D" parent="Shelf"]
+position = Vector2(20, -13.5)
+texture = ExtResource("25_5xd81")
+
+[node name="Bonsai2" type="Sprite2D" parent="Shelf"]
+position = Vector2(-17, -13.5)
+texture = ExtResource("26_kqran")
+
+[node name="Cactus3" type="Sprite2D" parent="Shelf"]
+position = Vector2(19, 20.5)
+texture = ExtResource("29_4bhrk")
+
+[node name="Cactus4" type="Sprite2D" parent="Shelf"]
+position = Vector2(29, 20.5)
+texture = ExtResource("29_4bhrk")
+
 [node name="PlantshopPainting" type="Sprite2D" parent="."]
 z_index = -1
 position = Vector2(-92, -106)
@@ -136,6 +152,14 @@ texture = ExtResource("10_n7jia")
 
 [node name="Plant5" type="Sprite2D" parent="ShelfWide"]
 position = Vector2(173, -38)
+texture = ExtResource("23_6cdwa")
+
+[node name="Cactus1" type="Sprite2D" parent="ShelfWide"]
+position = Vector2(8, -36)
+texture = ExtResource("29_4bhrk")
+
+[node name="Plant6" type="Sprite2D" parent="ShelfWide"]
+position = Vector2(32, 19)
 texture = ExtResource("23_6cdwa")
 
 [node name="Cupboard2" type="Sprite2D" parent="."]
@@ -234,6 +258,21 @@ z_index = -1
 position = Vector2(115, -59)
 texture = ExtResource("24_0wcvj")
 
+[node name="RoomLightBig" type="Sprite2D" parent="."]
+z_index = 2
+position = Vector2(32, 43)
+texture = ExtResource("29_huixs")
+
+[node name="RoomLightWide" type="Sprite2D" parent="."]
+z_index = 2
+position = Vector2(-108, 88)
+texture = ExtResource("29_ngqf5")
+
+[node name="RoomLightWideDown" type="Sprite2D" parent="."]
+z_index = 2
+position = Vector2(-55, -94)
+texture = ExtResource("30_5faay")
+
 [node name="Points" type="Node2D" parent="."]
 
 [node name="Entrance" type="Node2D" parent="Points"]
@@ -247,40 +286,8 @@ metadata/action = "ExitScene"
 metadata/label = "Exit"
 metadata/category = "Default"
 
-[node name="Bonsai3" type="Sprite2D" parent="."]
-position = Vector2(49, -99)
-texture = ExtResource("25_5xd81")
+[node name="MarieSpawn" type="Node2D" parent="Points"]
+position = Vector2(-80, -32)
 
-[node name="Bonsai2" type="Sprite2D" parent="."]
-position = Vector2(12, -99)
-texture = ExtResource("26_kqran")
-
-[node name="Cactus1" type="Sprite2D" parent="."]
-position = Vector2(-139, -122)
-texture = ExtResource("29_4bhrk")
-
-[node name="Cactus2" type="Sprite2D" parent="."]
-position = Vector2(48, -65)
-texture = ExtResource("29_4bhrk")
-
-[node name="Cactus3" type="Sprite2D" parent="."]
-position = Vector2(58, -65)
-texture = ExtResource("29_4bhrk")
-
-[node name="Plant4" type="Sprite2D" parent="."]
-position = Vector2(-115, -67)
-texture = ExtResource("23_6cdwa")
-
-[node name="RoomLightBig" type="Sprite2D" parent="."]
-z_index = 2
-position = Vector2(32, 43)
-texture = ExtResource("29_huixs")
-
-[node name="RoomLightWide" type="Sprite2D" parent="."]
-z_index = 2
-position = Vector2(-108, 88)
-texture = ExtResource("29_ngqf5")
-
-[node name="RoomLightWideDown" type="Sprite2D" parent="."]
-position = Vector2(-55, -94)
-texture = ExtResource("30_5faay")
+[node name="BoltSpawn" type="Node2D" parent="Points"]
+position = Vector2(18, 66)

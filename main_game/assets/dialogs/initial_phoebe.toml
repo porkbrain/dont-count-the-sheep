@@ -1,0 +1,7 @@
+[root]
+who = "Winnie"
+en = "Hey"
+[[node]]
+who = "Phoebe"
+en = "I don't have a dialog yet"
+next = "_end_dialog"
