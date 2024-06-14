@@ -89,6 +89,10 @@ def visualize_dialog(dialog_toml):
                     image_path += "gingercat1.png"
                 case "Cooper":
                     image_path += "cooper1.png"
+                case "Samizdat":
+                    image_path += "samizdat1.png"
+                case "Otter":
+                    image_path += "otter1.png"
                 case _:
                     exit(f"Character {node['who']} not ready for visualization.")
 

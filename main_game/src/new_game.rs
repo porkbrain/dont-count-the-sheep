@@ -23,6 +23,18 @@ pub(crate) fn on_enter(
         .add_dialog_to_npc(
             Character::Cooper,
             dialog::TypedNamespace::InitialCooper,
+        )
+        .add_dialog_to_npc(
+            Character::Samizdat,
+            dialog::TypedNamespace::InitialSamizdat,
+        )
+        .add_dialog_to_npc(
+            Character::Otter,
+            dialog::TypedNamespace::InitialOtter,
+        )
+        .add_dialog_to_npc(
+            Character::Phoebe,
+            dialog::TypedNamespace::InitialPhoebe,
         );
 
     next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);

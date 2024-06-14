@@ -1,15 +1,18 @@
 use bevy::render::view::RenderLayers;
-use bevy_grid_squared::sq;
+use bevy_grid_squared::{sq, Square};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_story::Character;
 use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{
     cutscene::in_cutscene,
     hud::daybar::{DayBar, DayBarDependent, UpdateDayBarEvent},
-    top_down::inspect_and_interact::{
-        ChangeHighlightedInspectLabelEvent,
-        ChangeHighlightedInspectLabelEventConsumer, SpawnLabelBgAndTextParams,
-        ZoneToInspectLabelEntity, LIGHT_RED,
+    top_down::{
+        inspect_and_interact::{
+            ChangeHighlightedInspectLabelEvent,
+            ChangeHighlightedInspectLabelEventConsumer,
+            SpawnLabelBgAndTextParams, ZoneToInspectLabelEntity, LIGHT_RED,
+        },
+        npc::behaviors::PatrolSequence,
     },
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
@@ -72,6 +75,12 @@ struct Spawner<'a> {
     daybar_event: &'a mut Events<UpdateDayBarEvent>,
     zone_to_inspect_label_entity:
         &'a mut ZoneToInspectLabelEntity<DowntownTileKind>,
+
+    samizdat_entity: Entity,
+    samizdat_patrol_points: &'a mut Vec<Square>,
+
+    otter_entity: Entity,
+    otter_patrol_points: &'a mut Vec<Square>,
 }
 
 /// The names are stored in the scene file.
@@ -94,6 +103,15 @@ fn spawn(
     let player = cmd.spawn_empty().id();
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
+    let samizdat = cmd.spawn_empty().id();
+    let mut samizdat_builder =
+        common_story::Character::Samizdat.bundle_builder();
+    let mut samizdat_patrol_points = Vec::new();
+
+    let otter = cmd.spawn_empty().id();
+    let mut otter_builder = common_story::Character::Otter.bundle_builder();
+    let mut otter_patrol_points = Vec::new();
+
     tscn.spawn_into(
         &mut Spawner {
             asset_server: &asset_server,
@@ -104,12 +122,43 @@ fn spawn(
             player_entity: player,
             transition: *transition,
             zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
+
+            samizdat_entity: samizdat,
+            samizdat_patrol_points: &mut samizdat_patrol_points,
+
+            otter_entity: otter,
+            otter_patrol_points: &mut otter_patrol_points,
         },
         &mut cmd,
     );
+    cmd.insert_resource(zone_to_inspect_label_entity);
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
-    cmd.insert_resource(zone_to_inspect_label_entity);
+
+    assert!(
+        !samizdat_patrol_points.is_empty(),
+        "No patrol points for samizdat"
+    );
+    samizdat_builder
+        .initial_square(samizdat_patrol_points.first().copied().unwrap())
+        .behavior_tree(PatrolSequence {
+            wait_at_each: from_millis(7_500),
+            points: samizdat_patrol_points,
+        });
+    samizdat_builder
+        .insert_bundle_into(&asset_server, &mut cmd.entity(samizdat));
+
+    assert!(
+        !otter_patrol_points.is_empty(),
+        "No patrol points for otter"
+    );
+    otter_builder
+        .initial_square(otter_patrol_points.first().copied().unwrap())
+        .behavior_tree(PatrolSequence {
+            wait_at_each: from_millis(12_000),
+            points: otter_patrol_points,
+        });
+    otter_builder.insert_bundle_into(&asset_server, &mut cmd.entity(otter));
 }
 
 fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
@@ -145,6 +194,8 @@ impl<'a> TscnSpawner for Spawner<'a> {
             ("Downtown", _) => {
                 cmd.entity(who).insert(LayoutEntity);
                 cmd.entity(who).add_child(self.player_entity);
+                cmd.entity(who).add_child(self.samizdat_entity);
+                cmd.entity(who).add_child(self.otter_entity);
             }
 
             // transitions
@@ -169,6 +220,15 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 ));
 
                 self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
+            }
+
+            (s, _) if s.starts_with("SamizdatPatrolPoint") => {
+                self.samizdat_patrol_points
+                    .push(LAYOUT.world_pos_to_square(translation.truncate()));
+            }
+            (s, _) if s.starts_with("OtterPatrolPoint") => {
+                self.otter_patrol_points
+                    .push(LAYOUT.world_pos_to_square(translation.truncate()));
             }
             _ => {}
         }

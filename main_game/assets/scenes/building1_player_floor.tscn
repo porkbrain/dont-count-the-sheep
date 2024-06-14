@@ -812,6 +812,7 @@ position = Vector2(-70, -63)
 texture = ExtResource("31_wa4ug")
 
 [node name="HallwayDoor3" type="AnimatedSprite2D" parent="."]
+self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
 position = Vector2(-165, 187)
 sprite_frames = SubResource("SpriteFrames_j7cpw")
 
@@ -826,14 +827,17 @@ position = Vector2(-228, 128)
 texture = ExtResource("36_458u3")
 
 [node name="BedWooden" type="Sprite2D" parent="."]
+self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
 position = Vector2(161, 161)
 texture = ExtResource("37_6lbmy")
 
 [node name="BathHorizontal" type="Sprite2D" parent="."]
+self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
 position = Vector2(-180, 137)
 texture = ExtResource("38_mdm3q")
 
 [node name="Toilet2" type="Sprite2D" parent="."]
+self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
 position = Vector2(-199, 189)
 texture = ExtResource("7_3q0vg")
 
