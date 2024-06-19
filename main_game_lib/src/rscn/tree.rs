@@ -97,7 +97,12 @@ pub(crate) fn from_state(
                 position,
                 z_index,
                 texture: Some(SpriteTexture {
-                    path: path.expect("AnimatedSprite2D should have a texture"),
+                    path: path.unwrap_or_else(|| {
+                        panic!(
+                            "Node '{}': AnimatedSprite2D should have a texture",
+                            parsed_node.name
+                        )
+                    }),
                     visible,
                     color,
                     animation: {
@@ -112,7 +117,12 @@ pub(crate) fn from_state(
                 position,
                 z_index,
                 texture: Some(SpriteTexture {
-                    path: path.expect("Sprite2D should have a texture"),
+                    path: path.unwrap_or_else(|| {
+                        panic!(
+                            "Node '{}': Sprite2D should have a texture",
+                            parsed_node.name
+                        )
+                    }),
                     visible,
                     color,
                     animation: {
