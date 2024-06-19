@@ -1,10 +1,10 @@
 [gd_scene load_steps=11 format=3 uid="uid://cehfnn2h1xqt7"]
 
-[ext_resource type="Texture2D" uid="uid://b42f7ep0i83gr" path="res://assets/downtown/sewers_bg.png" id="1_sy4gy"]
-[ext_resource type="Texture2D" uid="uid://chs5dvlpi8pvq" path="res://assets/downtown/bin_bag.png" id="2_w3jta"]
-[ext_resource type="Texture2D" uid="uid://cgltbvgkw1oxu" path="res://assets/environment/beerfloating_atlas.png" id="4_4qch5"]
-[ext_resource type="Texture2D" uid="uid://brjenh23364bg" path="res://assets/downtown/manhole.png" id="5_5t670"]
-[ext_resource type="Texture2D" uid="uid://dfpdrfyab8lnf" path="res://assets/environment/stain1.png" id="5_m21x3"]
+[ext_resource type="Texture2D" uid="uid://c42cvp1tai2ek" path="res://assets/downtown/sewers_bg.png" id="1_sy4gy"]
+[ext_resource type="Texture2D" uid="uid://c3306mx7c6kvh" path="res://assets/downtown/bin_bag.png" id="2_w3jta"]
+[ext_resource type="Texture2D" uid="uid://c1k8kyqk2scqh" path="res://assets/environment/beerfloating_atlas.png" id="4_4qch5"]
+[ext_resource type="Texture2D" uid="uid://b8sb36p2mmbpx" path="res://assets/environment/stain1.png" id="5_m21x3"]
+[ext_resource type="Texture2D" uid="uid://kr4tncjthpgq" path="res://assets/residential/indoors/room_light.png" id="6_6130n"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hdhns"]
 atlas = ExtResource("4_4qch5")
@@ -48,14 +48,6 @@ animations = [{
 position = Vector2(-21, 1)
 texture = ExtResource("1_sy4gy")
 
-[node name="RoomLightHalf" type="Sprite2D" parent="SewersBg"]
-position = Vector2(319, 101)
-flip_h = true
-
-[node name="Manhole" type="Sprite2D" parent="SewersBg"]
-position = Vector2(-312, 195)
-texture = ExtResource("5_5t670")
-
 [node name="FloatingBottle" type="AnimatedSprite2D" parent="SewersBg"]
 z_index = 1
 position = Vector2(144, 270)
@@ -63,12 +55,21 @@ sprite_frames = SubResource("SpriteFrames_1ak07")
 autoplay = "default"
 frame_progress = 0.47061
 
-[node name="BinBag" type="Sprite2D" parent="."]
+[node name="Stain1" type="Sprite2D" parent="SewersBg"]
+position = Vector2(272, 113)
+texture = ExtResource("5_m21x3")
+
+[node name="BinBagNextToTheBars" type="Sprite2D" parent="."]
 position = Vector2(45, 128)
 texture = ExtResource("2_w3jta")
 
-[node name="YSort" type="Node2D" parent="BinBag"]
+[node name="YSort" type="Node2D" parent="BinBagNextToTheBars"]
 position = Vector2(0, 16)
+
+[node name="LightFromTheEntrance" type="Sprite2D" parent="."]
+z_index = 3
+position = Vector2(299, 122)
+texture = ExtResource("6_6130n")
 
 [node name="Points" type="Node2D" parent="."]
 
@@ -85,7 +86,3 @@ metadata/category = "Default"
 
 [node name="CooperSpawn" type="Node2D" parent="Points"]
 position = Vector2(78, 147)
-
-[node name="Stain1" type="Sprite2D" parent="."]
-position = Vector2(251, 114)
-texture = ExtResource("5_m21x3")

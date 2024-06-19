@@ -70,12 +70,14 @@ pub enum Building1Basement1TileKind {
     #[default]
     ElevatorZone,
     BasementDoorZone,
+    UpperApartmentDoorZone,
+    UpperApartmentWallHiddenZone,
 }
 
-#[derive(Event, Reflect, Clone, strum::EnumString)]
+#[derive(Event, Reflect, Clone, strum::EnumString, Eq, PartialEq)]
 pub enum Building1Basement1Action {
     EnterElevator,
-    EnterBasement,
+    EnterBasement2,
 }
 
 pub fn add(app: &mut App) {

@@ -1,26 +1,48 @@
 [gd_scene load_steps=37 format=3 uid="uid://b4jfxrl5rqnne"]
 
-[ext_resource type="Texture2D" uid="uid://cbs7hpafjhpxt" path="res://assets/residential/indoors/hallway2.png" id="1_hc42t"]
-[ext_resource type="Texture2D" uid="uid://ds5d1ssvswgsm" path="res://assets/residential/indoors/brown_dark_door_atlas.png" id="2_hgy38"]
-[ext_resource type="Texture2D" uid="uid://hny4j2anps08" path="res://assets/residential/indoors/elevator_atlas.png" id="3_af3up"]
-[ext_resource type="Texture2D" uid="uid://bwlthosxjgc4w" path="res://assets/residential/indoors/utility_door_atlas.png" id="4_5p8gt"]
-[ext_resource type="Texture2D" uid="uid://wm712yivg1yb" path="res://assets/downtown/recycle_bin.png" id="5_0eq5h"]
-[ext_resource type="Texture2D" uid="uid://bfp6cm2hbyswi" path="res://assets/downtown/black_bin.png" id="6_sj14k"]
-[ext_resource type="Texture2D" uid="uid://b6bc70ydbei0g" path="res://assets/residential/indoors/hallway2_wall.png" id="7_udva6"]
-[ext_resource type="Texture2D" uid="uid://bedyh4n5xejgk" path="res://assets/residential/indoors/poster_skeleton.png" id="8_xnu6d"]
-[ext_resource type="Texture2D" uid="uid://y246scmkkl2q" path="res://assets/residential/indoors/sofa_purple.png" id="9_eaole"]
-[ext_resource type="Texture2D" uid="uid://40wrcm5hjv4p" path="res://assets/residential/indoors/kredenc.png" id="10_77ua5"]
-[ext_resource type="Texture2D" uid="uid://dggtq8cr8skng" path="res://assets/residential/indoors/side_table1.png" id="11_vbwku"]
-[ext_resource type="Texture2D" uid="uid://fpc3f14s24e7" path="res://assets/residential/indoors/bath_horizontal.png" id="12_6odtv"]
-[ext_resource type="Texture2D" uid="uid://dbbu6xgobs5xu" path="res://assets/residential/indoors/sink.png" id="13_5srwn"]
-[ext_resource type="Texture2D" uid="uid://cgd4gem7h52i6" path="res://assets/residential/indoors/toilet.png" id="14_uwy0d"]
-[ext_resource type="Texture2D" uid="uid://coox5howsviig" path="res://assets/residential/indoors/side_table2_back.png" id="15_ctho0"]
-[ext_resource type="Texture2D" uid="uid://oiymn7tgnmeq" path="res://assets/environment/toilet_paper.png" id="16_g87gh"]
-[ext_resource type="Texture2D" uid="uid://i5mikktwmb2l" path="res://assets/residential/indoors/tv_withcable.png" id="17_wf30n"]
-[ext_resource type="Texture2D" uid="uid://b54eahl80h2uy" path="res://assets/residential/indoors/bed_wooden_black.png" id="18_i57do"]
-[ext_resource type="Texture2D" uid="uid://bp3krmlj4peg0" path="res://assets/twinpeaks_apartment/popelnik.png" id="19_axcx5"]
-[ext_resource type="Texture2D" uid="uid://b838vr33qe6o8" path="res://assets/twinpeaks_apartment/black_rug.png" id="20_85nrp"]
-[ext_resource type="Texture2D" uid="uid://dkd2f8jlm4n00" path="res://assets/residential/indoors/knihovna2.png" id="21_kcje3"]
+[ext_resource type="Texture2D" uid="uid://cbouvwlgc3k01" path="res://assets/residential/indoors/hallway2.png" id="1_hc42t"]
+[ext_resource type="Texture2D" uid="uid://3212443mchtu" path="res://assets/residential/indoors/brown_dark_door_atlas.png" id="2_hgy38"]
+[ext_resource type="Texture2D" uid="uid://cq4dga042qxr" path="res://assets/residential/indoors/elevator_atlas.png" id="3_af3up"]
+[ext_resource type="Texture2D" uid="uid://dnj0hlb6fb6yh" path="res://assets/residential/indoors/utility_door_atlas.png" id="4_5p8gt"]
+[ext_resource type="Texture2D" uid="uid://cve0p1fj5bjp3" path="res://assets/downtown/recycle_bin.png" id="5_0eq5h"]
+[ext_resource type="Texture2D" uid="uid://bmy3x3gvi867d" path="res://assets/downtown/black_bin.png" id="6_sj14k"]
+[ext_resource type="Texture2D" uid="uid://qe3r5b1iubhp" path="res://assets/residential/indoors/hallway2_wall.png" id="7_udva6"]
+[ext_resource type="Texture2D" uid="uid://b06q4mk3jgjdn" path="res://assets/residential/indoors/poster_skeleton.png" id="8_xnu6d"]
+[ext_resource type="Texture2D" uid="uid://c7kxndctyvlu0" path="res://assets/residential/indoors/sofa_purple.png" id="9_eaole"]
+[ext_resource type="Texture2D" uid="uid://cucsq824qpe3w" path="res://assets/residential/indoors/kredenc.png" id="10_77ua5"]
+[ext_resource type="Texture2D" uid="uid://dnu54tiuqoh11" path="res://assets/residential/indoors/side_table1.png" id="11_vbwku"]
+[ext_resource type="Texture2D" uid="uid://d00p28mxdb8q6" path="res://assets/residential/indoors/bath_horizontal.png" id="12_6odtv"]
+[ext_resource type="Texture2D" uid="uid://bcnwgs4asdo3o" path="res://assets/residential/indoors/sink.png" id="13_5srwn"]
+[ext_resource type="Texture2D" uid="uid://d07qq5e0nd3h1" path="res://assets/residential/indoors/toilet.png" id="14_uwy0d"]
+[ext_resource type="Texture2D" uid="uid://7l1abjmnq6gp" path="res://assets/residential/indoors/side_table2_back.png" id="15_ctho0"]
+[ext_resource type="Texture2D" uid="uid://dlrneao0sl1dc" path="res://assets/environment/toilet_paper.png" id="16_g87gh"]
+[ext_resource type="Texture2D" uid="uid://cds1sxu666s4i" path="res://assets/residential/indoors/tv_withcable.png" id="17_wf30n"]
+[ext_resource type="Texture2D" uid="uid://c7q4u2hn8t80b" path="res://assets/residential/indoors/bed_wooden_black.png" id="18_i57do"]
+[ext_resource type="Texture2D" uid="uid://bga8tmp3a2ahb" path="res://assets/twinpeaks_apartment/popelnik.png" id="19_axcx5"]
+[ext_resource type="Texture2D" uid="uid://cf47qpcj3xpaq" path="res://assets/twinpeaks_apartment/black_rug.png" id="20_85nrp"]
+[ext_resource type="Texture2D" uid="uid://cdocrf41avqp6" path="res://assets/residential/indoors/knihovna2.png" id="21_kcje3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0m8kt"]
+atlas = ExtResource("2_hgy38")
+region = Rect2(0, 0, 27, 52)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cv1n4"]
+atlas = ExtResource("2_hgy38")
+region = Rect2(28, 0, 27, 52)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_c3prb"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0m8kt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cv1n4")
+}],
+"loop": false,
+"name": &"default",
+"speed": 1.0
+}]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_n0t2h"]
 atlas = ExtResource("3_af3up")
@@ -108,33 +130,102 @@ animations = [{
 "speed": 1.0
 }]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_0m8kt"]
-atlas = ExtResource("2_hgy38")
-region = Rect2(0, 0, 27, 52)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_cv1n4"]
-atlas = ExtResource("2_hgy38")
-region = Rect2(28, 0, 27, 52)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_c3prb"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_0m8kt")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_cv1n4")
-}],
-"loop": false,
-"name": &"default",
-"speed": 1.0
-}]
-
 [node name="Building1Basement1" type="Node2D"]
 
 [node name="HallwayBg" type="Sprite2D" parent="."]
 z_index = -3
 texture = ExtResource("1_hc42t")
+
+[node name="UpperApartment" type="Node2D" parent="."]
+
+[node name="PosterOfSkeleton" type="Sprite2D" parent="UpperApartment"]
+z_index = -1
+position = Vector2(-3.5, -118.5)
+texture = ExtResource("8_xnu6d")
+
+[node name="BlackRug" type="Sprite2D" parent="UpperApartment"]
+z_index = -1
+position = Vector2(120, -29)
+texture = ExtResource("20_85nrp")
+
+[node name="Bed" type="Sprite2D" parent="UpperApartment"]
+position = Vector2(123, -64)
+texture = ExtResource("18_i57do")
+
+[node name="YSort" type="Node2D" parent="UpperApartment/Bed"]
+position = Vector2(1, 56)
+
+[node name="BookshelfNextToTheBed" type="Sprite2D" parent="UpperApartment"]
+position = Vector2(52, -97)
+texture = ExtResource("21_kcje3")
+
+[node name="BedTable" type="Sprite2D" parent="UpperApartment"]
+z_index = -1
+position = Vector2(175, -78)
+texture = ExtResource("11_vbwku")
+
+[node name="Bathtub" type="Sprite2D" parent="UpperApartment"]
+z_index = -1
+position = Vector2(-195, -79)
+texture = ExtResource("12_6odtv")
+
+[node name="BathroomSink" type="Sprite2D" parent="UpperApartment"]
+z_index = -1
+position = Vector2(-150, -86)
+texture = ExtResource("13_5srwn")
+
+[node name="BathroomTable" type="Sprite2D" parent="UpperApartment"]
+z_index = 1
+position = Vector2(-182, -28)
+texture = ExtResource("15_ctho0")
+
+[node name="ToiletPaper" type="Sprite2D" parent="UpperApartment/BathroomTable"]
+position = Vector2(-5, -15)
+texture = ExtResource("16_g87gh")
+
+[node name="Toilet" type="Sprite2D" parent="UpperApartment"]
+z_index = 1
+position = Vector2(-214, -29)
+texture = ExtResource("14_uwy0d")
+
+[node name="PurpleSofaInLivingRoom" type="Sprite2D" parent="UpperApartment"]
+z_index = -1
+position = Vector2(-54.5, -82.5)
+texture = ExtResource("9_eaole")
+
+[node name="SmallTableNextToTheSofa" type="Sprite2D" parent="UpperApartment"]
+z_index = -1
+position = Vector2(-7.5, -76.5)
+texture = ExtResource("11_vbwku")
+
+[node name="Popelnik" type="Sprite2D" parent="UpperApartment/SmallTableNextToTheSofa"]
+position = Vector2(-2.5, -11.5)
+texture = ExtResource("19_axcx5")
+
+[node name="TVStandInLivingRoom" type="Sprite2D" parent="UpperApartment"]
+position = Vector2(-55, -23)
+texture = ExtResource("10_77ua5")
+
+[node name="YSort" type="Node2D" parent="UpperApartment/TVStandInLivingRoom"]
+position = Vector2(-32, 11)
+
+[node name="TvWithCableGoingSideways" type="Sprite2D" parent="UpperApartment/TVStandInLivingRoom"]
+position = Vector2(-29, -7)
+texture = ExtResource("17_wf30n")
+flip_h = true
+
+[node name="ApartmentWall" type="Sprite2D" parent="UpperApartment"]
+texture = ExtResource("7_udva6")
+
+[node name="YSort" type="Node2D" parent="UpperApartment/ApartmentWall"]
+position = Vector2(4, 73)
+
+[node name="DoorToTheUpperApartment" type="AnimatedSprite2D" parent="UpperApartment"]
+position = Vector2(-100, 60)
+sprite_frames = SubResource("SpriteFrames_c3prb")
+
+[node name="YSort" type="Node2D" parent="UpperApartment/DoorToTheUpperApartment"]
+position = Vector2(0, 18)
 
 [node name="Elevator" type="AnimatedSprite2D" parent="."]
 z_index = -1
@@ -150,122 +241,33 @@ metadata/action = "EnterElevator"
 metadata/label = "Elevator"
 metadata/category = "Default"
 
-[node name="BasementDoor" type="AnimatedSprite2D" parent="."]
+[node name="DoorToBasement2" type="AnimatedSprite2D" parent="."]
 z_index = -1
 position = Vector2(-291, 55)
 sprite_frames = SubResource("SpriteFrames_lgcyy")
 
-[node name="Label" type="Node2D" parent="BasementDoor"]
+[node name="Label" type="Node2D" parent="DoorToBasement2"]
 position = Vector2(0, -31)
 
-[node name="InspectLabel" type="Node" parent="BasementDoor/Label"]
+[node name="InspectLabel" type="Node" parent="DoorToBasement2/Label"]
 metadata/zone = "BasementDoorZone"
-metadata/action = "EnterBasement"
+metadata/action = "EnterBasement2"
 metadata/label = "Storage Room"
 metadata/category = "Default"
 
-[node name="RecycleBin" type="Sprite2D" parent="."]
+[node name="RecycleBinNextToElevator" type="Sprite2D" parent="."]
 position = Vector2(-262, 68.5)
 texture = ExtResource("5_0eq5h")
 
-[node name="YSort" type="Node2D" parent="RecycleBin"]
+[node name="YSort" type="Node2D" parent="RecycleBinNextToElevator"]
 position = Vector2(0, 12)
 
-[node name="BlackBin" type="Sprite2D" parent="."]
+[node name="BlackBinNextToElevator" type="Sprite2D" parent="."]
 position = Vector2(-243, 68.5)
 texture = ExtResource("6_sj14k")
 
-[node name="YSort" type="Node2D" parent="BlackBin"]
+[node name="YSort" type="Node2D" parent="BlackBinNextToElevator"]
 position = Vector2(0, 12)
-
-[node name="BlackRug" type="Sprite2D" parent="."]
-z_index = -1
-position = Vector2(120, -29)
-texture = ExtResource("20_85nrp")
-
-[node name="ApartmentWall" type="Sprite2D" parent="."]
-visible = false
-texture = ExtResource("7_udva6")
-
-[node name="YSort" type="Node2D" parent="ApartmentWall"]
-position = Vector2(4, 73)
-
-[node name="HallwayDoor2" type="AnimatedSprite2D" parent="."]
-position = Vector2(-100, 60)
-sprite_frames = SubResource("SpriteFrames_c3prb")
-
-[node name="YSort" type="Node2D" parent="HallwayDoor2"]
-position = Vector2(0, 18)
-
-[node name="SideTable2Back" type="Sprite2D" parent="."]
-z_index = 1
-position = Vector2(-182, -28)
-texture = ExtResource("15_ctho0")
-
-[node name="ToiletPaper" type="Sprite2D" parent="SideTable2Back"]
-position = Vector2(-5, -15)
-texture = ExtResource("16_g87gh")
-
-[node name="BedWoodenBlack" type="Sprite2D" parent="."]
-position = Vector2(123, -64)
-texture = ExtResource("18_i57do")
-
-[node name="YSort" type="Node2D" parent="BedWoodenBlack"]
-position = Vector2(1, 56)
-
-[node name="PosterSkeleton" type="Sprite2D" parent="."]
-z_index = -1
-position = Vector2(-3.5, -118.5)
-texture = ExtResource("8_xnu6d")
-
-[node name="SofaPurple" type="Sprite2D" parent="."]
-z_index = -1
-position = Vector2(-54.5, -82.5)
-texture = ExtResource("9_eaole")
-
-[node name="SideTable1" type="Sprite2D" parent="."]
-z_index = -1
-position = Vector2(-7.5, -76.5)
-texture = ExtResource("11_vbwku")
-
-[node name="Popelnik" type="Sprite2D" parent="SideTable1"]
-position = Vector2(-2.5, -11.5)
-texture = ExtResource("19_axcx5")
-
-[node name="Kredenc" type="Sprite2D" parent="."]
-position = Vector2(-55, -23)
-texture = ExtResource("10_77ua5")
-
-[node name="YSort" type="Node2D" parent="Kredenc"]
-position = Vector2(0, 13)
-
-[node name="TvWithcable" type="Sprite2D" parent="Kredenc"]
-position = Vector2(-29, -7)
-texture = ExtResource("17_wf30n")
-flip_h = true
-
-[node name="YSort" type="Node2D" parent="Kredenc/TvWithcable"]
-position = Vector2(8, -4)
-
-[node name="BathHorizontal" type="Sprite2D" parent="."]
-z_index = -1
-position = Vector2(-195, -79)
-texture = ExtResource("12_6odtv")
-
-[node name="Sink" type="Sprite2D" parent="."]
-z_index = -1
-position = Vector2(-150, -86)
-texture = ExtResource("13_5srwn")
-
-[node name="Toilet" type="Sprite2D" parent="."]
-z_index = 1
-position = Vector2(-214, -29)
-texture = ExtResource("14_uwy0d")
-
-[node name="SideTable2" type="Sprite2D" parent="."]
-z_index = -1
-position = Vector2(175, -78)
-texture = ExtResource("11_vbwku")
 
 [node name="Points" type="Node2D" parent="."]
 
@@ -278,7 +280,3 @@ position = Vector2(-192, 76)
 position = Vector2(-288, 81)
 
 [node name="Point" type="Node" parent="Points/BasementExit"]
-
-[node name="Knihovna2" type="Sprite2D" parent="."]
-position = Vector2(52, -97)
-texture = ExtResource("21_kcje3")

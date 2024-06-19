@@ -28,3 +28,20 @@ pub fn stopwatch_at(duration: Duration) -> Stopwatch {
     s.tick(duration);
     s
 }
+
+/// Similar to bevy's
+/// [`bevy_ecs::schedule::condition::common_conditions::on_event`], but useful
+/// when a specific event variation is expected.
+/// Used typically with enum events.
+pub fn on_event_variant<T: Event + Eq + Clone>(
+    variant: T,
+) -> impl FnMut(EventReader<T>) -> bool + Clone {
+    // The events need to be consumed, so that there are no false positives on
+    // subsequent calls of the run condition. Simply checking `is_empty`
+    // would not be enough. PERF: note that `count` is efficient (not
+    // actually looping/iterating), due to Bevy having a specialized
+    // implementation for events.
+    move |mut reader: EventReader<T>| {
+        reader.read().any(|event| event == &variant)
+    }
+}
