@@ -30,7 +30,7 @@ pub fn stopwatch_at(duration: Duration) -> Stopwatch {
 }
 
 /// Similar to bevy's
-/// [`bevy_ecs::schedule::condition::common_conditions::on_event`], but useful
+/// [`bevy::ecs::schedule::common_conditions::on_event`], but useful
 /// when a specific event variation is expected.
 /// Used typically with enum events.
 pub fn on_event_variant<T: Event + Eq + Clone>(
