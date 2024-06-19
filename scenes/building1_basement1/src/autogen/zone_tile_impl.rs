@@ -8,17 +8,23 @@ Option<main_game_lib::top_down::layout::ZoneGroup>
     #[allow(clippy::match_single_binding)] match self
     { Self::ElevatorZone => Some(ZoneGroup(0)),
 Self::BasementDoorZone => Some(ZoneGroup(1)),
+Self::UpperApartmentDoorZone => Some(ZoneGroup(2)),
+Self::UpperApartmentWallHiddenZone => Some(ZoneGroup(2)),
  #[allow(unreachable_patterns)] _ => None, }
 } #[inline] fn zone_size(&self) -> Option<usize>
 {
     #[allow(clippy::match_single_binding)] match self
     { Self::ElevatorZone => Some(52),
 Self::BasementDoorZone => Some(24),
+Self::UpperApartmentDoorZone => Some(84),
+Self::UpperApartmentWallHiddenZone => Some(4952),
  #[allow(unreachable_patterns)] _ => None, }
 } type Successors = Self; #[inline] fn zone_successors(&self) -> Option<&'static
 [Self::Successors]>
 {
     #[allow(clippy::match_single_binding)] match self
-    {  #[allow(unreachable_patterns)] _ => None, }
+    { Self::UpperApartmentDoorZone => Some(&[Self::UpperApartmentWallHiddenZone]),
+Self::UpperApartmentWallHiddenZone => Some(&[Self::UpperApartmentDoorZone]),
+ #[allow(unreachable_patterns)] _ => None, }
 }
  }

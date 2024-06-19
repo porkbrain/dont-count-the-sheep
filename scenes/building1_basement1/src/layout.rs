@@ -1,3 +1,5 @@
+mod watch_entry_to_apartment;
+
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_loading_screen::LoadingScreenSettings;
@@ -6,18 +8,24 @@ use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{
     common_ext::QueryExt,
     cutscene::{
-        self, enter_an_elevator::STEP_TIME_ON_EXIT_ELEVATOR,
-        enter_dark_door::EnterDarkDoor, in_cutscene, IntoCutscene,
+        self,
+        enter_an_elevator::{
+            start_with_open_elevator_and_close_it, STEP_TIME_ON_EXIT_ELEVATOR,
+        },
+        enter_dark_door::EnterDarkDoor,
+        in_cutscene, IntoCutscene,
     },
-    top_down::actor::player::TakeAwayPlayerControl,
+    top_down::{
+        actor::{self, movement_event_emitted, player::TakeAwayPlayerControl},
+        environmental_objects::{self, door::DoorBuilder},
+    },
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use strum::IntoEnumIterator;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
-    layout::LAYOUT,
-    ActorTarget, TileMap,
+    TileMap,
 };
 
 use crate::prelude::*;
@@ -39,21 +47,38 @@ impl bevy::app::Plugin for Plugin {
                     rscn::tscn_loaded_but_not_spawned::<Building1Basement1>(),
                 ),
         )
-        .add_systems(OnExit(Building1Basement1::quitting()), despawn);
-
-        app.add_systems(
+        .add_systems(OnExit(Building1Basement1::quitting()), despawn)
+        .add_systems(
+            Update,
+            environmental_objects::door::toggle::<Building1Basement1>
+                .run_if(Building1Basement1::in_running_state())
+                .run_if(movement_event_emitted::<Building1Basement1>())
+                .after(actor::emit_movement_events::<Building1Basement1>),
+        )
+        .add_systems(
             Update,
             enter_the_elevator
-                .run_if(on_event::<Building1Basement1Action>())
+                .run_if(on_event_variant(
+                    Building1Basement1Action::EnterElevator,
+                ))
                 .run_if(Building1Basement1::in_running_state())
                 .run_if(not(in_cutscene())),
         )
         .add_systems(
             Update,
             enter_basement2
-                .run_if(on_event::<Building1Basement1Action>())
+                .run_if(on_event_variant(
+                    Building1Basement1Action::EnterBasement2,
+                ))
                 .run_if(Building1Basement1::in_running_state())
                 .run_if(not(in_cutscene())),
+        )
+        .add_systems(
+            Update,
+            watch_entry_to_apartment::system
+                .run_if(Building1Basement1::in_running_state())
+                .run_if(movement_event_emitted::<Building1Basement1>())
+                .after(actor::emit_movement_events::<Building1Basement1>),
         );
     }
 }
@@ -70,6 +95,10 @@ pub(crate) struct Elevator;
 /// The door sprite that leads to the storage basement.
 #[derive(Component)]
 pub(crate) struct DoorToStorageBasement;
+/// There's a wall that separates an apartment from the hallway.
+/// This door gets hidden when the player is near or in the apartment.
+#[derive(Component)]
+pub(crate) struct ApartmentWall;
 
 struct Spawner<'a> {
     transition: GlobalGameStateTransition,
@@ -98,6 +127,7 @@ fn spawn(
 
     let player = cmd.spawn_empty().id();
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
+    player_builder.initial_step_time(STEP_TIME_ON_EXIT_ELEVATOR);
 
     tscn.spawn_into(
         &mut Spawner {
@@ -111,6 +141,7 @@ fn spawn(
         &mut cmd,
     );
 
+    player_builder.walking_to_from_initial_position(sq(0, -2));
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
 
     cmd.insert_resource(zone_to_inspect_label_entity);
@@ -158,7 +189,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                     // from interacting with the elevator while it's closing
                     cmd.entity(player).insert(TakeAwayPlayerControl);
                     cmd.entity(who).add(move |e: EntityWorldMut| {
-                        cutscene::enter_an_elevator::start_with_open_elevator_and_close_it(player, e)
+                        start_with_open_elevator_and_close_it(player, e)
                     });
                 }
             }
@@ -167,26 +198,24 @@ impl<'a> TscnSpawner for Spawner<'a> {
                     == Building1PlayerFloorToBuilding1Basement1 =>
             {
                 self.player_builder.initial_position(translation.truncate());
-                self.player_builder.walking_to(ActorTarget::new(
-                    LAYOUT.world_pos_to_square(translation.truncate())
-                        + sq(0, -2),
-                ));
-                self.player_builder
-                    .initial_step_time(STEP_TIME_ON_EXIT_ELEVATOR);
             }
             "BasementExit"
                 if self.transition == Building1Basement2ToBasement1 =>
             {
                 self.player_builder.initial_position(translation.truncate());
-                self.player_builder.walking_to(ActorTarget::new(
-                    LAYOUT.world_pos_to_square(translation.truncate())
-                        + sq(0, -2),
-                ));
-                self.player_builder
-                    .initial_step_time(STEP_TIME_ON_EXIT_ELEVATOR);
             }
-            "BasementDoor" => {
+            "DoorToBasement2" => {
                 cmd.entity(who).insert(DoorToStorageBasement);
+            }
+            "ApartmentWall" => {
+                cmd.entity(who).insert(ApartmentWall);
+            }
+            "DoorToTheUpperApartment" => {
+                let door = DoorBuilder::new(
+                    Building1Basement1TileKind::UpperApartmentDoorZone,
+                )
+                .build::<Building1Basement1>();
+                cmd.entity(who).insert(door);
             }
             _ => {}
         }
@@ -221,7 +250,10 @@ impl top_down::layout::Tile for Building1Basement1TileKind {
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::BasementDoorZone | Self::ElevatorZone => true,
+            Self::UpperApartmentWallHiddenZone
+            | Self::UpperApartmentDoorZone
+            | Self::BasementDoorZone
+            | Self::ElevatorZone => true,
         }
     }
 
@@ -234,7 +266,6 @@ impl top_down::layout::Tile for Building1Basement1TileKind {
 /// By entering the elevator, the player can this scene.
 fn enter_the_elevator(
     mut cmd: Commands,
-    mut action_events: EventReader<Building1Basement1Action>,
     mut assets: ResMut<Assets<DialogGraph>>,
 
     player: Query<Entity, With<Player>>,
@@ -242,78 +273,70 @@ fn enter_the_elevator(
     camera: Query<Entity, With<MainCamera>>,
     points: Query<(&Name, &rscn::Point)>,
 ) {
-    let is_triggered = action_events.read().any(|action| {
-        matches!(action, Building1Basement1Action::EnterElevator)
-    });
+    let Some(player) = player.get_single_or_none() else {
+        error!("Cannot enter the elevator because the Player is missing");
+        return;
+    };
 
-    if is_triggered && let Some(player) = player.get_single_or_none() {
-        let point_in_elevator = {
-            let (_, rscn::Point(pos)) = points
-                .iter()
-                .find(|(name, _)| **name == Name::new("InElevator"))
-                .expect("InElevator point not found");
+    let point_in_elevator = {
+        let (_, rscn::Point(pos)) = points
+            .iter()
+            .find(|(name, _)| **name == Name::new("InElevator"))
+            .expect("InElevator point not found");
 
-            *pos
-        };
+        *pos
+    };
 
-        cutscene::enter_an_elevator::spawn(
-            &mut cmd,
-            &mut assets,
-            player,
-            elevator.single(),
-            camera.single(),
-            point_in_elevator,
-            &[
-                (
-                    GlobalGameStateTransition::Building1Basement1ToPlayerFloor,
-                    "go to first floor",
-                ),
-                (
-                    GlobalGameStateTransition::Building1Basement1ToDowntown,
-                    "go to downtown",
-                ),
-            ],
-        );
-    }
+    cutscene::enter_an_elevator::spawn(
+        &mut cmd,
+        &mut assets,
+        player,
+        elevator.single(),
+        camera.single(),
+        point_in_elevator,
+        &[
+            (
+                GlobalGameStateTransition::Building1Basement1ToPlayerFloor,
+                "go to first floor",
+            ),
+            (
+                GlobalGameStateTransition::Building1Basement1ToDowntown,
+                "go to downtown",
+            ),
+        ],
+    );
 }
 
+/// Goes to the next basement level.
 fn enter_basement2(
     mut cmd: Commands,
-    mut action_events: EventReader<Building1Basement1Action>,
 
     player: Query<Entity, With<Player>>,
     door: Query<Entity, With<DoorToStorageBasement>>,
     points: Query<(&Name, &rscn::Point)>,
 ) {
-    let is_triggered = action_events.read().any(|action| {
-        matches!(action, Building1Basement1Action::EnterBasement)
-    });
+    let Some(player) = player.get_single_or_none() else {
+        return;
+    };
 
-    if is_triggered {
-        let Some(player) = player.get_single_or_none() else {
-            return;
-        };
+    let door_entrance = points
+        .iter()
+        .find_map(|(name, rscn::Point(pos))| {
+            if name == &Name::new("BasementExit") {
+                Some(*pos)
+            } else {
+                None
+            }
+        })
+        .expect("Missing point for BasementExit");
 
-        let door_entrance = points
-            .iter()
-            .find_map(|(name, rscn::Point(pos))| {
-                if name == &Name::new("BasementExit") {
-                    Some(*pos)
-                } else {
-                    None
-                }
-            })
-            .expect("Missing point for BasementExit");
-
-        EnterDarkDoor {
-            player,
-            door: door.single(),
-            door_entrance,
-            change_global_state_to: Building1Basement1::quitting(),
-            transition:
-                GlobalGameStateTransition::Building1Basement1ToBasement2,
-            loading_screen: LoadingScreenSettings { ..default() },
-        }
-        .spawn(&mut cmd);
+    EnterDarkDoor {
+        player,
+        door: door.single(),
+        door_entrance,
+        change_global_state_to: Building1Basement1::quitting(),
+        transition: GlobalGameStateTransition::Building1Basement1ToBasement2,
+        loading_screen: LoadingScreenSettings { ..default() },
     }
+    .spawn(&mut cmd);
 }

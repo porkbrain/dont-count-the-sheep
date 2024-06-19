@@ -39,9 +39,8 @@ impl bevy::app::Plugin for Plugin {
             exit.run_if(on_event::<ClinicAction>())
                 .run_if(Clinic::in_running_state())
                 .run_if(not(in_cutscene())),
-        );
-
-        app.add_systems(
+        )
+        .add_systems(
             Update,
             environmental_objects::door::toggle::<Clinic>
                 .run_if(Clinic::in_running_state())

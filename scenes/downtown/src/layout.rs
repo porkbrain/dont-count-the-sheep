@@ -207,7 +207,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
             | ("TwinpeaksApartmentEntrance", TwinpeaksApartmentToDowntown)
             | ("PlantShopEntrance", PlantShopToDowntown)
             | ("SewersEntrance", SewersToDowntown)
-            | ("ClinicEntrance", ClinicToDowntown) => {
+            | ("ClinicExit", ClinicToDowntown) => {
                 self.camera_translation.x = position.x;
                 self.camera_translation.y = position.y;
                 // we multiply by 4 because winnie is walking across 2 tiles and

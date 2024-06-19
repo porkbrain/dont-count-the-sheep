@@ -553,6 +553,19 @@ impl CharacterBundleBuilder {
         self
     }
 
+    /// Sets the walking to target centered around the initial position.
+    /// Note that this is best used _after_ the initial position is set.
+    pub fn walking_to_from_initial_position(
+        &mut self,
+        walking_to: Square,
+    ) -> &mut Self {
+        let walking_to = ActorTarget::new(
+            LAYOUT.world_pos_to_square(self.initial_position) + walking_to,
+        );
+        self.walking_to = ActorMovement::Target(walking_to);
+        self
+    }
+
     /// How long does it take to move one square.
     pub fn initial_step_time(&mut self, step_time: Duration) -> &mut Self {
         self.initial_step_time = Some(step_time);
