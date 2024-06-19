@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://b4jfxrl5rqnne"]
+[gd_scene load_steps=37 format=3 uid="uid://b4jfxrl5rqnne"]
 
 [ext_resource type="Texture2D" uid="uid://cbs7hpafjhpxt" path="res://assets/residential/indoors/hallway2.png" id="1_hc42t"]
 [ext_resource type="Texture2D" uid="uid://ds5d1ssvswgsm" path="res://assets/residential/indoors/brown_dark_door_atlas.png" id="2_hgy38"]
@@ -20,6 +20,7 @@
 [ext_resource type="Texture2D" uid="uid://b54eahl80h2uy" path="res://assets/residential/indoors/bed_wooden_black.png" id="18_i57do"]
 [ext_resource type="Texture2D" uid="uid://bp3krmlj4peg0" path="res://assets/twinpeaks_apartment/popelnik.png" id="19_axcx5"]
 [ext_resource type="Texture2D" uid="uid://b838vr33qe6o8" path="res://assets/twinpeaks_apartment/black_rug.png" id="20_85nrp"]
+[ext_resource type="Texture2D" uid="uid://dkd2f8jlm4n00" path="res://assets/residential/indoors/knihovna2.png" id="21_kcje3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_n0t2h"]
 atlas = ExtResource("3_af3up")
@@ -183,6 +184,7 @@ position = Vector2(120, -29)
 texture = ExtResource("20_85nrp")
 
 [node name="ApartmentWall" type="Sprite2D" parent="."]
+visible = false
 texture = ExtResource("7_udva6")
 
 [node name="YSort" type="Node2D" parent="ApartmentWall"]
@@ -231,7 +233,7 @@ position = Vector2(-2.5, -11.5)
 texture = ExtResource("19_axcx5")
 
 [node name="Kredenc" type="Sprite2D" parent="."]
-position = Vector2(-55, -18)
+position = Vector2(-55, -23)
 texture = ExtResource("10_77ua5")
 
 [node name="YSort" type="Node2D" parent="Kredenc"]
@@ -262,7 +264,7 @@ texture = ExtResource("14_uwy0d")
 
 [node name="SideTable2" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(175, -75)
+position = Vector2(175, -78)
 texture = ExtResource("11_vbwku")
 
 [node name="Points" type="Node2D" parent="."]
@@ -276,3 +278,7 @@ position = Vector2(-192, 76)
 position = Vector2(-288, 81)
 
 [node name="Point" type="Node" parent="Points/BasementExit"]
+
+[node name="Knihovna2" type="Sprite2D" parent="."]
+position = Vector2(52, -97)
+texture = ExtResource("21_kcje3")

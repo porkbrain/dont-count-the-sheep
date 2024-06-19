@@ -1,10 +1,10 @@
 [gd_scene load_steps=11 format=3 uid="uid://cehfnn2h1xqt7"]
 
-[ext_resource type="Texture2D" uid="uid://c42cvp1tai2ek" path="res://assets/downtown/sewers_bg.png" id="1_sy4gy"]
-[ext_resource type="Texture2D" uid="uid://c3306mx7c6kvh" path="res://assets/downtown/bin_bag.png" id="2_w3jta"]
-[ext_resource type="Texture2D" uid="uid://cqf8q0dtu6mjl" path="res://assets/environment/room_light_half.png" id="3_lk7hh"]
-[ext_resource type="Texture2D" uid="uid://c1k8kyqk2scqh" path="res://assets/environment/beerfloating_atlas.png" id="4_4qch5"]
-[ext_resource type="Texture2D" uid="uid://ikgyyaxkpcc5" path="res://assets/downtown/manhole.png" id="5_5t670"]
+[ext_resource type="Texture2D" uid="uid://b42f7ep0i83gr" path="res://assets/downtown/sewers_bg.png" id="1_sy4gy"]
+[ext_resource type="Texture2D" uid="uid://chs5dvlpi8pvq" path="res://assets/downtown/bin_bag.png" id="2_w3jta"]
+[ext_resource type="Texture2D" uid="uid://cgltbvgkw1oxu" path="res://assets/environment/beerfloating_atlas.png" id="4_4qch5"]
+[ext_resource type="Texture2D" uid="uid://brjenh23364bg" path="res://assets/downtown/manhole.png" id="5_5t670"]
+[ext_resource type="Texture2D" uid="uid://dfpdrfyab8lnf" path="res://assets/environment/stain1.png" id="5_m21x3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hdhns"]
 atlas = ExtResource("4_4qch5")
@@ -50,7 +50,6 @@ texture = ExtResource("1_sy4gy")
 
 [node name="RoomLightHalf" type="Sprite2D" parent="SewersBg"]
 position = Vector2(319, 101)
-texture = ExtResource("3_lk7hh")
 flip_h = true
 
 [node name="Manhole" type="Sprite2D" parent="SewersBg"]
@@ -86,3 +85,7 @@ metadata/category = "Default"
 
 [node name="CooperSpawn" type="Node2D" parent="Points"]
 position = Vector2(78, 147)
+
+[node name="Stain1" type="Sprite2D" parent="."]
+position = Vector2(251, 114)
+texture = ExtResource("5_m21x3")
