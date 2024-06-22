@@ -30,7 +30,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(PlantShop::quitting()), despawn)
         .add_systems(
             Update,
-            exit.run_if(on_event::<PlantShopAction>())
+            exit.run_if(on_event_variant(PlantShopAction::ExitScene))
                 .run_if(PlantShop::in_running_state())
                 .run_if(not(in_cutscene())),
         );
@@ -190,25 +190,18 @@ impl top_down::layout::Tile for PlantShopTileKind {
 
 fn exit(
     mut cmd: Commands,
-    mut action_events: EventReader<PlantShopAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
 ) {
-    let is_triggered = action_events
-        .read()
-        .any(|action| matches!(action, PlantShopAction::ExitScene));
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+        ..default()
+    });
 
-    if is_triggered {
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-            ..default()
-        });
+    next_loading_screen_state.set(common_loading_screen::start_state());
 
-        next_loading_screen_state.set(common_loading_screen::start_state());
-
-        *transition = GlobalGameStateTransition::PlantShopToDowntown;
-        next_state.set(PlantShop::quitting());
-    }
+    *transition = GlobalGameStateTransition::PlantShopToDowntown;
+    next_state.set(PlantShop::quitting());
 }
