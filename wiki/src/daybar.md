@@ -43,3 +43,5 @@ Shops and other establishments may have varying hours of operation:
 
 - The [Mall scene](scene_mall.md)
 - The [Clinic scene](scene_clinic.md)
+
+The player can reset the day by going to sleep in [their apartment](scene_building1.md).

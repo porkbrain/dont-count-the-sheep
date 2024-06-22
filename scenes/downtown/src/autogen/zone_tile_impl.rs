@@ -9,9 +9,11 @@ Option<main_game_lib::top_down::layout::ZoneGroup>
     { Self::Building1Entrance => Some(ZoneGroup(0)),
 Self::SewersEntrance => Some(ZoneGroup(1)),
 Self::MallEntrance => Some(ZoneGroup(2)),
-Self::ClinicEntrance => Some(ZoneGroup(3)),
-Self::PlantShopEntrance => Some(ZoneGroup(4)),
-Self::TwinpeaksApartmentEntrance => Some(ZoneGroup(5)),
+Self::CompoundEntrance => Some(ZoneGroup(3)),
+Self::ClinicEntrance => Some(ZoneGroup(4)),
+Self::ClinicWardEntrance => Some(ZoneGroup(5)),
+Self::PlantShopEntrance => Some(ZoneGroup(6)),
+Self::TwinpeaksApartmentEntrance => Some(ZoneGroup(7)),
  #[allow(unreachable_patterns)] _ => None, }
 } #[inline] fn zone_size(&self) -> Option<usize>
 {
@@ -19,7 +21,9 @@ Self::TwinpeaksApartmentEntrance => Some(ZoneGroup(5)),
     { Self::Building1Entrance => Some(33),
 Self::SewersEntrance => Some(60),
 Self::MallEntrance => Some(165),
+Self::CompoundEntrance => Some(405),
 Self::ClinicEntrance => Some(6),
+Self::ClinicWardEntrance => Some(6),
 Self::PlantShopEntrance => Some(44),
 Self::TwinpeaksApartmentEntrance => Some(44),
  #[allow(unreachable_patterns)] _ => None, }

@@ -256,8 +256,14 @@ fn node_to_entity<T: TscnSpawner>(
 
                 if let Some(zone) = child_node.metadata.remove("zone") {
                     spawner.map_zone_to_inspect_label_entity(
-                        T::LocalZoneKind::from_str(&zone)
-                            .unwrap_or_else(|_| panic!("Zone not valid")),
+                        T::LocalZoneKind::from_str(&zone).unwrap_or_else(
+                            |_| {
+                                panic!(
+                                    "Zone '{zone}' not valid for \
+                                    InspectLabel of {name:?}"
+                                )
+                            },
+                        ),
                         entity,
                     );
                 }

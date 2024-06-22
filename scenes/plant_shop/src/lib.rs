@@ -71,7 +71,7 @@ pub enum PlantShopTileKind {
     ExitZone,
 }
 
-#[derive(Event, Reflect, Clone, strum::EnumString)]
+#[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
 pub enum PlantShopAction {
     ExitScene,
 }
