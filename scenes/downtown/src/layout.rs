@@ -198,7 +198,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
         let position = translation.truncate();
 
-        #[allow(clippy::single_match)]
         match (name.as_str(), self.transition) {
             ("Downtown", _) => {
                 cmd.entity(who).insert(LayoutEntity);
@@ -216,6 +215,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
             | ("TwinpeaksApartmentEntrance", TwinpeaksApartmentToDowntown)
             | ("PlantShopEntrance", PlantShopToDowntown)
             | ("SewersEntrance", SewersToDowntown)
+            | ("CompoundEntrance", CompoundToDowntown)
             | ("ClinicExit", ClinicToDowntown | ClinicWardToDowntown) => {
                 self.camera_translation.x = position.x;
                 self.camera_translation.y = position.y;

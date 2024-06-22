@@ -29,116 +29,6 @@ z_index = -5
 position = Vector2(71, 107)
 texture = ExtResource("1_ubi6a")
 
-[node name="Jehlicnan2" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-477, 302)
-texture = ExtResource("2_tobpx")
-
-[node name="YSort" type="Node2D" parent="CompoundBg/Jehlicnan2"]
-position = Vector2(0, 61)
-
-[node name="Briza2" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-97, 286)
-texture = ExtResource("3_slirt")
-flip_h = true
-
-[node name="YSort" type="Node2D" parent="CompoundBg/Briza2"]
-position = Vector2(6, 71)
-
-[node name="Briza" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-863, 289)
-texture = ExtResource("3_slirt")
-
-[node name="YSort" type="Node2D" parent="CompoundBg/Briza"]
-position = Vector2(6, 71)
-
-[node name="BigTree" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-718, 277)
-texture = ExtResource("4_codlm")
-
-[node name="YSort" type="Node2D" parent="CompoundBg/BigTree"]
-position = Vector2(0, 75)
-
-[node name="Weed3" type="Sprite2D" parent="CompoundBg/BigTree"]
-position = Vector2(13, 79)
-texture = ExtResource("5_qo1k0")
-
-[node name="BigTree4" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-1044, 231)
-texture = ExtResource("4_codlm")
-
-[node name="YSort" type="Node2D" parent="CompoundBg/BigTree4"]
-position = Vector2(0, 75)
-
-[node name="Weed3" type="Sprite2D" parent="CompoundBg/BigTree4"]
-position = Vector2(13, 79)
-texture = ExtResource("5_qo1k0")
-
-[node name="Jehlicnan" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-586, 286)
-texture = ExtResource("2_tobpx")
-
-[node name="YSort" type="Node2D" parent="CompoundBg/Jehlicnan"]
-position = Vector2(0, 61)
-
-[node name="Sprout3" type="Sprite2D" parent="CompoundBg/Jehlicnan"]
-position = Vector2(-7, 63)
-texture = ExtResource("6_sto4t")
-
-[node name="JehlicnanFlipped" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-529, 272)
-texture = ExtResource("2_tobpx")
-flip_h = true
-
-[node name="YSort" type="Node2D" parent="CompoundBg/JehlicnanFlipped"]
-position = Vector2(0, 61)
-
-[node name="JehlicnanFlipped5" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-959, 298)
-texture = ExtResource("2_tobpx")
-flip_h = true
-
-[node name="YSort" type="Node2D" parent="CompoundBg/JehlicnanFlipped5"]
-position = Vector2(0, 61)
-
-[node name="JehlicnanFlipped2" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-657, 293)
-texture = ExtResource("2_tobpx")
-flip_h = true
-
-[node name="YSort" type="Node2D" parent="CompoundBg/JehlicnanFlipped2"]
-position = Vector2(-1, 64)
-
-[node name="Rock" type="Sprite2D" parent="CompoundBg/JehlicnanFlipped2"]
-position = Vector2(18.5, 60.5)
-texture = ExtResource("7_155qn")
-
-[node name="JehlicnanFlipped4" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(8, 285)
-texture = ExtResource("2_tobpx")
-flip_h = true
-
-[node name="YSort" type="Node2D" parent="CompoundBg/JehlicnanFlipped4"]
-position = Vector2(0, 75)
-
-[node name="Rock2" type="Sprite2D" parent="CompoundBg/JehlicnanFlipped4"]
-position = Vector2(-15, 64)
-texture = ExtResource("8_t873q")
-
-[node name="BigTree3" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-205, 287)
-texture = ExtResource("4_codlm")
-flip_h = true
-
-[node name="YSort" type="Node2D" parent="CompoundBg/BigTree3"]
-position = Vector2(-1, 78)
-
-[node name="Jehlicnan4" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-790, 272)
-texture = ExtResource("2_tobpx")
-
-[node name="YSort" type="Node2D" parent="CompoundBg/Jehlicnan4"]
-position = Vector2(1, 63)
-
 [node name="WildFlower1" type="Sprite2D" parent="CompoundBg"]
 position = Vector2(-416, 308)
 texture = ExtResource("9_78nfg")
@@ -169,40 +59,162 @@ z_index = -1
 position = Vector2(-822, 347)
 texture = ExtResource("9_78nfg")
 
-[node name="Gate" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-339.5, 357)
-texture = ExtResource("11_16ldu")
-
-[node name="WiredFence" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-826.5, 361)
-texture = ExtResource("12_mx8up")
-
-[node name="WiredFence2" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-911.5, 361)
-texture = ExtResource("12_mx8up")
-
-[node name="WiredFence3" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-996.5, 361)
-texture = ExtResource("12_mx8up")
-
-[node name="Sipek" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(-733, 348)
-texture = ExtResource("13_shc4b")
-
-[node name="YSort" type="Node2D" parent="CompoundBg/Sipek"]
-position = Vector2(-2, 21)
-
-[node name="Rock1" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(221, 300)
-texture = ExtResource("14_kdalq")
-
-[node name="Rock3" type="Sprite2D" parent="CompoundBg"]
-position = Vector2(233, 310)
-texture = ExtResource("8_t873q")
-
 [node name="Mushroom" type="Sprite2D" parent="CompoundBg"]
 position = Vector2(253, 310)
 texture = ExtResource("15_cq45l")
+
+[node name="Rock1" type="Sprite2D" parent="."]
+position = Vector2(292, 407)
+texture = ExtResource("14_kdalq")
+
+[node name="YSort" type="Node2D" parent="Rock1"]
+position = Vector2(-16, 14)
+
+[node name="Rock3" type="Sprite2D" parent="."]
+position = Vector2(304, 417)
+texture = ExtResource("8_t873q")
+
+[node name="YSort" type="Node2D" parent="Rock3"]
+position = Vector2(-2, 8)
+
+[node name="SouthBorder" type="Node2D" parent="."]
+
+[node name="Jehlicnan2" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-406, 409)
+texture = ExtResource("2_tobpx")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/Jehlicnan2"]
+position = Vector2(0, 61)
+
+[node name="Briza2" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-26, 393)
+texture = ExtResource("3_slirt")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="SouthBorder/Briza2"]
+position = Vector2(6, 71)
+
+[node name="Briza" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-792, 396)
+texture = ExtResource("3_slirt")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/Briza"]
+position = Vector2(6, 71)
+
+[node name="BigTree" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-647, 384)
+texture = ExtResource("4_codlm")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/BigTree"]
+position = Vector2(0, 75)
+
+[node name="Weed3" type="Sprite2D" parent="SouthBorder/BigTree"]
+position = Vector2(13, 79)
+texture = ExtResource("5_qo1k0")
+
+[node name="BigTree4" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-973, 338)
+texture = ExtResource("4_codlm")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/BigTree4"]
+position = Vector2(0, 75)
+
+[node name="Weed3" type="Sprite2D" parent="SouthBorder/BigTree4"]
+position = Vector2(13, 79)
+texture = ExtResource("5_qo1k0")
+
+[node name="Jehlicnan" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-515, 393)
+texture = ExtResource("2_tobpx")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/Jehlicnan"]
+position = Vector2(0, 61)
+
+[node name="Sprout3" type="Sprite2D" parent="SouthBorder/Jehlicnan"]
+position = Vector2(-7, 63)
+texture = ExtResource("6_sto4t")
+
+[node name="JehlicnanFlipped" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-458, 379)
+texture = ExtResource("2_tobpx")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="SouthBorder/JehlicnanFlipped"]
+position = Vector2(0, 61)
+
+[node name="JehlicnanFlipped5" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-888, 405)
+texture = ExtResource("2_tobpx")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="SouthBorder/JehlicnanFlipped5"]
+position = Vector2(0, 61)
+
+[node name="JehlicnanFlipped2" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-586, 400)
+texture = ExtResource("2_tobpx")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="SouthBorder/JehlicnanFlipped2"]
+position = Vector2(-1, 64)
+
+[node name="Rock" type="Sprite2D" parent="SouthBorder/JehlicnanFlipped2"]
+position = Vector2(18.5, 60.5)
+texture = ExtResource("7_155qn")
+
+[node name="JehlicnanFlipped4" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(79, 392)
+texture = ExtResource("2_tobpx")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="SouthBorder/JehlicnanFlipped4"]
+position = Vector2(0, 75)
+
+[node name="Rock2" type="Sprite2D" parent="SouthBorder/JehlicnanFlipped4"]
+position = Vector2(-15, 64)
+texture = ExtResource("8_t873q")
+
+[node name="BigTree3" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-134, 394)
+texture = ExtResource("4_codlm")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="SouthBorder/BigTree3"]
+position = Vector2(-1, 78)
+
+[node name="Jehlicnan4" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-719, 379)
+texture = ExtResource("2_tobpx")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/Jehlicnan4"]
+position = Vector2(1, 63)
+
+[node name="Sipek" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-662, 455)
+texture = ExtResource("13_shc4b")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/Sipek"]
+position = Vector2(-2, 21)
+
+[node name="Gate" type="Sprite2D" parent="SouthBorder"]
+z_index = 2
+position = Vector2(-268.5, 464)
+texture = ExtResource("11_16ldu")
+
+[node name="WiredFence" type="Sprite2D" parent="SouthBorder"]
+z_index = 2
+position = Vector2(-755.5, 468)
+texture = ExtResource("12_mx8up")
+
+[node name="WiredFence2" type="Sprite2D" parent="SouthBorder"]
+z_index = 2
+position = Vector2(-840.5, 468)
+texture = ExtResource("12_mx8up")
+
+[node name="WiredFence3" type="Sprite2D" parent="SouthBorder"]
+z_index = 2
+position = Vector2(-925.5, 468)
+texture = ExtResource("12_mx8up")
 
 [node name="AroundTower" type="Node2D" parent="."]
 
@@ -312,14 +324,14 @@ texture = ExtResource("10_2n0vx")
 
 [node name="Points" type="Node2D" parent="."]
 
-[node name="Entrance" type="Node2D" parent="Points"]
+[node name="MainGate" type="Node2D" parent="Points"]
 position = Vector2(-269, 420)
 
-[node name="Point" type="Node" parent="Points/Entrance"]
+[node name="Point" type="Node" parent="Points/MainGate"]
 
-[node name="InspectLabel" type="Node" parent="Points/Entrance"]
-metadata/zone = "ExitToDowntownZone"
-metadata/action = "ExitToDowntown"
+[node name="InspectLabel" type="Node" parent="Points/MainGate"]
+metadata/zone = "GoToDowntownZone"
+metadata/action = "GoToDowntown"
 metadata/label = "Downtown"
 metadata/category = "Default"
 
@@ -329,7 +341,7 @@ position = Vector2(-98, -55)
 [node name="Point" type="Node" parent="Points/TowerEntrance"]
 
 [node name="InspectLabel" type="Node" parent="Points/TowerEntrance"]
-metadata/zone = "TowerEntrance"
+metadata/zone = "EnterTowerZone"
 metadata/action = "EnterTower"
 metadata/label = "Tower"
 metadata/category = "Default"

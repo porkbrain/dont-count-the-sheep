@@ -2910,6 +2910,8 @@ dependencies = [
  "scene_building1_player_floor",
  "scene_clinic",
  "scene_clinic_ward",
+ "scene_compound",
+ "scene_compound_tower",
  "scene_downtown",
  "scene_mall",
  "scene_meditation",
@@ -3872,6 +3874,50 @@ dependencies = [
 
 [[package]]
 name = "scene_clinic_ward"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_grid_squared",
+ "bevy_pixel_camera",
+ "common_action",
+ "common_assets",
+ "common_loading_screen",
+ "common_store",
+ "common_story",
+ "common_visuals",
+ "itertools 0.13.0",
+ "lazy_static",
+ "main_game_lib",
+ "rand",
+ "serde",
+ "smallvec",
+ "strum",
+]
+
+[[package]]
+name = "scene_compound"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_grid_squared",
+ "bevy_pixel_camera",
+ "common_action",
+ "common_assets",
+ "common_loading_screen",
+ "common_store",
+ "common_story",
+ "common_visuals",
+ "itertools 0.13.0",
+ "lazy_static",
+ "main_game_lib",
+ "rand",
+ "serde",
+ "smallvec",
+ "strum",
+]
+
+[[package]]
+name = "scene_compound_tower"
 version = "0.1.0"
 dependencies = [
  "bevy",
