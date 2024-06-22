@@ -1,4 +1,4 @@
-[gd_scene load_steps=152 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=183 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://5dhtpbjd5ool" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://kkt2uh6il68y" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -32,8 +32,6 @@
 [ext_resource type="Texture2D" uid="uid://dlwhq574htyil" path="res://assets/downtown/praha_building.png" id="21_sq8gl"]
 [ext_resource type="Texture2D" uid="uid://b3evryinrtfti" path="res://assets/downtown/building_duo.png" id="22_bl5xi"]
 [ext_resource type="Texture2D" uid="uid://cjp58rv6tiftg" path="res://assets/downtown/construction_site_sign.png" id="22_m6eml"]
-[ext_resource type="Texture2D" uid="uid://dmxhhw1gpf0ei" path="res://assets/downtown/tower.png" id="23_7ng4s"]
-[ext_resource type="Texture2D" uid="uid://dpw0so54j4i6f" path="res://assets/downtown/barn.png" id="23_av7fi"]
 [ext_resource type="Texture2D" uid="uid://bgxjf52tb71jx" path="res://assets/downtown/fire_ex.png" id="24_ohwph"]
 [ext_resource type="Texture2D" uid="uid://bfsjjxsecplka" path="res://assets/downtown/no_smoking_sign.png" id="25_1tn82"]
 [ext_resource type="Texture2D" uid="uid://b6h2kkj1snwbj" path="res://assets/downtown/clinic.png" id="25_ukjmq"]
@@ -78,13 +76,10 @@
 [ext_resource type="Texture2D" uid="uid://cchf2p76aqldj" path="res://assets/downtown/molo_tile.png" id="76_5i8ym"]
 [ext_resource type="Texture2D" uid="uid://vr0jh6dvrnoj" path="res://assets/downtown/molo_tile_vertical.png" id="77_qpxr7"]
 [ext_resource type="Texture2D" uid="uid://8rph7gfxl4yj" path="res://assets/downtown/escalator_atlas44px.png" id="78_yvctd"]
-[ext_resource type="Texture2D" uid="uid://cfg13e2oo8f38" path="res://assets/downtown/fence_stone.png" id="79_gmvgg"]
-[ext_resource type="Texture2D" uid="uid://3crc63wvqylb" path="res://assets/downtown/fence_stone_vertical.png" id="80_uof8l"]
 [ext_resource type="Texture2D" uid="uid://b03nw20yownw0" path="res://assets/environment/paper_side.png" id="81_0yc4q"]
 [ext_resource type="Texture2D" uid="uid://dpf6cfjwmikfu" path="res://assets/downtown/dlazdicky.png" id="82_65uwp"]
 [ext_resource type="Texture2D" uid="uid://bd4eaa4a7cmge" path="res://assets/environment/rock.png" id="84_fdkld"]
 [ext_resource type="Texture2D" uid="uid://bok35a7i3i8o5" path="res://assets/environment/rock2.png" id="85_ux2kw"]
-[ext_resource type="Texture2D" uid="uid://23c5ijf36vuo" path="res://assets/environment/rock_big.png" id="86_vqxgd"]
 [ext_resource type="Texture2D" uid="uid://cwk6ra1c360mw" path="res://assets/environment/palm_tree.png" id="86_xfw3j"]
 [ext_resource type="Texture2D" uid="uid://rsf8r5bj7ef6" path="res://assets/environment/rock_big_clean.png" id="87_mbycb"]
 [ext_resource type="Texture2D" uid="uid://3wl4475jicyp" path="res://assets/environment/rock1.png" id="88_twy04"]
@@ -95,11 +90,7 @@
 [ext_resource type="Texture2D" uid="uid://2p42y0bm8wg0" path="res://assets/environment/grafitti.png" id="93_g0iqd"]
 [ext_resource type="Texture2D" uid="uid://bi384v026sctt" path="res://assets/downtown/stairs.png" id="94_soxyt"]
 [ext_resource type="Texture2D" uid="uid://d0w7slxc115m7" path="res://assets/downtown/beach_front.png" id="96_h5ain"]
-[ext_resource type="Texture2D" uid="uid://g7jvblpokvop" path="res://assets/environment/mushroom2.png" id="97_6mqhn"]
 [ext_resource type="Texture2D" uid="uid://be3fpbxbvdxtb" path="res://assets/downtown/banner_froggy.png" id="98_4wrme"]
-[ext_resource type="Texture2D" uid="uid://befj4fdhgdkwi" path="res://assets/environment/mushroom3.png" id="98_gdyco"]
-[ext_resource type="Texture2D" uid="uid://u6bbh6b0qbdt" path="res://assets/environment/mushroom4.png" id="99_j6oxe"]
-[ext_resource type="Texture2D" uid="uid://doasm0p5iavd4" path="res://assets/environment/mushroom_tree.png" id="100_r36w2"]
 [ext_resource type="Texture2D" uid="uid://dubmk3iloc7vc" path="res://assets/downtown/river_trim.png" id="101_hledd"]
 [ext_resource type="Texture2D" uid="uid://cyyp5hh3ioi6q" path="res://assets/downtown/beach_front_side.png" id="102_mk7ls"]
 [ext_resource type="Texture2D" uid="uid://v5xnh776axx4" path="res://assets/downtown/waterfall.png" id="103_fimho"]
@@ -108,6 +99,16 @@
 [ext_resource type="Texture2D" uid="uid://bjgm5fviny1y5" path="res://assets/environment/rock_atlas.png" id="105_ebl5n"]
 [ext_resource type="Texture2D" uid="uid://dkfxoywhhxmth" path="res://assets/environment/rock_atlas2.png" id="106_p6rmm"]
 [ext_resource type="Texture2D" uid="uid://dfpdrfyab8lnf" path="res://assets/environment/stain1.png" id="107_6vnka"]
+[ext_resource type="Texture2D" uid="uid://dlfp1v8h2fqb6" path="res://assets/downtown/building_abandoned.png" id="109_bu4df"]
+[ext_resource type="Texture2D" uid="uid://tpa461245weq" path="res://assets/downtown/bin_green.png" id="109_seo0s"]
+[ext_resource type="Texture2D" uid="uid://bj6odlj01q22i" path="res://assets/food/pie3.png" id="110_osgx6"]
+[ext_resource type="Texture2D" uid="uid://04gifet5thc3" path="res://assets/food/pie4.png" id="111_jhpqq"]
+[ext_resource type="Texture2D" uid="uid://cn40v1x57yw33" path="res://assets/food/foccacia.png" id="112_oco4e"]
+[ext_resource type="Texture2D" uid="uid://tqhyinqf1dhf" path="res://assets/residential/indoors/plant_price_white_small.png" id="113_vpncy"]
+[ext_resource type="Texture2D" uid="uid://b5pej68woyefx" path="res://assets/food/oil.png" id="114_603ea"]
+[ext_resource type="Texture2D" uid="uid://byat4vda32e6m" path="res://assets/food/sushi.png" id="115_prick"]
+[ext_resource type="Texture2D" uid="uid://csa5shodptkau" path="res://assets/food/croissant.png" id="116_djqwe"]
+[ext_resource type="Texture2D" uid="uid://b3cvi5c0kohk7" path="res://assets/food/food_cointainer.png" id="117_swtnr"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("4_fu7bc")
@@ -143,6 +144,28 @@ animations = [{
 "loop": false,
 "name": &"default",
 "speed": 1.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_baosm"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(0, 0, 16, 28)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2qqxg"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(16, 0, 16, 28)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_weewa"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_baosm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2qqxg")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5i4a5"]
@@ -418,6 +441,204 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_x7cot"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(0, 0, 16, 28)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eak8e"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(16, 0, 16, 28)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_q4hx5"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x7cot")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eak8e")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7nn61"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(0, 0, 16, 28)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_31e1w"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(16, 0, 16, 28)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lnl2b"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7nn61")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_31e1w")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4nahh"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(0, 0, 16, 28)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ncw4u"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(16, 0, 16, 28)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_03ayo"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4nahh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ncw4u")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r7saq"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(0, 0, 16, 28)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tegll"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(16, 0, 16, 28)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_glcm7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r7saq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tegll")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hl82a"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(0, 0, 16, 28)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_njod1"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(16, 0, 16, 28)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_abvrq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hl82a")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_njod1")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_46kb1"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(0, 0, 16, 28)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xhwd5"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(16, 0, 16, 28)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_jufss"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_46kb1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xhwd5")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pfkie"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(0, 0, 16, 28)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o467i"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(16, 0, 16, 28)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_hoxai"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pfkie")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o467i")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6xr76"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(0, 0, 16, 28)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l2hxf"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(16, 0, 16, 28)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_dj01e"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6xr76")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l2hxf")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tyfdq"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(0, 0, 16, 28)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kwy1w"]
+atlas = ExtResource("109_seo0s")
+region = Rect2(16, 0, 16, 28)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ktrd0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tyfdq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kwy1w")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
 [node name="Downtown" type="Node2D"]
 
 [node name="UnderConstruction" type="Sprite2D" parent="."]
@@ -438,53 +659,13 @@ position = Vector2(233, 477)
 texture = ExtResource("1_ac7tb")
 
 [node name="VendingMachine" type="AnimatedSprite2D" parent="DowntownBg"]
-position = Vector2(742, 477)
+position = Vector2(698, 477)
 sprite_frames = SubResource("SpriteFrames_2ei51")
 
 [node name="YSort" type="Node2D" parent="DowntownBg/VendingMachine"]
 position = Vector2(0, 24)
 
 [node name="CompoundRoot" type="Node2D" parent="."]
-
-[node name="FenceStone" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-550, -854)
-texture = ExtResource("79_gmvgg")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStone"]
-position = Vector2(-4, 28)
-
-[node name="YSort2" type="Node2D" parent="CompoundRoot/FenceStone"]
-position = Vector2(-4, 28)
-
-[node name="FenceStone2" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-381, -854)
-texture = ExtResource("79_gmvgg")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStone2"]
-position = Vector2(2, 26)
-
-[node name="YSort2" type="Node2D" parent="CompoundRoot/FenceStone2"]
-position = Vector2(2, 26)
-
-[node name="FenceStoneVertical" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-298, -939)
-texture = ExtResource("80_uof8l")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStoneVertical"]
-position = Vector2(0, 59)
-
-[node name="YSort2" type="Node2D" parent="CompoundRoot/FenceStoneVertical"]
-position = Vector2(0, 59)
-
-[node name="FenceStoneVertical2" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-298, -1132)
-texture = ExtResource("80_uof8l")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/FenceStoneVertical2"]
-position = Vector2(0, 114)
-
-[node name="YSort2" type="Node2D" parent="CompoundRoot/FenceStoneVertical2"]
-position = Vector2(0, 114)
 
 [node name="Jehlicnan2" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-494, -424)
@@ -493,35 +674,13 @@ texture = ExtResource("29_j62ep")
 [node name="YSort" type="Node2D" parent="CompoundRoot/Jehlicnan2"]
 position = Vector2(0, 61)
 
-[node name="Tower" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-189, -1000)
-texture = ExtResource("23_7ng4s")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/Tower"]
-position = Vector2(3, 112)
-
-[node name="PottedBush2" type="Sprite2D" parent="CompoundRoot/Tower"]
-position = Vector2(38, 106)
-texture = ExtResource("44_d0uug")
-
 [node name="Briza2" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-335, -677)
+position = Vector2(-114, -440)
 texture = ExtResource("16_xr53b")
 flip_h = true
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/Briza2"]
 position = Vector2(6, 71)
-
-[node name="Barn" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-140, -649)
-texture = ExtResource("23_av7fi")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/Barn"]
-position = Vector2(-5, 68)
-
-[node name="Sipek" type="Sprite2D" parent="CompoundRoot/Barn"]
-position = Vector2(3, 77)
-texture = ExtResource("14_6c1wy")
 
 [node name="Briza" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-880, -437)
@@ -531,7 +690,7 @@ texture = ExtResource("16_xr53b")
 position = Vector2(6, 71)
 
 [node name="BigTree" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-485, -646)
+position = Vector2(-735, -449)
 texture = ExtResource("28_6tavv")
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/BigTree"]
@@ -541,8 +700,30 @@ position = Vector2(0, 75)
 position = Vector2(13, 79)
 texture = ExtResource("16_6vem6")
 
+[node name="BigTree5" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-1256, -361)
+texture = ExtResource("28_6tavv")
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/BigTree5"]
+position = Vector2(0, 75)
+
+[node name="Weed3" type="Sprite2D" parent="CompoundRoot/BigTree5"]
+position = Vector2(13, 79)
+texture = ExtResource("16_6vem6")
+
+[node name="BigTree4" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-1061, -495)
+texture = ExtResource("28_6tavv")
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/BigTree4"]
+position = Vector2(0, 75)
+
+[node name="Weed3" type="Sprite2D" parent="CompoundRoot/BigTree4"]
+position = Vector2(13, 79)
+texture = ExtResource("16_6vem6")
+
 [node name="Jehlicnan" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-634, -555)
+position = Vector2(-603, -440)
 texture = ExtResource("29_j62ep")
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/Jehlicnan"]
@@ -560,6 +741,14 @@ flip_h = true
 [node name="YSort" type="Node2D" parent="CompoundRoot/JehlicnanFlipped"]
 position = Vector2(0, 61)
 
+[node name="JehlicnanFlipped5" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-976, -428)
+texture = ExtResource("29_j62ep")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/JehlicnanFlipped5"]
+position = Vector2(0, 61)
+
 [node name="Jehlicnan3" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(723, -561)
 texture = ExtResource("29_j62ep")
@@ -568,7 +757,7 @@ texture = ExtResource("29_j62ep")
 position = Vector2(0, 61)
 
 [node name="JehlicnanFlipped2" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-420, -615)
+position = Vector2(-674, -433)
 texture = ExtResource("29_j62ep")
 flip_h = true
 
@@ -576,6 +765,18 @@ flip_h = true
 position = Vector2(-1, 64)
 
 [node name="Rock" type="Sprite2D" parent="CompoundRoot/JehlicnanFlipped2"]
+position = Vector2(18.5, 60.5)
+texture = ExtResource("84_fdkld")
+
+[node name="JehlicnanFlipped6" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-1247, -146)
+texture = ExtResource("29_j62ep")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/JehlicnanFlipped6"]
+position = Vector2(-1, 64)
+
+[node name="Rock" type="Sprite2D" parent="CompoundRoot/JehlicnanFlipped6"]
 position = Vector2(18.5, 60.5)
 texture = ExtResource("84_fdkld")
 
@@ -588,7 +789,7 @@ flip_h = true
 position = Vector2(0, 75)
 
 [node name="JehlicnanFlipped4" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-267, -867)
+position = Vector2(-9, -441)
 texture = ExtResource("29_j62ep")
 flip_h = true
 
@@ -614,20 +815,6 @@ flip_h = true
 [node name="YSort" type="Node2D" parent="CompoundRoot/BigTree3"]
 position = Vector2(-1, 78)
 
-[node name="Lavicka3" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-338, -819)
-texture = ExtResource("43_ihbqd")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/Lavicka3"]
-position = Vector2(0, 13)
-
-[node name="Sipek2" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-404, -830)
-texture = ExtResource("14_6c1wy")
-
-[node name="YSort" type="Node2D" parent="CompoundRoot/Sipek2"]
-position = Vector2(-3, 22)
-
 [node name="Jehlicnan4" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-807, -454)
 texture = ExtResource("29_j62ep")
@@ -635,35 +822,18 @@ texture = ExtResource("29_j62ep")
 [node name="YSort" type="Node2D" parent="CompoundRoot/Jehlicnan4"]
 position = Vector2(1, 63)
 
+[node name="Jehlicnan5" type="Sprite2D" parent="CompoundRoot"]
+position = Vector2(-1216, -250)
+texture = ExtResource("29_j62ep")
+
+[node name="YSort" type="Node2D" parent="CompoundRoot/Jehlicnan5"]
+position = Vector2(1, 63)
+
 [node name="Podrost" type="Node2D" parent="CompoundRoot"]
 z_index = -1
 
-[node name="Weed" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-738, -617)
-texture = ExtResource("16_6vem6")
-
-[node name="Sprout" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-316, -600)
-texture = ExtResource("17_qyuai")
-
-[node name="Sprout2" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-648, -671)
-texture = ExtResource("17_qyuai")
-
-[node name="Weed2" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-263, -646)
-texture = ExtResource("16_6vem6")
-
-[node name="Mushroom" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-438, -684)
-texture = ExtResource("50_ubqu6")
-
 [node name="Mushroom3" type="Sprite2D" parent="CompoundRoot/Podrost"]
 position = Vector2(-589, -443)
-texture = ExtResource("50_ubqu6")
-
-[node name="Mushroom2" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-285, -982)
 texture = ExtResource("50_ubqu6")
 
 [node name="WildFlower1" type="Sprite2D" parent="CompoundRoot/Podrost"]
@@ -677,42 +847,6 @@ texture = ExtResource("64_u50jo")
 [node name="WildFlower3" type="Sprite2D" parent="CompoundRoot/Podrost"]
 position = Vector2(-440, -440)
 texture = ExtResource("64_u50jo")
-
-[node name="WildFlower4" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-270, -578)
-texture = ExtResource("65_k5t6a")
-
-[node name="WildFlower5" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-304, -590)
-texture = ExtResource("65_k5t6a")
-
-[node name="WildFlower6" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-285, -566)
-texture = ExtResource("65_k5t6a")
-
-[node name="WildFlower7" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-297, -609)
-texture = ExtResource("65_k5t6a")
-
-[node name="WildFlower8" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-278, -585)
-texture = ExtResource("64_u50jo")
-
-[node name="WildFlower9" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-745, -817)
-texture = ExtResource("64_u50jo")
-
-[node name="WildFlower10" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-740, -791)
-texture = ExtResource("64_u50jo")
-
-[node name="WildFlower11" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-729, -810)
-texture = ExtResource("65_k5t6a")
-
-[node name="Weed3" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-767, -825)
-texture = ExtResource("16_6vem6")
 
 [node name="Weed4" type="Sprite2D" parent="CompoundRoot/Podrost"]
 position = Vector2(-166, -413)
@@ -739,14 +873,6 @@ texture = ExtResource("65_k5t6a")
 z_index = -1
 position = Vector2(-839, -379)
 texture = ExtResource("64_u50jo")
-
-[node name="WildFlower16" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-878, -810)
-texture = ExtResource("65_k5t6a")
-
-[node name="WildFlower17" type="Sprite2D" parent="CompoundRoot/Podrost"]
-position = Vector2(-384, -565)
-texture = ExtResource("66_53tlk")
 
 [node name="CompoundFence" type="Node2D" parent="CompoundRoot"]
 position = Vector2(0, -334)
@@ -852,32 +978,12 @@ texture = ExtResource("63_vdtxl")
 [node name="YSort" type="Node2D" parent="CompoundRoot/BoxCardboardSideways"]
 position = Vector2(-4, 9)
 
-[node name="FenceStone3" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-550, -854)
-texture = ExtResource("79_gmvgg")
-
-[node name="FenceStone4" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-381, -854)
-texture = ExtResource("79_gmvgg")
-
-[node name="FenceStoneVertical3" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-298, -939)
-texture = ExtResource("80_uof8l")
-
-[node name="FenceStoneVertical4" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-298, -1132)
-texture = ExtResource("80_uof8l")
-
 [node name="Sipek" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(-750, -378)
 texture = ExtResource("14_6c1wy")
 
 [node name="YSort" type="Node2D" parent="CompoundRoot/Sipek"]
 position = Vector2(-2, 21)
-
-[node name="RockBig" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-921, -755)
-texture = ExtResource("86_vqxgd")
 
 [node name="Rock1" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(204, -426)
@@ -890,18 +996,6 @@ texture = ExtResource("85_ux2kw")
 [node name="Mushroom" type="Sprite2D" parent="CompoundRoot"]
 position = Vector2(236, -416)
 texture = ExtResource("50_ubqu6")
-
-[node name="Mushroom2" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-581, -435)
-texture = ExtResource("97_6mqhn")
-
-[node name="Mushroom3" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-594, -438)
-texture = ExtResource("98_gdyco")
-
-[node name="Mushroom4" type="Sprite2D" parent="CompoundRoot"]
-position = Vector2(-611, -492)
-texture = ExtResource("99_j6oxe")
 
 [node name="BureauRoot" type="Node2D" parent="."]
 
@@ -1002,6 +1096,13 @@ position = Vector2(-65, -187)
 [node name="PaperSide" type="Sprite2D" parent="MallRoot/Mall"]
 position = Vector2(203, 50)
 texture = ExtResource("81_0yc4q")
+
+[node name="BinGreen8" type="AnimatedSprite2D" parent="MallRoot/Mall"]
+position = Vector2(127, -93)
+sprite_frames = SubResource("SpriteFrames_weewa")
+
+[node name="YSort" type="Node2D" parent="MallRoot/Mall/BinGreen8"]
+position = Vector2(0, 11)
 
 [node name="MallBins" type="Node2D" parent="MallRoot"]
 position = Vector2(-532, 342)
@@ -1474,39 +1575,14 @@ z_index = -3
 position = Vector2(658, 1065)
 texture = ExtResource("76_5i8ym")
 
-[node name="MoloTile11" type="Sprite2D" parent="ShoreRoot/MoloTiles"]
-z_index = -3
-position = Vector2(834, 1065)
-texture = ExtResource("76_5i8ym")
-
 [node name="MoloTile12" type="Sprite2D" parent="ShoreRoot/MoloTiles"]
 z_index = -3
 position = Vector2(1010, 1065)
 texture = ExtResource("76_5i8ym")
 
-[node name="MoloTile13" type="Sprite2D" parent="ShoreRoot/MoloTiles"]
-z_index = -3
-position = Vector2(1186, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile14" type="Sprite2D" parent="ShoreRoot/MoloTiles"]
-z_index = -3
-position = Vector2(1362, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile15" type="Sprite2D" parent="ShoreRoot/MoloTiles"]
-z_index = -3
-position = Vector2(1538, 1065)
-texture = ExtResource("76_5i8ym")
-
 [node name="MoloTileVertical" type="Sprite2D" parent="ShoreRoot/MoloTiles"]
 z_index = -3
 position = Vector2(-401, 1240)
-texture = ExtResource("77_qpxr7")
-
-[node name="MoloTileVertical2" type="Sprite2D" parent="ShoreRoot/MoloTiles"]
-z_index = -3
-position = Vector2(-401, 1418)
 texture = ExtResource("77_qpxr7")
 
 [node name="MoloTileVertical3" type="Sprite2D" parent="ShoreRoot/MoloTiles"]
@@ -1538,21 +1614,21 @@ texture = ExtResource("26_nm5hp")
 position = Vector2(-42, 97)
 
 [node name="Robot" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(608, 822)
+position = Vector2(608, 825)
 texture = ExtResource("8_s4pbl")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/Robot"]
 position = Vector2(-13, 49)
 
 [node name="Lavicka" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(561, 773)
+position = Vector2(563, 777)
 texture = ExtResource("43_ihbqd")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/Lavicka"]
 position = Vector2(0, 13)
 
 [node name="Swing" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(744, 853)
+position = Vector2(744, 849)
 texture = ExtResource("9_gwh2v")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/Swing"]
@@ -5239,12 +5315,28 @@ texture = ExtResource("70_mmv7u")
 [node name="YSort" type="Node2D" parent="ShoreRoot/StallWood2"]
 position = Vector2(1, 33)
 
+[node name="Oil" type="Sprite2D" parent="ShoreRoot/StallWood2"]
+position = Vector2(-30, 7)
+texture = ExtResource("114_603ea")
+
+[node name="Sushi" type="Sprite2D" parent="ShoreRoot/StallWood2"]
+position = Vector2(-13, 7)
+texture = ExtResource("115_prick")
+
+[node name="Croissant" type="Sprite2D" parent="ShoreRoot/StallWood2"]
+position = Vector2(10, 8)
+texture = ExtResource("116_djqwe")
+
 [node name="StallWood3" type="Sprite2D" parent="ShoreRoot"]
 position = Vector2(1403, 1005)
 texture = ExtResource("70_mmv7u")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/StallWood3"]
 position = Vector2(1, 31)
+
+[node name="FoodCointainer" type="Sprite2D" parent="ShoreRoot/StallWood3"]
+position = Vector2(-29, 0)
+texture = ExtResource("117_swtnr")
 
 [node name="StallWood4" type="Sprite2D" parent="ShoreRoot"]
 position = Vector2(1239, 1005)
@@ -5253,26 +5345,21 @@ texture = ExtResource("70_mmv7u")
 [node name="YSort" type="Node2D" parent="ShoreRoot/StallWood4"]
 position = Vector2(2, 31)
 
-[node name="HouseBigLime" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(1108, 874)
-texture = ExtResource("71_4uhpc")
+[node name="Pie3" type="Sprite2D" parent="ShoreRoot/StallWood4"]
+position = Vector2(-27, 8)
+texture = ExtResource("110_osgx6")
 
-[node name="AcAtlas" type="AnimatedSprite2D" parent="ShoreRoot/HouseBigLime"]
-position = Vector2(-72, -118)
-sprite_frames = SubResource("SpriteFrames_q1mli")
-autoplay = "default"
-frame = 2
-frame_progress = 1.0
+[node name="Pie4" type="Sprite2D" parent="ShoreRoot/StallWood4"]
+position = Vector2(-8, 5)
+texture = ExtResource("111_jhpqq")
 
-[node name="YSort" type="Node2D" parent="ShoreRoot/HouseBigLime"]
-position = Vector2(3, 102)
+[node name="Foccacia" type="Sprite2D" parent="ShoreRoot/StallWood4"]
+position = Vector2(24, 7)
+texture = ExtResource("112_oco4e")
 
-[node name="HouseBigSky" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(1348, 874)
-texture = ExtResource("72_nqenj")
-
-[node name="YSort" type="Node2D" parent="ShoreRoot/HouseBigSky"]
-position = Vector2(0, 102)
+[node name="PlantPriceWhiteSmall" type="Sprite2D" parent="ShoreRoot/StallWood4"]
+position = Vector2(7, 7)
+texture = ExtResource("113_vpncy")
 
 [node name="Weed" type="Sprite2D" parent="ShoreRoot"]
 z_index = -1
@@ -5283,13 +5370,6 @@ texture = ExtResource("16_6vem6")
 z_index = -1
 position = Vector2(1124, 1287)
 texture = ExtResource("47_y13ek")
-
-[node name="BinBag" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(947, 965)
-texture = ExtResource("37_kbqnk")
-
-[node name="YSort" type="Node2D" parent="ShoreRoot/BinBag"]
-position = Vector2(0, 15)
 
 [node name="BeachStairs" type="Sprite2D" parent="ShoreRoot"]
 z_index = -1
@@ -5328,7 +5408,7 @@ texture = ExtResource("70_mmv7u")
 position = Vector2(2, 31)
 
 [node name="HouseBigLime2" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(1108, 874)
+position = Vector2(1064, 874)
 texture = ExtResource("71_4uhpc")
 
 [node name="AcAtlas" type="AnimatedSprite2D" parent="ShoreRoot/HouseBigLime2"]
@@ -5360,86 +5440,23 @@ position = Vector2(1285, 1206)
 texture = ExtResource("16_6vem6")
 
 [node name="HouseBigSky2" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(1348, 874)
+position = Vector2(1304, 874)
 texture = ExtResource("72_nqenj")
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/HouseBigSky2"]
 position = Vector2(0, 102)
 
 [node name="BinBag2" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(947, 965)
+position = Vector2(903, 965)
 texture = ExtResource("37_kbqnk")
 
 [node name="BeachStairs4" type="Sprite2D" parent="ShoreRoot"]
 position = Vector2(859, 1157)
 texture = ExtResource("75_kpov5")
 
-[node name="BeachStairs5" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(-38, 1157)
-texture = ExtResource("75_kpov5")
-
-[node name="BeachStairs6" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(-711, 1157)
-texture = ExtResource("75_kpov5")
-
-[node name="MoloTile" type="Sprite2D" parent="ShoreRoot"]
-z_index = -1
-position = Vector2(-928, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile2" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(-750, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile3" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(-574, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile4" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(-398, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile5" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(-222, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile6" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(-46, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile7" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(130, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile8" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(306, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile9" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(482, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile10" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(658, 1065)
-texture = ExtResource("76_5i8ym")
-
 [node name="MoloTile11" type="Sprite2D" parent="ShoreRoot"]
 z_index = -3
 position = Vector2(834, 1065)
-texture = ExtResource("76_5i8ym")
-
-[node name="MoloTile12" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(1010, 1065)
 texture = ExtResource("76_5i8ym")
 
 [node name="MoloTile13" type="Sprite2D" parent="ShoreRoot"]
@@ -5465,16 +5482,6 @@ texture = ExtResource("77_qpxr7")
 [node name="MoloTileVertical2" type="Sprite2D" parent="ShoreRoot"]
 z_index = -2
 position = Vector2(-401, 1418)
-texture = ExtResource("77_qpxr7")
-
-[node name="MoloTileVertical3" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(-401, 1596)
-texture = ExtResource("77_qpxr7")
-
-[node name="MoloTileVertical4" type="Sprite2D" parent="ShoreRoot"]
-z_index = -3
-position = Vector2(-401, 1720)
 texture = ExtResource("77_qpxr7")
 
 [node name="PalmTree" type="Sprite2D" parent="ShoreRoot"]
@@ -13910,10 +13917,6 @@ z_index = -6
 position = Vector2(624, 360)
 texture = ExtResource("82_65uwp")
 
-[node name="MushroomTree" type="Sprite2D" parent="."]
-position = Vector2(-475, -581)
-texture = ExtResource("100_r36w2")
-
 [node name="RiverTrim" type="Sprite2D" parent="."]
 z_index = -2
 position = Vector2(-1284, -50)
@@ -13971,10 +13974,10 @@ position = Vector2(568, 336)
 position = Vector2(422, 164)
 
 [node name="OtterPatrolPoint1" type="Node2D" parent="PatrolPoints"]
-position = Vector2(-397, -501)
+position = Vector2(-99, 1198)
 
 [node name="OtterPatrolPoint2" type="Node2D" parent="PatrolPoints"]
-position = Vector2(-269, -501)
+position = Vector2(-31, 1197)
 
 [node name="Sipek" type="Sprite2D" parent="."]
 position = Vector2(-1028, 727)
@@ -14106,3 +14109,94 @@ texture = ExtResource("86_xfw3j")
 [node name="Stain1" type="Sprite2D" parent="."]
 position = Vector2(-496, 954)
 texture = ExtResource("107_6vnka")
+
+[node name="BinGreen2" type="AnimatedSprite2D" parent="."]
+position = Vector2(621, -51)
+sprite_frames = SubResource("SpriteFrames_q4hx5")
+
+[node name="YSort" type="Node2D" parent="BinGreen2"]
+position = Vector2(0, 12)
+
+[node name="BinGreen3" type="AnimatedSprite2D" parent="."]
+position = Vector2(-500, 1134)
+sprite_frames = SubResource("SpriteFrames_lnl2b")
+
+[node name="YSort" type="Node2D" parent="BinGreen3"]
+position = Vector2(0, 11)
+
+[node name="BinGreen4" type="AnimatedSprite2D" parent="."]
+position = Vector2(1086, 425)
+sprite_frames = SubResource("SpriteFrames_03ayo")
+
+[node name="YSort" type="Node2D" parent="BinGreen4"]
+position = Vector2(0, 11)
+
+[node name="BinGreen5" type="AnimatedSprite2D" parent="."]
+position = Vector2(1475, -222)
+sprite_frames = SubResource("SpriteFrames_glcm7")
+
+[node name="YSort" type="Node2D" parent="BinGreen5"]
+position = Vector2(0, 11)
+
+[node name="BinGreen6" type="AnimatedSprite2D" parent="."]
+position = Vector2(792, -521)
+sprite_frames = SubResource("SpriteFrames_abvrq")
+
+[node name="YSort" type="Node2D" parent="BinGreen6"]
+position = Vector2(0, 11)
+
+[node name="BinGreen7" type="AnimatedSprite2D" parent="."]
+position = Vector2(-1020, 760)
+sprite_frames = SubResource("SpriteFrames_jufss")
+
+[node name="YSort" type="Node2D" parent="BinGreen7"]
+position = Vector2(0, 11)
+
+[node name="BinGreen8" type="AnimatedSprite2D" parent="."]
+position = Vector2(-737, 312)
+sprite_frames = SubResource("SpriteFrames_weewa")
+
+[node name="YSort" type="Node2D" parent="BinGreen8"]
+position = Vector2(0, 11)
+
+[node name="BinGreen10" type="AnimatedSprite2D" parent="."]
+position = Vector2(515, 788)
+sprite_frames = SubResource("SpriteFrames_hoxai")
+
+[node name="YSort" type="Node2D" parent="BinGreen10"]
+position = Vector2(0, 11)
+
+[node name="BinGreen12" type="AnimatedSprite2D" parent="."]
+position = Vector2(1189, 1021)
+sprite_frames = SubResource("SpriteFrames_dj01e")
+
+[node name="YSort" type="Node2D" parent="BinGreen12"]
+position = Vector2(0, 11)
+
+[node name="BinGreen13" type="AnimatedSprite2D" parent="."]
+position = Vector2(1246, 624)
+sprite_frames = SubResource("SpriteFrames_ktrd0")
+
+[node name="YSort" type="Node2D" parent="BinGreen13"]
+position = Vector2(0, 11)
+
+[node name="BinGreen9" type="AnimatedSprite2D" parent="."]
+position = Vector2(-220, -341)
+sprite_frames = SubResource("SpriteFrames_weewa")
+
+[node name="YSort" type="Node2D" parent="BinGreen9"]
+position = Vector2(0, 11)
+
+[node name="BinGreen11" type="AnimatedSprite2D" parent="."]
+position = Vector2(604, -334)
+sprite_frames = SubResource("SpriteFrames_weewa")
+
+[node name="YSort" type="Node2D" parent="BinGreen11"]
+position = Vector2(0, 11)
+
+[node name="BuildingAbandoned" type="Sprite2D" parent="."]
+position = Vector2(1477, 901)
+texture = ExtResource("109_bu4df")
+
+[node name="YSort" type="Node2D" parent="BuildingAbandoned"]
+position = Vector2(9, 77)
