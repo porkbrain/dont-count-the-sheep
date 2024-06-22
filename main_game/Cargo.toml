@@ -16,6 +16,7 @@ devtools = [
     "scene_building1_basement1/devtools",
     "scene_building1_basement2/devtools",
     "scene_building1_player_floor/devtools",
+    "scene_clinic_ward/devtools",
     "scene_clinic/devtools",
     "scene_downtown/devtools",
     "scene_mall/devtools",
@@ -35,6 +36,7 @@ main_game_lib.workspace = true
 scene_building1_basement1.workspace = true
 scene_building1_basement2.workspace = true
 scene_building1_player_floor.workspace = true
+scene_clinic_ward.workspace = true
 scene_clinic.workspace = true
 scene_downtown.workspace = true
 scene_mall.workspace = true

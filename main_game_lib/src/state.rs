@@ -36,6 +36,10 @@ pub enum GlobalGameState {
     AtClinic,
     QuittingClinic,
 
+    LoadingClinicWard,
+    AtClinicWard,
+    QuittingClinicWard,
+
     LoadingPlantShop,
     AtPlantShop,
     QuittingPlantShop,
@@ -68,6 +72,14 @@ pub enum GlobalGameState {
     LoadingDowntown,
     AtDowntown,
     QuittingDowntown,
+
+    LoadingCompound,
+    AtCompound,
+    QuittingCompound,
+
+    LoadingCompoundTower,
+    AtCompoundTower,
+    QuittingCompoundTower,
 
     /// Performs all necessary cleanup and exits the game.
     Exit,
@@ -110,6 +122,12 @@ pub enum GlobalGameStateTransition {
     DowntownToMall,
     MallToDowntown,
 
+    DowntownToCompound,
+    CompoundToDowntown,
+
+    CompoundToTower,
+    TowerToCompound,
+
     TwinpeaksApartmentToDowntown,
     DowntownToTwinpeaksApartment,
 
@@ -121,6 +139,8 @@ pub enum GlobalGameStateTransition {
 
     ClinicToDowntown,
     DowntownToClinic,
+    ClinicWardToDowntown,
+    DowntownToClinicWard,
 }
 
 /// Typical scene has several states with standard semantics.
@@ -222,6 +242,10 @@ impl GlobalGameState {
                 (LoadingClinic, AtClinic, QuittingClinic, None)
             }
 
+            LoadingClinicWard | AtClinicWard | QuittingClinicWard => {
+                (LoadingClinicWard, AtClinicWard, QuittingClinicWard, None)
+            }
+
             LoadingPlantShop | AtPlantShop | QuittingPlantShop => {
                 (LoadingPlantShop, AtPlantShop, QuittingPlantShop, None)
             }
@@ -250,6 +274,17 @@ impl GlobalGameState {
             LoadingDowntown | AtDowntown | QuittingDowntown => {
                 (LoadingDowntown, AtDowntown, QuittingDowntown, None)
             }
+
+            LoadingCompound | AtCompound | QuittingCompound => {
+                (LoadingCompound, AtCompound, QuittingCompound, None)
+            }
+
+            LoadingCompoundTower | AtCompoundTower | QuittingCompoundTower => (
+                LoadingCompoundTower,
+                AtCompoundTower,
+                QuittingCompoundTower,
+                None,
+            ),
 
             Blank | Exit | NewGame => return None,
         };

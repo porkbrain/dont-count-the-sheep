@@ -1,57 +1,57 @@
 [gd_scene load_steps=16 format=3 uid="uid://b72qmini0uj3p"]
 
-[ext_resource type="Texture2D" uid="uid://blb0o808g1vpm" path="res://assets/residential/indoors/clinic_interior_bottom_floor.png" id="1_t4sxw"]
-[ext_resource type="Texture2D" uid="uid://mn6fsc2pn682" path="res://assets/residential/indoors/fridge.png" id="2_oroi4"]
-[ext_resource type="Texture2D" uid="uid://gufxulf5gqud" path="res://assets/residential/indoors/green_kitchen_set.png" id="3_c84fl"]
-[ext_resource type="Texture2D" uid="uid://c2q3ns4am6gte" path="res://assets/residential/indoors/hospital_bed.png" id="4_u200w"]
-[ext_resource type="Texture2D" uid="uid://3pb61ikg7ybh" path="res://assets/residential/indoors/hospital_divider.png" id="5_ah02y"]
-[ext_resource type="Texture2D" uid="uid://ds4y5uncew47s" path="res://assets/residential/indoors/chair_wood.png" id="6_qw2ol"]
-[ext_resource type="Texture2D" uid="uid://gcq6oilow74x" path="res://assets/residential/indoors/tissues.png" id="7_a3mc7"]
-[ext_resource type="Texture2D" uid="uid://dnu54tiuqoh11" path="res://assets/residential/indoors/side_table1.png" id="7_rf4sd"]
-[ext_resource type="Texture2D" uid="uid://dwe8ryv8pvsi4" path="res://assets/residential/indoors/washing_machine.png" id="8_lxvji"]
-[ext_resource type="Texture2D" uid="uid://dlrneao0sl1dc" path="res://assets/environment/toilet_paper.png" id="9_twbvf"]
-[ext_resource type="Texture2D" uid="uid://d0s78vuxqqoyd" path="res://assets/residential/indoors/pc_chair.png" id="11_4r37x"]
-[ext_resource type="Texture2D" uid="uid://0xuus24rbhyw" path="res://assets/environment/water_bottle.png" id="12_a481f"]
-[ext_resource type="Texture2D" uid="uid://c71u4ldkpxnlp" path="res://assets/residential/indoors/table.png" id="13_c1otv"]
-[ext_resource type="Texture2D" uid="uid://cpxy3e47mmviv" path="res://assets/residential/indoors/sofa_green.png" id="14_g3jv3"]
-[ext_resource type="Texture2D" uid="uid://cnd6vbsmey8c4" path="res://assets/residential/indoors/chair_wood_side.png" id="15_qa4ys"]
+[ext_resource type="Texture2D" uid="uid://blb0o808g1vpm" path="res://assets/residential/indoors/clinic_interior_bottom_floor.png" id="1_evfsb"]
+[ext_resource type="Texture2D" uid="uid://dnu54tiuqoh11" path="res://assets/residential/indoors/side_table1.png" id="2_8ktli"]
+[ext_resource type="Texture2D" uid="uid://gcq6oilow74x" path="res://assets/residential/indoors/tissues.png" id="3_t7r3o"]
+[ext_resource type="Texture2D" uid="uid://c2q3ns4am6gte" path="res://assets/residential/indoors/hospital_bed.png" id="4_fi13c"]
+[ext_resource type="Texture2D" uid="uid://3pb61ikg7ybh" path="res://assets/residential/indoors/hospital_divider.png" id="5_px31i"]
+[ext_resource type="Texture2D" uid="uid://cpxy3e47mmviv" path="res://assets/residential/indoors/sofa_green.png" id="6_m6v34"]
+[ext_resource type="Texture2D" uid="uid://d0s78vuxqqoyd" path="res://assets/residential/indoors/pc_chair.png" id="7_32xyq"]
+[ext_resource type="Texture2D" uid="uid://dwe8ryv8pvsi4" path="res://assets/residential/indoors/washing_machine.png" id="8_0388k"]
+[ext_resource type="Texture2D" uid="uid://dlrneao0sl1dc" path="res://assets/environment/toilet_paper.png" id="9_55klp"]
+[ext_resource type="Texture2D" uid="uid://gufxulf5gqud" path="res://assets/residential/indoors/green_kitchen_set.png" id="10_rr334"]
+[ext_resource type="Texture2D" uid="uid://mn6fsc2pn682" path="res://assets/residential/indoors/fridge.png" id="11_jnhvf"]
+[ext_resource type="Texture2D" uid="uid://ds4y5uncew47s" path="res://assets/residential/indoors/chair_wood.png" id="12_nhwdh"]
+[ext_resource type="Texture2D" uid="uid://0xuus24rbhyw" path="res://assets/environment/water_bottle.png" id="13_o481p"]
+[ext_resource type="Texture2D" uid="uid://c71u4ldkpxnlp" path="res://assets/residential/indoors/table.png" id="14_0ysyc"]
+[ext_resource type="Texture2D" uid="uid://cnd6vbsmey8c4" path="res://assets/residential/indoors/chair_wood_side.png" id="15_pywhp"]
 
-[node name="ClinicBottom" type="Node2D"]
+[node name="ClinicWard" type="Node2D"]
 
-[node name="ClinicBottomBg" type="Sprite2D" parent="."]
+[node name="ClinicWardBg" type="Sprite2D" parent="."]
 position = Vector2(62, 26)
-texture = ExtResource("1_t4sxw")
+texture = ExtResource("1_evfsb")
 
 [node name="RightRoom" type="Node2D" parent="."]
 
 [node name="SideTable1" type="Sprite2D" parent="RightRoom"]
 position = Vector2(-9, -21)
-texture = ExtResource("7_rf4sd")
+texture = ExtResource("2_8ktli")
 
 [node name="YSort" type="Node2D" parent="RightRoom/SideTable1"]
 position = Vector2(-10, 10)
 
 [node name="SideTable2" type="Sprite2D" parent="RightRoom"]
 position = Vector2(71, -21)
-texture = ExtResource("7_rf4sd")
+texture = ExtResource("2_8ktli")
 
 [node name="Tissues" type="Sprite2D" parent="RightRoom/SideTable2"]
 position = Vector2(4, -13)
-texture = ExtResource("7_a3mc7")
+texture = ExtResource("3_t7r3o")
 
 [node name="YSort" type="Node2D" parent="RightRoom/SideTable2"]
 position = Vector2(-10, 10)
 
 [node name="HospitalBed" type="Sprite2D" parent="RightRoom"]
 position = Vector2(26.5, -3)
-texture = ExtResource("4_u200w")
+texture = ExtResource("4_fi13c")
 
 [node name="YSort" type="Node2D" parent="RightRoom/HospitalBed"]
-position = Vector2(-16.5, 29)
+position = Vector2(-16.5, -13)
 
 [node name="HospitalDivider" type="Sprite2D" parent="RightRoom"]
 position = Vector2(31.5, -7)
-texture = ExtResource("5_ah02y")
+texture = ExtResource("5_px31i")
 flip_h = true
 
 [node name="YSort" type="Node2D" parent="RightRoom/HospitalDivider"]
@@ -59,14 +59,14 @@ position = Vector2(21.5, 42)
 
 [node name="HospitalBed2" type="Sprite2D" parent="RightRoom"]
 position = Vector2(106.5, -3)
-texture = ExtResource("4_u200w")
+texture = ExtResource("4_fi13c")
 
 [node name="YSort" type="Node2D" parent="RightRoom/HospitalBed2"]
 position = Vector2(-16.5, 29)
 
 [node name="HospitalDivider2" type="Sprite2D" parent="RightRoom"]
 position = Vector2(111.5, -7)
-texture = ExtResource("5_ah02y")
+texture = ExtResource("5_px31i")
 flip_h = true
 
 [node name="YSort" type="Node2D" parent="RightRoom/HospitalDivider2"]
@@ -74,14 +74,14 @@ position = Vector2(21.5, 42)
 
 [node name="SofaGreen" type="Sprite2D" parent="RightRoom"]
 position = Vector2(29, 39)
-texture = ExtResource("14_g3jv3")
+texture = ExtResource("6_m6v34")
 
 [node name="YSort" type="Node2D" parent="RightRoom/SofaGreen"]
 position = Vector2(-23, 16)
 
 [node name="PcChair" type="Sprite2D" parent="RightRoom"]
 position = Vector2(73, -1)
-texture = ExtResource("11_4r37x")
+texture = ExtResource("7_32xyq")
 
 [node name="YSort" type="Node2D" parent="RightRoom/PcChair"]
 position = Vector2(-9, 16)
@@ -90,53 +90,53 @@ position = Vector2(-9, 16)
 
 [node name="WashingMachine" type="Sprite2D" parent="LeftRoom"]
 position = Vector2(-39, -27)
-texture = ExtResource("8_lxvji")
+texture = ExtResource("8_0388k")
 
 [node name="ToiletPaper" type="Sprite2D" parent="LeftRoom/WashingMachine"]
 position = Vector2(-3, -18)
-texture = ExtResource("9_twbvf")
+texture = ExtResource("9_55klp")
 
 [node name="YSort" type="Node2D" parent="LeftRoom/WashingMachine"]
 position = Vector2(-9, 15)
 
 [node name="GreenKitchenSet" type="Sprite2D" parent="LeftRoom"]
 position = Vector2(-89, -27)
-texture = ExtResource("3_c84fl")
+texture = ExtResource("10_rr334")
 
 [node name="YSort" type="Node2D" parent="LeftRoom/GreenKitchenSet"]
 position = Vector2(0, 10)
 
 [node name="Fridge" type="Sprite2D" parent="LeftRoom"]
 position = Vector2(-135.5, -22.5)
-texture = ExtResource("2_oroi4")
+texture = ExtResource("11_jnhvf")
 
 [node name="YSort" type="Node2D" parent="LeftRoom/Fridge"]
 position = Vector2(3.5, 22.5)
 
 [node name="ChairWood" type="Sprite2D" parent="LeftRoom"]
 position = Vector2(-39, -1)
-texture = ExtResource("6_qw2ol")
+texture = ExtResource("12_nhwdh")
 
 [node name="YSort" type="Node2D" parent="LeftRoom/ChairWood"]
 position = Vector2(-8, 12)
 
 [node name="WaterBottle" type="Sprite2D" parent="LeftRoom"]
 position = Vector2(-138, -3)
-texture = ExtResource("12_a481f")
+texture = ExtResource("13_o481p")
 
 [node name="YSort" type="Node2D" parent="LeftRoom/WaterBottle"]
 position = Vector2(1, 8)
 
 [node name="Table" type="Sprite2D" parent="LeftRoom"]
 position = Vector2(-40, 23)
-texture = ExtResource("13_c1otv")
+texture = ExtResource("14_0ysyc")
 
 [node name="YSort" type="Node2D" parent="LeftRoom/Table"]
 position = Vector2(-10, 18)
 
 [node name="ChairWoodSide" type="Sprite2D" parent="LeftRoom"]
 position = Vector2(-63, 19)
-texture = ExtResource("15_qa4ys")
+texture = ExtResource("15_pywhp")
 
 [node name="YSort" type="Node2D" parent="LeftRoom/ChairWoodSide"]
 position = Vector2(-6, 14)

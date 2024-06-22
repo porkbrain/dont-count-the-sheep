@@ -45,15 +45,24 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             (
-                enter_building1,
-                enter_clinic,
-                enter_mall,
-                enter_plant_shop,
-                enter_sewers,
-                enter_twinpeaks_apartment,
+                enter_building1
+                    .run_if(on_event_variant(DowntownAction::EnterBuilding1)),
+                enter_clinic
+                    .run_if(on_event_variant(DowntownAction::EnterClinic)),
+                enter_clinic_ward
+                    .run_if(on_event_variant(DowntownAction::EnterClinicWard)),
+                enter_mall.run_if(on_event_variant(DowntownAction::EnterMall)),
+                enter_plant_shop
+                    .run_if(on_event_variant(DowntownAction::EnterPlantShop)),
+                enter_sewers
+                    .run_if(on_event_variant(DowntownAction::EnterSewers)),
+                enter_twinpeaks_apartment.run_if(on_event_variant(
+                    DowntownAction::EnterTwinpeaksApartment,
+                )),
+                enter_compound
+                    .run_if(on_event_variant(DowntownAction::EnterCompound)),
             )
                 .before(ChangeHighlightedInspectLabelEventConsumer)
-                .run_if(on_event::<DowntownAction>())
                 .run_if(Downtown::in_running_state())
                 .run_if(not(in_cutscene())),
         );
@@ -207,7 +216,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
             | ("TwinpeaksApartmentEntrance", TwinpeaksApartmentToDowntown)
             | ("PlantShopEntrance", PlantShopToDowntown)
             | ("SewersEntrance", SewersToDowntown)
-            | ("ClinicExit", ClinicToDowntown) => {
+            | ("ClinicExit", ClinicToDowntown | ClinicWardToDowntown) => {
                 self.camera_translation.x = position.x;
                 self.camera_translation.y = position.y;
                 // we multiply by 4 because winnie is walking across 2 tiles and
@@ -264,9 +273,11 @@ impl top_down::layout::Tile for DowntownTileKind {
     fn is_zone(&self) -> bool {
         match self {
             Self::Building1Entrance
+            | Self::CompoundEntrance
             | Self::SewersEntrance
             | Self::MallEntrance
             | Self::ClinicEntrance
+            | Self::ClinicWardEntrance
             | Self::PlantShopEntrance
             | Self::TwinpeaksApartmentEntrance => true,
         }
@@ -280,32 +291,24 @@ impl top_down::layout::Tile for DowntownTileKind {
 
 fn enter_building1(
     mut cmd: Commands,
-    mut action_events: EventReader<DowntownAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
 ) {
-    let is_triggered = action_events
-        .read()
-        .any(|action| matches!(action, DowntownAction::EnterBuilding1));
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+        ..default()
+    });
 
-    if is_triggered {
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-            ..default()
-        });
+    next_loading_screen_state.set(common_loading_screen::start_state());
 
-        next_loading_screen_state.set(common_loading_screen::start_state());
-
-        *transition = GlobalGameStateTransition::DowntownToBuilding1PlayerFloor;
-        next_state.set(Downtown::quitting());
-    }
+    *transition = GlobalGameStateTransition::DowntownToBuilding1PlayerFloor;
+    next_state.set(Downtown::quitting());
 }
 
 fn enter_mall(
     mut cmd: Commands,
-    mut action_events: EventReader<DowntownAction>,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
@@ -315,49 +318,30 @@ fn enter_mall(
     >,
     daybar: Res<DayBar>,
 ) {
-    let is_triggered = action_events
-        .read()
-        .any(|action| matches!(action, DowntownAction::EnterMall));
+    if !daybar.is_it_time_for(DayBarDependent::MallOpenHours) {
+        show_label_closed(
+            &zone_to_inspect_label_entity,
+            &mut inspect_label_events,
+            &DowntownTileKind::MallEntrance,
+        );
 
-    if is_triggered {
-        if !daybar.is_it_time_for(DayBarDependent::MallOpenHours) {
-            if let Some(entity) = zone_to_inspect_label_entity
-                .map
-                .get(&DowntownTileKind::MallEntrance)
-                .copied()
-            {
-                inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
-                    entity,
-                    spawn_params: SpawnLabelBgAndTextParams {
-                        highlighted: true,
-                        overwrite_font_color: Some(LIGHT_RED),
-                        // LOCALIZATION
-                        overwrite_display_text: Some("(closed)".to_string()),
-                    },
-                });
-            } else {
-                error!("Cannot find mall entrance zone inspect label entity");
-            }
-
-            return;
-        }
-
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-            ..default()
-        });
-
-        next_loading_screen_state.set(common_loading_screen::start_state());
-
-        *transition = GlobalGameStateTransition::DowntownToMall;
-        next_state.set(Downtown::quitting());
+        return;
     }
+
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+        ..default()
+    });
+
+    next_loading_screen_state.set(common_loading_screen::start_state());
+
+    *transition = GlobalGameStateTransition::DowntownToMall;
+    next_state.set(Downtown::quitting());
 }
 
 fn enter_clinic(
     mut cmd: Commands,
-    mut action_events: EventReader<DowntownAction>,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
@@ -367,49 +351,63 @@ fn enter_clinic(
     >,
     daybar: Res<DayBar>,
 ) {
-    let is_triggered = action_events
-        .read()
-        .any(|action| matches!(action, DowntownAction::EnterClinic));
+    if !daybar.is_it_time_for(DayBarDependent::ClinicOpenHours) {
+        show_label_closed(
+            &zone_to_inspect_label_entity,
+            &mut inspect_label_events,
+            &DowntownTileKind::ClinicEntrance,
+        );
 
-    if is_triggered {
-        if !daybar.is_it_time_for(DayBarDependent::ClinicOpenHours) {
-            if let Some(entity) = zone_to_inspect_label_entity
-                .map
-                .get(&DowntownTileKind::ClinicEntrance)
-                .copied()
-            {
-                inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
-                    entity,
-                    spawn_params: SpawnLabelBgAndTextParams {
-                        highlighted: true,
-                        overwrite_font_color: Some(LIGHT_RED),
-                        // LOCALIZATION
-                        overwrite_display_text: Some("(closed)".to_string()),
-                    },
-                });
-            } else {
-                error!("Cannot find clinic entrance zone inspect label entity");
-            }
-
-            return;
-        }
-
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-            ..default()
-        });
-
-        next_loading_screen_state.set(common_loading_screen::start_state());
-
-        *transition = GlobalGameStateTransition::DowntownToClinic;
-        next_state.set(Downtown::quitting());
+        return;
     }
+
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+        ..default()
+    });
+
+    next_loading_screen_state.set(common_loading_screen::start_state());
+
+    *transition = GlobalGameStateTransition::DowntownToClinic;
+    next_state.set(Downtown::quitting());
+}
+
+fn enter_clinic_ward(
+    mut cmd: Commands,
+    mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+    zone_to_inspect_label_entity: Res<
+        ZoneToInspectLabelEntity<DowntownTileKind>,
+    >,
+    daybar: Res<DayBar>,
+) {
+    if !daybar.is_it_time_for(DayBarDependent::ClinicOpenHours) {
+        show_label_closed(
+            &zone_to_inspect_label_entity,
+            &mut inspect_label_events,
+            &DowntownTileKind::ClinicWardEntrance,
+        );
+
+        return;
+    }
+
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+        ..default()
+    });
+
+    next_loading_screen_state.set(common_loading_screen::start_state());
+
+    *transition = GlobalGameStateTransition::DowntownToClinicWard;
+    next_state.set(Downtown::quitting());
 }
 
 fn enter_plant_shop(
     mut cmd: Commands,
-    mut action_events: EventReader<DowntownAction>,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
@@ -419,94 +417,100 @@ fn enter_plant_shop(
     >,
     daybar: Res<DayBar>,
 ) {
-    let is_triggered = action_events
-        .read()
-        .any(|action| matches!(action, DowntownAction::EnterPlantShop));
+    if !daybar.is_it_time_for(DayBarDependent::PlantShopOpenHours) {
+        show_label_closed(
+            &zone_to_inspect_label_entity,
+            &mut inspect_label_events,
+            &DowntownTileKind::PlantShopEntrance,
+        );
 
-    if is_triggered {
-        if !daybar.is_it_time_for(DayBarDependent::PlantShopOpenHours) {
-            if let Some(entity) = zone_to_inspect_label_entity
-                .map
-                .get(&DowntownTileKind::PlantShopEntrance)
-                .copied()
-            {
-                inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
-                    entity,
-                    spawn_params: SpawnLabelBgAndTextParams {
-                        highlighted: true,
-                        overwrite_font_color: Some(LIGHT_RED),
-                        // LOCALIZATION
-                        overwrite_display_text: Some("(closed)".to_string()),
-                    },
-                });
-            } else {
-                error!(
-                    "Cannot find plant shop entrance zone inspect label entity"
-                );
-            }
-
-            return;
-        }
-
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-            ..default()
-        });
-
-        next_loading_screen_state.set(common_loading_screen::start_state());
-
-        *transition = GlobalGameStateTransition::DowntownToPlantShop;
-        next_state.set(Downtown::quitting());
+        return;
     }
+
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+        ..default()
+    });
+
+    next_loading_screen_state.set(common_loading_screen::start_state());
+
+    *transition = GlobalGameStateTransition::DowntownToPlantShop;
+    next_state.set(Downtown::quitting());
 }
 
 fn enter_twinpeaks_apartment(
     mut cmd: Commands,
-    mut action_events: EventReader<DowntownAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
 ) {
-    let is_triggered = action_events.read().any(|action| {
-        matches!(action, DowntownAction::EnterTwinpeaksApartment)
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+        ..default()
     });
 
-    if is_triggered {
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-            ..default()
-        });
+    next_loading_screen_state.set(common_loading_screen::start_state());
 
-        next_loading_screen_state.set(common_loading_screen::start_state());
-
-        *transition = GlobalGameStateTransition::DowntownToTwinpeaksApartment;
-        next_state.set(Downtown::quitting());
-    }
+    *transition = GlobalGameStateTransition::DowntownToTwinpeaksApartment;
+    next_state.set(Downtown::quitting());
 }
 
 fn enter_sewers(
     mut cmd: Commands,
-    mut action_events: EventReader<DowntownAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
 ) {
-    let is_triggered = action_events
-        .read()
-        .any(|action| matches!(action, DowntownAction::EnterSewers));
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+        ..default()
+    });
 
-    if is_triggered {
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-            ..default()
+    next_loading_screen_state.set(common_loading_screen::start_state());
+
+    *transition = GlobalGameStateTransition::DowntownToSewers;
+    next_state.set(Downtown::quitting());
+}
+
+fn enter_compound(
+    mut cmd: Commands,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+) {
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+        ..default()
+    });
+
+    next_loading_screen_state.set(common_loading_screen::start_state());
+
+    *transition = GlobalGameStateTransition::DowntownToCompound;
+    next_state.set(Downtown::quitting());
+}
+
+fn show_label_closed(
+    zone_to_inspect_label_entity: &ZoneToInspectLabelEntity<DowntownTileKind>,
+    inspect_label_events: &mut EventWriter<ChangeHighlightedInspectLabelEvent>,
+    zone_kind: &DowntownTileKind,
+) {
+    if let Some(entity) =
+        zone_to_inspect_label_entity.map.get(zone_kind).copied()
+    {
+        inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
+            entity,
+            spawn_params: SpawnLabelBgAndTextParams {
+                highlighted: true,
+                overwrite_font_color: Some(LIGHT_RED),
+                // LOCALIZATION
+                overwrite_display_text: Some("(closed)".to_string()),
+            },
         });
-
-        next_loading_screen_state.set(common_loading_screen::start_state());
-
-        *transition = GlobalGameStateTransition::DowntownToSewers;
-        next_state.set(Downtown::quitting());
+    } else {
+        error!("Cannot find clinic entrance zone for {zone_kind:?}");
     }
 }

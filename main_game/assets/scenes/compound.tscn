@@ -322,3 +322,14 @@ metadata/zone = "ExitToDowntownZone"
 metadata/action = "ExitToDowntown"
 metadata/label = "Downtown"
 metadata/category = "Default"
+
+[node name="TowerEntrance" type="Node2D" parent="Points"]
+position = Vector2(-98, -55)
+
+[node name="Point" type="Node" parent="Points/TowerEntrance"]
+
+[node name="InspectLabel" type="Node" parent="Points/TowerEntrance"]
+metadata/zone = "TowerEntrance"
+metadata/action = "EnterTower"
+metadata/label = "Tower"
+metadata/category = "Default"
