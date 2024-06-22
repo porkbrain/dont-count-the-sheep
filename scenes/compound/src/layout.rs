@@ -139,10 +139,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
             }
             ("MainGate", DowntownToCompound)
             | ("TowerEntrance", TowerToCompound) => {
-                let face_up = match name.as_str() {
-                    "MainGate" => true,
-                    _ => false,
-                };
+                let face_up = name.as_str() == "MainGate";
 
                 self.camera_translation.x = position.x;
                 self.camera_translation.y = position.y;
