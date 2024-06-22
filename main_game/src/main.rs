@@ -51,7 +51,10 @@ fn main() {
     scene_building1_basement1::add(&mut app);
     scene_building1_basement2::add(&mut app);
     scene_building1_player_floor::add(&mut app);
+    scene_clinic_ward::add(&mut app);
     scene_clinic::add(&mut app);
+    scene_compound_tower::add(&mut app);
+    scene_compound::add(&mut app);
     scene_downtown::add(&mut app);
     scene_mall::add(&mut app);
     scene_meditation::add(&mut app);

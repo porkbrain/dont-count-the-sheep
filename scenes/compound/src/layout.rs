@@ -1,7 +1,12 @@
 use bevy::render::view::RenderLayers;
+use bevy_grid_squared::{sq, GridDirection};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_visuals::camera::render_layer;
-use main_game_lib::cutscene::in_cutscene;
+use common_story::Character;
+use common_visuals::camera::{render_layer, MainCamera};
+use main_game_lib::{
+    cutscene::in_cutscene, hud::daybar::UpdateDayBarEvent,
+    top_down::layout::LAYOUT,
+};
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use strum::IntoEnumIterator;
 use top_down::{
@@ -17,21 +22,26 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(PlantShop::loading()),
-            rscn::start_loading_tscn::<PlantShop>,
+            OnEnter(Compound::loading()),
+            rscn::start_loading_tscn::<Compound>,
         )
         .add_systems(
             Update,
             spawn
-                .run_if(PlantShop::in_loading_state())
-                .run_if(resource_exists::<TileMap<PlantShop>>)
-                .run_if(rscn::tscn_loaded_but_not_spawned::<PlantShop>()),
+                .run_if(Compound::in_loading_state())
+                .run_if(resource_exists::<TileMap<Compound>>)
+                .run_if(rscn::tscn_loaded_but_not_spawned::<Compound>()),
         )
-        .add_systems(OnExit(PlantShop::quitting()), despawn)
+        .add_systems(OnExit(Compound::quitting()), despawn)
         .add_systems(
             Update,
-            exit.run_if(on_event_variant(PlantShopAction::ExitScene))
-                .run_if(PlantShop::in_running_state())
+            (
+                go_to_downtown
+                    .run_if(on_event_variant(CompoundAction::GoToDowntown)),
+                enter_tower
+                    .run_if(on_event_variant(CompoundAction::EnterTower)),
+            )
+                .run_if(Compound::in_running_state())
                 .run_if(not(in_cutscene())),
         );
     }
@@ -48,13 +58,10 @@ struct Spawner<'a> {
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
     zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<PlantShopTileKind>,
-
-    marie_entity: Entity,
-    marie_builder: &'a mut CharacterBundleBuilder,
-
-    bolt_entity: Entity,
-    bolt_builder: &'a mut CharacterBundleBuilder,
+        &'a mut ZoneToInspectLabelEntity<CompoundTileKind>,
+    camera_translation: &'a mut Vec3,
+    daybar_event: &'a mut Events<UpdateDayBarEvent>,
+    transition: GlobalGameStateTransition,
 }
 
 /// The names are stored in the scene file.
@@ -63,22 +70,19 @@ fn spawn(
     asset_server: Res<AssetServer>,
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    transition: Res<GlobalGameStateTransition>,
+    mut daybar_event: ResMut<Events<UpdateDayBarEvent>>,
 
-    mut q: Query<&mut TscnTreeHandle<PlantShop>>,
+    mut camera: Query<&mut Transform, With<MainCamera>>,
+    mut q: Query<&mut TscnTreeHandle<Compound>>,
 ) {
-    info!("Spawning {PlantShop:?} scene");
+    info!("Spawning {Compound:?} scene");
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
 
     let player = cmd.spawn_empty().id();
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
-
-    let marie = cmd.spawn_empty().id();
-    let mut marie_builder = common_story::Character::Marie.bundle_builder();
-
-    let bolt = cmd.spawn_empty().id();
-    let mut bolt_builder = common_story::Character::Bolt.bundle_builder();
 
     tscn.spawn_into(
         &mut Spawner {
@@ -87,19 +91,15 @@ fn spawn(
             asset_server: &asset_server,
             atlases: &mut atlas_layouts,
             zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
+            camera_translation: &mut camera.single_mut().translation,
+            daybar_event: &mut daybar_event,
 
-            marie_entity: marie,
-            marie_builder: &mut marie_builder,
-
-            bolt_entity: bolt,
-            bolt_builder: &mut bolt_builder,
+            transition: *transition,
         },
         &mut cmd,
     );
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
-    marie_builder.insert_bundle_into(&asset_server, &mut cmd.entity(marie));
-    bolt_builder.insert_bundle_into(&asset_server, &mut cmd.entity(bolt));
 
     cmd.insert_resource(zone_to_inspect_label_entity);
 }
@@ -111,13 +111,13 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.entity(root).despawn_recursive();
 
     cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <PlantShop as TopDownScene>::LocalTileKind,
+        <Compound as TopDownScene>::LocalTileKind,
     >>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
-    type LocalActionKind = PlantShopAction;
-    type LocalZoneKind = PlantShopTileKind;
+    type LocalActionKind = CompoundAction;
+    type LocalZoneKind = CompoundTileKind;
 
     fn on_spawned(
         &mut self,
@@ -126,25 +126,42 @@ impl<'a> TscnSpawner for Spawner<'a> {
         NodeName(name): NodeName,
         translation: Vec3,
     ) {
+        use GlobalGameStateTransition::*;
+
+        let position = translation.truncate();
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
 
-        match name.as_str() {
-            "PlantShop" => {
+        match (name.as_str(), self.transition) {
+            ("Compound", _) => {
                 cmd.entity(who).insert(LayoutEntity);
-                cmd.entity(who).add_child(self.marie_entity);
                 cmd.entity(who).add_child(self.player_entity);
-                cmd.entity(who).add_child(self.bolt_entity);
             }
-            "Entrance" => {
-                self.player_builder.initial_position(translation.truncate());
+            ("MainGate", DowntownToCompound)
+            | ("TowerEntrance", TowerToCompound) => {
+                let face_up = match name.as_str() {
+                    "MainGate" => true,
+                    _ => false,
+                };
+
+                self.camera_translation.x = position.x;
+                self.camera_translation.y = position.y;
+                // we multiply by 4 because winnie is walking across 2 tiles and
+                // we want her to be extra extra slow because it looks better
+                self.player_builder
+                    .initial_step_time(Character::Winnie.slow_step_time() * 4);
+                self.player_builder.initial_position(position);
+                self.player_builder.walking_to(top_down::ActorTarget::new(
+                    LAYOUT.world_pos_to_square(position)
+                        + sq(0, 2 * if face_up { 1 } else { -1 }),
+                ));
+                if face_up {
+                    self.player_builder.initial_direction(GridDirection::Top);
+                }
+
+                self.daybar_event.send(UpdateDayBarEvent::ChangedScene);
             }
-            "MarieSpawn" => {
-                self.marie_builder.initial_position(translation.truncate());
-            }
-            "BoltSpawn" => {
-                self.bolt_builder.initial_position(translation.truncate());
-            }
+
             _ => {}
         }
     }
@@ -169,7 +186,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
     }
 }
 
-impl top_down::layout::Tile for PlantShopTileKind {
+impl top_down::layout::Tile for CompoundTileKind {
     #[inline]
     fn is_walkable(&self, _: Entity) -> bool {
         true
@@ -178,7 +195,7 @@ impl top_down::layout::Tile for PlantShopTileKind {
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::ExitZone => true,
+            Self::EnterTowerZone | Self::GoToDowntownZone => true,
         }
     }
 
@@ -188,7 +205,7 @@ impl top_down::layout::Tile for PlantShopTileKind {
     }
 }
 
-fn exit(
+fn go_to_downtown(
     mut cmd: Commands,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
@@ -202,6 +219,24 @@ fn exit(
 
     next_loading_screen_state.set(common_loading_screen::start_state());
 
-    *transition = GlobalGameStateTransition::PlantShopToDowntown;
-    next_state.set(PlantShop::quitting());
+    *transition = GlobalGameStateTransition::CompoundToDowntown;
+    next_state.set(Compound::quitting());
+}
+
+fn enter_tower(
+    mut cmd: Commands,
+    mut transition: ResMut<GlobalGameStateTransition>,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
+) {
+    cmd.insert_resource(LoadingScreenSettings {
+        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+        ..default()
+    });
+
+    next_loading_screen_state.set(common_loading_screen::start_state());
+
+    *transition = GlobalGameStateTransition::CompoundToTower;
+    next_state.set(Compound::quitting());
 }
