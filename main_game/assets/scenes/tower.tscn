@@ -1,35 +1,58 @@
-[gd_scene load_steps=10 format=3 uid="uid://d10laqanju67f"]
+[gd_scene load_steps=13 format=3 uid="uid://d10laqanju67f"]
 
-[ext_resource type="Texture2D" uid="uid://cy7cwfigylkyd" path="res://assets/compound/tower_inside.png" id="1_wqvew"]
-[ext_resource type="Texture2D" uid="uid://b3pn5mvb3111b" path="res://assets/compound/tower_inside_wall.png" id="2_tvn07"]
-[ext_resource type="Texture2D" uid="uid://c81eqm7duppl4" path="res://assets/residential/indoors/wall_mirror.png" id="3_itsld"]
-[ext_resource type="Texture2D" uid="uid://dggtq8cr8skng" path="res://assets/residential/indoors/side_table1.png" id="4_x465y"]
-[ext_resource type="Texture2D" uid="uid://b5anmhohxuann" path="res://assets/residential/indoors/vase_flowers.png" id="5_dnmsg"]
-[ext_resource type="Texture2D" uid="uid://c6g7tke0jjcmg" path="res://assets/residential/indoors/side_table3.png" id="6_771hh"]
-[ext_resource type="Texture2D" uid="uid://h03jwe4lr73k" path="res://assets/residential/indoors/tissues.png" id="7_dupub"]
-[ext_resource type="Texture2D" uid="uid://rikit51uld8t" path="res://assets/residential/indoors/knihovna.png" id="8_jpl34"]
-[ext_resource type="Texture2D" uid="uid://c4phqysbg8s3" path="res://assets/residential/indoors/oven.png" id="9_pi45u"]
+[ext_resource type="Texture2D" uid="uid://dmt6epp8grc8r" path="res://assets/compound/tower_inside.png" id="1_wqvew"]
+[ext_resource type="Texture2D" uid="uid://cyasnwpylgscq" path="res://assets/compound/tower_inside_wall.png" id="2_tvn07"]
+[ext_resource type="Texture2D" uid="uid://dgy5j056rr3s0" path="res://assets/residential/indoors/wall_mirror.png" id="3_itsld"]
+[ext_resource type="Texture2D" uid="uid://dnu54tiuqoh11" path="res://assets/residential/indoors/side_table1.png" id="4_x465y"]
+[ext_resource type="Texture2D" uid="uid://dht7emflws1qw" path="res://assets/residential/indoors/vase_flowers.png" id="5_dnmsg"]
+[ext_resource type="Texture2D" uid="uid://cgrqll8p8254j" path="res://assets/residential/indoors/side_table3.png" id="6_771hh"]
+[ext_resource type="Texture2D" uid="uid://gcq6oilow74x" path="res://assets/residential/indoors/tissues.png" id="7_dupub"]
+[ext_resource type="Texture2D" uid="uid://bg828bbtlaqrc" path="res://assets/residential/indoors/knihovna.png" id="8_jpl34"]
+[ext_resource type="Texture2D" uid="uid://jvwf4b6bjsl6" path="res://assets/residential/indoors/oven.png" id="9_pi45u"]
 
-[node name="Node2D" type="Node2D"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_q04iu"]
+atlas = ExtResource("9_pi45u")
+region = Rect2(32, 0, 32, 62)
 
-[node name="TowerInside" type="Sprite2D" parent="."]
+[sub_resource type="AtlasTexture" id="AtlasTexture_a2vas"]
+atlas = ExtResource("9_pi45u")
+region = Rect2(0, 0, 32, 62)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_jc6xg"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q04iu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a2vas")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="Tower" type="Node2D"]
+
+[node name="TowerBg" type="Sprite2D" parent="."]
+z_index = -3
 position = Vector2(-29, 16)
 texture = ExtResource("1_wqvew")
 
-[node name="TowerInsideWall" type="Sprite2D" parent="TowerInside"]
-z_index = 1
-position = Vector2(88, 40)
+[node name="WallMirror" type="Sprite2D" parent="TowerBg"]
+position = Vector2(22, -76)
+texture = ExtResource("3_itsld")
+
+[node name="FrontWallRight" type="Sprite2D" parent="."]
+z_index = 2
+position = Vector2(59, 56)
 texture = ExtResource("2_tvn07")
 
-[node name="TowerInsideWall2" type="Sprite2D" parent="TowerInside"]
-z_index = 1
-position = Vector2(-44, 40)
+[node name="FrontWallLeft" type="Sprite2D" parent="."]
+z_index = 2
+position = Vector2(-73, 56)
 texture = ExtResource("2_tvn07")
 flip_h = true
-
-[node name="WallMirror" type="Sprite2D" parent="."]
-position = Vector2(-7, -60)
-texture = ExtResource("3_itsld")
 
 [node name="SideTable1" type="Sprite2D" parent="."]
 position = Vector2(-35, -27)
@@ -39,6 +62,9 @@ texture = ExtResource("4_x465y")
 position = Vector2(-5, -25)
 texture = ExtResource("5_dnmsg")
 
+[node name="YSort" type="Node2D" parent="SideTable1"]
+position = Vector2(-10, 10)
+
 [node name="SideTable3" type="Sprite2D" parent="."]
 position = Vector2(22, -29)
 texture = ExtResource("6_771hh")
@@ -47,10 +73,32 @@ texture = ExtResource("6_771hh")
 position = Vector2(-1, -12)
 texture = ExtResource("7_dupub")
 
+[node name="YSort" type="Node2D" parent="SideTable3"]
+position = Vector2(-11, 13)
+
 [node name="Knihovna" type="Sprite2D" parent="."]
-position = Vector2(-6, 56)
+position = Vector2(68, 2)
 texture = ExtResource("8_jpl34")
 
-[node name="Oven" type="Sprite2D" parent="."]
-position = Vector2(-73, 4)
-texture = ExtResource("9_pi45u")
+[node name="YSort" type="Node2D" parent="Knihovna"]
+position = Vector2(-26, 29)
+
+[node name="Stove" type="AnimatedSprite2D" parent="."]
+position = Vector2(-90, -11)
+sprite_frames = SubResource("SpriteFrames_jc6xg")
+
+[node name="YSort" type="Node2D" parent="Stove"]
+position = Vector2(13, 29)
+
+[node name="Points" type="Node2D" parent="."]
+
+[node name="Entrance" type="Node2D" parent="Points"]
+position = Vector2(-5, 103)
+
+[node name="Point" type="Node" parent="Points/Entrance"]
+
+[node name="InspectLabel" type="Node" parent="Points/Entrance"]
+metadata/zone = "ExitZone"
+metadata/action = "ExitScene"
+metadata/label = "Exit"
+metadata/category = "Default"
