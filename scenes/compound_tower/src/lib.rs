@@ -37,7 +37,7 @@ impl WithStandardStateSemantics for CompoundTower {
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::LoadingCompoundTower
+        GlobalGameState::AtCompoundTower
     }
 
     fn quitting() -> GlobalGameState {

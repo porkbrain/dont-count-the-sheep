@@ -11,7 +11,7 @@ Option<main_game_lib::top_down::layout::ZoneGroup>
 } #[inline] fn zone_size(&self) -> Option<usize>
 {
     #[allow(clippy::match_single_binding)] match self
-    { Self::ExitZone => Some(78),
+    { Self::ExitZone => Some(30),
  #[allow(unreachable_patterns)] _ => None, }
 } type Successors = Self; #[inline] fn zone_successors(&self) -> Option<&'static
 [Self::Successors]>

@@ -18,6 +18,7 @@ members = [
     "scenes/building1_basement1",
     "scenes/building1_basement2",
     "scenes/building1_player_floor",
+    "scenes/clinic_ward",
     "scenes/clinic",
     "scenes/compound_tower",
     "scenes/compound",
