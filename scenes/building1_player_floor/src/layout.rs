@@ -151,6 +151,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
         NodeName(name): NodeName,
         translation: Vec3,
     ) {
+        use Building1PlayerFloorTileKind::*;
         use GlobalGameStateTransition::*;
 
         cmd.entity(who)
@@ -181,19 +182,38 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 }
             }
             "PlayerApartmentDoor" => {
-                let door = DoorBuilder::new(
-                    Building1PlayerFloorTileKind::PlayerDoorZone,
-                )
-                .add_open_criteria(DoorOpenCriteria::Character(
-                    common_story::Character::Winnie,
-                ))
-                .add_open_criteria(DoorOpenCriteria::Character(
-                    common_story::Character::Samizdat,
-                ))
-                .with_initial_state(DoorState::Closed)
-                .with_obstacle_when_closed_between(sq(-40, -21), sq(-31, -21))
-                .build_and_insert_obstacle(self.tilemap);
+                let door = DoorBuilder::new(PlayerDoorZone)
+                    .add_open_criteria(DoorOpenCriteria::Character(
+                        common_story::Character::Winnie,
+                    ))
+                    .add_open_criteria(DoorOpenCriteria::Character(
+                        common_story::Character::Samizdat,
+                    ))
+                    .with_initial_state(DoorState::Closed)
+                    .with_obstacle_when_closed_between(
+                        sq(-40, -21),
+                        sq(-31, -21),
+                    )
+                    .build_and_insert_obstacle(self.tilemap);
                 cmd.entity(who).insert(door);
+            }
+            "BottomLeftApartmentDoor" => {
+                cmd.entity(who).insert(
+                    DoorBuilder::new(BottomLeftApartmentDoorZone)
+                        .build::<Building1PlayerFloor>(),
+                );
+            }
+            "BottomLeftApartmentBathroomDoor" => {
+                cmd.entity(who).insert(
+                    DoorBuilder::new(BottomLeftApartmentBathroomDoorZone)
+                        .build::<Building1PlayerFloor>(),
+                );
+            }
+            "BottomRightApartmentDoor" => {
+                cmd.entity(who).insert(
+                    DoorBuilder::new(BottomRightApartmentDoorZone)
+                        .build::<Building1PlayerFloor>(),
+                );
             }
             "WinnieSleeping" => {
                 cmd.entity(who).insert(SleepingHint);
@@ -289,6 +309,11 @@ impl top_down::layout::Tile for Building1PlayerFloorTileKind {
     fn is_zone(&self) -> bool {
         match self {
             Self::BedZone
+            | Self::BottomLeftApartmentDoorZone
+            | Self::BottomLeftApartmentBathroomDoorZone
+            | Self::BottomRightApartmentDoorZone
+            | Self::BottomLeftApartmentZone
+            | Self::BottomRightApartmentZone
             | Self::PlayerDoorZone
             | Self::PlayerApartmentZone
             | Self::ElevatorZone

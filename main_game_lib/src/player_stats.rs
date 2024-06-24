@@ -10,6 +10,9 @@ use crate::{hud::daybar::Beats, prelude::*};
 #[cfg_attr(feature = "devtools", derive(Reflect, InspectorOptions))]
 #[cfg_attr(feature = "devtools", reflect(Resource, InspectorOptions))]
 pub struct PlayerStats {
+    /// Starts at o (day 1) and increases by 1 every time the player goes to
+    /// sleep.
+    pub days_passed: usize,
     /// Spiritual points are rewarded for doing certain actions.
     pub spiritual_points: usize,
     /// Material points are rewarded for doing certain actions.

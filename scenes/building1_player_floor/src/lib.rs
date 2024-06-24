@@ -79,9 +79,14 @@ pub enum Building1PlayerFloorTileKind {
     PlayerDoorZone,
     MeditationZone,
     TeaZone,
+    BottomLeftApartmentZone,
+    BottomLeftApartmentDoorZone,
+    BottomLeftApartmentBathroomDoorZone,
+    BottomRightApartmentZone,
+    BottomRightApartmentDoorZone,
 }
 
-#[derive(Event, Reflect, Clone, strum::EnumString)]
+#[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
 pub enum Building1PlayerFloorAction {
     EnterElevator,
     StartMeditation,
