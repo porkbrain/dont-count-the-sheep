@@ -372,6 +372,28 @@ animations = [{
 "speed": 1.0
 }]
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_u5wh5"]
+atlas = ExtResource("15_8oxyo")
+region = Rect2(0, 0, 27, 52)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_683ur"]
+atlas = ExtResource("15_8oxyo")
+region = Rect2(28, 0, 27, 52)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_tq1rj"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u5wh5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_683ur")
+}],
+"loop": false,
+"name": &"default",
+"speed": 1.0
+}]
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_n0t2h"]
 atlas = ExtResource("9_hc3bl")
 region = Rect2(0, 0, 51, 57)
@@ -472,28 +494,6 @@ animations = [{
 "speed": 1.0
 }]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_u5wh5"]
-atlas = ExtResource("15_8oxyo")
-region = Rect2(0, 0, 27, 52)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_683ur"]
-atlas = ExtResource("15_8oxyo")
-region = Rect2(28, 0, 27, 52)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_tq1rj"]
-animations = [{
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_u5wh5")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_683ur")
-}],
-"loop": false,
-"name": &"default",
-"speed": 1.0
-}]
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_0m8kt"]
 atlas = ExtResource("17_mm1s1")
 region = Rect2(0, 0, 27, 52)
@@ -518,271 +518,349 @@ animations = [{
 
 [node name="Building1PlayerFloor" type="Node2D"]
 
-[node name="PlayerApartmentBg" type="Sprite2D" parent="."]
+[node name="PlayerApartment" type="Node2D" parent="."]
+
+[node name="Bg" type="Sprite2D" parent="PlayerApartment"]
 z_index = -4
 texture = ExtResource("1_70osf")
 
-[node name="BedroomCloudAtlas" type="AnimatedSprite2D" parent="PlayerApartmentBg"]
+[node name="BedroomCloudAtlas" type="AnimatedSprite2D" parent="PlayerApartment/Bg"]
 z_index = 1
 position = Vector2(-70.5, -113)
 sprite_frames = SubResource("SpriteFrames_ie7hs")
 autoplay = "default"
 frame = 17
 
-[node name="KitchenCloudAtlas" type="AnimatedSprite2D" parent="PlayerApartmentBg"]
+[node name="KitchenCloudAtlas" type="AnimatedSprite2D" parent="PlayerApartment/Bg"]
 z_index = 1
 position = Vector2(96, -113)
 sprite_frames = SubResource("SpriteFrames_ie7hs")
 autoplay = "default"
 
-[node name="BackwallFurniture" type="Sprite2D" parent="."]
+[node name="BackwallFurniture" type="Sprite2D" parent="PlayerApartment"]
 z_index = -2
 texture = ExtResource("3_e2w78")
 
-[node name="MeditationChair" type="Sprite2D" parent="BackwallFurniture"]
+[node name="MeditationChair" type="Sprite2D" parent="PlayerApartment/BackwallFurniture"]
 position = Vector2(38, -84)
 texture = ExtResource("4_njet2")
 
-[node name="Label" type="Node2D" parent="BackwallFurniture/MeditationChair"]
+[node name="Label" type="Node2D" parent="PlayerApartment/BackwallFurniture/MeditationChair"]
 position = Vector2(0, -21)
 
-[node name="InspectLabel" type="Node" parent="BackwallFurniture/MeditationChair/Label"]
+[node name="InspectLabel" type="Node" parent="PlayerApartment/BackwallFurniture/MeditationChair/Label"]
 metadata/zone = "MeditationZone"
 metadata/action = "StartMeditation"
 metadata/label = "Meditate"
 
-[node name="WinnieMeditating" type="Sprite2D" parent="BackwallFurniture/MeditationChair"]
+[node name="WinnieMeditating" type="Sprite2D" parent="PlayerApartment/BackwallFurniture/MeditationChair"]
 visible = false
 self_modulate = Color(1, 1, 1, 0.823529)
 position = Vector2(3, 0)
 texture = ExtResource("6_5id1h")
 
-[node name="WinnieSleeping" type="Sprite2D" parent="BackwallFurniture"]
+[node name="WinnieSleeping" type="Sprite2D" parent="PlayerApartment/BackwallFurniture"]
 visible = false
 self_modulate = Color(1, 1, 1, 0.823529)
 position = Vector2(-70, -67.5)
 texture = ExtResource("5_u86a4")
 
-[node name="GoToSleep" type="Node2D" parent="BackwallFurniture"]
+[node name="GoToSleep" type="Node2D" parent="PlayerApartment/BackwallFurniture"]
 position = Vector2(-70, -49)
 
-[node name="InspectLabel" type="Node" parent="BackwallFurniture/GoToSleep"]
+[node name="InspectLabel" type="Node" parent="PlayerApartment/BackwallFurniture/GoToSleep"]
 metadata/zone = "BedZone"
 metadata/action = "Sleep"
 metadata/label = "Sleep"
 
-[node name="BrewTea" type="Node2D" parent="BackwallFurniture"]
+[node name="BrewTea" type="Node2D" parent="PlayerApartment/BackwallFurniture"]
 position = Vector2(132, -111)
 
-[node name="InspectLabel" type="Node" parent="BackwallFurniture/BrewTea"]
+[node name="InspectLabel" type="Node" parent="PlayerApartment/BackwallFurniture/BrewTea"]
 metadata/zone = "TeaZone"
 metadata/action = "BrewTea"
 metadata/label = "Winnie  Put  the  Kettle  On"
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="BackwallFurniture"]
+[node name="CandleLight" type="AnimatedSprite2D" parent="PlayerApartment/BackwallFurniture"]
 position = Vector2(-29.5, -132)
 sprite_frames = SubResource("SpriteFrames_8te5p")
 autoplay = "default"
 frame_progress = 0.00329857
 
-[node name="WifiBlinkingAnimation" type="AnimatedSprite2D" parent="BackwallFurniture"]
+[node name="WifiBlinkingAnimation" type="AnimatedSprite2D" parent="PlayerApartment/BackwallFurniture"]
 position = Vector2(-25.5, -82.5)
 sprite_frames = SubResource("SpriteFrames_x3j0s")
 autoplay = "default"
 frame = 1
 frame_progress = 0.300233
 
-[node name="Toilet" type="Sprite2D" parent="."]
+[node name="Toilet" type="Sprite2D" parent="PlayerApartment"]
 z_index = 2
 position = Vector2(-143, -5.5)
 texture = ExtResource("7_3q0vg")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Toilet"]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="PlayerApartment/Toilet"]
 position = Vector2(4, -8)
 sprite_frames = SubResource("SpriteFrames_40kv1")
 autoplay = "default"
 frame_progress = 0.661568
 
-[node name="HallwayBg" type="Sprite2D" parent="."]
+[node name="Cupboard" type="Sprite2D" parent="PlayerApartment"]
+position = Vector2(-93, 0)
+texture = ExtResource("11_iijqm")
+
+[node name="YSort" type="Node2D" parent="PlayerApartment/Cupboard"]
+position = Vector2(0, 23)
+
+[node name="LaundryBasket" type="Sprite2D" parent="PlayerApartment"]
+position = Vector2(-50, 13)
+texture = ExtResource("12_b5il1")
+
+[node name="YSort" type="Node2D" parent="PlayerApartment/LaundryBasket"]
+position = Vector2(0, 9)
+
+[node name="Shoerack" type="Sprite2D" parent="PlayerApartment"]
+position = Vector2(-37, 60)
+texture = ExtResource("13_7ojeu")
+
+[node name="YSort" type="Node2D" parent="PlayerApartment/Shoerack"]
+position = Vector2(0, 13)
+
+[node name="Fridge" type="Sprite2D" parent="PlayerApartment"]
+position = Vector2(79.5, -59)
+texture = ExtResource("16_0n6p3")
+
+[node name="Ysort" type="Node2D" parent="PlayerApartment/Fridge"]
+position = Vector2(0, 21)
+
+[node name="KitchenTable" type="Sprite2D" parent="PlayerApartment"]
+position = Vector2(146, -28)
+texture = ExtResource("14_aqp0s")
+
+[node name="YSort" type="Node2D" parent="PlayerApartment/KitchenTable"]
+position = Vector2(0, 13)
+
+[node name="Package" type="Sprite2D" parent="PlayerApartment"]
+z_index = -1
+position = Vector2(0, -65)
+texture = ExtResource("18_fe7mm")
+
+[node name="Label" type="Node2D" parent="PlayerApartment/Package"]
+position = Vector2(0, 10)
+
+[node name="InspectLabel" type="Node" parent="PlayerApartment/Package/Label"]
+metadata/label = "Open  package"
+
+[node name="WaterBottleEmpty" type="Sprite2D" parent="PlayerApartment"]
+position = Vector2(-98, -68)
+texture = ExtResource("19_fe26e")
+
+[node name="PlayerApartmentDoor" type="AnimatedSprite2D" parent="PlayerApartment"]
+position = Vector2(-101.5, 60)
+sprite_frames = SubResource("SpriteFrames_tq1rj")
+
+[node name="YSort" type="Node2D" parent="PlayerApartment/PlayerApartmentDoor"]
+position = Vector2(0, 18)
+
+[node name="BathroomLight" type="Sprite2D" parent="PlayerApartment"]
+z_index = 2
+position = Vector2(-161, -75.5)
+texture = ExtResource("38_no0qc")
+
+[node name="KitchenLight" type="Sprite2D" parent="PlayerApartment"]
+z_index = 2
+position = Vector2(102.5, -89)
+texture = ExtResource("39_ft1ep")
+
+[node name="RoomLight" type="Sprite2D" parent="PlayerApartment"]
+z_index = 2
+position = Vector2(-70, -63)
+texture = ExtResource("31_wa4ug")
+
+[node name="Hallway" type="Node2D" parent="."]
+
+[node name="HallwayBg" type="Sprite2D" parent="Hallway"]
 z_index = -2
 texture = ExtResource("8_uh48f")
 
-[node name="HallwayEntity" type="Node" parent="HallwayBg"]
+[node name="HallwayEntity" type="Node" parent="Hallway/HallwayBg"]
 
-[node name="Elevator" type="AnimatedSprite2D" parent="HallwayBg"]
+[node name="Elevator" type="AnimatedSprite2D" parent="Hallway/HallwayBg"]
 position = Vector2(-201.5, 49.5)
 sprite_frames = SubResource("SpriteFrames_33ymd")
 
-[node name="Label" type="Node2D" parent="HallwayBg/Elevator"]
+[node name="Label" type="Node2D" parent="Hallway/HallwayBg/Elevator"]
 position = Vector2(0, 21)
 
-[node name="InspectLabel" type="Node" parent="HallwayBg/Elevator/Label"]
+[node name="InspectLabel" type="Node" parent="Hallway/HallwayBg/Elevator/Label"]
 metadata/zone = "ElevatorZone"
 metadata/action = "EnterElevator"
 metadata/label = "Elevator"
 metadata/category = "Default"
 
-[node name="HallwayEntity" type="Node" parent="HallwayBg/Elevator"]
+[node name="HallwayEntity" type="Node" parent="Hallway/HallwayBg/Elevator"]
 
-[node name="VendingMachine" type="AnimatedSprite2D" parent="HallwayBg"]
+[node name="VendingMachine" type="AnimatedSprite2D" parent="Hallway/HallwayBg"]
 position = Vector2(-267, 59)
 sprite_frames = SubResource("SpriteFrames_lxk6t")
 
-[node name="HallwayEntity" type="Node" parent="HallwayBg/VendingMachine"]
+[node name="HallwayEntity" type="Node" parent="Hallway/HallwayBg/VendingMachine"]
 
-[node name="Cupboard" type="Sprite2D" parent="."]
-position = Vector2(-93, 0)
-texture = ExtResource("11_iijqm")
+[node name="BottomApartments" type="Node2D" parent="."]
 
-[node name="YSort" type="Node2D" parent="Cupboard"]
-position = Vector2(0, 23)
-
-[node name="LaundryBasket" type="Sprite2D" parent="."]
-position = Vector2(-50, 13)
-texture = ExtResource("12_b5il1")
-
-[node name="YSort" type="Node2D" parent="LaundryBasket"]
-position = Vector2(0, 9)
-
-[node name="Shoerack" type="Sprite2D" parent="."]
-position = Vector2(-37, 60)
-texture = ExtResource("13_7ojeu")
-
-[node name="YSort" type="Node2D" parent="Shoerack"]
-position = Vector2(0, 13)
-
-[node name="KitchenTable" type="Sprite2D" parent="."]
-position = Vector2(146, -28)
-texture = ExtResource("14_aqp0s")
-
-[node name="YSort" type="Node2D" parent="KitchenTable"]
-position = Vector2(0, 13)
-
-[node name="PlayerApartmentDoor" type="AnimatedSprite2D" parent="."]
-position = Vector2(-101.5, 60)
-sprite_frames = SubResource("SpriteFrames_tq1rj")
-
-[node name="YSort" type="Node2D" parent="PlayerApartmentDoor"]
-position = Vector2(0, 18)
-
-[node name="Fridge" type="Sprite2D" parent="."]
-position = Vector2(79.5, -59)
-texture = ExtResource("16_0n6p3")
-
-[node name="Ysort" type="Node2D" parent="Fridge"]
-position = Vector2(0, 21)
-
-[node name="HallwayDoor1" type="AnimatedSprite2D" parent="."]
-position = Vector2(-91, 111)
-sprite_frames = SubResource("SpriteFrames_j7cpw")
-
-[node name="YSort" type="Node2D" parent="HallwayDoor1"]
-position = Vector2(0, 18)
-
-[node name="HallwayEntity" type="Node" parent="HallwayDoor1"]
-
-[node name="HallwayDoor2" type="AnimatedSprite2D" parent="."]
-position = Vector2(51, 110)
-sprite_frames = SubResource("SpriteFrames_j7cpw")
-
-[node name="YSort" type="Node2D" parent="HallwayDoor2"]
-position = Vector2(0, 18)
-
-[node name="HallwayEntity" type="Node" parent="HallwayDoor2"]
-
-[node name="Package" type="Sprite2D" parent="."]
-z_index = -1
-position = Vector2(0, -65)
-texture = ExtResource("18_fe7mm")
-
-[node name="Label" type="Node2D" parent="Package"]
-position = Vector2(0, 10)
-
-[node name="InspectLabel" type="Node" parent="Package/Label"]
-metadata/label = "Open  package"
-
-[node name="WaterBottleEmpty" type="Sprite2D" parent="."]
-position = Vector2(-98, -68)
-texture = ExtResource("19_fe26e")
-
-[node name="OtherApartments" type="Node2D" parent="."]
-
-[node name="OtherApartmentsBg" type="Sprite2D" parent="OtherApartments"]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
+[node name="Bg" type="Sprite2D" parent="BottomApartments"]
 z_index = -4
 position = Vector2(0, 128)
 texture = ExtResource("20_alp5o")
 
-[node name="PolickaKocka" type="Sprite2D" parent="OtherApartments"]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
+[node name="HallwayEntity" type="Node" parent="BottomApartments/Bg"]
+
+[node name="RightApartment" type="Node2D" parent="BottomApartments"]
+
+[node name="BottomRightApartmentDoor" type="AnimatedSprite2D" parent="BottomApartments/RightApartment"]
+position = Vector2(51, 110)
+sprite_frames = SubResource("SpriteFrames_j7cpw")
+
+[node name="YSort" type="Node2D" parent="BottomApartments/RightApartment/BottomRightApartmentDoor"]
+position = Vector2(0, 18)
+
+[node name="HallwayEntity" type="Node" parent="BottomApartments/RightApartment/BottomRightApartmentDoor"]
+
+[node name="TableWithDrawers" type="Sprite2D" parent="BottomApartments/RightApartment"]
 position = Vector2(93, 119)
 texture = ExtResource("21_vnmpr")
 
-[node name="Can" type="Sprite2D" parent="OtherApartments/PolickaKocka"]
+[node name="Can" type="Sprite2D" parent="BottomApartments/RightApartment/TableWithDrawers"]
 self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
 position = Vector2(9, -12)
 texture = ExtResource("22_i1pqp")
 
-[node name="YSort" type="Node2D" parent="OtherApartments/PolickaKocka"]
+[node name="YSort" type="Node2D" parent="BottomApartments/RightApartment/TableWithDrawers"]
 position = Vector2(0, 10)
 
-[node name="Skrabadlo" type="Sprite2D" parent="OtherApartments"]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
+[node name="HallwayEntity" type="Node" parent="BottomApartments/RightApartment/TableWithDrawers"]
+
+[node name="Skrabadlo" type="Sprite2D" parent="BottomApartments/RightApartment"]
 position = Vector2(51, 197)
 texture = ExtResource("23_kalpq")
 
-[node name="YSort" type="Node2D" parent="OtherApartments/Skrabadlo"]
+[node name="YSort" type="Node2D" parent="BottomApartments/RightApartment/Skrabadlo"]
 position = Vector2(0, 15)
 
-[node name="SofaYellow" type="Sprite2D" parent="OtherApartments"]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
+[node name="HallwayEntity" type="Node" parent="BottomApartments/RightApartment/Skrabadlo"]
+
+[node name="BedWooden" type="Sprite2D" parent="BottomApartments/RightApartment"]
+position = Vector2(161, 161)
+texture = ExtResource("37_6lbmy")
+
+[node name="YSort" type="Node2D" parent="BottomApartments/RightApartment/BedWooden"]
+position = Vector2(-36, 57)
+
+[node name="HallwayEntity" type="Node" parent="BottomApartments/RightApartment/BedWooden"]
+
+[node name="LeftApartment" type="Node2D" parent="BottomApartments"]
+
+[node name="BottomLeftApartmentDoor" type="AnimatedSprite2D" parent="BottomApartments/LeftApartment"]
+position = Vector2(-91, 111)
+sprite_frames = SubResource("SpriteFrames_j7cpw")
+
+[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/BottomLeftApartmentDoor"]
+position = Vector2(0, 18)
+
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/BottomLeftApartmentDoor"]
+
+[node name="SofaYellow" type="Sprite2D" parent="BottomApartments/LeftApartment"]
 position = Vector2(-10, 172)
 texture = ExtResource("24_tij75")
 
-[node name="YSort" type="Node2D" parent="OtherApartments/SofaYellow"]
+[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/SofaYellow"]
 position = Vector2(0, 15)
 
-[node name="ChairYellow" type="Sprite2D" parent="OtherApartments"]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/SofaYellow"]
+
+[node name="ChairYellow" type="Sprite2D" parent="BottomApartments/LeftApartment"]
 position = Vector2(-59, 189)
 texture = ExtResource("25_o5v0o")
 
-[node name="YSort" type="Node2D" parent="OtherApartments/ChairYellow"]
+[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/ChairYellow"]
 position = Vector2(0, 13)
 
-[node name="CoffeeTable" type="Sprite2D" parent="OtherApartments"]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/ChairYellow"]
+
+[node name="CoffeeTable" type="Sprite2D" parent="BottomApartments/LeftApartment"]
 position = Vector2(-10, 208)
 texture = ExtResource("26_trfib")
 
-[node name="YSort" type="Node2D" parent="OtherApartments/CoffeeTable"]
+[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/CoffeeTable"]
 position = Vector2(-2, 10)
 
-[node name="GreenKitchenSet" type="Sprite2D" parent="OtherApartments"]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
+[node name="Beer" type="Sprite2D" parent="BottomApartments/LeftApartment/CoffeeTable"]
+position = Vector2(-2, -11)
+texture = ExtResource("29_t2bpu")
+
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/CoffeeTable/Beer"]
+
+[node name="FruitBowl" type="Sprite2D" parent="BottomApartments/LeftApartment/CoffeeTable"]
+position = Vector2(-16, -8)
+texture = ExtResource("30_3c4bq")
+
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/CoffeeTable/FruitBowl"]
+
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/CoffeeTable"]
+
+[node name="GreenKitchenSet" type="Sprite2D" parent="BottomApartments/LeftApartment"]
 position = Vector2(-9, 120)
 texture = ExtResource("27_oe34g")
 
-[node name="YSort" type="Node2D" parent="OtherApartments/GreenKitchenSet"]
+[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/GreenKitchenSet"]
 position = Vector2(0, 11)
 
-[node name="BlueBed" type="Sprite2D" parent="OtherApartments"]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/GreenKitchenSet"]
+
+[node name="Bath" type="Sprite2D" parent="BottomApartments/LeftApartment"]
+position = Vector2(-180, 137)
+texture = ExtResource("38_mdm3q")
+
+[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/Bath"]
+position = Vector2(-28, 13)
+
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/Bath"]
+
+[node name="Toilet" type="Sprite2D" parent="BottomApartments/LeftApartment"]
+position = Vector2(-199, 189)
+texture = ExtResource("7_3q0vg")
+
+[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/Toilet"]
+position = Vector2(-1, 14)
+
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/Toilet"]
+
+[node name="BottomLeftApartmentBathroomDoor" type="AnimatedSprite2D" parent="BottomApartments/LeftApartment"]
+position = Vector2(-165, 187)
+sprite_frames = SubResource("SpriteFrames_j7cpw")
+
+[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/BottomLeftApartmentBathroomDoor"]
+position = Vector2(0, 18)
+
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/BottomLeftApartmentBathroomDoor"]
+
+[node name="BedTable" type="Sprite2D" parent="BottomApartments/LeftApartment"]
+position = Vector2(-228, 128)
+texture = ExtResource("36_458u3")
+
+[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/BedTable"]
+position = Vector2(-10, 10)
+
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/BedTable"]
+
+[node name="BlueBed" type="Sprite2D" parent="BottomApartments/LeftApartment"]
 position = Vector2(-263, 143)
 texture = ExtResource("28_6pfto")
 
-[node name="YSort" type="Node2D" parent="OtherApartments/BlueBed"]
-position = Vector2(0, 29)
+[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/BlueBed"]
+position = Vector2(19, -12)
 
-[node name="Beer" type="Sprite2D" parent="OtherApartments"]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
-position = Vector2(-12, 197)
-texture = ExtResource("29_t2bpu")
-
-[node name="FruitBowl" type="Sprite2D" parent="OtherApartments"]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
-position = Vector2(-26, 200)
-texture = ExtResource("30_3c4bq")
+[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/BlueBed"]
 
 [node name="Points" type="Node2D" parent="."]
 
@@ -805,48 +883,3 @@ position = Vector2(-15, -15)
 position = Vector2(-192, 76)
 
 [node name="Point" type="Node" parent="Points/InElevator"]
-
-[node name="RoomLight" type="Sprite2D" parent="."]
-z_index = 2
-position = Vector2(-70, -63)
-texture = ExtResource("31_wa4ug")
-
-[node name="HallwayDoor3" type="AnimatedSprite2D" parent="."]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
-position = Vector2(-165, 187)
-sprite_frames = SubResource("SpriteFrames_j7cpw")
-
-[node name="YSort" type="Node2D" parent="HallwayDoor3"]
-position = Vector2(0, 18)
-
-[node name="HallwayEntity" type="Node" parent="HallwayDoor3"]
-
-[node name="SideTable1" type="Sprite2D" parent="."]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
-position = Vector2(-228, 128)
-texture = ExtResource("36_458u3")
-
-[node name="BedWooden" type="Sprite2D" parent="."]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
-position = Vector2(161, 161)
-texture = ExtResource("37_6lbmy")
-
-[node name="BathHorizontal" type="Sprite2D" parent="."]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
-position = Vector2(-180, 137)
-texture = ExtResource("38_mdm3q")
-
-[node name="Toilet2" type="Sprite2D" parent="."]
-self_modulate = Color(0.0509804, 0.054902, 0.121569, 1)
-position = Vector2(-199, 189)
-texture = ExtResource("7_3q0vg")
-
-[node name="BathroomLight" type="Sprite2D" parent="."]
-z_index = 2
-position = Vector2(-161, -75.5)
-texture = ExtResource("38_no0qc")
-
-[node name="KitchenLight" type="Sprite2D" parent="."]
-z_index = 2
-position = Vector2(102.5, -89)
-texture = ExtResource("39_ft1ep")

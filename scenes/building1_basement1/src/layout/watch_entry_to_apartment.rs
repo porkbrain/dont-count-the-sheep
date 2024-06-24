@@ -21,6 +21,8 @@ pub(super) fn system(
 
     wall: Query<Entity, With<ApartmentWall>>,
 ) {
+    use Building1Basement1TileKind::UpperApartmentWallHiddenZone as TheZone;
+
     for event in movement_events.read() {
         match event {
             ActorMovementEvent::ZoneEntered {
@@ -28,11 +30,8 @@ pub(super) fn system(
                     Who {
                         is_player: true, ..
                     },
-                zone:
-                    TileKind::Local(
-                        Building1Basement1TileKind::UpperApartmentWallHiddenZone,
-                    ),
-            }=> {
+                zone: TileKind::Local(TheZone),
+            } => {
                 trace!("Hiding apartment wall");
                 lerp_event.send(
                     BeginInterpolationEvent::of_color(
@@ -48,7 +47,7 @@ pub(super) fn system(
                     Who {
                         is_player: true, ..
                     },
-                zone: TileKind::Local(Building1Basement1TileKind::UpperApartmentWallHiddenZone),
+                zone: TileKind::Local(TheZone),
             } => {
                 trace!("Showing apartment wall");
                 lerp_event.send(

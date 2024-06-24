@@ -13,29 +13,44 @@ Self::ElevatorZone => Some(ZoneGroup(0)),
 Self::PlayerDoorZone => Some(ZoneGroup(0)),
 Self::MeditationZone => Some(ZoneGroup(0)),
 Self::TeaZone => Some(ZoneGroup(0)),
+Self::BottomLeftApartmentZone => Some(ZoneGroup(0)),
+Self::BottomLeftApartmentDoorZone => Some(ZoneGroup(0)),
+Self::BottomLeftApartmentBathroomDoorZone => Some(ZoneGroup(0)),
+Self::BottomRightApartmentZone => Some(ZoneGroup(0)),
+Self::BottomRightApartmentDoorZone => Some(ZoneGroup(0)),
  #[allow(unreachable_patterns)] _ => None, }
 } #[inline] fn zone_size(&self) -> Option<usize>
 {
     #[allow(clippy::match_single_binding)] match self
-    { Self::HallwayZone => Some(1266),
+    { Self::HallwayZone => Some(1550),
 Self::PlayerApartmentZone => Some(2725),
 Self::BedZone => Some(30),
 Self::ElevatorZone => Some(68),
 Self::PlayerDoorZone => Some(64),
 Self::MeditationZone => Some(125),
 Self::TeaZone => Some(45),
+Self::BottomLeftApartmentZone => Some(2187),
+Self::BottomLeftApartmentDoorZone => Some(37),
+Self::BottomLeftApartmentBathroomDoorZone => Some(42),
+Self::BottomRightApartmentZone => Some(1050),
+Self::BottomRightApartmentDoorZone => Some(35),
  #[allow(unreachable_patterns)] _ => None, }
 } type Successors = Self; #[inline] fn zone_successors(&self) -> Option<&'static
 [Self::Successors]>
 {
     #[allow(clippy::match_single_binding)] match self
-    { Self::HallwayZone => Some(&[Self::PlayerApartmentZone,Self::ElevatorZone,Self::PlayerDoorZone]),
+    { Self::HallwayZone => Some(&[Self::PlayerApartmentZone,Self::ElevatorZone,Self::PlayerDoorZone,Self::BottomLeftApartmentZone,Self::BottomLeftApartmentDoorZone,Self::BottomRightApartmentZone,Self::BottomRightApartmentDoorZone]),
 Self::PlayerApartmentZone => Some(&[Self::HallwayZone,Self::BedZone,Self::PlayerDoorZone,Self::MeditationZone,Self::TeaZone]),
 Self::BedZone => Some(&[Self::PlayerApartmentZone]),
 Self::ElevatorZone => Some(&[Self::HallwayZone]),
 Self::PlayerDoorZone => Some(&[Self::HallwayZone,Self::PlayerApartmentZone]),
 Self::MeditationZone => Some(&[Self::PlayerApartmentZone]),
 Self::TeaZone => Some(&[Self::PlayerApartmentZone]),
+Self::BottomLeftApartmentZone => Some(&[Self::HallwayZone,Self::BottomLeftApartmentDoorZone,Self::BottomLeftApartmentBathroomDoorZone]),
+Self::BottomLeftApartmentDoorZone => Some(&[Self::HallwayZone,Self::BottomLeftApartmentZone]),
+Self::BottomLeftApartmentBathroomDoorZone => Some(&[Self::BottomLeftApartmentZone]),
+Self::BottomRightApartmentZone => Some(&[Self::HallwayZone,Self::BottomRightApartmentDoorZone]),
+Self::BottomRightApartmentDoorZone => Some(&[Self::HallwayZone,Self::BottomRightApartmentZone]),
  #[allow(unreachable_patterns)] _ => None, }
 }
  }
