@@ -33,17 +33,22 @@ impl bevy::app::Plugin for Plugin {
         app.add_systems(
             Update,
             (
-                (start_meditation_minigame, sleep)
-                    .before(DisplayEmojiEventConsumer)
-                    .before(ChangeHighlightedInspectLabelEventConsumer),
-                enter_the_elevator,
+                start_meditation_minigame.run_if(on_event_variant(
+                    Building1PlayerFloorAction::StartMeditation,
+                )),
+                sleep.run_if(on_event_variant(
+                    Building1PlayerFloorAction::Sleep,
+                )),
+                enter_the_elevator.run_if(on_event_variant(
+                    Building1PlayerFloorAction::EnterElevator,
+                )),
             )
-                .run_if(on_event::<Building1PlayerFloorAction>())
+                .before(DisplayEmojiEventConsumer)
+                .before(ChangeHighlightedInspectLabelEventConsumer)
                 .run_if(Building1PlayerFloor::in_running_state())
                 .run_if(not(in_cutscene())),
-        );
-
-        app.add_systems(
+        )
+        .add_systems(
             Update,
             toggle_zone_hints
                 .run_if(movement_event_emitted::<Building1PlayerFloor>())
@@ -56,7 +61,6 @@ impl bevy::app::Plugin for Plugin {
 /// Will change the game state to meditation minigame.
 fn start_meditation_minigame(
     mut cmd: Commands,
-    mut action_events: EventReader<Building1PlayerFloorAction>,
     mut emoji_events: EventWriter<DisplayEmojiEvent>,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
     zone_to_inspect_label_entity: Res<
@@ -66,14 +70,6 @@ fn start_meditation_minigame(
 
     player: Query<Entity, With<Player>>,
 ) {
-    let is_triggered = action_events.read().any(|action| {
-        matches!(action, Building1PlayerFloorAction::StartMeditation)
-    });
-
-    if !is_triggered {
-        return;
-    }
-
     if daybar.is_depleted() {
         if let Some(entity) = zone_to_inspect_label_entity
             .map
@@ -130,7 +126,6 @@ fn start_meditation_minigame(
 /// By entering the elevator, the player can leave this scene.
 fn enter_the_elevator(
     mut cmd: Commands,
-    mut action_events: EventReader<Building1PlayerFloorAction>,
     mut assets: ResMut<Assets<DialogGraph>>,
 
     player: Query<Entity, With<Player>>,
@@ -140,11 +135,7 @@ fn enter_the_elevator(
 ) {
     use GlobalGameStateTransition::*;
 
-    let is_triggered = action_events.read().any(|action| {
-        matches!(action, Building1PlayerFloorAction::EnterElevator)
-    });
-
-    if is_triggered && let Some(player) = player.get_single_or_none() {
+    if let Some(player) = player.get_single_or_none() {
         let point_in_elevator = {
             let (_, rscn::Point(pos)) = points
                 .iter()
@@ -216,20 +207,7 @@ fn toggle_zone_hints(
     }
 }
 
-fn sleep(
-    mut cmd: Commands,
-    mut action_events: EventReader<Building1PlayerFloorAction>,
-
-    player: Query<Entity, With<Player>>,
-) {
-    let is_triggered = action_events
-        .read()
-        .any(|action| matches!(action, Building1PlayerFloorAction::Sleep));
-
-    if !is_triggered {
-        return;
-    }
-
+fn sleep(mut cmd: Commands, player: Query<Entity, With<Player>>) {
     let Some(player) = player.get_single_or_none() else {
         return;
     };

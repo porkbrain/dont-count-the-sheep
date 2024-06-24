@@ -157,6 +157,7 @@ pub(crate) fn update(
                 daybar.progress = Beats(0);
                 stats.traits.early_bird.extra_beats_today = Beats(0);
                 stats.traits.night_owl.extra_beats_today = Beats(0);
+                stats.days_passed += 1;
 
                 continue;
             }

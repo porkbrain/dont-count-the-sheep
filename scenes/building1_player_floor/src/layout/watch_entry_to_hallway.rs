@@ -1,6 +1,9 @@
 use common_visuals::BeginInterpolationEvent;
-use main_game_lib::common_ext::QueryExt;
-use top_down::{actor::Who, Actor, ActorMovementEvent, TileKind, TileMap};
+use main_game_lib::{
+    common_ext::QueryExt,
+    top_down::{actor::Who, TileKind},
+};
+use top_down::{Actor, ActorMovementEvent, TileMap};
 
 use super::HallwayEntity;
 use crate::prelude::*;
@@ -23,97 +26,45 @@ pub(super) fn system(
     mut cmd: Commands,
     tilemap: Res<TileMap<Building1PlayerFloor>>,
     mut movement_events: EventReader<
-        ActorMovementEvent<
-            <Building1PlayerFloor as TopDownScene>::LocalTileKind,
-        >,
+        ActorMovementEvent<Building1PlayerFloorTileKind>,
     >,
     mut lerp_event: EventWriter<BeginInterpolationEvent>,
 
     player: Query<&Actor, With<Player>>,
     hallway_entities: Query<Entity, With<HallwayEntity>>,
 ) {
+    use Building1PlayerFloorTileKind::*;
+
     for event in movement_events.read() {
         match event {
-            // player entered hallway or is by the door, all entities go to
-            // white
             ActorMovementEvent::ZoneEntered {
                 who:
                     Who {
                         is_player: true, ..
                     },
-                zone: TileKind::Local(Building1PlayerFloorTileKind::HallwayZone),
-            }
-            | ActorMovementEvent::ZoneEntered {
-                who:
-                    Who {
-                        is_player: true, ..
-                    },
                 zone:
-                    TileKind::Local(Building1PlayerFloorTileKind::PlayerDoorZone),
+                    TileKind::Local(
+                        HallwayZone
+                        | BottomLeftApartmentZone
+                        | BottomRightApartmentZone,
+                    ),
             } => {
-                trace!("Player entered hallway");
-                hallway_entities.iter().for_each(|entity| {
-                    lerp_event.send(
-                        BeginInterpolationEvent::of_color(
-                            entity,
-                            None,
-                            Color::WHITE,
-                        )
-                        .over(HALLWAY_FADE_IN_TRANSITION_DURATION),
-                    );
-                });
+                on_player_entered_hallway(&mut lerp_event, &hallway_entities);
             }
-            // player left hallway, all entities go to primary
             ActorMovementEvent::ZoneLeft {
                 who:
                     Who {
                         is_player: true, ..
                     },
-                zone: TileKind::Local(Building1PlayerFloorTileKind::HallwayZone),
-            } => {
-                trace!("Player left hallway");
-                hallway_entities.iter().for_each(|entity| {
-                    lerp_event.send(
-                        BeginInterpolationEvent::of_color(
-                            entity,
-                            None,
-                            PRIMARY_COLOR,
-                        )
-                        .over(HALLWAY_FADE_OUT_TRANSITION_DURATION),
-                    );
-                });
-            }
-            // Player left the door zone. This mean either
-            // a) they are in the hallway - don't do anything
-            // b) they are in the apartment - darken the hallway
-            ActorMovementEvent::ZoneLeft {
-                who:
-                    Who {
-                        at: Some(sq),
-                        is_player: true,
-                        ..
-                    },
                 zone:
-                    TileKind::Local(Building1PlayerFloorTileKind::PlayerDoorZone),
-            } if !tilemap.is_on(
-                *sq,
-                TileKind::Local(Building1PlayerFloorTileKind::HallwayZone),
-            ) =>
-            {
-                // b)
-                trace!("Player left the door zone into the apartment");
-                hallway_entities.iter().for_each(|entity| {
-                    lerp_event.send(
-                        BeginInterpolationEvent::of_color(
-                            entity,
-                            None,
-                            PRIMARY_COLOR,
-                        )
-                        .over(HALLWAY_FADE_OUT_TRANSITION_DURATION),
-                    );
-                });
+                    TileKind::Local(
+                        HallwayZone
+                        | BottomLeftApartmentZone
+                        | BottomRightApartmentZone,
+                    ),
+            } => {
+                on_player_left_hallway(&mut lerp_event, &hallway_entities);
             }
-            // NPC entered the hallway
             ActorMovementEvent::ZoneEntered {
                 who:
                     Who {
@@ -121,59 +72,111 @@ pub(super) fn system(
                         entity,
                         ..
                     },
-                zone: TileKind::Local(Building1PlayerFloorTileKind::HallwayZone),
+                zone:
+                    TileKind::Local(
+                        HallwayZone
+                        | BottomLeftApartmentZone
+                        | BottomRightApartmentZone,
+                    ),
             } => {
-                trace!("NPC entered hallway");
-                cmd.entity(*entity).insert(HallwayEntity);
-
-                let is_player_in_hallway = player
-                    .get_single_or_none()
-                    .map(|player| {
-                        tilemap.is_on(
-                            player.walking_from,
-                            Building1PlayerFloorTileKind::HallwayZone,
-                        )
-                    })
-                    .unwrap_or(false);
-
-                // if actor in the hallway but player is not, we need to change
-                // their color back to primary
-                if !is_player_in_hallway {
-                    lerp_event.send(
-                        BeginInterpolationEvent::of_color(
-                            *entity,
-                            None,
-                            PRIMARY_COLOR,
-                        )
-                        .over(HALLWAY_FADE_OUT_TRANSITION_DURATION),
-                    );
-                }
-            }
-            // NPC left the hallway
-            ActorMovementEvent::ZoneLeft {
-                who:
-                    Who {
-                        is_player: false,
-                        entity,
-                        ..
-                    },
-                zone: TileKind::Local(Building1PlayerFloorTileKind::HallwayZone),
-            } => {
-                trace!("NPC left hallway");
-                cmd.entity(*entity).remove::<HallwayEntity>();
-
-                // if actor not in hallway, we need to change their color
-                lerp_event.send(
-                    BeginInterpolationEvent::of_color(
-                        *entity,
-                        None,
-                        Color::WHITE,
-                    )
-                    .over(HALLWAY_FADE_IN_TRANSITION_DURATION),
+                on_npc_entered_hallway(
+                    &tilemap,
+                    &mut cmd,
+                    &mut lerp_event,
+                    &player,
+                    *entity,
                 );
             }
-            // we don't care about other events
+            ActorMovementEvent::ZoneLeft {
+                who:
+                    Who {
+                        is_player: false,
+                        entity,
+                        ..
+                    },
+                zone:
+                    TileKind::Local(
+                        HallwayZone
+                        | BottomLeftApartmentZone
+                        | BottomRightApartmentZone,
+                    ),
+            } => {
+                on_npc_left_hallway(&mut cmd, &mut lerp_event, *entity);
+            }
+
+            // we don't care about any other event
             _ => {}
         }
     }
+}
+
+fn on_player_entered_hallway(
+    lerp_event: &mut EventWriter<BeginInterpolationEvent>,
+    hallway_entities: &Query<Entity, With<HallwayEntity>>,
+) {
+    trace!("Player entered hallway");
+    hallway_entities.iter().for_each(|entity| {
+        lerp_event.send(
+            BeginInterpolationEvent::of_color(entity, None, Color::WHITE)
+                .over(HALLWAY_FADE_IN_TRANSITION_DURATION),
+        );
+    });
+}
+
+fn on_player_left_hallway(
+    lerp_event: &mut EventWriter<BeginInterpolationEvent>,
+    hallway_entities: &Query<Entity, With<HallwayEntity>>,
+) {
+    trace!("Player left hallway");
+    hallway_entities.iter().for_each(|entity| {
+        lerp_event.send(
+            BeginInterpolationEvent::of_color(entity, None, PRIMARY_COLOR)
+                .over(HALLWAY_FADE_OUT_TRANSITION_DURATION),
+        );
+    });
+}
+
+fn on_npc_entered_hallway(
+    tilemap: &TileMap<Building1PlayerFloor>,
+    cmd: &mut Commands,
+    lerp_event: &mut EventWriter<BeginInterpolationEvent>,
+    player: &Query<&Actor, With<Player>>,
+    entity: Entity,
+) {
+    trace!("NPC entered hallway");
+    cmd.entity(entity).insert(HallwayEntity);
+
+    let is_player_in_hallway = player
+        .get_single_or_none()
+        .map(|player| {
+            tilemap.is_on(
+                player.walking_from,
+                Building1PlayerFloorTileKind::HallwayZone,
+            )
+        })
+        .unwrap_or(false);
+
+    // if actor in the hallway but player is not, we need to change
+    // their color back to primary
+    if is_player_in_hallway {
+        lerp_event.send(
+            BeginInterpolationEvent::of_color(entity, None, PRIMARY_COLOR)
+                .over(HALLWAY_FADE_OUT_TRANSITION_DURATION),
+        );
+    }
+}
+
+fn on_npc_left_hallway(
+    cmd: &mut Commands,
+    lerp_event: &mut EventWriter<BeginInterpolationEvent>,
+    entity: Entity,
+) {
+    trace!("NPC left hallway");
+    cmd.entity(entity).remove::<HallwayEntity>();
+
+    // if actor not in hallway, we need to change their color
+    lerp_event.send(
+        BeginInterpolationEvent::of_color(entity, None, Color::WHITE)
+            .over(HALLWAY_FADE_IN_TRANSITION_DURATION),
+    );
 }
