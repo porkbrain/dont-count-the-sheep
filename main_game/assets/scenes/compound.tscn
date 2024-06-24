@@ -1,26 +1,32 @@
-[gd_scene load_steps=22 format=3 uid="uid://cfuxf3w4hro7y"]
+[gd_scene load_steps=28 format=3 uid="uid://cfuxf3w4hro7y"]
 
-[ext_resource type="Texture2D" uid="uid://badnhcccpgfd" path="res://assets/compound/compound_bg.png" id="1_ubi6a"]
-[ext_resource type="Texture2D" uid="uid://bdcqenwmvdwix" path="res://assets/downtown/fence_stone.png" id="2_0w2gu"]
-[ext_resource type="Texture2D" uid="uid://dqqvboiu7sjg4" path="res://assets/downtown/jehlicnan.png" id="2_tobpx"]
-[ext_resource type="Texture2D" uid="uid://cyspokxete03t" path="res://assets/downtown/fence_stone_vertical.png" id="3_565e6"]
-[ext_resource type="Texture2D" uid="uid://7iyu03tse1f0" path="res://assets/downtown/briza.png" id="3_slirt"]
-[ext_resource type="Texture2D" uid="uid://d4d4x4dbmu2f" path="res://assets/downtown/big_tree.png" id="4_codlm"]
-[ext_resource type="Texture2D" uid="uid://bpb4wdg45i546" path="res://assets/compound/barn.png" id="4_f2tbr"]
-[ext_resource type="Texture2D" uid="uid://c3rn4eufsi75g" path="res://assets/compound/tower.png" id="5_54lv5"]
-[ext_resource type="Texture2D" uid="uid://ca2hbak8m1viv" path="res://assets/downtown/weed.png" id="5_qo1k0"]
-[ext_resource type="Texture2D" uid="uid://cbp1oscu2a8fs" path="res://assets/downtown/sprout.png" id="6_sto4t"]
-[ext_resource type="Texture2D" uid="uid://d2hxicsv4svsl" path="res://assets/environment/rock.png" id="7_155qn"]
-[ext_resource type="Texture2D" uid="uid://dluk0uuhfdvdy" path="res://assets/environment/rock2.png" id="8_t873q"]
-[ext_resource type="Texture2D" uid="uid://j0w3quayjq8k" path="res://assets/downtown/wild_flower1.png" id="9_78nfg"]
-[ext_resource type="Texture2D" uid="uid://daocxjknoih7e" path="res://assets/downtown/wild_flower2.png" id="10_2n0vx"]
-[ext_resource type="Texture2D" uid="uid://dj4h0df73poo0" path="res://assets/downtown/compound_gate.png" id="11_16ldu"]
-[ext_resource type="Texture2D" uid="uid://cpagv4vgk17ov" path="res://assets/downtown/wired_fence.png" id="12_mx8up"]
-[ext_resource type="Texture2D" uid="uid://binrcblg113cg" path="res://assets/downtown/sipek.png" id="13_shc4b"]
-[ext_resource type="Texture2D" uid="uid://domkcuk1374r0" path="res://assets/environment/rock1.png" id="14_kdalq"]
-[ext_resource type="Texture2D" uid="uid://4uvh23g1tken" path="res://assets/environment/mushroom.png" id="15_cq45l"]
-[ext_resource type="Texture2D" uid="uid://qya57gkbm51u" path="res://assets/downtown/lavicka.png" id="20_j3qll"]
-[ext_resource type="Texture2D" uid="uid://cmpcrhxx5t7as" path="res://assets/downtown/potted_bush.png" id="21_aravv"]
+[ext_resource type="Texture2D" uid="uid://58ji12gkirbl" path="res://assets/compound/compound_bg.png" id="1_ubi6a"]
+[ext_resource type="Texture2D" uid="uid://cfg13e2oo8f38" path="res://assets/downtown/fence_stone.png" id="2_0w2gu"]
+[ext_resource type="Texture2D" uid="uid://kwawmchdlk5m" path="res://assets/downtown/jehlicnan.png" id="2_tobpx"]
+[ext_resource type="Texture2D" uid="uid://3crc63wvqylb" path="res://assets/downtown/fence_stone_vertical.png" id="3_565e6"]
+[ext_resource type="Texture2D" uid="uid://ccrqu7brpxu7y" path="res://assets/downtown/briza.png" id="3_slirt"]
+[ext_resource type="Texture2D" uid="uid://p1r60ldiusc3" path="res://assets/downtown/big_tree.png" id="4_codlm"]
+[ext_resource type="Texture2D" uid="uid://c4o3j0dyodar" path="res://assets/compound/barn.png" id="4_f2tbr"]
+[ext_resource type="Texture2D" uid="uid://d25ck3keckfic" path="res://assets/compound/tower.png" id="5_54lv5"]
+[ext_resource type="Texture2D" uid="uid://d8husw4hmr2h" path="res://assets/downtown/weed.png" id="5_qo1k0"]
+[ext_resource type="Texture2D" uid="uid://de31fggumfc0p" path="res://assets/downtown/sprout.png" id="6_sto4t"]
+[ext_resource type="Texture2D" uid="uid://bd4eaa4a7cmge" path="res://assets/environment/rock.png" id="7_155qn"]
+[ext_resource type="Texture2D" uid="uid://bok35a7i3i8o5" path="res://assets/environment/rock2.png" id="8_t873q"]
+[ext_resource type="Texture2D" uid="uid://dqecycv2rciur" path="res://assets/downtown/wild_flower1.png" id="9_78nfg"]
+[ext_resource type="Texture2D" uid="uid://bmqvkhh7b67tv" path="res://assets/downtown/wild_flower2.png" id="10_2n0vx"]
+[ext_resource type="Texture2D" uid="uid://b3oqveyqc28bb" path="res://assets/downtown/compound_gate.png" id="11_16ldu"]
+[ext_resource type="Texture2D" uid="uid://55bv3muhverw" path="res://assets/downtown/wired_fence.png" id="12_mx8up"]
+[ext_resource type="Texture2D" uid="uid://rubffqe3yvyi" path="res://assets/downtown/sipek.png" id="13_shc4b"]
+[ext_resource type="Texture2D" uid="uid://3wl4475jicyp" path="res://assets/environment/rock1.png" id="14_kdalq"]
+[ext_resource type="Texture2D" uid="uid://bchlvd31glw75" path="res://assets/environment/mushroom.png" id="15_cq45l"]
+[ext_resource type="Texture2D" uid="uid://dcvjb2idu2x6r" path="res://assets/downtown/lavicka.png" id="20_j3qll"]
+[ext_resource type="Texture2D" uid="uid://vi408ocivnm8" path="res://assets/downtown/potted_bush.png" id="21_aravv"]
+[ext_resource type="Texture2D" uid="uid://doasm0p5iavd4" path="res://assets/environment/mushroom_tree.png" id="22_m17tt"]
+[ext_resource type="Texture2D" uid="uid://u6bbh6b0qbdt" path="res://assets/environment/mushroom4.png" id="23_m5orf"]
+[ext_resource type="Texture2D" uid="uid://23c5ijf36vuo" path="res://assets/environment/rock_big.png" id="24_5wmcb"]
+[ext_resource type="Texture2D" uid="uid://g7jvblpokvop" path="res://assets/environment/mushroom2.png" id="25_p4lyc"]
+[ext_resource type="Texture2D" uid="uid://befj4fdhgdkwi" path="res://assets/environment/mushroom3.png" id="26_kl1iv"]
+[ext_resource type="Texture2D" uid="uid://be61pdsfo8tko" path="res://assets/downtown/hanging_plants.png" id="27_f2awf"]
 
 [node name="Compound" type="Node2D"]
 
@@ -123,6 +129,17 @@ position = Vector2(0, 75)
 position = Vector2(13, 79)
 texture = ExtResource("5_qo1k0")
 
+[node name="BigTree5" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-736, 226)
+texture = ExtResource("4_codlm")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/BigTree5"]
+position = Vector2(0, 75)
+
+[node name="Weed3" type="Sprite2D" parent="SouthBorder/BigTree5"]
+position = Vector2(13, 79)
+texture = ExtResource("5_qo1k0")
+
 [node name="Jehlicnan" type="Sprite2D" parent="SouthBorder"]
 position = Vector2(-515, 393)
 texture = ExtResource("2_tobpx")
@@ -134,12 +151,50 @@ position = Vector2(0, 61)
 position = Vector2(-7, 63)
 texture = ExtResource("6_sto4t")
 
+[node name="Jehlicnan3" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-999, -85)
+texture = ExtResource("2_tobpx")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/Jehlicnan3"]
+position = Vector2(0, 61)
+
+[node name="Sprout3" type="Sprite2D" parent="SouthBorder/Jehlicnan3"]
+position = Vector2(-7, 63)
+texture = ExtResource("6_sto4t")
+
+[node name="Jehlicnan5" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-932, 191)
+texture = ExtResource("2_tobpx")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/Jehlicnan5"]
+position = Vector2(0, 61)
+
+[node name="Sprout3" type="Sprite2D" parent="SouthBorder/Jehlicnan5"]
+position = Vector2(-7, 63)
+texture = ExtResource("6_sto4t")
+
 [node name="JehlicnanFlipped" type="Sprite2D" parent="SouthBorder"]
 position = Vector2(-458, 379)
 texture = ExtResource("2_tobpx")
 flip_h = true
 
 [node name="YSort" type="Node2D" parent="SouthBorder/JehlicnanFlipped"]
+position = Vector2(0, 61)
+
+[node name="JehlicnanFlipped3" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-497, -74)
+texture = ExtResource("2_tobpx")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="SouthBorder/JehlicnanFlipped3"]
+position = Vector2(0, 61)
+
+[node name="JehlicnanFlipped6" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-290, 153)
+texture = ExtResource("2_tobpx")
+flip_h = true
+
+[node name="YSort" type="Node2D" parent="SouthBorder/JehlicnanFlipped6"]
 position = Vector2(0, 61)
 
 [node name="JehlicnanFlipped5" type="Sprite2D" parent="SouthBorder"]
@@ -194,6 +249,13 @@ position = Vector2(-662, 455)
 texture = ExtResource("13_shc4b")
 
 [node name="YSort" type="Node2D" parent="SouthBorder/Sipek"]
+position = Vector2(-2, 21)
+
+[node name="Sipek2" type="Sprite2D" parent="SouthBorder"]
+position = Vector2(-159, 254)
+texture = ExtResource("13_shc4b")
+
+[node name="YSort" type="Node2D" parent="SouthBorder/Sipek2"]
 position = Vector2(-2, 21)
 
 [node name="Gate" type="Sprite2D" parent="SouthBorder"]
@@ -269,6 +331,13 @@ texture = ExtResource("2_0w2gu")
 [node name="YSort" type="Node2D" parent="AroundChappell/FenceStone3"]
 position = Vector2(9, 29)
 
+[node name="FenceStone5" type="Sprite2D" parent="AroundChappell"]
+position = Vector2(-1019, -20)
+texture = ExtResource("2_0w2gu")
+
+[node name="YSort" type="Node2D" parent="AroundChappell/FenceStone5"]
+position = Vector2(9, 29)
+
 [node name="FenceStone4" type="Sprite2D" parent="AroundChappell"]
 position = Vector2(-275, -23)
 texture = ExtResource("2_0w2gu")
@@ -288,6 +357,13 @@ position = Vector2(-192, -108)
 texture = ExtResource("3_565e6")
 
 [node name="YSort" type="Node2D" parent="AroundChappell/FenceStoneVertical3"]
+position = Vector2(1, 116)
+
+[node name="FenceStoneVertical5" type="Sprite2D" parent="AroundChappell"]
+position = Vector2(-192, -108)
+texture = ExtResource("3_565e6")
+
+[node name="YSort" type="Node2D" parent="AroundChappell/FenceStoneVertical5"]
 position = Vector2(1, 116)
 
 [node name="Lavicka" type="Sprite2D" parent="AroundChappell"]
@@ -345,3 +421,52 @@ metadata/zone = "EnterTowerZone"
 metadata/action = "EnterTower"
 metadata/label = "Tower"
 metadata/category = "Default"
+
+[node name="Rock" type="Sprite2D" parent="."]
+position = Vector2(-567, 174)
+texture = ExtResource("7_155qn")
+
+[node name="MushroomTree" type="Sprite2D" parent="."]
+position = Vector2(-744, 295)
+texture = ExtResource("22_m17tt")
+flip_h = true
+
+[node name="Mushroom4" type="Sprite2D" parent="."]
+position = Vector2(-709, 319)
+texture = ExtResource("23_m5orf")
+
+[node name="RockBig" type="Sprite2D" parent="."]
+position = Vector2(-602, 190)
+texture = ExtResource("24_5wmcb")
+
+[node name="Mushroom2" type="Sprite2D" parent="."]
+position = Vector2(-643, 168)
+texture = ExtResource("25_p4lyc")
+
+[node name="Mushroom3" type="Sprite2D" parent="."]
+position = Vector2(-507, 22)
+texture = ExtResource("25_p4lyc")
+
+[node name="Mushroom" type="Sprite2D" parent="."]
+position = Vector2(-492, 30)
+texture = ExtResource("15_cq45l")
+
+[node name="Mushroom5" type="Sprite2D" parent="."]
+position = Vector2(-481, 13)
+texture = ExtResource("26_kl1iv")
+
+[node name="Sprout" type="Sprite2D" parent="."]
+position = Vector2(-372, 40)
+texture = ExtResource("6_sto4t")
+
+[node name="Sprout2" type="Sprite2D" parent="."]
+position = Vector2(-1025, 186)
+texture = ExtResource("6_sto4t")
+
+[node name="Weed" type="Sprite2D" parent="."]
+position = Vector2(-274, 248)
+texture = ExtResource("5_qo1k0")
+
+[node name="HangingPlants" type="Sprite2D" parent="."]
+position = Vector2(-41, 233)
+texture = ExtResource("27_f2awf")

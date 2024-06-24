@@ -1,24 +1,51 @@
-[gd_scene load_steps=16 format=3 uid="uid://b72qmini0uj3p"]
+[gd_scene load_steps=42 format=3 uid="uid://dp4o0ydplrs6s"]
 
-[ext_resource type="Texture2D" uid="uid://blb0o808g1vpm" path="res://assets/residential/indoors/clinic_interior_bottom_floor.png" id="1_evfsb"]
-[ext_resource type="Texture2D" uid="uid://dnu54tiuqoh11" path="res://assets/residential/indoors/side_table1.png" id="2_8ktli"]
-[ext_resource type="Texture2D" uid="uid://gcq6oilow74x" path="res://assets/residential/indoors/tissues.png" id="3_t7r3o"]
-[ext_resource type="Texture2D" uid="uid://c2q3ns4am6gte" path="res://assets/residential/indoors/hospital_bed.png" id="4_fi13c"]
-[ext_resource type="Texture2D" uid="uid://3pb61ikg7ybh" path="res://assets/residential/indoors/hospital_divider.png" id="5_px31i"]
-[ext_resource type="Texture2D" uid="uid://cpxy3e47mmviv" path="res://assets/residential/indoors/sofa_green.png" id="6_m6v34"]
-[ext_resource type="Texture2D" uid="uid://d0s78vuxqqoyd" path="res://assets/residential/indoors/pc_chair.png" id="7_32xyq"]
-[ext_resource type="Texture2D" uid="uid://dwe8ryv8pvsi4" path="res://assets/residential/indoors/washing_machine.png" id="8_0388k"]
-[ext_resource type="Texture2D" uid="uid://dlrneao0sl1dc" path="res://assets/environment/toilet_paper.png" id="9_55klp"]
-[ext_resource type="Texture2D" uid="uid://gufxulf5gqud" path="res://assets/residential/indoors/green_kitchen_set.png" id="10_rr334"]
-[ext_resource type="Texture2D" uid="uid://mn6fsc2pn682" path="res://assets/residential/indoors/fridge.png" id="11_jnhvf"]
-[ext_resource type="Texture2D" uid="uid://ds4y5uncew47s" path="res://assets/residential/indoors/chair_wood.png" id="12_nhwdh"]
-[ext_resource type="Texture2D" uid="uid://0xuus24rbhyw" path="res://assets/environment/water_bottle.png" id="13_o481p"]
-[ext_resource type="Texture2D" uid="uid://c71u4ldkpxnlp" path="res://assets/residential/indoors/table.png" id="14_0ysyc"]
-[ext_resource type="Texture2D" uid="uid://cnd6vbsmey8c4" path="res://assets/residential/indoors/chair_wood_side.png" id="15_pywhp"]
+[ext_resource type="Texture2D" uid="uid://pfjg4krm4b2y" path="res://assets/residential/indoors/clinic_interior_bottom_floor.png" id="1_evfsb"]
+[ext_resource type="Texture2D" uid="uid://dggtq8cr8skng" path="res://assets/residential/indoors/side_table1.png" id="2_8ktli"]
+[ext_resource type="Texture2D" uid="uid://h03jwe4lr73k" path="res://assets/residential/indoors/tissues.png" id="3_t7r3o"]
+[ext_resource type="Texture2D" uid="uid://bepdxl3n88rjp" path="res://assets/residential/indoors/hospital_bed.png" id="4_fi13c"]
+[ext_resource type="Texture2D" uid="uid://ogf0ndlee8r0" path="res://assets/residential/indoors/hospital_divider.png" id="5_px31i"]
+[ext_resource type="Texture2D" uid="uid://dudpfb551q12r" path="res://assets/residential/indoors/sofa_green.png" id="6_m6v34"]
+[ext_resource type="Texture2D" uid="uid://bnj1ctr6x5e68" path="res://assets/residential/indoors/pc_chair.png" id="7_32xyq"]
+[ext_resource type="Texture2D" uid="uid://bt4q1rbdj7tdg" path="res://assets/residential/indoors/washing_machine.png" id="8_0388k"]
+[ext_resource type="Texture2D" uid="uid://oiymn7tgnmeq" path="res://assets/environment/toilet_paper.png" id="9_55klp"]
+[ext_resource type="Texture2D" uid="uid://b2fvesnictg4e" path="res://assets/residential/indoors/green_kitchen_set.png" id="10_rr334"]
+[ext_resource type="Texture2D" uid="uid://cd5s8so082dss" path="res://assets/residential/indoors/chair_wood.png" id="12_nhwdh"]
+[ext_resource type="Texture2D" uid="uid://bnvglec88co36" path="res://assets/residential/indoors/fridge_bigger.png" id="12_obg1m"]
+[ext_resource type="Texture2D" uid="uid://dseg6le1hwooy" path="res://assets/environment/water_bottle.png" id="13_o481p"]
+[ext_resource type="Texture2D" uid="uid://ccb1f7vlp7kl" path="res://assets/residential/indoors/table.png" id="14_0ysyc"]
+[ext_resource type="Texture2D" uid="uid://d0b3dak7lskm5" path="res://assets/residential/indoors/chair_wood_side.png" id="15_pywhp"]
+[ext_resource type="Texture2D" uid="uid://vtfof2e0ei40" path="res://assets/residential/indoors/clinic_clock.png" id="16_te81f"]
+[ext_resource type="Texture2D" uid="uid://p6v71m55dqgx" path="res://assets/residential/indoors/calendar.png" id="17_0vqhg"]
+[ext_resource type="Texture2D" uid="uid://brmdul3xjhmxk" path="res://assets/residential/indoors/clinic_eq.png" id="18_kx7rg"]
+[ext_resource type="Texture2D" uid="uid://d07hf85naekvt" path="res://assets/residential/indoors/clinic_IV.png" id="19_h0n7n"]
+[ext_resource type="Texture2D" uid="uid://br6635uh2swft" path="res://assets/downtown/hazardous_bin.png" id="20_jf3fv"]
+[ext_resource type="Texture2D" uid="uid://cdmr44nc7tddk" path="res://assets/residential/indoors/clinic_patient_notes.png" id="21_2ne7e"]
+[ext_resource type="Texture2D" uid="uid://d2bvqonmgr2vn" path="res://assets/residential/indoors/clinic_wheelchair.png" id="22_13tyj"]
+[ext_resource type="Texture2D" uid="uid://rikit51uld8t" path="res://assets/residential/indoors/knihovna.png" id="23_uvu67"]
+[ext_resource type="Texture2D" uid="uid://bp26pbv7lph2d" path="res://assets/residential/indoors/chair_blue_back.png" id="24_qjwsb"]
+[ext_resource type="Texture2D" uid="uid://d01kfmw7mltte" path="res://assets/residential/indoors/sofa_blue_back.png" id="25_kcspk"]
+[ext_resource type="Texture2D" uid="uid://csgnkc4cpkonu" path="res://assets/residential/indoors/scissors.png" id="26_x4iw4"]
+[ext_resource type="Texture2D" uid="uid://d0pk7jpc4oxqq" path="res://assets/residential/indoors/window_blinds.png" id="27_xs1js"]
+[ext_resource type="Texture2D" uid="uid://b6vfhqu2lc543" path="res://assets/residential/indoors/cactus1.png" id="28_vv1i8"]
+[ext_resource type="Texture2D" uid="uid://c6qaki2dffbd5" path="res://assets/items/papiry.png" id="29_fxod0"]
+[ext_resource type="Texture2D" uid="uid://jek05cwivms5" path="res://assets/items/book.png" id="30_t7kfl"]
+[ext_resource type="Texture2D" uid="uid://h4c0coryxkhv" path="res://assets/items/tape.png" id="31_ria7o"]
+[ext_resource type="Texture2D" uid="uid://dbbu6xgobs5xu" path="res://assets/residential/indoors/sink.png" id="34_fp72v"]
+[ext_resource type="Texture2D" uid="uid://cgd4gem7h52i6" path="res://assets/residential/indoors/toilet.png" id="34_ym8yo"]
+[ext_resource type="Texture2D" uid="uid://bwbd0lhiuf2e8" path="res://assets/items/coffee.png" id="35_ndj8n"]
+[ext_resource type="Texture2D" uid="uid://darq5jotkkvy8" path="res://assets/residential/indoors/plant_biggest_back.png" id="35_rwl8r"]
+[ext_resource type="Texture2D" uid="uid://80vo1t54sosc" path="res://assets/residential/indoors/side_table1_back.png" id="35_vtaso"]
+[ext_resource type="Texture2D" uid="uid://c24128k3soyhf" path="res://assets/items/pill_box.png" id="37_u1en2"]
+[ext_resource type="Texture2D" uid="uid://b3cvi5c0kohk7" path="res://assets/food/food_cointainer.png" id="38_ivdu6"]
+[ext_resource type="Texture2D" uid="uid://ophdkktm7yqx" path="res://assets/residential/indoors/wall_mirror2.png" id="38_lqqpp"]
+[ext_resource type="Texture2D" uid="uid://djwu0x07tqjam" path="res://assets/residential/indoors/bin_small_back.png" id="40_w74dt"]
+[ext_resource type="Texture2D" uid="uid://cqnnxsrlye3ol" path="res://assets/residential/indoors/bin_small.png" id="41_vrcl4"]
 
 [node name="ClinicWard" type="Node2D"]
 
 [node name="ClinicWardBg" type="Sprite2D" parent="."]
+z_index = -3
 position = Vector2(62, 26)
 texture = ExtResource("1_evfsb")
 
@@ -92,26 +119,19 @@ position = Vector2(-9, 16)
 position = Vector2(-39, -27)
 texture = ExtResource("8_0388k")
 
-[node name="ToiletPaper" type="Sprite2D" parent="LeftRoom/WashingMachine"]
-position = Vector2(-3, -18)
-texture = ExtResource("9_55klp")
-
 [node name="YSort" type="Node2D" parent="LeftRoom/WashingMachine"]
 position = Vector2(-9, 15)
 
 [node name="GreenKitchenSet" type="Sprite2D" parent="LeftRoom"]
-position = Vector2(-89, -27)
+position = Vector2(-89, -25)
 texture = ExtResource("10_rr334")
 
 [node name="YSort" type="Node2D" parent="LeftRoom/GreenKitchenSet"]
 position = Vector2(0, 10)
 
-[node name="Fridge" type="Sprite2D" parent="LeftRoom"]
-position = Vector2(-135.5, -22.5)
-texture = ExtResource("11_jnhvf")
-
-[node name="YSort" type="Node2D" parent="LeftRoom/Fridge"]
-position = Vector2(3.5, 22.5)
+[node name="ToiletPaper" type="Sprite2D" parent="LeftRoom/GreenKitchenSet"]
+position = Vector2(47, -21)
+texture = ExtResource("9_55klp")
 
 [node name="ChairWood" type="Sprite2D" parent="LeftRoom"]
 position = Vector2(-39, -1)
@@ -120,8 +140,15 @@ texture = ExtResource("12_nhwdh")
 [node name="YSort" type="Node2D" parent="LeftRoom/ChairWood"]
 position = Vector2(-8, 12)
 
+[node name="FridgeBigger" type="Sprite2D" parent="LeftRoom"]
+position = Vector2(-135.5, -9)
+texture = ExtResource("12_obg1m")
+
+[node name="YSort" type="Node2D" parent="LeftRoom/FridgeBigger"]
+position = Vector2(-4.5, 21)
+
 [node name="WaterBottle" type="Sprite2D" parent="LeftRoom"]
-position = Vector2(-138, -3)
+position = Vector2(-139, 11)
 texture = ExtResource("13_o481p")
 
 [node name="YSort" type="Node2D" parent="LeftRoom/WaterBottle"]
@@ -144,7 +171,7 @@ position = Vector2(-6, 14)
 [node name="Points" type="Node2D" parent="."]
 
 [node name="Entrance" type="Node2D" parent="Points"]
-position = Vector2(-115, 117)
+position = Vector2(-85, 111)
 
 [node name="Point" type="Node" parent="Points/Entrance"]
 
@@ -153,3 +180,118 @@ metadata/zone = "ExitZone"
 metadata/action = "ExitScene"
 metadata/label = "Exit"
 metadata/category = "Default"
+
+[node name="ClinicClock" type="Sprite2D" parent="."]
+position = Vector2(-86, -68)
+texture = ExtResource("16_te81f")
+
+[node name="Calendar" type="Sprite2D" parent="."]
+position = Vector2(-130, -52)
+texture = ExtResource("17_0vqhg")
+
+[node name="ClinicEq" type="Sprite2D" parent="."]
+position = Vector2(153, -39)
+texture = ExtResource("18_kx7rg")
+
+[node name="ClinicIv" type="Sprite2D" parent="."]
+position = Vector2(182, -34)
+texture = ExtResource("19_h0n7n")
+flip_h = true
+
+[node name="HazardousBin" type="Sprite2D" parent="."]
+position = Vector2(124, 29)
+texture = ExtResource("20_jf3fv")
+
+[node name="ClinicIv2" type="Sprite2D" parent="."]
+position = Vector2(185, -19)
+texture = ExtResource("19_h0n7n")
+
+[node name="ClinicPatientNotes" type="Sprite2D" parent="."]
+position = Vector2(97, 14)
+texture = ExtResource("21_2ne7e")
+
+[node name="ClinicPatientNotes2" type="Sprite2D" parent="."]
+position = Vector2(17, 14)
+texture = ExtResource("21_2ne7e")
+
+[node name="ClinicWheelchair2" type="Sprite2D" parent="."]
+position = Vector2(-131, 110)
+texture = ExtResource("22_13tyj")
+flip_h = true
+
+[node name="Knihovna" type="Sprite2D" parent="."]
+position = Vector2(-113, 63)
+texture = ExtResource("23_uvu67")
+
+[node name="ChairBlueBack" type="Sprite2D" parent="."]
+position = Vector2(100, 110)
+texture = ExtResource("24_qjwsb")
+
+[node name="SofaBlueBack" type="Sprite2D" parent="."]
+position = Vector2(49, 110)
+texture = ExtResource("25_kcspk")
+
+[node name="Scissors" type="Sprite2D" parent="."]
+position = Vector2(-47, 12)
+texture = ExtResource("26_x4iw4")
+
+[node name="WindowBlinds" type="Sprite2D" parent="."]
+position = Vector2(9, -60)
+texture = ExtResource("27_xs1js")
+
+[node name="Cactus1" type="Sprite2D" parent="."]
+position = Vector2(-139, -30)
+texture = ExtResource("28_vv1i8")
+
+[node name="Papiry" type="Sprite2D" parent="."]
+position = Vector2(-135, 37)
+texture = ExtResource("29_fxod0")
+
+[node name="Book" type="Sprite2D" parent="."]
+position = Vector2(-99, 36)
+texture = ExtResource("30_t7kfl")
+
+[node name="Tape" type="Sprite2D" parent="."]
+position = Vector2(-39, 27)
+texture = ExtResource("31_ria7o")
+
+[node name="Toilet" type="Sprite2D" parent="."]
+position = Vector2(165, 111)
+texture = ExtResource("34_ym8yo")
+
+[node name="Coffee" type="Sprite2D" parent="."]
+position = Vector2(-35, 11)
+texture = ExtResource("35_ndj8n")
+
+[node name="SideTable1Back" type="Sprite2D" parent="."]
+position = Vector2(133, 116)
+texture = ExtResource("35_vtaso")
+
+[node name="PlantBiggestBack" type="Sprite2D" parent="SideTable1Back"]
+position = Vector2(0, -24)
+texture = ExtResource("35_rwl8r")
+
+[node name="PillBox" type="Sprite2D" parent="."]
+position = Vector2(64, -34)
+texture = ExtResource("37_u1en2")
+
+[node name="FoodCointainer" type="Sprite2D" parent="."]
+position = Vector2(-114, -39)
+texture = ExtResource("38_ivdu6")
+
+[node name="WallMirror2" type="Sprite2D" parent="."]
+position = Vector2(183, 46)
+texture = ExtResource("38_lqqpp")
+
+[node name="Sink" type="Sprite2D" parent="."]
+position = Vector2(183, 73)
+texture = ExtResource("34_fp72v")
+
+[node name="BinSmallBack" type="Sprite2D" parent="."]
+position = Vector2(183.5, 119.5)
+texture = ExtResource("40_w74dt")
+
+[node name="BinSmall" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(-131, -23)
+texture = ExtResource("41_vrcl4")
