@@ -106,7 +106,6 @@ texture = ExtResource("10_n7jia")
 
 [node name="Bonsai3" type="Sprite2D" parent="Shelf"]
 position = Vector2(7, -13.25)
-scale = Vector2(1, 1.01852)
 texture = ExtResource("25_5xd81")
 
 [node name="Bonsai2" type="Sprite2D" parent="Shelf"]
@@ -262,7 +261,6 @@ position = Vector2(2, 10)
 
 [node name="Sipek" type="Sprite2D" parent="PottedBush2"]
 position = Vector2(3, -15)
-scale = Vector2(1, 1)
 texture = ExtResource("21_7cf1p")
 
 [node name="HangingPlants" type="Sprite2D" parent="."]
