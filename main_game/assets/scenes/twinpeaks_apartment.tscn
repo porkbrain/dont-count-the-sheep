@@ -1,20 +1,24 @@
-[gd_scene load_steps=16 format=3 uid="uid://qrq4qd72bkgp"]
+[gd_scene load_steps=20 format=3 uid="uid://qrq4qd72bkgp"]
 
-[ext_resource type="Texture2D" uid="uid://bxned4cxwr5oh" path="res://assets/twinpeaks_apartment/twinpeaks_bg.png" id="1_cqoh4"]
-[ext_resource type="Texture2D" uid="uid://c312if8qifaet" path="res://assets/twinpeaks_apartment/bed_plain.png" id="2_x34s0"]
-[ext_resource type="Texture2D" uid="uid://dtninaqnht00i" path="res://assets/twinpeaks_apartment/shower.png" id="3_i5k2w"]
-[ext_resource type="Texture2D" uid="uid://dpj7jnsvxyfvt" path="res://assets/environment/water_bottle_half.png" id="4_8j1mb"]
-[ext_resource type="Texture2D" uid="uid://d12k76fyavn8r" path="res://assets/environment/box_cardboard_sideways.png" id="5_l06fy"]
-[ext_resource type="Texture2D" uid="uid://c07goj3d4hpxn" path="res://assets/residential/indoors/plant1.png" id="6_1lf6j"]
-[ext_resource type="Texture2D" uid="uid://d0s78vuxqqoyd" path="res://assets/residential/indoors/pc_chair.png" id="7_q3pv5"]
-[ext_resource type="Texture2D" uid="uid://bivyqy838wdmo" path="res://assets/residential/indoors/plant3.png" id="7_t6oyq"]
-[ext_resource type="Texture2D" uid="uid://bcnwgs4asdo3o" path="res://assets/residential/indoors/sink.png" id="8_2n8eo"]
-[ext_resource type="Texture2D" uid="uid://dwe8ryv8pvsi4" path="res://assets/residential/indoors/washing_machine.png" id="9_0jnkc"]
-[ext_resource type="Texture2D" uid="uid://bku5kc52cje0v" path="res://assets/twinpeaks_apartment/purple_rug.png" id="11_0rl6n"]
-[ext_resource type="Texture2D" uid="uid://j8306q4xsnvy" path="res://assets/residential/indoors/window_blinds.png" id="12_pgxt7"]
-[ext_resource type="Texture2D" uid="uid://bnnegcdia3k5s" path="res://assets/residential/indoors/tv_yellow.png" id="13_rxqmk"]
-[ext_resource type="Texture2D" uid="uid://cucsq824qpe3w" path="res://assets/residential/indoors/kredenc.png" id="14_w5d20"]
-[ext_resource type="Texture2D" uid="uid://bga8tmp3a2ahb" path="res://assets/twinpeaks_apartment/popelnik.png" id="15_xnd7r"]
+[ext_resource type="Texture2D" uid="uid://p2vei5la1m3i" path="res://assets/twinpeaks_apartment/twinpeaks_bg.png" id="1_cqoh4"]
+[ext_resource type="Texture2D" uid="uid://dgh7pxmg8k4yg" path="res://assets/twinpeaks_apartment/bed_plain.png" id="2_x34s0"]
+[ext_resource type="Texture2D" uid="uid://c40aoo40c6ysm" path="res://assets/twinpeaks_apartment/shower.png" id="3_i5k2w"]
+[ext_resource type="Texture2D" uid="uid://d10ch25r3r18b" path="res://assets/environment/water_bottle_half.png" id="4_8j1mb"]
+[ext_resource type="Texture2D" uid="uid://dolvlk268uyvh" path="res://assets/environment/box_cardboard_sideways.png" id="5_l06fy"]
+[ext_resource type="Texture2D" uid="uid://dllv17eqka03" path="res://assets/residential/indoors/plant1.png" id="6_1lf6j"]
+[ext_resource type="Texture2D" uid="uid://bnj1ctr6x5e68" path="res://assets/residential/indoors/pc_chair.png" id="7_q3pv5"]
+[ext_resource type="Texture2D" uid="uid://cx1anpuh8m73i" path="res://assets/residential/indoors/plant3.png" id="7_t6oyq"]
+[ext_resource type="Texture2D" uid="uid://dbbu6xgobs5xu" path="res://assets/residential/indoors/sink.png" id="8_2n8eo"]
+[ext_resource type="Texture2D" uid="uid://bt4q1rbdj7tdg" path="res://assets/residential/indoors/washing_machine.png" id="9_0jnkc"]
+[ext_resource type="Texture2D" uid="uid://bnjytja6epmhk" path="res://assets/twinpeaks_apartment/purple_rug.png" id="11_0rl6n"]
+[ext_resource type="Texture2D" uid="uid://d0pk7jpc4oxqq" path="res://assets/residential/indoors/window_blinds.png" id="12_pgxt7"]
+[ext_resource type="Texture2D" uid="uid://baqciqfqklej7" path="res://assets/residential/indoors/tv_yellow.png" id="13_rxqmk"]
+[ext_resource type="Texture2D" uid="uid://40wrcm5hjv4p" path="res://assets/residential/indoors/kredenc.png" id="14_w5d20"]
+[ext_resource type="Texture2D" uid="uid://bp3krmlj4peg0" path="res://assets/twinpeaks_apartment/popelnik.png" id="15_xnd7r"]
+[ext_resource type="Texture2D" uid="uid://c16oh3qj40o0v" path="res://assets/items/console_switch.png" id="16_eu1u2"]
+[ext_resource type="Texture2D" uid="uid://cqnnxsrlye3ol" path="res://assets/residential/indoors/bin_small.png" id="17_frvwm"]
+[ext_resource type="Texture2D" uid="uid://dpmvbx60afym1" path="res://assets/residential/indoors/toilet2.png" id="18_oa8kb"]
+[ext_resource type="Texture2D" uid="uid://rtil58tqay4m" path="res://assets/residential/indoors/wall_mirror3.png" id="19_kyk8r"]
 
 [node name="TwinPeaks" type="Node2D"]
 
@@ -29,6 +33,10 @@ texture = ExtResource("2_x34s0")
 
 [node name="YSort" type="Node2D" parent="BedPlain"]
 position = Vector2(-2, 26)
+
+[node name="ConsoleSwitch" type="Sprite2D" parent="BedPlain"]
+position = Vector2(-28, -19)
+texture = ExtResource("16_eu1u2")
 
 [node name="Shower" type="Sprite2D" parent="."]
 position = Vector2(199, 60)
@@ -70,11 +78,11 @@ position = Vector2(-162, 25)
 texture = ExtResource("7_q3pv5")
 
 [node name="Sink" type="Sprite2D" parent="."]
-position = Vector2(203, -27)
+position = Vector2(207, -27)
 texture = ExtResource("8_2n8eo")
 
 [node name="WashingMachine" type="Sprite2D" parent="."]
-position = Vector2(152, -22)
+position = Vector2(176, -25)
 texture = ExtResource("9_0jnkc")
 
 [node name="Plant3" type="Sprite2D" parent="WashingMachine"]
@@ -103,3 +111,15 @@ texture = ExtResource("14_w5d20")
 [node name="Popelnik" type="Sprite2D" parent="."]
 position = Vector2(72, -26.5)
 texture = ExtResource("15_xnd7r")
+
+[node name="BinSmall" type="Sprite2D" parent="."]
+position = Vector2(-177, 22)
+texture = ExtResource("17_frvwm")
+
+[node name="Toilet2" type="Sprite2D" parent="."]
+position = Vector2(146, -27)
+texture = ExtResource("18_oa8kb")
+
+[node name="WallMirror3" type="Sprite2D" parent="."]
+position = Vector2(207, -58)
+texture = ExtResource("19_kyk8r")

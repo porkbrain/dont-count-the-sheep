@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://bl1kr7uql87cg"]
+[gd_scene load_steps=43 format=3 uid="uid://bl1kr7uql87cg"]
 
 [ext_resource type="Texture2D" uid="uid://bklphpjocwwkr" path="res://assets/residential/indoors/clinic_interior.png" id="1_v4nqd"]
 [ext_resource type="Texture2D" uid="uid://drbv1a7tnye2r" path="res://assets/environment/vending_machine_atlas.png" id="2_ape1y"]
@@ -19,6 +19,21 @@
 [ext_resource type="Texture2D" uid="uid://dggtq8cr8skng" path="res://assets/residential/indoors/side_table1.png" id="19_34wyq"]
 [ext_resource type="Texture2D" uid="uid://h03jwe4lr73k" path="res://assets/residential/indoors/tissues.png" id="19_e0l5y"]
 [ext_resource type="Texture2D" uid="uid://v2oxa46udhec" path="res://assets/residential/indoors/chair_red.png" id="19_jd0rw"]
+[ext_resource type="Texture2D" uid="uid://brmdul3xjhmxk" path="res://assets/residential/indoors/clinic_eq.png" id="20_2fx0w"]
+[ext_resource type="Texture2D" uid="uid://bsxtwhms55hi4" path="res://assets/residential/indoors/clinic_bed.png" id="21_j4ueb"]
+[ext_resource type="Texture2D" uid="uid://d07hf85naekvt" path="res://assets/residential/indoors/clinic_IV.png" id="22_7ghy8"]
+[ext_resource type="Texture2D" uid="uid://b8w6y3fi48ki2" path="res://assets/residential/indoors/clinic_poster.png" id="23_ffubf"]
+[ext_resource type="Texture2D" uid="uid://7gylx12couuo" path="res://assets/residential/indoors/clinic_poster2.png" id="24_r0k1h"]
+[ext_resource type="Texture2D" uid="uid://nlp1ta0hrg1h" path="res://assets/residential/indoors/clinic_cart.png" id="25_rx4q7"]
+[ext_resource type="Texture2D" uid="uid://d2bvqonmgr2vn" path="res://assets/residential/indoors/clinic_wheelchair.png" id="26_6ujg3"]
+[ext_resource type="Texture2D" uid="uid://80vo1t54sosc" path="res://assets/residential/indoors/side_table1_back.png" id="27_sbsjh"]
+[ext_resource type="Texture2D" uid="uid://d01kfmw7mltte" path="res://assets/residential/indoors/sofa_blue_back.png" id="28_j4e0e"]
+[ext_resource type="Texture2D" uid="uid://bp26pbv7lph2d" path="res://assets/residential/indoors/chair_blue_back.png" id="29_oyn7l"]
+[ext_resource type="Texture2D" uid="uid://vtfof2e0ei40" path="res://assets/residential/indoors/clinic_clock.png" id="30_o4prj"]
+[ext_resource type="Texture2D" uid="uid://cteb85n3uc7mo" path="res://assets/items/papiry_vertical.png" id="31_6ash4"]
+[ext_resource type="Texture2D" uid="uid://c24128k3soyhf" path="res://assets/items/pill_box.png" id="32_nglwe"]
+[ext_resource type="Texture2D" uid="uid://rtil58tqay4m" path="res://assets/residential/indoors/wall_mirror3.png" id="33_mjqye"]
+[ext_resource type="Texture2D" uid="uid://cqnnxsrlye3ol" path="res://assets/residential/indoors/bin_small.png" id="34_65w6p"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("2_ape1y")
@@ -152,13 +167,13 @@ position = Vector2(-106, -67)
 texture = ExtResource("15_oqnj7")
 
 [node name="HazardousBin" type="Sprite2D" parent="."]
-position = Vector2(68, -33)
+position = Vector2(68, -32)
 texture = ExtResource("17_1fycq")
 
 [node name="Points" type="Node2D" parent="."]
 
 [node name="Entrance" type="Node2D" parent="Points"]
-position = Vector2(-118, 107)
+position = Vector2(-123, 109)
 
 [node name="Point" type="Node" parent="Points/Entrance"]
 
@@ -177,7 +192,7 @@ position = Vector2(144, -28)
 texture = ExtResource("19_34wyq")
 
 [node name="SofaOldBack" type="Sprite2D" parent="."]
-position = Vector2(55, 111)
+position = Vector2(124.5, 109.5)
 texture = ExtResource("17_1kj10")
 
 [node name="SofaRed" type="Sprite2D" parent="."]
@@ -191,3 +206,64 @@ texture = ExtResource("19_jd0rw")
 [node name="Tissues" type="Sprite2D" parent="."]
 position = Vector2(132, 58)
 texture = ExtResource("19_e0l5y")
+
+[node name="ClinicEq" type="Sprite2D" parent="."]
+position = Vector2(39, -43)
+texture = ExtResource("20_2fx0w")
+
+[node name="ClinicBed" type="Sprite2D" parent="."]
+position = Vector2(-25, -23)
+texture = ExtResource("21_j4ueb")
+
+[node name="ClinicIv" type="Sprite2D" parent="."]
+position = Vector2(70, 0)
+texture = ExtResource("22_7ghy8")
+flip_h = true
+
+[node name="ClinicPoster" type="Sprite2D" parent="."]
+position = Vector2(69, -68)
+texture = ExtResource("23_ffubf")
+
+[node name="ClinicPoster2" type="Sprite2D" parent="."]
+position = Vector2(-36, -62)
+texture = ExtResource("24_r0k1h")
+
+[node name="ClinicCart" type="Sprite2D" parent="."]
+position = Vector2(-43, 9)
+texture = ExtResource("25_rx4q7")
+
+[node name="ClinicWheelchair" type="Sprite2D" parent="."]
+position = Vector2(144, 39)
+texture = ExtResource("26_6ujg3")
+
+[node name="SideTable1Back" type="Sprite2D" parent="."]
+position = Vector2(79, 114)
+texture = ExtResource("27_sbsjh")
+
+[node name="SofaBlueBack" type="Sprite2D" parent="."]
+position = Vector2(34, 109)
+texture = ExtResource("28_j4e0e")
+
+[node name="ChairBlueBack" type="Sprite2D" parent="."]
+position = Vector2(-18, 109)
+texture = ExtResource("29_oyn7l")
+
+[node name="ClinicClock" type="Sprite2D" parent="."]
+position = Vector2(-6, -78)
+texture = ExtResource("30_o4prj")
+
+[node name="PapiryVertical" type="Sprite2D" parent="."]
+position = Vector2(-116, -7)
+texture = ExtResource("31_6ash4")
+
+[node name="PillBox" type="Sprite2D" parent="."]
+position = Vector2(138, -40)
+texture = ExtResource("32_nglwe")
+
+[node name="WallMirror3" type="Sprite2D" parent="."]
+position = Vector2(-4, -55)
+texture = ExtResource("33_mjqye")
+
+[node name="BinSmall" type="Sprite2D" parent="."]
+position = Vector2(-175, -28)
+texture = ExtResource("34_65w6p")

@@ -1,14 +1,13 @@
-[gd_scene load_steps=13 format=3 uid="uid://d10laqanju67f"]
+[gd_scene load_steps=12 format=3 uid="uid://bi775uudi3uy8"]
 
-[ext_resource type="Texture2D" uid="uid://dmt6epp8grc8r" path="res://assets/compound/tower_inside.png" id="1_pwn7c"]
-[ext_resource type="Texture2D" uid="uid://dgy5j056rr3s0" path="res://assets/residential/indoors/wall_mirror.png" id="2_av753"]
-[ext_resource type="Texture2D" uid="uid://cyasnwpylgscq" path="res://assets/compound/tower_inside_wall.png" id="3_gkpf2"]
-[ext_resource type="Texture2D" uid="uid://dnu54tiuqoh11" path="res://assets/residential/indoors/side_table1.png" id="4_qcb2j"]
-[ext_resource type="Texture2D" uid="uid://dht7emflws1qw" path="res://assets/residential/indoors/vase_flowers.png" id="5_2wn7q"]
-[ext_resource type="Texture2D" uid="uid://cgrqll8p8254j" path="res://assets/residential/indoors/side_table3.png" id="6_seuah"]
-[ext_resource type="Texture2D" uid="uid://gcq6oilow74x" path="res://assets/residential/indoors/tissues.png" id="7_66ihp"]
-[ext_resource type="Texture2D" uid="uid://bg828bbtlaqrc" path="res://assets/residential/indoors/knihovna.png" id="8_7qfpn"]
-[ext_resource type="Texture2D" uid="uid://jvwf4b6bjsl6" path="res://assets/residential/indoors/oven.png" id="9_i02jj"]
+[ext_resource type="Texture2D" uid="uid://cy7cwfigylkyd" path="res://assets/compound/tower_inside.png" id="1_pwn7c"]
+[ext_resource type="Texture2D" uid="uid://c81eqm7duppl4" path="res://assets/residential/indoors/wall_mirror.png" id="2_av753"]
+[ext_resource type="Texture2D" uid="uid://b3pn5mvb3111b" path="res://assets/compound/tower_inside_wall.png" id="3_gkpf2"]
+[ext_resource type="Texture2D" uid="uid://dggtq8cr8skng" path="res://assets/residential/indoors/side_table1.png" id="4_qcb2j"]
+[ext_resource type="Texture2D" uid="uid://b5anmhohxuann" path="res://assets/residential/indoors/vase_flowers.png" id="5_2wn7q"]
+[ext_resource type="Texture2D" uid="uid://c6g7tke0jjcmg" path="res://assets/residential/indoors/side_table3.png" id="6_seuah"]
+[ext_resource type="Texture2D" uid="uid://h03jwe4lr73k" path="res://assets/residential/indoors/tissues.png" id="7_66ihp"]
+[ext_resource type="Texture2D" uid="uid://c4phqysbg8s3" path="res://assets/residential/indoors/oven.png" id="9_i02jj"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_q04iu"]
 atlas = ExtResource("9_i02jj")
@@ -75,13 +74,6 @@ texture = ExtResource("7_66ihp")
 
 [node name="YSort" type="Node2D" parent="SideTable3"]
 position = Vector2(-11, 13)
-
-[node name="Knihovna" type="Sprite2D" parent="."]
-position = Vector2(68, 2)
-texture = ExtResource("8_7qfpn")
-
-[node name="YSort" type="Node2D" parent="Knihovna"]
-position = Vector2(-26, 29)
 
 [node name="Stove" type="AnimatedSprite2D" parent="."]
 position = Vector2(-90, -11)
