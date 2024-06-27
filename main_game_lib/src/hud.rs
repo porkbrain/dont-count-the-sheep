@@ -2,8 +2,12 @@
 //! or others that pop-up when needed, such as notifications.
 
 pub mod daybar;
+pub mod notification;
 
 use crate::prelude::*;
+
+const MARGIN_TOP_PX: f32 = 10.0;
+const MARGIN_LEFT_PX: f32 = 10.0;
 
 pub(crate) struct Plugin;
 
@@ -18,10 +22,16 @@ impl bevy::app::Plugin for Plugin {
             )
             .add_systems(Update, daybar::interact);
 
+        app.init_resource::<notification::NotificationFifo>();
+
         #[cfg(feature = "devtools")]
         {
             app.register_type::<daybar::DayBar>()
                 .register_type::<daybar::Beats>();
+
+            app.register_type::<notification::Notification>()
+                .register_type::<notification::NotificationFifo>()
+                .register_type::<notification::FifoElement>();
         }
     }
 }

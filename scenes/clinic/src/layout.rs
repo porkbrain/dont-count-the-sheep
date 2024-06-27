@@ -3,6 +3,7 @@ use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     cutscene::in_cutscene,
+    hud::notification::{Notification, NotificationFifo},
     top_down::{
         actor::{self, movement_event_emitted},
         environmental_objects::{self, door::DoorBuilder},
@@ -70,10 +71,13 @@ fn spawn(
     asset_server: Res<AssetServer>,
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    mut notifications: ResMut<NotificationFifo>,
 
     mut q: Query<&mut TscnTreeHandle<Clinic>>,
 ) {
     info!("Spawning Clinic scene");
+
+    notifications.push(Notification::new_location_discovered("Clinic"));
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
