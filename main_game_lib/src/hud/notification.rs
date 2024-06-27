@@ -74,7 +74,7 @@ pub(crate) fn spawn(
         Interaction::default(),
         RelativeCursorPosition::default(),
         NodeBundle {
-            background_color: Color::rgba(0.0, 0.0, 0.0, 0.75).into(),
+            background_color: Color::rgba(0.0, 0.0, 0.0, 0.9).into(),
             focus_policy: bevy::ui::FocusPolicy::Block,
             style: Style {
                 position_type: PositionType::Absolute,
@@ -160,8 +160,6 @@ pub(crate) fn update(
 
 impl Notification {
     fn spawn(&self, cmd: &mut Commands) -> Entity {
-        let min_width_px = HEARTBEAT_ATLAS_SIZE.x * PIXEL_ZOOM as f32;
-
         match self {
             Notification::PlainText(text) => cmd
                 .spawn((
@@ -175,12 +173,13 @@ impl Notification {
                             },
                         ),
                         style: Style {
-                            padding: UiRect::vertical(Val::Px(
+                            margin: UiRect::vertical(Val::Px(
                                 2.0 * MARGIN_TOP_PX,
                             )),
 
-                            min_width: Val::Px(min_width_px),
-                            max_width: Val::Px(2.0 * min_width_px),
+                            min_width: Val::Px(
+                                HEARTBEAT_ATLAS_SIZE.x * PIXEL_ZOOM as f32,
+                            ),
 
                             ..default()
                         },
