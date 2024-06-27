@@ -215,8 +215,21 @@ where
 
     debug!("Adding HUD");
 
-    app.add_systems(OnEnter(running), crate::hud::daybar::spawn)
-        .add_systems(OnExit(running), crate::hud::daybar::despawn);
+    app.add_systems(
+        OnEnter(running),
+        (crate::hud::daybar::spawn, crate::hud::notification::spawn),
+    )
+    .add_systems(
+        OnExit(running),
+        (
+            crate::hud::daybar::despawn,
+            crate::hud::notification::despawn,
+        ),
+    )
+    .add_systems(
+        Update,
+        (crate::hud::notification::update).run_if(in_state(running)),
+    );
 }
 
 /// You can press `Enter` to export the map.

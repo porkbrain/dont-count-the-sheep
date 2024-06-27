@@ -5,7 +5,10 @@ use common_story::Character;
 use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{
     cutscene::in_cutscene,
-    hud::daybar::{DayBar, DayBarDependent, UpdateDayBarEvent},
+    hud::{
+        daybar::{DayBar, DayBarDependent, UpdateDayBarEvent},
+        notification::{Notification, NotificationFifo},
+    },
     top_down::{
         inspect_and_interact::{
             ChangeHighlightedInspectLabelEvent,
@@ -100,12 +103,14 @@ fn spawn(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     transition: Res<GlobalGameStateTransition>,
+    mut notifications: ResMut<NotificationFifo>,
     mut daybar_event: ResMut<Events<UpdateDayBarEvent>>,
 
     mut camera: Query<&mut Transform, With<MainCamera>>,
     mut q: Query<&mut TscnTreeHandle<Downtown>>,
 ) {
     info!("Spawning downtown scene");
+    notifications.push(Notification::new_location_discovered("Downtown"));
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();

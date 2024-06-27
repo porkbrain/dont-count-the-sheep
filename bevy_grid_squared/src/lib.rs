@@ -2,7 +2,6 @@
 
 #![feature(const_fn_floating_point_arithmetic)]
 #![feature(const_trait_impl)]
-#![feature(effects)]
 
 pub mod direction;
 pub mod shapes;
@@ -12,8 +11,8 @@ use std::ops::{Add, Sub};
 use bevy::prelude::*;
 pub use direction::GridDirection;
 
-/// Defines where in the world is this a grid and how big are the squares.
-/// This is with respect to your game coordinates.
+/// Defines where in the world is this grid and how big are the squares with
+/// respect to your game coordinates.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Reflect)]
 #[reflect(Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -67,9 +66,8 @@ impl SquareLayout {
 
     #[inline]
     pub const fn world_pos_to_square_const(&self, pos: Vec2) -> Square {
-        let pos = pos - self.origin;
-        let x = pos.x / self.square_size;
-        let y = pos.y / self.square_size;
+        let x = (pos.x - self.origin.x) / self.square_size;
+        let y = (pos.y - self.origin.y) / self.square_size;
 
         const fn round(x: f32) -> i32 {
             (x + 0.5) as i32

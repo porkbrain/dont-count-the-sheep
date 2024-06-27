@@ -13,6 +13,7 @@ use common_assets::{
 use common_ext::QueryExt;
 use common_visuals::camera::{MainCamera, PIXEL_ZOOM};
 
+use super::{MARGIN_LEFT_PX, MARGIN_TOP_PX};
 use crate::{player_stats::PlayerStats, prelude::*};
 
 const TOOLTIP_FONT: &str = fonts::PIXEL1;
@@ -25,8 +26,9 @@ const TOOLTIP_FONT_SIZE: f32 = 18.0;
 pub struct Beats(pub isize);
 
 /// Manages in-game time progression.
-#[derive(Resource, Reflect)]
-#[reflect(Resource)]
+#[derive(Resource)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
+#[cfg_attr(feature = "devtools", reflect(Resource))]
 pub struct DayBar {
     /// The current progress through the day, from 0 to [`Beats::DAY`].
     pub(crate) progress: Beats,
@@ -82,9 +84,8 @@ pub(crate) fn spawn(
             style: Style {
                 position_type: PositionType::Absolute,
 
-                // TODO: standardized margin
-                top: Val::Px(10.0),
-                left: Val::Px(10.0),
+                top: Val::Px(MARGIN_TOP_PX),
+                left: Val::Px(MARGIN_LEFT_PX),
 
                 width: Val::Px(HEARTBEAT_ATLAS_SIZE.x * PIXEL_ZOOM as f32),
                 height: Val::Px(HEARTBEAT_ATLAS_SIZE.y * PIXEL_ZOOM as f32),
