@@ -1,44 +1,53 @@
-[gd_scene load_steps=106 format=3 uid="uid://dyrtqlwb1xtvf"]
+[gd_scene load_steps=115 format=3 uid="uid://dyrtqlwb1xtvf"]
 
-[ext_resource type="Texture2D" uid="uid://ciwlf0c0gyyyq" path="res://assets/residential/indoors/player_apartment_bg.png" id="1_70osf"]
-[ext_resource type="Texture2D" uid="uid://kytoyoyhjxxv" path="res://assets/residential/indoors/cloud_atlas.png" id="2_yacc0"]
-[ext_resource type="Texture2D" uid="uid://dn0f5bt32acd5" path="res://assets/residential/indoors/player_apartment_backwall_furniture.png" id="3_e2w78"]
-[ext_resource type="Texture2D" uid="uid://d4gt4aikjid7a" path="res://assets/residential/indoors/meditation_chair.png" id="4_njet2"]
-[ext_resource type="Texture2D" uid="uid://2irnfvapged1" path="res://assets/residential/indoors/winnie_sleeping.png" id="5_u86a4"]
-[ext_resource type="Texture2D" uid="uid://c44rfsmy150fo" path="res://assets/residential/indoors/winnie_meditating.png" id="6_5id1h"]
-[ext_resource type="Texture2D" uid="uid://d07qq5e0nd3h1" path="res://assets/residential/indoors/toilet.png" id="7_3q0vg"]
-[ext_resource type="Texture2D" uid="uid://c44tcg8mxxabp" path="res://assets/residential/indoors/candle_atlas.png" id="7_qu8yb"]
-[ext_resource type="Texture2D" uid="uid://2nr502qjl1fn" path="res://assets/residential/indoors/hallway1.png" id="8_uh48f"]
-[ext_resource type="Texture2D" uid="uid://cq4dga042qxr" path="res://assets/residential/indoors/elevator_atlas.png" id="9_hc3bl"]
-[ext_resource type="Texture2D" uid="uid://b4vr2bjye6goo" path="res://assets/residential/indoors/toileteye_atlas.png" id="9_x3rb8"]
-[ext_resource type="Texture2D" uid="uid://cqsdb5tp644w6" path="res://assets/environment/vending_machine_atlas.png" id="10_sp5dx"]
-[ext_resource type="Texture2D" uid="uid://bycuegh5eiofi" path="res://assets/residential/indoors/cupboard1.png" id="11_iijqm"]
-[ext_resource type="Texture2D" uid="uid://btsd7or6tk701" path="res://assets/residential/indoors/laundry_basket.png" id="12_b5il1"]
-[ext_resource type="Texture2D" uid="uid://kbsekm7v1fbk" path="res://assets/residential/indoors/shoerack.png" id="13_7ojeu"]
-[ext_resource type="Texture2D" uid="uid://cxrax8hnp6oxo" path="res://assets/residential/indoors/kitchen_table.png" id="14_aqp0s"]
-[ext_resource type="Texture2D" uid="uid://iwunrdjegi2a" path="res://assets/residential/indoors/brown_light_door_atlas.png" id="15_8oxyo"]
-[ext_resource type="Texture2D" uid="uid://mn6fsc2pn682" path="res://assets/residential/indoors/fridge.png" id="16_0n6p3"]
-[ext_resource type="Texture2D" uid="uid://3212443mchtu" path="res://assets/residential/indoors/brown_dark_door_atlas.png" id="17_mm1s1"]
-[ext_resource type="Texture2D" uid="uid://p6o4g707hml2" path="res://assets/environment/package.png" id="18_fe7mm"]
-[ext_resource type="Texture2D" uid="uid://cgv4cowr33sy2" path="res://assets/environment/water_bottle_empty.png" id="19_fe26e"]
-[ext_resource type="Texture2D" uid="uid://cyup11yq6ir8q" path="res://assets/residential/indoors/player_neighbours_bg.png" id="20_alp5o"]
-[ext_resource type="Texture2D" uid="uid://bkv7f7wxjfce5" path="res://assets/residential/indoors/cupboard2.png" id="21_vnmpr"]
-[ext_resource type="Texture2D" uid="uid://cs2tcnoaxbeyx" path="res://assets/environment/can.png" id="22_i1pqp"]
-[ext_resource type="Texture2D" uid="uid://cut0xsw6oogl2" path="res://assets/residential/indoors/skrabadlo.png" id="23_kalpq"]
-[ext_resource type="Texture2D" uid="uid://chulfyf6ra3u4" path="res://assets/residential/indoors/sofa_yellow.png" id="24_tij75"]
-[ext_resource type="Texture2D" uid="uid://cr7obpji6bsm8" path="res://assets/residential/indoors/chair_yellow.png" id="25_o5v0o"]
-[ext_resource type="Texture2D" uid="uid://cnj3joi5hqv65" path="res://assets/residential/indoors/coffee_table.png" id="26_trfib"]
-[ext_resource type="Texture2D" uid="uid://gufxulf5gqud" path="res://assets/residential/indoors/green_kitchen_set.png" id="27_oe34g"]
-[ext_resource type="Texture2D" uid="uid://bbwbyf5acduh3" path="res://assets/residential/indoors/blue_bed.png" id="28_6pfto"]
-[ext_resource type="Texture2D" uid="uid://d2v4j1m6u8ek1" path="res://assets/environment/beer.png" id="29_t2bpu"]
-[ext_resource type="Texture2D" uid="uid://cgpp7lomv0qoy" path="res://assets/environment/fruit_bowl.png" id="30_3c4bq"]
-[ext_resource type="Texture2D" uid="uid://cyrhalbx0wke7" path="res://assets/environment/room_light.png" id="31_wa4ug"]
-[ext_resource type="Texture2D" uid="uid://dhm38fetha50k" path="res://assets/residential/indoors/router_atlas.png" id="32_0gd0c"]
-[ext_resource type="Texture2D" uid="uid://dnu54tiuqoh11" path="res://assets/residential/indoors/side_table1.png" id="36_458u3"]
-[ext_resource type="Texture2D" uid="uid://b8ddb3gvan3aq" path="res://assets/residential/indoors/bed_wooden.png" id="37_6lbmy"]
-[ext_resource type="Texture2D" uid="uid://d00p28mxdb8q6" path="res://assets/residential/indoors/bath_horizontal.png" id="38_mdm3q"]
-[ext_resource type="Texture2D" uid="uid://b06fbgd0kvmos" path="res://assets/residential/indoors/bathroom_light.png" id="38_no0qc"]
-[ext_resource type="Texture2D" uid="uid://bjomymsa6xoxb" path="res://assets/residential/indoors/kitchen_light.png" id="39_ft1ep"]
+[ext_resource type="Texture2D" uid="uid://darta8tusokhc" path="res://assets/residential/indoors/player_apartment_bg.png" id="1_70osf"]
+[ext_resource type="Texture2D" uid="uid://h5w2770frdhg" path="res://assets/residential/indoors/cloud_atlas.png" id="2_yacc0"]
+[ext_resource type="Texture2D" uid="uid://b66m72s4baqbk" path="res://assets/residential/indoors/player_apartment_backwall_furniture.png" id="3_e2w78"]
+[ext_resource type="Texture2D" uid="uid://dwuiv5li0qa0t" path="res://assets/residential/indoors/meditation_chair.png" id="4_njet2"]
+[ext_resource type="Texture2D" uid="uid://byftoar0081d1" path="res://assets/residential/indoors/winnie_sleeping.png" id="5_u86a4"]
+[ext_resource type="Texture2D" uid="uid://kk38aen6tkfg" path="res://assets/residential/indoors/winnie_meditating.png" id="6_5id1h"]
+[ext_resource type="Texture2D" uid="uid://cgd4gem7h52i6" path="res://assets/residential/indoors/toilet.png" id="7_3q0vg"]
+[ext_resource type="Texture2D" uid="uid://bsgf6tak08k2u" path="res://assets/residential/indoors/candle_atlas.png" id="7_qu8yb"]
+[ext_resource type="Texture2D" uid="uid://bs6x68xdn0lx1" path="res://assets/residential/indoors/hallway1.png" id="8_uh48f"]
+[ext_resource type="Texture2D" uid="uid://hny4j2anps08" path="res://assets/residential/indoors/elevator_atlas.png" id="9_hc3bl"]
+[ext_resource type="Texture2D" uid="uid://pj6txeysfp8v" path="res://assets/residential/indoors/toileteye_atlas.png" id="9_x3rb8"]
+[ext_resource type="Texture2D" uid="uid://drbv1a7tnye2r" path="res://assets/environment/vending_machine_atlas.png" id="10_sp5dx"]
+[ext_resource type="Texture2D" uid="uid://eoxkn1y1pym5" path="res://assets/residential/indoors/cupboard1.png" id="11_iijqm"]
+[ext_resource type="Texture2D" uid="uid://dofwik4dielt4" path="res://assets/residential/indoors/laundry_basket.png" id="12_b5il1"]
+[ext_resource type="Texture2D" uid="uid://dkeh5yr5mpahy" path="res://assets/residential/indoors/shoerack.png" id="13_7ojeu"]
+[ext_resource type="Texture2D" uid="uid://waug3cm18jbm" path="res://assets/residential/indoors/kitchen_table.png" id="14_aqp0s"]
+[ext_resource type="Texture2D" uid="uid://c3e80emirrnkj" path="res://assets/residential/indoors/brown_light_door_atlas.png" id="15_8oxyo"]
+[ext_resource type="Texture2D" uid="uid://fv8isbxnl2tb" path="res://assets/residential/indoors/fridge.png" id="16_0n6p3"]
+[ext_resource type="Texture2D" uid="uid://ds5d1ssvswgsm" path="res://assets/residential/indoors/brown_dark_door_atlas.png" id="17_mm1s1"]
+[ext_resource type="Texture2D" uid="uid://ofvhtlfhhsb3" path="res://assets/environment/package.png" id="18_fe7mm"]
+[ext_resource type="Texture2D" uid="uid://2b0o1wvmujta" path="res://assets/environment/water_bottle_empty.png" id="19_fe26e"]
+[ext_resource type="Texture2D" uid="uid://4m00yfjnbawb" path="res://assets/residential/indoors/player_neighbours_bg.png" id="20_alp5o"]
+[ext_resource type="Texture2D" uid="uid://c7dracayybs03" path="res://assets/residential/indoors/cupboard2.png" id="21_vnmpr"]
+[ext_resource type="Texture2D" uid="uid://ro52txu3n00" path="res://assets/environment/can.png" id="22_i1pqp"]
+[ext_resource type="Texture2D" uid="uid://c4cag0lrr0xvm" path="res://assets/residential/indoors/skrabadlo.png" id="23_kalpq"]
+[ext_resource type="Texture2D" uid="uid://cmq2aicwx30ac" path="res://assets/residential/indoors/coffee_table.png" id="26_trfib"]
+[ext_resource type="Texture2D" uid="uid://b2fvesnictg4e" path="res://assets/residential/indoors/green_kitchen_set.png" id="27_oe34g"]
+[ext_resource type="Texture2D" uid="uid://bwgbbegd64u7c" path="res://assets/residential/indoors/blue_bed.png" id="28_6pfto"]
+[ext_resource type="Texture2D" uid="uid://cvqttpt4js7nr" path="res://assets/environment/beer.png" id="29_t2bpu"]
+[ext_resource type="Texture2D" uid="uid://c5b62pc38ijn5" path="res://assets/environment/fruit_bowl.png" id="30_3c4bq"]
+[ext_resource type="Texture2D" uid="uid://bg5e5qx72fkp5" path="res://assets/environment/room_light.png" id="31_wa4ug"]
+[ext_resource type="Texture2D" uid="uid://cnbycag5da1ap" path="res://assets/residential/indoors/router_atlas.png" id="32_0gd0c"]
+[ext_resource type="Texture2D" uid="uid://dggtq8cr8skng" path="res://assets/residential/indoors/side_table1.png" id="36_458u3"]
+[ext_resource type="Texture2D" uid="uid://dfpb1mond3rnx" path="res://assets/residential/indoors/bed_wooden.png" id="37_6lbmy"]
+[ext_resource type="Texture2D" uid="uid://h03jwe4lr73k" path="res://assets/residential/indoors/tissues.png" id="38_bam3r"]
+[ext_resource type="Texture2D" uid="uid://fpc3f14s24e7" path="res://assets/residential/indoors/bath_horizontal.png" id="38_mdm3q"]
+[ext_resource type="Texture2D" uid="uid://jfo33icc8k1l" path="res://assets/residential/indoors/bathroom_light.png" id="38_no0qc"]
+[ext_resource type="Texture2D" uid="uid://c4gdjtb4d1w3k" path="res://assets/residential/indoors/kitchen_light.png" id="39_ft1ep"]
+[ext_resource type="Texture2D" uid="uid://ckb3asbuhxg38" path="res://assets/residential/indoors/tvtable_back.png" id="39_h5xtj"]
+[ext_resource type="Texture2D" uid="uid://dualkmd5i61e4" path="res://assets/residential/indoors/TV_flat_back.png" id="40_wwta0"]
+[ext_resource type="Texture2D" uid="uid://dvwbybx42utvl" path="res://assets/residential/indoors/tv_flat.png" id="41_lo0xi"]
+[ext_resource type="Texture2D" uid="uid://d01kfmw7mltte" path="res://assets/residential/indoors/sofa_blue_back.png" id="42_yuajs"]
+[ext_resource type="Texture2D" uid="uid://cd5s8so082dss" path="res://assets/residential/indoors/chair_wood.png" id="43_bwyl6"]
+[ext_resource type="Texture2D" uid="uid://b6ik715wdgoxg" path="res://assets/residential/indoors/table_big.png" id="44_m1c6h"]
+[ext_resource type="Texture2D" uid="uid://bwbd0lhiuf2e8" path="res://assets/items/coffee.png" id="45_ucetx"]
+[ext_resource type="Texture2D" uid="uid://c24128k3soyhf" path="res://assets/items/pill_box.png" id="46_r200y"]
+[ext_resource type="Texture2D" uid="uid://dolvlk268uyvh" path="res://assets/environment/box_cardboard_sideways.png" id="47_jy22a"]
+[ext_resource type="Texture2D" uid="uid://bl6casbqthnd3" path="res://assets/environment/plate_cookies.png" id="48_jgxiy"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nte4w"]
 atlas = ExtResource("2_yacc0")
@@ -717,15 +726,6 @@ texture = ExtResource("20_alp5o")
 
 [node name="RightApartment" type="Node2D" parent="BottomApartments"]
 
-[node name="BottomRightApartmentDoor" type="AnimatedSprite2D" parent="BottomApartments/RightApartment"]
-position = Vector2(51, 110)
-sprite_frames = SubResource("SpriteFrames_j7cpw")
-
-[node name="YSort" type="Node2D" parent="BottomApartments/RightApartment/BottomRightApartmentDoor"]
-position = Vector2(0, 18)
-
-[node name="HallwayEntity" type="Node" parent="BottomApartments/RightApartment/BottomRightApartmentDoor"]
-
 [node name="TableWithDrawers" type="Sprite2D" parent="BottomApartments/RightApartment"]
 position = Vector2(93, 119)
 texture = ExtResource("21_vnmpr")
@@ -761,7 +761,7 @@ position = Vector2(-36, 57)
 [node name="LeftApartment" type="Node2D" parent="BottomApartments"]
 
 [node name="BottomLeftApartmentDoor" type="AnimatedSprite2D" parent="BottomApartments/LeftApartment"]
-position = Vector2(-91, 111)
+position = Vector2(-62, 111)
 sprite_frames = SubResource("SpriteFrames_j7cpw")
 
 [node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/BottomLeftApartmentDoor"]
@@ -769,26 +769,8 @@ position = Vector2(0, 18)
 
 [node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/BottomLeftApartmentDoor"]
 
-[node name="SofaYellow" type="Sprite2D" parent="BottomApartments/LeftApartment"]
-position = Vector2(-10, 172)
-texture = ExtResource("24_tij75")
-
-[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/SofaYellow"]
-position = Vector2(0, 15)
-
-[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/SofaYellow"]
-
-[node name="ChairYellow" type="Sprite2D" parent="BottomApartments/LeftApartment"]
-position = Vector2(-59, 189)
-texture = ExtResource("25_o5v0o")
-
-[node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/ChairYellow"]
-position = Vector2(0, 13)
-
-[node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/ChairYellow"]
-
 [node name="CoffeeTable" type="Sprite2D" parent="BottomApartments/LeftApartment"]
-position = Vector2(-10, 208)
+position = Vector2(-112, 137)
 texture = ExtResource("26_trfib")
 
 [node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/CoffeeTable"]
@@ -809,7 +791,7 @@ texture = ExtResource("30_3c4bq")
 [node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/CoffeeTable"]
 
 [node name="GreenKitchenSet" type="Sprite2D" parent="BottomApartments/LeftApartment"]
-position = Vector2(-9, 120)
+position = Vector2(-5, 120)
 texture = ExtResource("27_oe34g")
 
 [node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/GreenKitchenSet"]
@@ -883,3 +865,55 @@ position = Vector2(-15, -15)
 position = Vector2(-192, 76)
 
 [node name="Point" type="Node" parent="Points/InElevator"]
+
+[node name="Tissues" type="Sprite2D" parent="."]
+position = Vector2(-232, 115)
+texture = ExtResource("38_bam3r")
+
+[node name="TvtableBack" type="Sprite2D" parent="."]
+position = Vector2(-264, 223)
+texture = ExtResource("39_h5xtj")
+
+[node name="TvFlatBack" type="Sprite2D" parent="TvtableBack"]
+position = Vector2(0, -20)
+texture = ExtResource("40_wwta0")
+
+[node name="TvFlat" type="Sprite2D" parent="."]
+position = Vector2(-112, 101)
+texture = ExtResource("41_lo0xi")
+
+[node name="SofaBlueBack" type="Sprite2D" parent="."]
+position = Vector2(-113, 169)
+texture = ExtResource("42_yuajs")
+
+[node name="ChairWood" type="Sprite2D" parent="."]
+position = Vector2(-4, 178)
+texture = ExtResource("43_bwyl6")
+
+[node name="ChairWood2" type="Sprite2D" parent="."]
+position = Vector2(19, 178)
+texture = ExtResource("43_bwyl6")
+
+[node name="TableBig" type="Sprite2D" parent="."]
+position = Vector2(8, 201)
+texture = ExtResource("44_m1c6h")
+
+[node name="Coffee" type="Sprite2D" parent="."]
+position = Vector2(86, 107)
+texture = ExtResource("45_ucetx")
+
+[node name="PillBox" type="Sprite2D" parent="."]
+position = Vector2(-222, 115)
+texture = ExtResource("46_r200y")
+
+[node name="BoxCardboardSideways" type="Sprite2D" parent="."]
+position = Vector2(55, 127)
+texture = ExtResource("47_jy22a")
+
+[node name="PlateCookies" type="Sprite2D" parent="."]
+position = Vector2(113, 212)
+texture = ExtResource("48_jgxiy")
+
+[node name="Package" type="Sprite2D" parent="."]
+position = Vector2(106, 141)
+texture = ExtResource("18_fe7mm")
