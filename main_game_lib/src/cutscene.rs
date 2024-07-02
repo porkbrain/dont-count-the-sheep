@@ -20,9 +20,6 @@ use bevy_grid_squared::{GridDirection, Square};
 use common_ext::QueryExt;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_store::GlobalStore;
-use common_story::dialog::{
-    self, fe::portrait::PortraitDialog, StartDialogWhenLoaded,
-};
 use common_visuals::{
     camera::{order, render_layer, MainCamera},
     AtlasAnimation, AtlasAnimationStep, AtlasAnimationTimer,
@@ -31,6 +28,7 @@ use common_visuals::{
 
 use self::top_down::cameras::{ManualControl, SyncWithPlayer};
 use crate::{
+    dialog::{self, fe::portrait::PortraitDialog, StartDialogWhenLoaded},
     prelude::*,
     top_down::{actor::player::TakeAwayPlayerControl, Actor, ActorTarget},
 };

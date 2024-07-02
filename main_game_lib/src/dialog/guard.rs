@@ -1,5 +1,6 @@
 mod dialog_for_npc;
 mod exhaustive_alternatives;
+mod notify;
 mod reach_last_alternative;
 mod visit_once;
 
@@ -8,7 +9,7 @@ use bevy::{
         system::{Command, Commands, In, Local, Res, ResMut, SystemId},
         world::World,
     },
-    log::error,
+    log::{error, warn},
     reflect::Reflect,
     utils::default,
 };
@@ -58,6 +59,9 @@ pub enum GuardKind {
 
     AddDialogToNpc,
     RemoveDialogFromNpc,
+
+    /// Pushes a notification to the player.
+    Notify,
 }
 
 impl GuardKind {
@@ -78,6 +82,7 @@ impl GuardKind {
                 Self::RemoveDialogFromNpc => {
                     w.register_system(dialog_for_npc::remove)
                 }
+                Self::Notify => w.register_system(notify::system),
             };
             if let Some(mut dialog) = w.get_resource_mut::<Dialog>() {
                 dialog
@@ -141,5 +146,44 @@ impl GuardCmd {
             | Self::PlayerChoice { node_name, .. }
             | Self::Despawn(node_name) => node_name,
         }
+    }
+}
+
+impl Dialog {
+    fn pass_guard_player_choice(
+        &mut self,
+        cmd: &mut Commands,
+        node_name: NodeName,
+        next_branch_index: usize,
+    ) {
+        let next_nodes = &self.graph.nodes.get(&node_name).unwrap().next;
+        assert_eq!(1, next_nodes.len());
+
+        let next_node_name = &next_nodes[0];
+        let next_node_kind =
+            &self.graph.nodes.get(next_node_name).unwrap().kind;
+
+        let next_node_choice = match next_node_kind {
+            NodeKind::Blank => {
+                warn!("{node_name:?}: Next node {next_node_name:?} is blank");
+                BranchStatus::Stop
+            }
+            NodeKind::Vocative { line } => {
+                // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/95
+                BranchStatus::OfferAsChoice(line.clone())
+            }
+            NodeKind::Guard { .. } => {
+                // evaluate next guard
+                cmd.add(GuardCmd::PlayerChoice {
+                    node_name: next_node_name.clone(),
+                    next_branch_index,
+                });
+                return;
+            }
+        };
+
+        if let Branching::Choice(branches) = &mut self.branching {
+            branches[next_branch_index] = next_node_choice;
+        };
     }
 }

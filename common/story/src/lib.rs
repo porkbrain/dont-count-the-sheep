@@ -7,7 +7,6 @@
 #![feature(let_chains)]
 #![allow(clippy::too_many_arguments)]
 
-pub mod dialog;
 pub mod emoji;
 
 use std::time::Duration;
@@ -83,22 +82,9 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(emoji::Plugin);
 
-        app.add_plugins(dialog::fe::portrait::Plugin)
-            .init_asset_loader::<dialog::loader::Loader>()
-            .init_asset::<dialog::DialogGraph>();
-
-        app.add_systems(
-            Update,
-            dialog::wait_for_assets_then_spawn_dialog
-                .run_if(resource_exists::<dialog::StartDialogWhenLoaded>)
-                .run_if(not(resource_exists::<dialog::Dialog>)),
-        );
-
         #[cfg(feature = "devtools")]
         {
-            app.register_type::<dialog::DialogGraph>()
-                .register_type::<dialog::Dialog>()
-                .register_type::<Character>();
+            app.register_type::<Character>();
         }
     }
 }
@@ -169,7 +155,8 @@ impl Character {
         }
     }
 
-    fn portrait_asset_path(self) -> &'static str {
+    /// Each character has a unique portrait asset.
+    pub fn portrait_asset_path(self) -> &'static str {
         use common_assets::portraits::*;
 
         match self {

@@ -13,14 +13,12 @@ use bevy::{
 use common_action::{ActionState, ActionStateExt, GlobalAction};
 use common_assets::ui::DIALOG_BOX;
 use common_store::GlobalStore;
+use common_story::Character;
 use common_visuals::camera::{render_layer, PIXEL_ZOOM};
 
 use super::DialogFrontend;
-use crate::{
-    dialog::{
-        AdvanceOutcome, Dialog, NodeKind, NodeName, StartDialogWhenLoaded,
-    },
-    Character,
+use crate::dialog::{
+    AdvanceOutcome, Dialog, NodeKind, NodeName, StartDialogWhenLoaded,
 };
 
 const FONT_SIZE: f32 = 21.0;
