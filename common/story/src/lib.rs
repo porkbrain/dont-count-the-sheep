@@ -7,7 +7,6 @@
 #![feature(let_chains)]
 #![allow(clippy::too_many_arguments)]
 
-// pub mod dialog;
 pub mod emoji;
 
 use std::time::Duration;
