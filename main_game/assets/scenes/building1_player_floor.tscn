@@ -740,6 +740,10 @@ position = Vector2(0, 10)
 
 [node name="HallwayEntity" type="Node" parent="BottomApartments/RightApartment/TableWithDrawers"]
 
+[node name="Coffee" type="Sprite2D" parent="BottomApartments/RightApartment/TableWithDrawers"]
+position = Vector2(-7, -12)
+texture = ExtResource("45_ucetx")
+
 [node name="Skrabadlo" type="Sprite2D" parent="BottomApartments/RightApartment"]
 position = Vector2(51, 197)
 texture = ExtResource("23_kalpq")
@@ -882,33 +886,50 @@ texture = ExtResource("39_h5xtj")
 position = Vector2(0, -20)
 texture = ExtResource("40_wwta0")
 
+[node name="YSort" type="Node2D" parent="TvtableBack"]
+position = Vector2(-1, 7)
+
 [node name="TvFlat" type="Sprite2D" parent="."]
 position = Vector2(-112, 101)
 texture = ExtResource("41_lo0xi")
+
+[node name="YSort" type="Node2D" parent="TvFlat"]
+position = Vector2(-1, 27)
 
 [node name="SofaBlueBack" type="Sprite2D" parent="."]
 position = Vector2(-112, 169)
 texture = ExtResource("42_yuajs")
 
+[node name="YSort" type="Node2D" parent="SofaBlueBack"]
+position = Vector2(-1, 11)
+
 [node name="ChairWood" type="Sprite2D" parent="."]
 position = Vector2(-4, 178)
 texture = ExtResource("43_bwyl6")
+
+[node name="YSort" type="Node2D" parent="ChairWood"]
+position = Vector2(-1, 14)
 
 [node name="ChairWood2" type="Sprite2D" parent="."]
 position = Vector2(19, 178)
 texture = ExtResource("43_bwyl6")
 
+[node name="YSort" type="Node2D" parent="ChairWood2"]
+position = Vector2(0, 14)
+
 [node name="TableBig" type="Sprite2D" parent="."]
 position = Vector2(8, 201)
 texture = ExtResource("44_m1c6h")
 
-[node name="Coffee" type="Sprite2D" parent="."]
-position = Vector2(86, 107)
-texture = ExtResource("45_ucetx")
+[node name="YSort" type="Node2D" parent="TableBig"]
+position = Vector2(0, 18)
 
 [node name="BoxCardboardSideways" type="Sprite2D" parent="."]
 position = Vector2(55, 127)
 texture = ExtResource("47_jy22a")
+
+[node name="YSort" type="Node2D" parent="BoxCardboardSideways"]
+position = Vector2(1, 10)
 
 [node name="PlateCookies" type="Sprite2D" parent="."]
 position = Vector2(113, 212)
@@ -917,3 +938,6 @@ texture = ExtResource("48_jgxiy")
 [node name="Package" type="Sprite2D" parent="."]
 position = Vector2(106, 141)
 texture = ExtResource("18_fe7mm")
+
+[node name="YSort" type="Node2D" parent="Package"]
+position = Vector2(1, 4)
