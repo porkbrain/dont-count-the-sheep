@@ -1,7 +1,9 @@
 use std::str::FromStr;
 
+use common_story::Character;
+
 use super::*;
-use crate::{dialog::list::Namespace, Character};
+use crate::dialog::list::Namespace;
 
 pub(super) fn add(
     In(guard_cmd): In<GuardCmd>,

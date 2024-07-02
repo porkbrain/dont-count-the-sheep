@@ -1,14 +1,14 @@
 //! Player and NPCs.
 
 use common_loading_screen::LoadingScreenSettings;
-use common_story::{
-    dialog::DialogGraph,
-    emoji::{DisplayEmojiEvent, DisplayEmojiEventConsumer, EmojiKind},
+use common_story::emoji::{
+    DisplayEmojiEvent, DisplayEmojiEventConsumer, EmojiKind,
 };
 use common_visuals::camera::MainCamera;
 use main_game_lib::{
     common_ext::QueryExt,
     cutscene::{self, in_cutscene, CutsceneStep, IntoCutscene},
+    dialog::DialogGraph,
     hud::daybar::DayBar,
     top_down::inspect_and_interact::{
         ChangeHighlightedInspectLabelEvent,

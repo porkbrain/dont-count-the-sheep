@@ -117,9 +117,7 @@ where
             actor::player::move_around::<T>
                 .run_if(in_state(running))
                 .run_if(common_action::move_action_pressed())
-                .run_if(not(
-                    common_story::dialog::fe::portrait::in_portrait_dialog(),
-                )),
+                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
         )
         .add_systems(
             Update,
@@ -173,9 +171,7 @@ where
             //    already emitted earlier. Since the commands to remove the
             //    dialog resource were applied, the condition to not run the
             //    begin_dialog system will not prevent rerun
-            .run_if(not(
-                common_story::dialog::fe::portrait::in_portrait_dialog(),
-            ))
+            .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog()))
             .after(InputManagerSystem::Update),
     )
     .add_systems(
@@ -184,9 +180,7 @@ where
             actor::npc::mark_nearby_as_ready_for_interaction,
             actor::npc::begin_dialog
                 .run_if(on_event::<BeginDialogEvent>())
-                .run_if(not(
-                    common_story::dialog::fe::portrait::in_portrait_dialog(),
-                )),
+                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
         )
             .run_if(in_state(running)),
     )
@@ -208,9 +202,7 @@ where
                 .after(actor::animate_movement::<T>)
                 .run_if(in_state(running))
                 .run_if(not(in_cutscene()))
-                .run_if(not(
-                    common_story::dialog::fe::portrait::in_portrait_dialog(),
-                )),
+                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
         );
 
     debug!("Adding HUD");

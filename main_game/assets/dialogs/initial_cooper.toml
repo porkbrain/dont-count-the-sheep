@@ -84,4 +84,7 @@ params = { npc = "Cooper", file_path = "initial_cooper.toml" }
 [[node]]
 who = "Cooper"
 en = "*haf* *haf* *haf* Please please"
+[[node]]
+guard = "notify"
+params = { message = "Quest added: Tennis balls" }
 next = "_end_dialog"

@@ -3,7 +3,6 @@ mod watch_entry_to_apartment;
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::sq;
 use common_loading_screen::LoadingScreenSettings;
-use common_story::dialog::DialogGraph;
 use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{
     common_ext::QueryExt,
@@ -15,6 +14,7 @@ use main_game_lib::{
         enter_dark_door::EnterDarkDoor,
         in_cutscene, IntoCutscene,
     },
+    dialog::DialogGraph,
     top_down::{
         actor::{self, movement_event_emitted, player::TakeAwayPlayerControl},
         environmental_objects::{self, door::DoorBuilder},

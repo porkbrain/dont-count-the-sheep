@@ -6,10 +6,7 @@ use std::{iter, str::FromStr};
 use bevy_grid_squared::{GridDirection, Square};
 use common_loading_screen::{LoadingScreenAtlas, LoadingScreenSettings};
 use common_store::{DialogStore, GlobalStore};
-use common_story::{
-    dialog::{self, DialogGraph},
-    Character,
-};
+use common_story::Character;
 use common_visuals::{
     AtlasAnimation, AtlasAnimationEnd, AtlasAnimationStep, AtlasAnimationTimer,
     BeginAtlasAnimation, EASE_IN_OUT,
@@ -18,6 +15,7 @@ use top_down::layout::LAYOUT;
 
 use crate::{
     cutscene::{self, CutsceneStep, IntoCutscene},
+    dialog::{self, DialogGraph},
     prelude::*,
     top_down::actor::player::TakeAwayPlayerControl,
 };
