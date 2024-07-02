@@ -1,9 +1,9 @@
 use std::str::FromStr;
 
-use bevy::log::warn;
+use common_story::Character;
 
 use super::*;
-use crate::{dialog::list::Namespace, Character};
+use crate::dialog::list::Namespace;
 
 pub(super) fn add(
     In(guard_cmd): In<GuardCmd>,
@@ -90,40 +90,7 @@ fn handle_guard_cmd_as(
         GuardCmd::PlayerChoice {
             node_name,
             next_branch_index,
-        } => {
-            let next_nodes = &dialog.graph.nodes.get(&node_name).unwrap().next;
-            assert_eq!(1, next_nodes.len());
-
-            let next_node_name = &next_nodes[0];
-            let next_node_kind =
-                &dialog.graph.nodes.get(next_node_name).unwrap().kind;
-
-            let next_node_choice = match next_node_kind {
-                NodeKind::Blank => {
-                    warn!(
-                        "{node_name:?} ({kind}): \
-                        Next node {next_node_name:?} is blank"
-                    );
-                    BranchStatus::Stop
-                }
-                NodeKind::Vocative { line } => {
-                    // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/95
-                    BranchStatus::OfferAsChoice(line.clone())
-                }
-                NodeKind::Guard { .. } => {
-                    // evaluate next guard
-                    cmd.add(GuardCmd::PlayerChoice {
-                        node_name: next_node_name.clone(),
-                        next_branch_index,
-                    });
-                    return;
-                }
-            };
-
-            if let Branching::Choice(branches) = &mut dialog.branching {
-                branches[next_branch_index] = next_node_choice;
-            };
-        }
+        } => dialog.pass_guard_player_choice(cmd, node_name, next_branch_index),
         GuardCmd::Despawn(_) => {
             //
         }

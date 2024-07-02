@@ -20,26 +20,51 @@ mod list;
 pub(crate) mod loader;
 
 use bevy::{
+    app::Update,
     asset::{Asset, AssetServer, Assets, Handle},
     ecs::{
         reflect::ReflectResource,
+        schedule::common_conditions::{not, resource_exists},
         system::{CommandQueue, Commands, Res, ResMut, Resource},
         world::World,
     },
     log::{error, trace, warn},
+    prelude::{AssetApp, IntoSystemConfigs},
     reflect::Reflect,
     utils::{default, hashbrown::HashMap},
 };
 use common_store::{DialogStore, GlobalStore};
+use common_story::Character;
 pub use guard::GuardKind;
 pub use list::{DialogRef, Namespace, TypedNamespace};
 
 use self::guard::{GuardCmd, GuardSystem};
-use crate::Character;
 
 /// Use [`StartDialogWhenLoaded::on_finished`] to schedule commands to run when
 /// the dialog is finished.
 pub type CmdFn = Box<dyn FnOnce(&mut Commands) + Send + Sync + 'static>;
+
+pub(crate) struct Plugin;
+
+impl bevy::app::Plugin for Plugin {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        app.add_plugins(fe::portrait::Plugin)
+            .init_asset_loader::<loader::Loader>()
+            .init_asset::<DialogGraph>();
+
+        app.add_systems(
+            Update,
+            wait_for_assets_then_spawn_dialog
+                .run_if(resource_exists::<StartDialogWhenLoaded>)
+                .run_if(not(resource_exists::<Dialog>)),
+        );
+
+        #[cfg(feature = "devtools")]
+        {
+            app.register_type::<DialogGraph>().register_type::<Dialog>();
+        }
+    }
+}
 
 /// Dialog backend.
 ///

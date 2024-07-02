@@ -4,14 +4,12 @@
 use std::{borrow::Cow, str::FromStr};
 
 use bevy::utils::hashbrown::HashMap;
+use common_story::Character;
 use serde::Deserialize;
 use serde_with::{formats::PreferOne, serde_as, OneOrMany};
 
 use super::{Namespace, NodeName};
-use crate::{
-    dialog::{DialogGraph, Node, NodeKind},
-    Character,
-};
+use crate::dialog::{DialogGraph, Node, NodeKind};
 
 #[derive(Debug, Deserialize)]
 pub(super) struct ParsedToml {

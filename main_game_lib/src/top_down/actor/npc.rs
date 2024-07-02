@@ -13,12 +13,14 @@ use bevy::prelude::*;
 use bevy_grid_squared::Square;
 use common_ext::QueryExt;
 use common_store::{DialogStore, GlobalStore};
-use common_story::dialog::{self, StartDialogWhenLoaded};
 
 use super::{ActorOrCharacter, BeginDialogEvent};
-use crate::top_down::{
-    inspect_and_interact::ReadyForInteraction, layout::ZoneTile, Actor,
-    ActorTarget, Player, TileMap, TopDownScene,
+use crate::{
+    dialog::{self, StartDialogWhenLoaded},
+    top_down::{
+        inspect_and_interact::ReadyForInteraction, layout::ZoneTile, Actor,
+        ActorTarget, Player, TileMap, TopDownScene,
+    },
 };
 
 const MIN_WAIT_BETWEEN_PATHFINDING_RETRY: Duration = Duration::from_millis(250);

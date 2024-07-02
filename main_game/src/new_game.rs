@@ -3,8 +3,8 @@ use bevy::ecs::{
     system::{Res, ResMut},
 };
 use common_store::{DialogStore, GlobalStore};
-use common_story::{dialog, Character};
-use main_game_lib::state::GlobalGameState;
+use common_story::Character;
+use main_game_lib::{dialog, state::GlobalGameState};
 
 pub(crate) fn on_enter(
     mut next_state: ResMut<NextState<GlobalGameState>>,

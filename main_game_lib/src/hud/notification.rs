@@ -1,5 +1,8 @@
 //! Informs the player about things that are happening using a simple list of
 //! notifications.
+//!
+//! Use [`NotificationFifo::push`] to add notifications.
+//! The [`NotificationFifo`] is a omnipresent resource.
 
 use bevy::ui::RelativeCursorPosition;
 use common_assets::ui::HEARTBEAT_ATLAS_SIZE;
@@ -11,6 +14,7 @@ use common_visuals::{
 use super::{MARGIN_LEFT_PX, MARGIN_TOP_PX};
 use crate::prelude::*;
 
+const FONT: &str = common_assets::fonts::PIXEL1;
 const FONT_SIZE: f32 = 18.0;
 const MAX_DISPLAYED_NOTIFICATIONS: usize = 5;
 const NOTIFICATION_DISPLAY_TIME: Duration = from_millis(5_000);
@@ -116,6 +120,7 @@ pub(crate) fn update(
     mut notifications: ResMut<NotificationFifo>,
     mut begin_interpolation: EventWriter<BeginInterpolationEvent>,
     time: Res<Time>,
+    asset_server: Res<AssetServer>,
 
     root: Query<Entity, With<NotificationRoot>>,
 ) {
@@ -147,7 +152,7 @@ pub(crate) fn update(
         } else if displayed_notifications < MAX_DISPLAYED_NOTIFICATIONS {
             // we display this notification
 
-            let node_id = el.notification.spawn(&mut cmd);
+            let node_id = el.notification.spawn(&mut cmd, &asset_server);
             el.entity = Some(node_id);
 
             displayed_notifications += 1;
@@ -159,7 +164,7 @@ pub(crate) fn update(
 }
 
 impl Notification {
-    fn spawn(&self, cmd: &mut Commands) -> Entity {
+    fn spawn(&self, cmd: &mut Commands, asset_server: &AssetServer) -> Entity {
         match self {
             Notification::PlainText(text) => cmd
                 .spawn((
@@ -169,6 +174,7 @@ impl Notification {
                             text,
                             TextStyle {
                                 font_size: FONT_SIZE,
+                                font: asset_server.load(FONT),
                                 ..default()
                             },
                         ),

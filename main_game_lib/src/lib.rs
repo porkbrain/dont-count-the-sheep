@@ -6,6 +6,7 @@
 #![allow(clippy::too_many_arguments)]
 
 pub mod cutscene;
+pub mod dialog;
 pub mod hud;
 pub mod player_stats;
 pub mod prelude;
@@ -109,6 +110,7 @@ pub fn windowed_app() -> App {
         cutscene::Plugin,
         PixelCameraPlugin,
         crate::hud::Plugin,
+        crate::dialog::Plugin,
     ));
 
     info!("Plugins added");
