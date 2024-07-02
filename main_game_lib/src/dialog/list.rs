@@ -143,7 +143,7 @@ mod tests {
         // load all toml files in the dialog directory
 
         let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-        let path = format!("{manifest}/../../main_game/assets/dialogs");
+        let path = format!("{manifest}/../main_game/assets/dialogs");
         let paths = std::fs::read_dir(&path)
             .unwrap_or_else(|e| panic!("{path}: {e}"))
             .map(|entry| entry.unwrap().path())
