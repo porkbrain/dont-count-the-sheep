@@ -1,4 +1,4 @@
-[gd_scene load_steps=184 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=187 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://5dhtpbjd5ool" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://kkt2uh6il68y" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -103,9 +103,12 @@
 [ext_resource type="Texture2D" uid="uid://tpa461245weq" path="res://assets/downtown/bin_green.png" id="109_seo0s"]
 [ext_resource type="Texture2D" uid="uid://be61pdsfo8tko" path="res://assets/downtown/hanging_plants.png" id="110_epawp"]
 [ext_resource type="Texture2D" uid="uid://bj6odlj01q22i" path="res://assets/food/pie3.png" id="110_osgx6"]
+[ext_resource type="Texture2D" uid="uid://be7b40j3tssnm" path="res://assets/downtown/hanging_plants4.png" id="111_fcjms"]
 [ext_resource type="Texture2D" uid="uid://04gifet5thc3" path="res://assets/food/pie4.png" id="111_jhpqq"]
+[ext_resource type="Texture2D" uid="uid://b5wyvkyejvu7a" path="res://assets/characters/atlases/seagull.png" id="112_j7024"]
 [ext_resource type="Texture2D" uid="uid://cn40v1x57yw33" path="res://assets/food/foccacia.png" id="112_oco4e"]
 [ext_resource type="Texture2D" uid="uid://tqhyinqf1dhf" path="res://assets/residential/indoors/plant_price_white_small.png" id="113_vpncy"]
+[ext_resource type="Texture2D" uid="uid://bmkbi0wldoruk" path="res://assets/downtown/potted_bush2.png" id="113_wa5al"]
 [ext_resource type="Texture2D" uid="uid://b5pej68woyefx" path="res://assets/food/oil.png" id="114_603ea"]
 [ext_resource type="Texture2D" uid="uid://byat4vda32e6m" path="res://assets/food/sushi.png" id="115_prick"]
 [ext_resource type="Texture2D" uid="uid://csa5shodptkau" path="res://assets/food/croissant.png" id="116_djqwe"]
@@ -1122,7 +1125,7 @@ position = Vector2(127, -93)
 sprite_frames = SubResource("SpriteFrames_weewa")
 
 [node name="YSort" type="Node2D" parent="MallRoot/Mall/BinGreen8"]
-position = Vector2(0, 11)
+position = Vector2(0, 13)
 
 [node name="MallBins" type="Node2D" parent="MallRoot"]
 position = Vector2(-532, 342)
@@ -5468,10 +5471,6 @@ position = Vector2(0, 16)
 
 [node name="YSort" type="Node2D" parent="ShoreRoot/HouseBigLime2"]
 position = Vector2(3, 102)
-
-[node name="HangingPlants2" type="Sprite2D" parent="ShoreRoot/HouseBigLime2"]
-position = Vector2(78, 62)
-texture = ExtResource("110_epawp")
 
 [node name="BoxCardboard2" type="Sprite2D" parent="ShoreRoot"]
 position = Vector2(1457.5, 1016)
@@ -14219,3 +14218,23 @@ texture = ExtResource("109_bu4df")
 
 [node name="YSort" type="Node2D" parent="BuildingAbandoned"]
 position = Vector2(9, 77)
+
+[node name="HangingPlants4" type="Sprite2D" parent="."]
+position = Vector2(1142, 917)
+texture = ExtResource("111_fcjms")
+
+[node name="Seagull" type="Sprite2D" parent="."]
+position = Vector2(28, 916)
+texture = ExtResource("112_j7024")
+
+[node name="PottedBush2" type="Sprite2D" parent="."]
+position = Vector2(924, -219)
+texture = ExtResource("113_wa5al")
+
+[node name="PottedBush3" type="Sprite2D" parent="."]
+position = Vector2(1399, 417)
+texture = ExtResource("113_wa5al")
+
+[node name="PottedBush4" type="Sprite2D" parent="."]
+position = Vector2(717, 953)
+texture = ExtResource("113_wa5al")

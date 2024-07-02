@@ -78,11 +78,11 @@ position = Vector2(-162, 25)
 texture = ExtResource("7_q3pv5")
 
 [node name="Sink" type="Sprite2D" parent="."]
-position = Vector2(207, -27)
+position = Vector2(205, -27)
 texture = ExtResource("8_2n8eo")
 
 [node name="WashingMachine" type="Sprite2D" parent="."]
-position = Vector2(176, -25)
+position = Vector2(178, -25)
 texture = ExtResource("9_0jnkc")
 
 [node name="Plant3" type="Sprite2D" parent="WashingMachine"]
@@ -117,9 +117,9 @@ position = Vector2(-177, 22)
 texture = ExtResource("17_frvwm")
 
 [node name="Toilet2" type="Sprite2D" parent="."]
-position = Vector2(146, -27)
+position = Vector2(146, -26)
 texture = ExtResource("18_oa8kb")
 
 [node name="WallMirror3" type="Sprite2D" parent="."]
-position = Vector2(207, -58)
+position = Vector2(205, -57)
 texture = ExtResource("19_kyk8r")

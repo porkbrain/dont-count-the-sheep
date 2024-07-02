@@ -761,7 +761,7 @@ position = Vector2(-36, 57)
 [node name="LeftApartment" type="Node2D" parent="BottomApartments"]
 
 [node name="BottomLeftApartmentDoor" type="AnimatedSprite2D" parent="BottomApartments/LeftApartment"]
-position = Vector2(-62, 111)
+position = Vector2(-61, 111)
 sprite_frames = SubResource("SpriteFrames_j7cpw")
 
 [node name="YSort" type="Node2D" parent="BottomApartments/LeftApartment/BottomLeftApartmentDoor"]
@@ -835,6 +835,14 @@ position = Vector2(-10, 10)
 
 [node name="HallwayEntity" type="Node" parent="BottomApartments/LeftApartment/BedTable"]
 
+[node name="Tissues" type="Sprite2D" parent="BottomApartments/LeftApartment/BedTable"]
+position = Vector2(-4, -13)
+texture = ExtResource("38_bam3r")
+
+[node name="PillBox" type="Sprite2D" parent="BottomApartments/LeftApartment/BedTable"]
+position = Vector2(6, -13)
+texture = ExtResource("46_r200y")
+
 [node name="BlueBed" type="Sprite2D" parent="BottomApartments/LeftApartment"]
 position = Vector2(-263, 143)
 texture = ExtResource("28_6pfto")
@@ -866,10 +874,6 @@ position = Vector2(-192, 76)
 
 [node name="Point" type="Node" parent="Points/InElevator"]
 
-[node name="Tissues" type="Sprite2D" parent="."]
-position = Vector2(-232, 115)
-texture = ExtResource("38_bam3r")
-
 [node name="TvtableBack" type="Sprite2D" parent="."]
 position = Vector2(-264, 223)
 texture = ExtResource("39_h5xtj")
@@ -883,7 +887,7 @@ position = Vector2(-112, 101)
 texture = ExtResource("41_lo0xi")
 
 [node name="SofaBlueBack" type="Sprite2D" parent="."]
-position = Vector2(-113, 169)
+position = Vector2(-112, 169)
 texture = ExtResource("42_yuajs")
 
 [node name="ChairWood" type="Sprite2D" parent="."]
@@ -901,10 +905,6 @@ texture = ExtResource("44_m1c6h")
 [node name="Coffee" type="Sprite2D" parent="."]
 position = Vector2(86, 107)
 texture = ExtResource("45_ucetx")
-
-[node name="PillBox" type="Sprite2D" parent="."]
-position = Vector2(-222, 115)
-texture = ExtResource("46_r200y")
 
 [node name="BoxCardboardSideways" type="Sprite2D" parent="."]
 position = Vector2(55, 127)

@@ -200,8 +200,12 @@ texture = ExtResource("6_uoc65")
 position = Vector2(-38, -11)
 texture = ExtResource("28_inwkg")
 
+[node name="PlantBiggest" type="Sprite2D" parent="CounterWide"]
+position = Vector2(-24, -25)
+texture = ExtResource("39_l3lyd")
+
 [node name="CounterWidePurple" type="Sprite2D" parent="."]
-position = Vector2(-113, -8)
+position = Vector2(-118, -8)
 texture = ExtResource("15_c65y4")
 
 [node name="YSort" type="Node2D" parent="CounterWidePurple"]
@@ -235,7 +239,7 @@ position = Vector2(0, -24)
 texture = ExtResource("27_rp2pe")
 
 [node name="CounterWidePurple2" type="Sprite2D" parent="."]
-position = Vector2(-113, 50)
+position = Vector2(-110, 50)
 texture = ExtResource("15_c65y4")
 
 [node name="YSort" type="Node2D" parent="CounterWidePurple2"]
@@ -244,6 +248,23 @@ position = Vector2(1, 14)
 [node name="Bonsai1" type="Sprite2D" parent="CounterWidePurple2"]
 position = Vector2(34, -20)
 texture = ExtResource("25_5xd81")
+
+[node name="PlantBigger" type="Sprite2D" parent="CounterWidePurple2"]
+position = Vector2(14, -21)
+texture = ExtResource("37_qj5jv")
+
+[node name="PlantBigger2" type="Sprite2D" parent="CounterWidePurple2"]
+position = Vector2(0, -18)
+texture = ExtResource("37_qj5jv")
+flip_h = true
+
+[node name="PlantBiggest2" type="Sprite2D" parent="CounterWidePurple2"]
+position = Vector2(-16, -26)
+texture = ExtResource("39_l3lyd")
+
+[node name="PlantBiggest3" type="Sprite2D" parent="CounterWidePurple2"]
+position = Vector2(-36, -25)
+texture = ExtResource("39_l3lyd")
 
 [node name="BoxCardboardSideways" type="Sprite2D" parent="."]
 position = Vector2(-178, -43)
@@ -322,19 +343,16 @@ texture = ExtResource("35_apwcw")
 position = Vector2(4, -10.5)
 texture = ExtResource("36_m5ifd")
 
+[node name="YSort" type="Node2D" parent="ClinicCart"]
+position = Vector2(0, 11)
+
 [node name="ShelfBack" type="Sprite2D" parent="."]
 z_index = 2
 position = Vector2(155, 76)
 texture = ExtResource("34_mpg0u")
 
-[node name="PlantBigger" type="Sprite2D" parent="."]
-position = Vector2(-99, 29)
-texture = ExtResource("37_qj5jv")
-
-[node name="PlantBigger2" type="Sprite2D" parent="."]
-position = Vector2(-113, 32)
-texture = ExtResource("37_qj5jv")
-flip_h = true
+[node name="YSort" type="Node2D" parent="ShelfBack"]
+position = Vector2(0, 35)
 
 [node name="PlantBigger3" type="Sprite2D" parent="."]
 position = Vector2(-127, -125)
@@ -358,22 +376,16 @@ position = Vector2(-156, -61)
 texture = ExtResource("38_wlwqc")
 flip_h = true
 
-[node name="PlantBiggest" type="Sprite2D" parent="."]
-position = Vector2(107, -22)
-texture = ExtResource("39_l3lyd")
-
-[node name="PlantBiggest2" type="Sprite2D" parent="."]
-position = Vector2(-129, 24)
-texture = ExtResource("39_l3lyd")
-
-[node name="PlantBiggest3" type="Sprite2D" parent="."]
-position = Vector2(-149, 25)
-texture = ExtResource("39_l3lyd")
-
 [node name="BambooRooftop" type="Sprite2D" parent="."]
 position = Vector2(-163, 87)
 texture = ExtResource("40_2ygpf")
 
+[node name="YSort" type="Node2D" parent="BambooRooftop"]
+position = Vector2(0, 21)
+
 [node name="CounterWidePurple3" type="Sprite2D" parent="."]
 position = Vector2(5, -8)
 texture = ExtResource("15_c65y4")
+
+[node name="YSort" type="Node2D" parent="CounterWidePurple3"]
+position = Vector2(1, 14)
