@@ -1,10 +1,11 @@
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::Square;
-use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_story::Character;
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     cutscene::in_cutscene,
+    hud::notification::NotificationFifo,
+    player_stats::PlayerStats,
     top_down::{
         actor::BeginDialogEvent, layout::LAYOUT, npc::behaviors::PatrolSequence,
     },
@@ -68,10 +69,13 @@ fn spawn(
     asset_server: Res<AssetServer>,
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    mut notifications: ResMut<NotificationFifo>,
+    mut player_stats: ResMut<PlayerStats>,
 
     mut q: Query<&mut TscnTreeHandle<Mall>>,
 ) {
     info!("Spawning Mall scene");
+    player_stats.visited.mall(&mut notifications);
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
@@ -216,27 +220,15 @@ impl top_down::layout::Tile for MallTileKind {
 }
 
 fn exit(
-    mut cmd: Commands,
+    mut transition_params: TransitionParams,
     mut action_events: EventReader<MallAction>,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
 ) {
     let is_triggered = action_events
         .read()
         .any(|action| matches!(action, MallAction::ExitScene));
 
     if is_triggered {
-        cmd.insert_resource(LoadingScreenSettings {
-            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-            ..default()
-        });
-
-        next_loading_screen_state.set(common_loading_screen::start_state());
-
-        *transition = GlobalGameStateTransition::MallToDowntown;
-        next_state.set(Mall::quitting());
+        transition_params.begin(GlobalGameStateTransition::MallToDowntown);
     }
 }
 

@@ -1,5 +1,8 @@
 //! Game state management.
 
+use bevy::ecs::system::SystemParam;
+use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
+
 use crate::prelude::*;
 
 /// Provides control for the game states.
@@ -157,6 +160,20 @@ pub struct StandardStateSemantics {
     pub paused: Option<GlobalGameState>,
 }
 
+/// Helper params that are used in transitions.
+/// Use [`TransitionParams::begin`] to start a transition.
+#[derive(SystemParam)]
+pub struct TransitionParams<'w, 's> {
+    /// Commands to insert loading screen settings.
+    pub cmd: Commands<'w, 's>,
+    /// Sets the transition that should happen.
+    pub transition: ResMut<'w, GlobalGameStateTransition>,
+    /// The next state is derived from the transition.
+    pub next_state: ResMut<'w, NextState<GlobalGameState>>,
+    /// Always set to start state.
+    pub next_loading_screen_state: ResMut<'w, NextState<LoadingScreenState>>,
+}
+
 /// Typical scene has several states with standard semantics.
 pub trait WithStandardStateSemantics {
     /// The state when the scene is loading.
@@ -295,5 +312,130 @@ impl GlobalGameState {
             quitting,
             paused,
         })
+    }
+}
+
+impl GlobalGameStateTransition {
+    /// We expect the transition to start at this state.
+    pub fn from_state(self) -> GlobalGameState {
+        use GlobalGameStateTransition::*;
+
+        match self {
+            BlankToNewGame => GlobalGameState::Blank,
+            NewGameToBuilding1PlayerFloor => GlobalGameState::NewGame,
+            RestartMeditation => GlobalGameState::QuittingMeditation,
+            MeditationToBuilding1PlayerFloor => {
+                GlobalGameState::QuittingMeditation
+            }
+            Building1PlayerFloorToMeditation
+            | Building1PlayerFloorToBuilding1Basement1
+            | Sleeping
+            | Building1PlayerFloorToDowntown => {
+                GlobalGameState::QuittingBuilding1PlayerFloor
+            }
+            Building1Basement1ToBasement2
+            | Building1Basement1ToPlayerFloor
+            | Building1Basement1ToDowntown => {
+                GlobalGameState::QuittingBuilding1Basement1
+            }
+            Building1Basement2ToBasement1 => {
+                GlobalGameState::QuittingBuilding1Basement2
+            }
+            DowntownToBuilding1PlayerFloor
+            | DowntownToClinic
+            | DowntownToClinicWard
+            | DowntownToCompound
+            | DowntownToMall
+            | DowntownToPlantShop
+            | DowntownToSewers
+            | DowntownToTwinpeaksApartment => GlobalGameState::QuittingDowntown,
+            ClinicToDowntown => GlobalGameState::QuittingClinic,
+            ClinicWardToDowntown => GlobalGameState::QuittingClinicWard,
+            PlantShopToDowntown => GlobalGameState::QuittingPlantShop,
+            SewersToDowntown => GlobalGameState::QuittingSewers,
+            CompoundToDowntown => GlobalGameState::QuittingCompound,
+            CompoundToTower => GlobalGameState::QuittingCompound,
+            TwinpeaksApartmentToDowntown => {
+                GlobalGameState::QuittingTwinpeaksApartment
+            }
+            MallToDowntown => GlobalGameState::QuittingMall,
+            TowerToCompound => GlobalGameState::QuittingCompoundTower,
+        }
+    }
+
+    /// The transition between the scenes finishes at this state.
+    pub fn to_state(self) -> GlobalGameState {
+        use GlobalGameStateTransition::*;
+
+        match self {
+            BlankToNewGame => GlobalGameState::NewGame,
+            NewGameToBuilding1PlayerFloor => {
+                GlobalGameState::LoadingBuilding1PlayerFloor
+            }
+            RestartMeditation => GlobalGameState::LoadingMeditation,
+            DowntownToBuilding1PlayerFloor
+            | MeditationToBuilding1PlayerFloor
+            | Building1Basement1ToPlayerFloor
+            | Sleeping => GlobalGameState::LoadingBuilding1PlayerFloor,
+            Building1PlayerFloorToMeditation => {
+                GlobalGameState::LoadingMeditation
+            }
+            Building1Basement2ToBasement1
+            | Building1PlayerFloorToBuilding1Basement1 => {
+                GlobalGameState::LoadingBuilding1Basement1
+            }
+            Building1PlayerFloorToDowntown | Building1Basement1ToDowntown => {
+                GlobalGameState::LoadingDowntown
+            }
+            Building1Basement1ToBasement2 => {
+                GlobalGameState::LoadingBuilding1Basement2
+            }
+            DowntownToClinic => GlobalGameState::LoadingClinic,
+            DowntownToClinicWard => GlobalGameState::LoadingClinicWard,
+            TowerToCompound | DowntownToCompound => {
+                GlobalGameState::LoadingCompound
+            }
+            DowntownToMall => GlobalGameState::LoadingMall,
+            DowntownToPlantShop => GlobalGameState::LoadingPlantShop,
+            DowntownToSewers => GlobalGameState::LoadingSewers,
+            DowntownToTwinpeaksApartment => {
+                GlobalGameState::LoadingTwinpeaksApartment
+            }
+            TwinpeaksApartmentToDowntown
+            | MallToDowntown
+            | ClinicToDowntown
+            | ClinicWardToDowntown
+            | PlantShopToDowntown
+            | SewersToDowntown
+            | CompoundToDowntown => GlobalGameState::LoadingDowntown,
+            CompoundToTower => GlobalGameState::LoadingCompoundTower,
+        }
+    }
+}
+
+impl<'w, 's> TransitionParams<'w, 's> {
+    /// Goes to the next state according to the transition.
+    /// Uses a default loading screen setting - a random atlas for 1s.
+    pub fn begin(&mut self, transition: GlobalGameStateTransition) {
+        self.begin_with_settings(transition, LoadingScreenSettings {
+            atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
+            stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
+            ..default()
+        })
+    }
+
+    /// Goes to the next state according to the transition.
+    pub fn begin_with_settings(
+        &mut self,
+        transition: GlobalGameStateTransition,
+        loading_screen_settings: LoadingScreenSettings,
+    ) {
+        self.cmd.insert_resource(loading_screen_settings);
+
+        self.next_loading_screen_state
+            .set(common_loading_screen::start_state());
+
+        *self.transition = transition;
+        self.next_state.set(transition.from_state());
     }
 }
