@@ -15,6 +15,7 @@ pub enum LoadingScreenAtlas {
     Bunny,
     Space,
     Hedgehog,
+    LoFiGirl,
 
     /// Special loading screen for after sleep transition.
     WinnieInBathroom,
@@ -23,7 +24,8 @@ pub enum LoadingScreenAtlas {
 impl LoadingScreenAtlas {
     /// Picks a random loading screen.
     pub fn random() -> Self {
-        let variants = &[Self::Hedgehog, Self::Bunny, Self::Space];
+        let variants =
+            &[Self::Hedgehog, Self::Bunny, Self::Space, Self::LoFiGirl];
 
         variants[rand::random::<usize>() % variants.len()]
     }
@@ -38,6 +40,7 @@ impl LoadingScreenAtlas {
             Self::Hedgehog => {
                 common_assets::misc::LOADING_SCREEN_HEDGEHOG_ATLAS
             }
+            Self::LoFiGirl => common_assets::misc::LOADING_SCREEN_LOFI_GIRL,
         }
     }
 
@@ -64,6 +67,12 @@ impl LoadingScreenAtlas {
                 8,
                 vec2(122.0, 206.0),
                 2.0,
+                AtlasAnimationEnd::LoopIndefinitely,
+            ),
+            Self::LoFiGirl => (
+                7,
+                vec2(202.0, 116.0),
+                3.0,
                 AtlasAnimationEnd::LoopIndefinitely,
             ),
         };
