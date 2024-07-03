@@ -3,7 +3,13 @@
 //! See the wiki for more information about how the traits exactly work etc,
 //! because lots of logic related to them is spread across the codebase.
 
-use crate::{hud::daybar::Beats, prelude::*};
+use crate::{
+    hud::{
+        daybar::Beats,
+        notification::{Notification, NotificationFifo},
+    },
+    prelude::*,
+};
 
 /// The main resource for the player's stats.
 #[derive(Resource, Default)]
@@ -22,6 +28,21 @@ pub struct PlayerStats {
     /// If positive, how many days in a row did the player deplete their beats?
     /// If negative, how many days in a row didn't they deplete their beats?
     pub days_depleting_beats_streak: isize,
+    /// We keep track of the locations the player visited.
+    pub visited: VisitedLocations,
+}
+
+/// List of important locations that the player can visit.
+#[derive(Default)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
+pub struct VisitedLocations {
+    downtown: bool,
+    mall: bool,
+    sewers: bool,
+    compound: bool,
+    compound_tower: bool,
+    plant_shop: bool,
+    clinic: bool,
 }
 
 /// List of traits that the player has or can have.
@@ -169,5 +190,71 @@ impl EarlyBird {
         self.extra_beats_today += Beats(discounted_beats);
 
         Beats(cost - discounted_beats)
+    }
+}
+
+impl VisitedLocations {
+    /// Visited downtown.
+    pub fn downtown(&mut self, notifications: &mut NotificationFifo) {
+        if self.downtown {
+            return;
+        }
+        self.downtown = true;
+        notifications.push(Notification::new_location_discovered("Downtown"));
+    }
+
+    /// Visited mall.
+    pub fn mall(&mut self, notifications: &mut NotificationFifo) {
+        if self.mall {
+            return;
+        }
+        self.mall = true;
+        notifications.push(Notification::new_location_discovered("Mall"));
+    }
+
+    /// Visited sewers.
+    pub fn sewers(&mut self, notifications: &mut NotificationFifo) {
+        if self.sewers {
+            return;
+        }
+        self.sewers = true;
+        notifications.push(Notification::new_location_discovered("Sewers"));
+    }
+
+    /// Visited compound.
+    pub fn compound(&mut self, notifications: &mut NotificationFifo) {
+        if self.compound {
+            return;
+        }
+        self.compound = true;
+        notifications.push(Notification::new_location_discovered("Compound"));
+    }
+
+    /// Visited compound tower.
+    pub fn compound_tower(&mut self, notifications: &mut NotificationFifo) {
+        if self.compound_tower {
+            return;
+        }
+        self.compound_tower = true;
+        notifications
+            .push(Notification::new_location_discovered("Compound Tower"));
+    }
+
+    /// Visited plant shop.
+    pub fn plant_shop(&mut self, notifications: &mut NotificationFifo) {
+        if self.plant_shop {
+            return;
+        }
+        self.plant_shop = true;
+        notifications.push(Notification::new_location_discovered("Plant Shop"));
+    }
+
+    /// Visited clinic.
+    pub fn clinic(&mut self, notifications: &mut NotificationFifo) {
+        if self.clinic {
+            return;
+        }
+        self.clinic = true;
+        notifications.push(Notification::new_location_discovered("Clinic"));
     }
 }

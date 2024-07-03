@@ -1,10 +1,11 @@
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::{sq, GridDirection};
-use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_story::Character;
 use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{
-    cutscene::in_cutscene, hud::daybar::UpdateDayBarEvent,
+    cutscene::in_cutscene,
+    hud::{daybar::UpdateDayBarEvent, notification::NotificationFifo},
+    player_stats::PlayerStats,
     top_down::layout::LAYOUT,
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
@@ -72,11 +73,14 @@ fn spawn(
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     transition: Res<GlobalGameStateTransition>,
     mut daybar_event: ResMut<Events<UpdateDayBarEvent>>,
+    mut notifications: ResMut<NotificationFifo>,
+    mut player_stats: ResMut<PlayerStats>,
 
     mut camera: Query<&mut Transform, With<MainCamera>>,
     mut q: Query<&mut TscnTreeHandle<Compound>>,
 ) {
     info!("Spawning {Compound:?} scene");
+    player_stats.visited.compound(&mut notifications);
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
@@ -202,38 +206,10 @@ impl top_down::layout::Tile for CompoundTileKind {
     }
 }
 
-fn go_to_downtown(
-    mut cmd: Commands,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
-) {
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-        ..default()
-    });
-
-    next_loading_screen_state.set(common_loading_screen::start_state());
-
-    *transition = GlobalGameStateTransition::CompoundToDowntown;
-    next_state.set(Compound::quitting());
+fn go_to_downtown(mut transition_params: TransitionParams) {
+    transition_params.begin(GlobalGameStateTransition::CompoundToDowntown);
 }
 
-fn enter_tower(
-    mut cmd: Commands,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
-) {
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-        ..default()
-    });
-
-    next_loading_screen_state.set(common_loading_screen::start_state());
-
-    *transition = GlobalGameStateTransition::CompoundToTower;
-    next_state.set(Compound::quitting());
+fn enter_tower(mut transition_params: TransitionParams) {
+    transition_params.begin(GlobalGameStateTransition::CompoundToTower);
 }

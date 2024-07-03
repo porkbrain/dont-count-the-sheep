@@ -1,7 +1,7 @@
 use std::{marker::PhantomData, sync::Arc};
 
 use bevy::{
-    asset::{AssetServer, Handle, StrongHandle},
+    asset::{AssetServer, Handle, StrongHandle, UntypedHandle},
     ecs::system::{Commands, Res, Resource},
     log::error,
     prelude::default,
@@ -87,15 +87,13 @@ impl<T: AssetList> AssetStore<T> {
 
     pub fn are_all_loaded(
         &self,
-        _asset_server: &bevy::asset::AssetServer,
+        asset_server: &bevy::asset::AssetServer,
     ) -> bool {
-        true
-        // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/87
-        // self.assets.values().all(|h| {
-        //     asset_server.is_loaded_with_dependencies(UntypedHandle::Strong(
-        //         Arc::clone(h),
-        //     ))
-        // })
+        self.assets.values().all(|h| {
+            asset_server.is_loaded_with_dependencies(UntypedHandle::Strong(
+                Arc::clone(h),
+            ))
+        })
     }
 }
 
