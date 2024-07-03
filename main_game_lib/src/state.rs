@@ -362,55 +362,6 @@ impl GlobalGameStateTransition {
             TowerToCompound => GlobalGameState::QuittingCompoundTower,
         }
     }
-
-    /// The transition between the scenes finishes at this state.
-    pub fn to_state(self) -> GlobalGameState {
-        use GlobalGameStateTransition::*;
-
-        match self {
-            BlankToNewGame => GlobalGameState::NewGame,
-            NewGameToBuilding1PlayerFloor => {
-                GlobalGameState::LoadingBuilding1PlayerFloor
-            }
-            RestartMeditation => GlobalGameState::LoadingMeditation,
-            DowntownToBuilding1PlayerFloor
-            | MeditationToBuilding1PlayerFloor
-            | Building1Basement1ToPlayerFloor
-            | Sleeping => GlobalGameState::LoadingBuilding1PlayerFloor,
-            Building1PlayerFloorToMeditation => {
-                GlobalGameState::LoadingMeditation
-            }
-            Building1Basement2ToBasement1
-            | Building1PlayerFloorToBuilding1Basement1 => {
-                GlobalGameState::LoadingBuilding1Basement1
-            }
-            Building1PlayerFloorToDowntown | Building1Basement1ToDowntown => {
-                GlobalGameState::LoadingDowntown
-            }
-            Building1Basement1ToBasement2 => {
-                GlobalGameState::LoadingBuilding1Basement2
-            }
-            DowntownToClinic => GlobalGameState::LoadingClinic,
-            DowntownToClinicWard => GlobalGameState::LoadingClinicWard,
-            TowerToCompound | DowntownToCompound => {
-                GlobalGameState::LoadingCompound
-            }
-            DowntownToMall => GlobalGameState::LoadingMall,
-            DowntownToPlantShop => GlobalGameState::LoadingPlantShop,
-            DowntownToSewers => GlobalGameState::LoadingSewers,
-            DowntownToTwinpeaksApartment => {
-                GlobalGameState::LoadingTwinpeaksApartment
-            }
-            TwinpeaksApartmentToDowntown
-            | MallToDowntown
-            | ClinicToDowntown
-            | ClinicWardToDowntown
-            | PlantShopToDowntown
-            | SewersToDowntown
-            | CompoundToDowntown => GlobalGameState::LoadingDowntown,
-            CompoundToTower => GlobalGameState::LoadingCompoundTower,
-        }
-    }
 }
 
 impl<'w, 's> TransitionParams<'w, 's> {
