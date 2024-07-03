@@ -1166,7 +1166,7 @@ position = Vector2(0, 13)
 
 [node name="Dlazdicky545" type="Sprite2D" parent="MallRoot/Mall"]
 z_index = -6
-position = Vector2(108, 306)
+position = Vector2(103, 308)
 texture = ExtResource("82_65uwp")
 
 [node name="MallBins" type="Node2D" parent="MallRoot"]
