@@ -1,14 +1,14 @@
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::{sq, Square};
-use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_story::Character;
 use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{
     cutscene::in_cutscene,
     hud::{
         daybar::{DayBar, DayBarDependent, UpdateDayBarEvent},
-        notification::{Notification, NotificationFifo},
+        notification::NotificationFifo,
     },
+    player_stats::PlayerStats,
     top_down::{
         inspect_and_interact::{
             ChangeHighlightedInspectLabelEvent,
@@ -103,14 +103,15 @@ fn spawn(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     transition: Res<GlobalGameStateTransition>,
-    mut notifications: ResMut<NotificationFifo>,
     mut daybar_event: ResMut<Events<UpdateDayBarEvent>>,
+    mut notifications: ResMut<NotificationFifo>,
+    mut player_stats: ResMut<PlayerStats>,
 
     mut camera: Query<&mut Transform, With<MainCamera>>,
     mut q: Query<&mut TscnTreeHandle<Downtown>>,
 ) {
     info!("Spawning downtown scene");
-    notifications.push(Notification::new_location_discovered("Downtown"));
+    player_stats.visited.downtown(&mut notifications);
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
     let mut zone_to_inspect_label_entity = ZoneToInspectLabelEntity::default();
@@ -294,30 +295,14 @@ impl top_down::layout::Tile for DowntownTileKind {
     }
 }
 
-fn enter_building1(
-    mut cmd: Commands,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
-) {
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-        ..default()
-    });
-
-    next_loading_screen_state.set(common_loading_screen::start_state());
-
-    *transition = GlobalGameStateTransition::DowntownToBuilding1PlayerFloor;
-    next_state.set(Downtown::quitting());
+fn enter_building1(mut transition_params: TransitionParams) {
+    transition_params
+        .begin(GlobalGameStateTransition::DowntownToBuilding1PlayerFloor);
 }
 
 fn enter_mall(
-    mut cmd: Commands,
+    mut transition_params: TransitionParams,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
     zone_to_inspect_label_entity: Res<
         ZoneToInspectLabelEntity<DowntownTileKind>,
     >,
@@ -333,24 +318,12 @@ fn enter_mall(
         return;
     }
 
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-        ..default()
-    });
-
-    next_loading_screen_state.set(common_loading_screen::start_state());
-
-    *transition = GlobalGameStateTransition::DowntownToMall;
-    next_state.set(Downtown::quitting());
+    transition_params.begin(GlobalGameStateTransition::DowntownToMall);
 }
 
 fn enter_clinic(
-    mut cmd: Commands,
+    mut transition_params: TransitionParams,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
     zone_to_inspect_label_entity: Res<
         ZoneToInspectLabelEntity<DowntownTileKind>,
     >,
@@ -366,24 +339,12 @@ fn enter_clinic(
         return;
     }
 
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-        ..default()
-    });
-
-    next_loading_screen_state.set(common_loading_screen::start_state());
-
-    *transition = GlobalGameStateTransition::DowntownToClinic;
-    next_state.set(Downtown::quitting());
+    transition_params.begin(GlobalGameStateTransition::DowntownToClinic);
 }
 
 fn enter_clinic_ward(
-    mut cmd: Commands,
+    mut transition_params: TransitionParams,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
     zone_to_inspect_label_entity: Res<
         ZoneToInspectLabelEntity<DowntownTileKind>,
     >,
@@ -399,24 +360,12 @@ fn enter_clinic_ward(
         return;
     }
 
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-        ..default()
-    });
-
-    next_loading_screen_state.set(common_loading_screen::start_state());
-
-    *transition = GlobalGameStateTransition::DowntownToClinicWard;
-    next_state.set(Downtown::quitting());
+    transition_params.begin(GlobalGameStateTransition::DowntownToClinicWard);
 }
 
 fn enter_plant_shop(
-    mut cmd: Commands,
+    mut transition_params: TransitionParams,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
     zone_to_inspect_label_entity: Res<
         ZoneToInspectLabelEntity<DowntownTileKind>,
     >,
@@ -432,70 +381,20 @@ fn enter_plant_shop(
         return;
     }
 
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-        ..default()
-    });
-
-    next_loading_screen_state.set(common_loading_screen::start_state());
-
-    *transition = GlobalGameStateTransition::DowntownToPlantShop;
-    next_state.set(Downtown::quitting());
+    transition_params.begin(GlobalGameStateTransition::DowntownToPlantShop);
 }
 
-fn enter_twinpeaks_apartment(
-    mut cmd: Commands,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
-) {
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-        ..default()
-    });
-
-    next_loading_screen_state.set(common_loading_screen::start_state());
-
-    *transition = GlobalGameStateTransition::DowntownToTwinpeaksApartment;
-    next_state.set(Downtown::quitting());
+fn enter_twinpeaks_apartment(mut transition_params: TransitionParams) {
+    transition_params
+        .begin(GlobalGameStateTransition::DowntownToTwinpeaksApartment);
 }
 
-fn enter_sewers(
-    mut cmd: Commands,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
-) {
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-        ..default()
-    });
-
-    next_loading_screen_state.set(common_loading_screen::start_state());
-
-    *transition = GlobalGameStateTransition::DowntownToSewers;
-    next_state.set(Downtown::quitting());
+fn enter_sewers(mut transition_params: TransitionParams) {
+    transition_params.begin(GlobalGameStateTransition::DowntownToSewers);
 }
 
-fn enter_compound(
-    mut cmd: Commands,
-    mut transition: ResMut<GlobalGameStateTransition>,
-    mut next_state: ResMut<NextState<GlobalGameState>>,
-    mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
-) {
-    cmd.insert_resource(LoadingScreenSettings {
-        atlas: Some(common_loading_screen::LoadingScreenAtlas::random()),
-        stare_at_loading_screen_for_at_least: Some(from_millis(1000)),
-        ..default()
-    });
-
-    next_loading_screen_state.set(common_loading_screen::start_state());
-
-    *transition = GlobalGameStateTransition::DowntownToCompound;
-    next_state.set(Downtown::quitting());
+fn enter_compound(mut transition_params: TransitionParams) {
+    transition_params.begin(GlobalGameStateTransition::DowntownToCompound);
 }
 
 fn show_label_closed(

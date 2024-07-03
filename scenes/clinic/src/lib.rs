@@ -16,7 +16,7 @@ use crate::layout::LayoutEntity;
 
 /// Important scene struct.
 /// We use it as identifiable generic in common logic.
-#[derive(TypePath, Default)]
+#[derive(TypePath, Default, Debug)]
 pub struct Clinic;
 
 impl TopDownScene for Clinic {
@@ -78,7 +78,7 @@ pub enum ClinicAction {
 }
 
 pub fn add(app: &mut App) {
-    info!("Adding Clinic to app");
+    info!("Adding {Clinic:?} to app");
 
     app.add_event::<ClinicAction>();
 
@@ -123,7 +123,7 @@ pub fn add(app: &mut App) {
             .run_if(Clinic::in_quitting_state()),
     );
 
-    info!("Added Clinic to app");
+    info!("Added {Clinic:?} to app");
 }
 
 fn finish_when_everything_loaded(
@@ -140,7 +140,7 @@ fn finish_when_everything_loaded(
 }
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
-    info!("Entering Clinic");
+    info!("Entering {Clinic:?}");
     next_state.set(Clinic::running());
 }
 
@@ -149,7 +149,7 @@ fn exit(
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 ) {
-    info!("Leaving Clinic");
+    info!("Leaving {Clinic:?}");
 
     // be a good guy and don't invade other game loops with "Enter"
     controls.consume(&GlobalAction::Interact);
@@ -160,7 +160,7 @@ fn exit(
             next_state.set(GlobalGameState::LoadingDowntown);
         }
         _ => {
-            unreachable!("Invalid Clinic transition {transition:?}");
+            unreachable!("Invalid {Clinic:?} transition {transition:?}");
         }
     }
 }
