@@ -151,7 +151,7 @@ sprite_frames = SubResource("SpriteFrames_3xvgv")
 position = Vector2(0, 24)
 
 [node name="Mallisles" type="Sprite2D" parent="."]
-position = Vector2(-2, -12)
+position = Vector2(-3, 46)
 texture = ExtResource("3_7qiwu")
 
 [node name="YSort" type="Node2D" parent="Mallisles"]

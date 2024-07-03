@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://cfuxf3w4hro7y"]
+[gd_scene load_steps=29 format=3 uid="uid://cfuxf3w4hro7y"]
 
 [ext_resource type="Texture2D" uid="uid://58ji12gkirbl" path="res://assets/compound/compound_bg.png" id="1_ubi6a"]
 [ext_resource type="Texture2D" uid="uid://cfg13e2oo8f38" path="res://assets/downtown/fence_stone.png" id="2_0w2gu"]
@@ -26,7 +26,8 @@
 [ext_resource type="Texture2D" uid="uid://23c5ijf36vuo" path="res://assets/environment/rock_big.png" id="24_5wmcb"]
 [ext_resource type="Texture2D" uid="uid://g7jvblpokvop" path="res://assets/environment/mushroom2.png" id="25_p4lyc"]
 [ext_resource type="Texture2D" uid="uid://befj4fdhgdkwi" path="res://assets/environment/mushroom3.png" id="26_kl1iv"]
-[ext_resource type="Texture2D" uid="uid://be61pdsfo8tko" path="res://assets/downtown/hanging_plants.png" id="27_f2awf"]
+[ext_resource type="Texture2D" uid="uid://oroa0xkc4ok0" path="res://assets/downtown/hanging_plants2.png" id="27_sx323"]
+[ext_resource type="Texture2D" uid="uid://bxw8mq2ynsea7" path="res://assets/compound/greenhouse.png" id="28_aojpr"]
 
 [node name="Compound" type="Node2D"]
 
@@ -130,7 +131,7 @@ position = Vector2(13, 79)
 texture = ExtResource("5_qo1k0")
 
 [node name="BigTree5" type="Sprite2D" parent="SouthBorder"]
-position = Vector2(-736, 226)
+position = Vector2(-844, 236)
 texture = ExtResource("4_codlm")
 
 [node name="YSort" type="Node2D" parent="SouthBorder/BigTree5"]
@@ -190,7 +191,7 @@ flip_h = true
 position = Vector2(0, 61)
 
 [node name="JehlicnanFlipped6" type="Sprite2D" parent="SouthBorder"]
-position = Vector2(-290, 153)
+position = Vector2(-271, 159)
 texture = ExtResource("2_tobpx")
 flip_h = true
 
@@ -252,7 +253,7 @@ texture = ExtResource("13_shc4b")
 position = Vector2(-2, 21)
 
 [node name="Sipek2" type="Sprite2D" parent="SouthBorder"]
-position = Vector2(-159, 254)
+position = Vector2(-159, 251)
 texture = ExtResource("13_shc4b")
 
 [node name="YSort" type="Node2D" parent="SouthBorder/Sipek2"]
@@ -427,12 +428,12 @@ position = Vector2(-567, 174)
 texture = ExtResource("7_155qn")
 
 [node name="MushroomTree" type="Sprite2D" parent="."]
-position = Vector2(-744, 295)
+position = Vector2(-851, 304)
 texture = ExtResource("22_m17tt")
 flip_h = true
 
 [node name="Mushroom4" type="Sprite2D" parent="."]
-position = Vector2(-709, 319)
+position = Vector2(-610, 232)
 texture = ExtResource("23_m5orf")
 
 [node name="RockBig" type="Sprite2D" parent="."]
@@ -464,9 +465,16 @@ position = Vector2(-1025, 186)
 texture = ExtResource("6_sto4t")
 
 [node name="Weed" type="Sprite2D" parent="."]
-position = Vector2(-274, 248)
+position = Vector2(-292, 228)
 texture = ExtResource("5_qo1k0")
 
-[node name="HangingPlants" type="Sprite2D" parent="."]
-position = Vector2(-41, 233)
-texture = ExtResource("27_f2awf")
+[node name="HangingPlants2" type="Sprite2D" parent="."]
+position = Vector2(-68, 246)
+texture = ExtResource("27_sx323")
+
+[node name="Greenhouse" type="Sprite2D" parent="."]
+position = Vector2(-738, 177)
+texture = ExtResource("28_aojpr")
+
+[node name="YSort" type="Node2D" parent="Greenhouse"]
+position = Vector2(0, 89)

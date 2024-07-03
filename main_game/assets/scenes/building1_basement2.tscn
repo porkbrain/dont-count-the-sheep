@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://e5yy5730l3t2"]
+[gd_scene load_steps=28 format=3 uid="uid://e5yy5730l3t2"]
 
 [ext_resource type="Texture2D" uid="uid://b286ya8t5yw16" path="res://assets/residential/indoors/basement.png" id="1_ikw8b"]
 [ext_resource type="Texture2D" uid="uid://cn8rbfh0g5jtm" path="res://assets/downtown/trashcan_tables.png" id="2_307ea"]
@@ -23,6 +23,7 @@
 [ext_resource type="Texture2D" uid="uid://dhfgp56ya8s8v" path="res://assets/residential/indoors/pc_table.png" id="21_sxy7u"]
 [ext_resource type="Texture2D" uid="uid://d0p4h412y5qxu" path="res://assets/residential/indoors/sofa_old.png" id="22_epthn"]
 [ext_resource type="Texture2D" uid="uid://p6v71m55dqgx" path="res://assets/residential/indoors/calendar.png" id="23_v4bhr"]
+[ext_resource type="Texture2D" uid="uid://djwu0x07tqjam" path="res://assets/residential/indoors/bin_small_back.png" id="24_7ihl6"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_rnymp"]
 atlas = ExtResource("2_ax6ay")
@@ -221,3 +222,7 @@ texture = ExtResource("22_epthn")
 [node name="Calendar" type="Sprite2D" parent="."]
 position = Vector2(-29, -49)
 texture = ExtResource("23_v4bhr")
+
+[node name="BinSmallBack" type="Sprite2D" parent="."]
+position = Vector2(199, 97)
+texture = ExtResource("24_7ihl6")

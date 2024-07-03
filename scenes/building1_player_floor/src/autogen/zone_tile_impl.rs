@@ -46,10 +46,10 @@ Self::ElevatorZone => Some(&[Self::HallwayZone]),
 Self::PlayerDoorZone => Some(&[Self::HallwayZone,Self::PlayerApartmentZone]),
 Self::MeditationZone => Some(&[Self::PlayerApartmentZone]),
 Self::TeaZone => Some(&[Self::PlayerApartmentZone]),
-Self::BottomLeftApartmentZone => Some(&[Self::HallwayZone,Self::BottomLeftApartmentDoorZone,Self::BottomLeftApartmentBathroomDoorZone]),
+Self::BottomLeftApartmentZone => Some(&[Self::HallwayZone,Self::BottomLeftApartmentDoorZone,Self::BottomLeftApartmentBathroomDoorZone,Self::BottomRightApartmentZone]),
 Self::BottomLeftApartmentDoorZone => Some(&[Self::HallwayZone,Self::BottomLeftApartmentZone]),
 Self::BottomLeftApartmentBathroomDoorZone => Some(&[Self::BottomLeftApartmentZone]),
-Self::BottomRightApartmentZone => Some(&[Self::HallwayZone,Self::BottomRightApartmentDoorZone]),
+Self::BottomRightApartmentZone => Some(&[Self::HallwayZone,Self::BottomLeftApartmentZone,Self::BottomRightApartmentDoorZone]),
 Self::BottomRightApartmentDoorZone => Some(&[Self::HallwayZone,Self::BottomRightApartmentZone]),
  #[allow(unreachable_patterns)] _ => None, }
 }
