@@ -108,6 +108,9 @@ pub mod misc {
         "misc/loading_screens/winnie_in_bathroom_atlas.png";
     pub const LOADING_SCREEN_HEDGEHOG_ATLAS: &str =
         "misc/loading_screens/hedgehog_atlas.png";
+    pub const LOADING_SCREEN_LOFI_GIRL: &str =
+        "misc/loading_screens/pc_atlas.png";
+
     pub const EMOJI_ATLAS: &str = "misc/emoji_atlas.png";
 }
 
