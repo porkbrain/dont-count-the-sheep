@@ -387,12 +387,12 @@ texture = ExtResource("15_c65y4")
 [node name="YSort" type="Node2D" parent="CounterWidePurple3"]
 position = Vector2(1, 14)
 
-[node name="PlantYellow" type="Sprite2D" parent="."]
-position = Vector2(-135, -69)
+[node name="PlantYellow" type="Sprite2D" parent="CounterWidePurple3"]
+position = Vector2(-140, -61)
 texture = ExtResource("41_ia3bp")
 
-[node name="PlantYellow2" type="Sprite2D" parent="."]
-position = Vector2(-25, -24)
+[node name="PlantYellow2" type="Sprite2D" parent="CounterWidePurple3"]
+position = Vector2(-30, -16)
 texture = ExtResource("41_ia3bp")
 
 [node name="PlantPink" type="Sprite2D" parent="."]
