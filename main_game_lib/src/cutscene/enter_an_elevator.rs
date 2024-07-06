@@ -76,7 +76,7 @@ impl IntoCutscene for EnterAnElevator {
                 who: camera,
                 to: cutscene::Destination::Entity(player),
                 over: from_millis(1000),
-                animation_curve: Some(EASE_IN_OUT.clone()),
+                animation_curve: Some(*EASE_IN_OUT),
             },
             // open the elevator door
             InsertAtlasAnimationTimerTo {

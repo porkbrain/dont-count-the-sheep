@@ -573,7 +573,7 @@ impl InspectLabelDisplayed {
         begin_interpolation.send(
             BeginInterpolationEvent::of_color(text, None, to_color)
                 .over(FADE_OUT_IN)
-                .with_animation_curve(TEXT_ANIMATION_CURVE.clone())
+                .with_animation_curve(*TEXT_ANIMATION_CURVE)
                 .when_finished_do(move |cmd| {
                     cmd.entity(label_entity).remove::<Self>();
                     cmd.entity(text).despawn_recursive();
@@ -583,7 +583,7 @@ impl InspectLabelDisplayed {
         begin_interpolation.send(
             BeginInterpolationEvent::of_color(bg, None, Color::NONE)
                 .over(FADE_OUT_IN)
-                .with_animation_curve(BG_ANIMATION_CURVE.clone())
+                .with_animation_curve(*BG_ANIMATION_CURVE)
                 .when_finished_despawn_recursive_itself(),
         );
     }
