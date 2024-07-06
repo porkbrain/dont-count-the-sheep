@@ -19,7 +19,6 @@ pub(crate) const POLPO_STATIC: f32 = -0.1; // children so start at 0
 pub(crate) const POLPO_CRACK: f32 = POLPO_BASE;
 pub(crate) const POLPO_TENTACLES: f32 = 0.1; // children so start at 0
 pub(crate) const POLPO_FRAME: f32 = 0.2; // children so start at 0
-pub(crate) const POLPO_BOLT: f32 = 0.3; // children so start at 0
 
 pub(crate) const HOSHI: f32 = 4.0;
 pub(crate) const HOSHI_ARROW: f32 = HOSHI;

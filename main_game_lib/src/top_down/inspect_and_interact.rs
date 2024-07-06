@@ -19,7 +19,7 @@
 
 use std::{borrow::Cow, time::Duration};
 
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{color::palettes::css::ORANGE, prelude::*, utils::HashMap};
 use common_action::{ActionState, GlobalAction};
 use common_ext::QueryExt;
 use common_store::{GlobalStore, InspectAbilityStore};
@@ -49,7 +49,7 @@ const FADE_OUT_IN: Duration = Duration::from_millis(5000);
 ///
 /// You should not need to implement this manually as long as your type
 /// implements [`Event`] and [`Clone`].
-pub trait ActionEvent: Event {
+pub trait ActionEvent: Send + Sync + 'static {
     /// To keep the trait object safe, we cannot use a generic here.
     /// The solution to type erasure is to use commands.
     ///
@@ -652,7 +652,7 @@ impl InspectLabelCategory {
     fn color(self) -> Color {
         match self {
             InspectLabelCategory::Default => Color::WHITE,
-            InspectLabelCategory::Npc => Color::ORANGE,
+            InspectLabelCategory::Npc => ORANGE.into(),
         }
     }
 

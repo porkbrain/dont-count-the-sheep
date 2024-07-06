@@ -1,6 +1,10 @@
 use std::{collections::BTreeMap, fs};
 
-use bevy::{utils::HashSet, window::PrimaryWindow};
+use bevy::{
+    color::palettes::css::{GOLD, GREEN, RED},
+    utils::HashSet,
+    window::PrimaryWindow,
+};
 use bevy_egui::EguiContexts;
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_visuals::camera::MainCamera;
@@ -413,22 +417,22 @@ fn export_map<T: TopDownScene>(
 impl<L: Eq> TileKind<L> {
     fn color(self) -> Color {
         match self {
-            Self::Empty => Color::BLACK.with_a(0.25),
-            Self::Wall => Color::BLACK.with_a(0.8),
-            Self::Trail => Color::WHITE.with_a(0.25),
-            Self::Actor { .. } => Color::GOLD.with_a(0.25),
-            Self::Local(_) => Color::RED.with_a(0.25),
+            Self::Empty => Color::BLACK.with_alpha(0.25),
+            Self::Wall => Color::BLACK.with_alpha(0.8),
+            Self::Trail => Color::WHITE.with_alpha(0.25),
+            Self::Actor { .. } => GOLD.with_alpha(0.25).into(),
+            Self::Local(_) => RED.with_alpha(0.25).into(),
         }
     }
 
     fn color_selected(self) -> Color {
         match self {
-            Self::Empty => Color::BLACK.with_a(0.25),
-            Self::Wall => Color::BLACK.with_a(0.9),
-            Self::Trail => Color::WHITE.with_a(0.5),
+            Self::Empty => Color::BLACK.with_alpha(0.25),
+            Self::Wall => Color::BLACK.with_alpha(0.9),
+            Self::Trail => Color::WHITE.with_alpha(0.5),
             // no point as it's not selectable
             Self::Actor { .. } => self.color(),
-            Self::Local(_) => Color::GREEN.with_a(0.25),
+            Self::Local(_) => GREEN.with_alpha(0.25).into(),
         }
     }
 }

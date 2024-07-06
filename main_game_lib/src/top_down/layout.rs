@@ -10,7 +10,10 @@ pub(crate) mod systems;
 
 use std::marker::PhantomData;
 
-use bevy::{math::vec2, prelude::*, utils::hashbrown::HashMap};
+use bevy::{
+    math::vec2, prelude::*, reflect::GetTypeRegistration,
+    utils::hashbrown::HashMap,
+};
 use bevy_grid_squared::{Square, SquareLayout};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use smallvec::SmallVec;
@@ -58,6 +61,7 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
 /// Defines tile behavior.
 pub trait Tile:
     TypePath
+    + GetTypeRegistration
     + Clone
     + Copy
     + Default

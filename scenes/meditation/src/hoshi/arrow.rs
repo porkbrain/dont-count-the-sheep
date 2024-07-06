@@ -12,9 +12,6 @@ use crate::{
     prelude::*,
 };
 
-/// The arrow is lit by a light source.
-const LIGHT_COLOR: &str = "#d9ff75";
-
 #[derive(Component)]
 pub(super) struct Arrow;
 
@@ -37,13 +34,6 @@ pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 zindex::HOSHI_ARROW,
             )),
             visibility: Visibility::Hidden,
-            ..default()
-        },
-        OmniLightSource2D {
-            intensity: 0.75,
-            color: Color::hex(LIGHT_COLOR).unwrap(),
-            jitter_intensity: 1.0,
-            falloff: Vec3::new(3.0, 3.0, 0.05),
             ..default()
         },
     ));
