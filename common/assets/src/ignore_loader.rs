@@ -6,7 +6,10 @@
 
 use std::convert::Infallible;
 
-use bevy::asset::{io::Reader, AssetLoader, LoadContext};
+use bevy::{
+    asset::{io::Reader, AssetLoader, LoadContext},
+    utils::ConditionalSendFuture,
+};
 
 /// Files loaded by this loader are ignored.
 /// The bytes are not polled from the reader.
@@ -23,7 +26,12 @@ impl AssetLoader for Loader {
         _reader: &'a mut Reader,
         _settings: &'a Self::Settings,
         _load_context: &'a mut LoadContext,
-    ) -> bevy::utils::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> impl ConditionalSendFuture<
+        Output = Result<
+            <Self as AssetLoader>::Asset,
+            <Self as AssetLoader>::Error,
+        >,
+    > {
         Box::pin(async move { Ok(()) })
     }
 

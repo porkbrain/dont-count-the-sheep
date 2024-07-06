@@ -1,5 +1,4 @@
 use bevy::render::view::RenderLayers;
-use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use common_visuals::camera::render_layer;
 use main_game_lib::common_ext::QueryExt;
 

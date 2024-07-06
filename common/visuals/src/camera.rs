@@ -34,17 +34,17 @@ pub mod render_layer {
     //! rendered where.
 
     /// Objects and characters.
-    pub const OBJ: u8 = 1;
+    pub const OBJ: usize = 1;
     /// Background images.
-    pub const BG: u8 = 2;
+    pub const BG: usize = 2;
     /// Dialog entities such as portrait, text box and all.
-    pub const DIALOG: u8 = 25;
+    pub const DIALOG: usize = 25;
     /// Loading screen entities
-    pub const LOADING: u8 = 21;
+    pub const LOADING: usize = 21;
     /// Letterboxing quads are rendered to this layer.
-    pub const CUTSCENE_LETTERBOXING: u8 = 22;
+    pub const CUTSCENE_LETTERBOXING: usize = 22;
     /// Light scene
-    pub const LIGHT: u8 = 29;
+    pub const LIGHT: usize = 29;
 }
 
 pub mod order {

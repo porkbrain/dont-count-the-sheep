@@ -1,5 +1,4 @@
 use bevy::{render::view::RenderLayers, utils::HashSet};
-use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use bevy_webp_anim::WebpAnimator;
 use common_visuals::camera::render_layer;
 use rand::{random, seq::SliceRandom};

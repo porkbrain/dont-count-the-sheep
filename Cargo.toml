@@ -5,7 +5,6 @@ package.version = "0.1.0"
 resolver = "2"
 members = [
     "bevy_grid_squared",
-    "bevy_magic_light_2d",
     "common/action",
     "common/assets",
     "common/loading_screen",
@@ -32,20 +31,21 @@ members = [
 
 
 [workspace.dependencies.bevy]
-version = "=0.13.2"
+version = "=0.14.0"
 default-features = false
 features = [
     "bevy_asset",
+    "bevy_color",
     "bevy_core_pipeline",
     "bevy_gizmos",
-    "bevy_pbr",           # required by light crate
     "bevy_render",
     "bevy_sprite",
+    "bevy_state",
     "bevy_text",
     "bevy_ui",
     "bevy_winit",
     "hdr",
-    "multi-threaded",
+    "multi_threaded",
     "png",
     "tonemapping_luts",
     "webgl2",
@@ -53,11 +53,11 @@ features = [
 ]
 
 [workspace.dependencies]
-bevy_pixel_camera = "0.13"
-bevy_webp_anim = "0.3"
+bevy_pixel_camera = { git = "https://github.com/porkbrain/bevy_pixel_camera.git", branch = "bevy-v0.14" }
+bevy_webp_anim = "0.4"
 bevy-inspector-egui = { version = "0.24", default-features = false }
 leafwing-input-manager = "0.13"
-bevy_egui = "0.27"
+bevy_egui = "0.28"
 
 scene_building1_basement1 = { path = "scenes/building1_basement1" }
 scene_building1_basement2 = { path = "scenes/building1_basement2" }
@@ -74,7 +74,6 @@ scene_sewers = { path = "scenes/sewers" }
 scene_twinpeaks_apartment = { path = "scenes/twinpeaks_apartment" }
 
 bevy_grid_squared = { path = "bevy_grid_squared", features = ["serde"] }
-bevy_magic_light_2d = { path = "bevy_magic_light_2d" }
 common_action = { path = "common/action" }
 common_assets = { path = "common/assets" }
 common_ext = { path = "common/ext" }

@@ -1,7 +1,6 @@
 //! The background of the game comprises a starry sky and a shooting star.
 
 use bevy::{math::vec3, render::view::RenderLayers};
-use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use common_visuals::camera::render_layer;
 
 use crate::{cameras::BackgroundLightScene, prelude::*};

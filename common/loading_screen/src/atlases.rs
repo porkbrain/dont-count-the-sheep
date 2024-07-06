@@ -3,7 +3,7 @@
 //! This module enumerates all of them and provides a way to load them.
 
 use bevy::{
-    math::vec2, reflect::Reflect, sprite::TextureAtlasLayout, utils::default,
+    math::uvec2, reflect::Reflect, sprite::TextureAtlasLayout, utils::default,
 };
 use common_visuals::{AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer};
 
@@ -50,37 +50,31 @@ impl LoadingScreenAtlas {
         let (columns, tile_size, fps, on_last_frame) = match self {
             Self::Bunny => (
                 26,
-                vec2(210.0, 135.0),
+                uvec2(210, 135),
                 7.0,
                 AtlasAnimationEnd::LoopIndefinitely,
             ),
             Self::Space => (
                 12,
-                vec2(350.0, 190.0),
+                uvec2(350, 190),
                 7.0,
                 AtlasAnimationEnd::LoopIndefinitely,
             ),
             Self::WinnieInBathroom => {
-                (11, vec2(122.0, 121.0), 3.0, AtlasAnimationEnd::RemoveTimer)
+                (11, uvec2(122, 121), 3.0, AtlasAnimationEnd::RemoveTimer)
             }
-            Self::Hedgehog => (
-                8,
-                vec2(122.0, 206.0),
-                2.0,
-                AtlasAnimationEnd::LoopIndefinitely,
-            ),
-            Self::LoFiGirl => (
-                7,
-                vec2(202.0, 116.0),
-                3.0,
-                AtlasAnimationEnd::LoopIndefinitely,
-            ),
+            Self::Hedgehog => {
+                (8, uvec2(122, 206), 2.0, AtlasAnimationEnd::LoopIndefinitely)
+            }
+            Self::LoFiGirl => {
+                (7, uvec2(202, 116), 3.0, AtlasAnimationEnd::LoopIndefinitely)
+            }
         };
 
         (
             TextureAtlasLayout::from_grid(tile_size, columns, 1, None, None),
             AtlasAnimation {
-                last: columns - 1,
+                last: columns as usize - 1,
                 on_last_frame,
                 ..default()
             },

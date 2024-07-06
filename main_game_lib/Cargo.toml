@@ -20,7 +20,6 @@ devtools = [
 [dependencies]
 bevy_egui = { workspace = true, optional = true }
 bevy_grid_squared.workspace = true
-bevy_magic_light_2d.workspace = true
 bevy_pixel_camera.workspace = true
 bevy_webp_anim.workspace = true
 bevy-inspector-egui = { workspace = true, optional = true }

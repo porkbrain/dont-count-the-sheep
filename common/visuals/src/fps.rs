@@ -22,7 +22,7 @@ pub(crate) fn spawn(mut cmd: Commands) {
             FpsRoot,
             NodeBundle {
                 // give it a dark background for readability
-                background_color: BackgroundColor(Color::BLACK.with_a(0.5)),
+                background_color: BackgroundColor(Color::BLACK.with_alpha(0.5)),
                 // make it "always on top" by setting the Z index to maximum
                 // we want it to be displayed over all other UI
                 z_index: ZIndex::Global(i32::MAX),
@@ -95,20 +95,20 @@ pub(crate) fn update(
             // text according to the FPS value:
             text.sections[1].style.color = if value >= 120.0 {
                 // Above 120 FPS, use green color
-                Color::rgb(0.0, 1.0, 0.0)
+                Color::srgb(0.0, 1.0, 0.0)
             } else if value >= 50.0 {
                 // Between 50-120 FPS, gradually transition from yellow to green
-                Color::rgb(
+                Color::srgb(
                     (1.0 - (value - 50.0) / (120.0 - 50.0)) as f32,
                     1.0,
                     0.0,
                 )
             } else if value >= 30.0 {
                 // Between 30-50 FPS, gradually transition from red to yellow
-                Color::rgb(1.0, ((value - 30.0) / (50.0 - 30.0)) as f32, 0.0)
+                Color::srgb(1.0, ((value - 30.0) / (50.0 - 30.0)) as f32, 0.0)
             } else {
                 // Below 30 FPS, use red color
-                Color::rgb(1.0, 0.0, 0.0)
+                Color::srgb(1.0, 0.0, 0.0)
             }
         } else {
             // display "N/A" if we can't get a FPS measurement

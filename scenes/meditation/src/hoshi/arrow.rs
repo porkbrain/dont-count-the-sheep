@@ -3,7 +3,6 @@
 
 use std::f32::consts::PI;
 
-use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use common_visuals::camera::{PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH};
 use main_game_lib::common_ext::QueryExt;
 

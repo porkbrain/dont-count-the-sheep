@@ -2,13 +2,6 @@ use bevy::{
     core_pipeline::bloom::BloomSettings,
     render::{camera::RenderTarget, view::RenderLayers},
 };
-use bevy_magic_light_2d::{
-    gi::{
-        compositing::{setup_post_processing_quad, CameraTargets},
-        LightScene,
-    },
-    SceneCamera,
-};
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
 use common_loading_screen::LoadingScreenState;
 use common_visuals::camera::{order, render_layer, PIXEL_ZOOM};

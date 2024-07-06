@@ -8,7 +8,6 @@ mod mode;
 mod sprite;
 
 use bevy::render::view::RenderLayers;
-use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use common_visuals::camera::render_layer;
 pub(crate) use controls::loading_special;
 

@@ -3,10 +3,7 @@
 pub(crate) mod systems;
 pub(crate) mod types;
 
-use bevy::{
-    app::App,
-    ecs::schedule::{common_conditions::in_state, IntoSystemConfigs, States},
-};
+use bevy::prelude::*;
 
 /// Add a new Poisson's equation system to the app.
 /// You still need to insert the Poisson's equation `T` resource.

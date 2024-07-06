@@ -1,7 +1,6 @@
 use std::f32::consts::PI;
 
 use bevy::{render::view::RenderLayers, utils::Instant};
-use bevy_magic_light_2d::gi::types::{LightOccluder2D, OmniLightSource2D};
 use common_visuals::camera::render_layer;
 use itertools::Itertools;
 use main_game_lib::common_ext::ColorExt;
