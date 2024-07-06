@@ -137,5 +137,5 @@ fn begin_loading_static_assets_on_startup(
 }
 
 fn exit(mut exit: EventWriter<AppExit>) {
-    exit.send(AppExit);
+    exit.send(AppExit::Success);
 }

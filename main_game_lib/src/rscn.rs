@@ -26,6 +26,7 @@ use std::borrow::Cow;
 
 use bevy::{
     asset::{Asset, AssetServer, Assets, Handle},
+    color::Color,
     core::Name,
     ecs::{
         component::Component,
@@ -35,7 +36,6 @@ use bevy::{
     hierarchy::DespawnRecursiveExt,
     math::{Rect, Vec2},
     reflect::TypePath,
-    render::color::Color,
     utils::HashMap,
 };
 use common_ext::QueryExt;
@@ -244,7 +244,7 @@ impl<T> TscnTreeHandle<T> {
         assets: &mut Assets<TscnTree>,
     ) -> TscnTree {
         let handle = self.handle.take().expect("Handle already consumed");
-        let tscn = assets.remove(handle).expect("Handle not loaded");
+        let tscn = assets.remove(&handle).expect("Handle not loaded");
         cmd.entity(self.entity).despawn_recursive();
         tscn
     }

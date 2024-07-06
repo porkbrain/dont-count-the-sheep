@@ -33,10 +33,10 @@ use super::actor::player::TakeAwayPlayerControl;
 use crate::top_down::{ActorMovementEvent, Player, TileKind, TopDownScene};
 
 /// Useful for error labels.
-pub const LIGHT_RED: Color = Color::rgb(1.0, 0.7, 0.7);
+pub const LIGHT_RED: Color = Color::srgb(1.0, 0.7, 0.7);
 
 /// The label's bg is a rect with a half transparent color.
-const BG_COLOR: Color = Color::rgba(0.0, 0.0, 0.0, 0.65);
+const BG_COLOR: Color = Color::srgba(0.0, 0.0, 0.0, 0.65);
 /// When the player releases the inspect button, the labels fade out in this
 /// duration.
 const FADE_OUT_IN: Duration = Duration::from_millis(5000);
@@ -490,7 +490,9 @@ fn spawn_label_bg_and_text(
         .insert(SpriteBundle {
             transform: Transform::from_translation(Vec3::Z * Z_INDEX),
             sprite: Sprite {
-                color: BG_COLOR * if *highlighted { 1.5 } else { 1.0 },
+                color: BG_COLOR.with_alpha(
+                    BG_COLOR.alpha() * if *highlighted { 1.5 } else { 1.0 },
+                ),
                 custom_size: Some(Vec2::new(bg_box_width, font_size / 2.0)),
                 ..default()
             },
@@ -558,11 +560,7 @@ impl InspectLabelDisplayed {
         self.being_hidden = true;
         let bg = self.bg;
         let text = self.text;
-        let to_color = {
-            let mut c = self.category_color;
-            c.set_a(0.0);
-            c
-        };
+        let to_color = self.category_color.with_alpha(0.0);
 
         // looks better when the text fades out faster than the bg
         lazy_static! {

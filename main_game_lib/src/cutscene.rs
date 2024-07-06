@@ -261,9 +261,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        let w = &mut app.world;
-
-        let systems = CutsceneSystems::register_systems(w);
+        let systems = CutsceneSystems::register_systems(app.world_mut());
 
         CUTSCENE_SYSTEMS.get_or_init(|| systems);
 

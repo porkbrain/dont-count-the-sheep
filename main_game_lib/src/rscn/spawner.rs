@@ -4,12 +4,13 @@ use std::{str::FromStr, time::Duration};
 
 use bevy::{
     asset::Handle,
+    color::Color,
     core::Name,
     ecs::{entity::Entity, event::Event, system::Commands},
     hierarchy::BuildChildren,
     math::Vec3,
     prelude::SpatialBundle,
-    render::{color::Color, texture::Image, view::Visibility},
+    render::{texture::Image, view::Visibility},
     sprite::{Sprite, TextureAtlas, TextureAtlasLayout},
     time::TimerMode,
     transform::components::Transform,
@@ -143,11 +144,12 @@ fn node_to_entity<T: TscnSpawner>(
         }
 
         if let Some(animation) = animation {
-            let mut layout = TextureAtlasLayout::new_empty(animation.size);
+            let mut layout =
+                TextureAtlasLayout::new_empty(animation.size.as_uvec2());
             let frames_count = animation.frames.len();
             assert_ne!(0, frames_count);
             for frame in animation.frames {
-                layout.add_texture(frame);
+                layout.add_texture(frame.as_urect());
             }
 
             let layout = spawner.add_texture_atlas(layout);

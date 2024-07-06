@@ -1,4 +1,7 @@
-use bevy::asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext};
+use bevy::{
+    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
+    utils::ConditionalSendFuture,
+};
 use thiserror::Error;
 
 use crate::rscn::{Config, TscnTree};
@@ -29,7 +32,12 @@ impl AssetLoader for TscnLoader {
         reader: &'a mut Reader,
         settings: &'a Self::Settings,
         _load_context: &'a mut LoadContext,
-    ) -> bevy::utils::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> impl ConditionalSendFuture<
+        Output = Result<
+            <Self as AssetLoader>::Asset,
+            <Self as AssetLoader>::Error,
+        >,
+    > {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;

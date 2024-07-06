@@ -78,7 +78,7 @@ pub(crate) fn spawn(
         Interaction::default(),
         RelativeCursorPosition::default(),
         NodeBundle {
-            background_color: Color::rgba(0.0, 0.0, 0.0, 0.9).into(),
+            background_color: Color::srgba(0.0, 0.0, 0.0, 0.9).into(),
             focus_policy: bevy::ui::FocusPolicy::Block,
             style: Style {
                 position_type: PositionType::Absolute,
@@ -86,8 +86,11 @@ pub(crate) fn spawn(
                 flex_wrap: FlexWrap::Wrap,
 
                 top: Val::Px(
-                    // this is where heartbeat daybar ends
-                    MARGIN_TOP_PX + HEARTBEAT_ATLAS_SIZE.y * PIXEL_ZOOM as f32
+                    // this is where the heartbeat daybar starts
+                    MARGIN_TOP_PX
+                    +
+                    // this is heartbeat daybar size
+                    HEARTBEAT_ATLAS_SIZE.y as f32 * PIXEL_ZOOM as f32
                     +
                     // this is a space between daybar and notifications
                     MARGIN_TOP_PX,
@@ -184,7 +187,8 @@ impl Notification {
                             )),
 
                             min_width: Val::Px(
-                                HEARTBEAT_ATLAS_SIZE.x * PIXEL_ZOOM as f32,
+                                HEARTBEAT_ATLAS_SIZE.x as f32
+                                    * PIXEL_ZOOM as f32,
                             ),
 
                             ..default()
