@@ -102,6 +102,7 @@ smallvec = "1.13"
 strum = { version = "0.26", features = ["derive"] }
 thiserror = "1.0"
 toml = "0.8"
+untools = "1.0"
 
 
 [profile.release]

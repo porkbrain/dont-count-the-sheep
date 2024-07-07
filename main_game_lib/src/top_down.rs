@@ -17,6 +17,7 @@ pub mod cameras;
 pub mod environmental_objects;
 pub mod inspect_and_interact;
 pub mod layout;
+pub mod scene_configs;
 
 use actor::{emit_movement_events, BeginDialogEvent};
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
