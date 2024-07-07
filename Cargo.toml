@@ -55,8 +55,9 @@ features = [
 [workspace.dependencies]
 bevy_pixel_camera = { git = "https://github.com/porkbrain/bevy_pixel_camera.git", branch = "bevy-v0.14" }
 bevy_webp_anim = "0.4"
-# bevy-inspector-egui = { version = "0.24", default-features = false }
-bevy-inspector-egui = { git = "https://github.com/kristoff3r/bevy-inspector-egui.git", branch = "main" }
+bevy-inspector-egui = { version = "0.25", default-features = false, features = [
+    "bevy_render",
+] }
 leafwing-input-manager = { git = "https://github.com/dead-money/leafwing-input-manager.git", branch = "v0.14-rc" }
 bevy_egui = "0.28"
 

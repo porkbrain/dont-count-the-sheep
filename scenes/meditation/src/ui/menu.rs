@@ -5,7 +5,7 @@ use common_visuals::camera::PIXEL_ZOOM;
 use main_game_lib::common_ext::QueryExt;
 
 use super::consts::*;
-use crate::{consts::*, prelude::*};
+use crate::{cameras::MeditationCamera, consts::*, prelude::*};
 
 #[derive(Component)]
 pub(super) struct Menu {
@@ -25,10 +25,17 @@ enum Selection {
 #[derive(Component)]
 pub(super) struct SelectionMarker;
 
-pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
+pub(super) fn spawn(
+    mut cmd: Commands,
+    asset_server: Res<AssetServer>,
+
+    camera: Query<Entity, With<MeditationCamera>>,
+) {
     cmd.spawn(Menu {
         selection: Selection::Resume,
     })
+    .insert(Name::new("Menu"))
+    .insert(TargetCamera(camera.single()))
     .insert(NodeBundle {
         style: Style {
             // the node bundle units don't honor pixel camera 3x scale
@@ -191,10 +198,6 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                 position_type: PositionType::Absolute,
                 ..default()
             },
-            // a `NodeBundle` is transparent by default, so
-            // to see the image we have to set its color to
-            // `WHITE`
-            background_color: Color::WHITE.into(),
             ..default()
         },
         UiImage::new(asset_server.load(assets::MENU_BOX)),
@@ -211,10 +214,6 @@ fn spawn_ui(ui_root: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                 position_type: PositionType::Absolute,
                 ..default()
             },
-            // a `NodeBundle` is transparent by default, so
-            // to see the image we have to set its color to
-            // `WHITE`
-            background_color: Color::WHITE.into(),
             ..default()
         },
         UiImage::new(asset_server.load(assets::FACE_ON_CONTINUE)),

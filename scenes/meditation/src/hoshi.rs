@@ -50,7 +50,10 @@ impl bevy::app::Plugin for Plugin {
                 OnEnter(GlobalGameState::LoadingMeditation),
                 (spawn, arrow::spawn),
             )
-            .add_systems(OnExit(GlobalGameState::QuittingMeditation), despawn)
+            .add_systems(
+                OnExit(GlobalGameState::QuittingMeditation),
+                (despawn, arrow::despawn),
+            )
             .add_systems(
                 Update,
                 (

@@ -825,10 +825,6 @@ impl PortraitDialog {
                             flex_direction: FlexDirection::Column,
                             ..default()
                         },
-                        // a `NodeBundle` is transparent by default, so to see
-                        // the image we have to its
-                        // color to `WHITE`
-                        background_color: Color::WHITE.into(),
                         ..default()
                     },
                 ))
@@ -893,9 +889,6 @@ impl PortraitDialog {
                         },
                         ..default()
                     },
-                    // a `NodeBundle` is transparent by default, so to see the
-                    // image we have to its color to `WHITE`
-                    background_color: Color::WHITE.into(),
                     ..default()
                 },
                 UiImage::new(asset_server.load(speaker.portrait_asset_path())),

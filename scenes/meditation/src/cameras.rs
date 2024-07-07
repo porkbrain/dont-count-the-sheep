@@ -5,39 +5,33 @@ use common_visuals::camera::{order, render_layer, PIXEL_ZOOM};
 
 use crate::prelude::*;
 
-/// All entities with this component are part of the background light scene.
-/// Also, they will get despawned by query in this plugin.
-#[derive(Component, Default, Clone, TypePath)]
-pub(crate) struct BackgroundLightScene;
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnExit(LoadingScreenState::WaitForSignalToFinish),
-            spawn_cameras.run_if(in_state(GlobalGameState::LoadingMeditation)),
+            spawn.run_if(in_state(GlobalGameState::LoadingMeditation)),
         );
         app.add_systems(OnExit(GlobalGameState::QuittingMeditation), despawn);
     }
 }
 
-/// These cameras render into the game window.
-/// We spawn them last after everything else is ready to avoid things just
-/// popping into existence X frames later.
-fn spawn_cameras(mut cmd: Commands) {
+#[derive(Component)]
+pub(crate) struct MeditationCamera;
+
+fn spawn(mut cmd: Commands) {
     debug!("Spawning cameras");
 
     cmd.spawn((
-        BackgroundLightScene,
+        MeditationCamera,
         PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
-        RenderLayers::layer(render_layer::OBJ),
+        RenderLayers::from_layers(&[0, render_layer::OBJ, render_layer::BG]),
         Camera2dBundle {
             camera: Camera {
                 hdr: true,
-                order: order::LIGHT,
-                clear_color: ClearColorConfig::None,
+                order: order::DEFAULT,
                 ..default()
             },
             ..default()
@@ -45,11 +39,6 @@ fn spawn_cameras(mut cmd: Commands) {
     ));
 }
 
-fn despawn(
-    mut cmd: Commands,
-    entities: Query<Entity, With<BackgroundLightScene>>,
-) {
-    for entity in entities.iter() {
-        cmd.entity(entity).despawn_recursive();
-    }
+fn despawn(mut cmd: Commands, camera: Query<Entity, With<MeditationCamera>>) {
+    cmd.entity(camera.single()).despawn_recursive();
 }

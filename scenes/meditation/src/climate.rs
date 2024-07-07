@@ -1,9 +1,8 @@
 use bevy::{render::view::RenderLayers, utils::Instant};
 use common_visuals::camera::render_layer;
+use main_game_lib::common_ext::QueryExt;
 
-use crate::{
-    cameras::BackgroundLightScene, hoshi, path::LevelPath, prelude::*,
-};
+use crate::{hoshi, path::LevelPath, prelude::*};
 
 /// When the mode is [`ClimateLightMode::Hot`], we deduct this much from the
 /// score.
@@ -52,7 +51,8 @@ impl bevy::app::Plugin for Plugin {
                 FixedUpdate,
                 follow_curve
                     .run_if(in_state(GlobalGameState::InGameMeditation)),
-            );
+            )
+            .add_systems(OnEnter(GlobalGameState::QuittingMeditation), despawn);
     }
 }
 
@@ -67,7 +67,6 @@ fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
 
     cmd.spawn((
         climate,
-        BackgroundLightScene,
         AngularVelocity::default(),
         SpatialBundle {
             transform: Transform::from_translation(climate_translation),
@@ -83,6 +82,12 @@ fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
             },
         ));
     });
+}
+
+fn despawn(mut cmd: Commands, climate: Query<Entity, With<Climate>>) {
+    if let Some(entity) = climate.get_single_or_none() {
+        cmd.entity(entity).despawn_recursive();
+    }
 }
 
 /// Changes the mode of the climate on hoshi's special.
