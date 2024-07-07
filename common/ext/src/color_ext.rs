@@ -1,6 +1,6 @@
 //! Extensions to the `Color` type.
 
-use bevy::render::color::Color;
+use bevy::color::{Color, Srgba};
 
 /// Some useful extensions to the `Color` type.
 pub trait ColorExt {
@@ -14,15 +14,36 @@ pub trait ColorExt {
 impl ColorExt for Color {
     fn lerp(self, other: Self, t: f32) -> Self {
         let t = t.clamp(0.0, 1.0);
-        Color::rgba(
-            self.r() + (other.r() - self.r()) * t,
-            self.g() + (other.g() - self.g()) * t,
-            self.b() + (other.b() - self.b()) * t,
-            self.a() + (other.a() - self.a()) * t,
+
+        let Srgba {
+            red: self_r,
+            green: self_g,
+            blue: self_b,
+            alpha: self_a,
+        } = self.to_srgba();
+        let Srgba {
+            red: other_r,
+            green: other_g,
+            blue: other_b,
+            alpha: other_a,
+        } = other.to_srgba();
+
+        Color::srgba(
+            self_r + (other_r - self_r) * t,
+            self_g + (other_g - self_g) * t,
+            self_b + (other_b - self_b) * t,
+            self_a + (other_a - self_a) * t,
         )
     }
 
     fn invert(self) -> Self {
-        Color::rgba(1.0 - self.r(), 1.0 - self.g(), 1.0 - self.b(), self.a())
+        let Srgba {
+            red: self_r,
+            green: self_g,
+            blue: self_b,
+            alpha: self_a,
+        } = self.to_srgba();
+
+        Color::srgba(1.0 - self_r, 1.0 - self_g, 1.0 - self_b, self_a)
     }
 }

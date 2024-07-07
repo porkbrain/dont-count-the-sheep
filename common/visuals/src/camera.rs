@@ -34,17 +34,15 @@ pub mod render_layer {
     //! rendered where.
 
     /// Objects and characters.
-    pub const OBJ: u8 = 1;
+    pub const OBJ: usize = 1;
     /// Background images.
-    pub const BG: u8 = 2;
+    pub const BG: usize = 2;
     /// Dialog entities such as portrait, text box and all.
-    pub const DIALOG: u8 = 25;
+    pub const DIALOG: usize = 25;
     /// Loading screen entities
-    pub const LOADING: u8 = 21;
+    pub const LOADING: usize = 21;
     /// Letterboxing quads are rendered to this layer.
-    pub const CUTSCENE_LETTERBOXING: u8 = 22;
-    /// Light scene
-    pub const LIGHT: u8 = 29;
+    pub const CUTSCENE_LETTERBOXING: usize = 22;
 }
 
 pub mod order {
@@ -53,13 +51,10 @@ pub mod order {
 
     /// The main camera in each scene
     pub const DEFAULT: isize = 1;
-    /// The camera that renders the light scene is above the main camera to
-    /// illuminate the scene.
-    pub const LIGHT: isize = 2;
     /// The camera that renders the letterboxing quads is above the main camera
     /// but the dialog is rendered on top of it.
     pub const CUTSCENE_LETTERBOXING: isize = 10;
-    /// Dialog is overlaid on top of everything else.
+    /// Dialog is overlaid on top of the game.
     pub const DIALOG: isize = 11;
     /// The camera that renders the loading screen is above the main camera
     /// because we smoothly change opacity from 0 to 1 and back.

@@ -87,8 +87,12 @@ pub(crate) fn spawn(
                 top: Val::Px(MARGIN_TOP_PX),
                 left: Val::Px(MARGIN_LEFT_PX),
 
-                width: Val::Px(HEARTBEAT_ATLAS_SIZE.x * PIXEL_ZOOM as f32),
-                height: Val::Px(HEARTBEAT_ATLAS_SIZE.y * PIXEL_ZOOM as f32),
+                width: Val::Px(
+                    HEARTBEAT_ATLAS_SIZE.x as f32 * PIXEL_ZOOM as f32,
+                ),
+                height: Val::Px(
+                    HEARTBEAT_ATLAS_SIZE.y as f32 * PIXEL_ZOOM as f32,
+                ),
 
                 ..default()
             },
@@ -112,8 +116,12 @@ pub(crate) fn spawn(
                 style: Style {
                     position_type: PositionType::Absolute,
 
-                    width: Val::Px(HEARTBEAT_ATLAS_SIZE.x * PIXEL_ZOOM as f32),
-                    height: Val::Px(HEARTBEAT_ATLAS_SIZE.y * PIXEL_ZOOM as f32),
+                    width: Val::Px(
+                        HEARTBEAT_ATLAS_SIZE.x as f32 * PIXEL_ZOOM as f32,
+                    ),
+                    height: Val::Px(
+                        HEARTBEAT_ATLAS_SIZE.y as f32 * PIXEL_ZOOM as f32,
+                    ),
 
                     ..default()
                 },
@@ -227,7 +235,7 @@ pub(crate) fn interact(
                             ..default()
                         },
                         background_color: BackgroundColor(
-                            Color::BLACK.with_a(0.85),
+                            Color::BLACK.with_alpha(0.85),
                         ),
                         border_color: BorderColor(Color::BLACK),
                         ..default()

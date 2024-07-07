@@ -1,6 +1,6 @@
-use bevy::ecs::{
-    schedule::NextState,
-    system::{Res, ResMut},
+use bevy::{
+    ecs::system::{Res, ResMut},
+    state::state::NextState,
 };
 use common_store::{DialogStore, GlobalStore};
 use common_story::Character;

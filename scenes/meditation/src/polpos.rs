@@ -28,8 +28,6 @@ pub(crate) struct Polpo {
     /// came if it was caused by the Hoshi.
     jitter: Vec2,
 }
-#[derive(Component)]
-struct PolpoOccluder;
 
 /// Anything that's spawned in this module has this entity.
 /// Useful for despawning.
@@ -63,7 +61,6 @@ impl bevy::app::Plugin for Plugin {
                     react::to_hoshi_special
                         .run_if(on_event::<hoshi::ActionEvent>())
                         .after(hoshi::loading_special),
-                    effects::bolt::propel,
                     destroyed
                         .run_if(on_event::<PolpoDestroyedEvent>())
                         .after(react::to_hoshi_special)

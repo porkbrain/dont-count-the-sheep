@@ -261,9 +261,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        let w = &mut app.world;
-
-        let systems = CutsceneSystems::register_systems(w);
+        let systems = CutsceneSystems::register_systems(app.world_mut());
 
         CUTSCENE_SYSTEMS.get_or_init(|| systems);
 
@@ -825,7 +823,7 @@ fn begin_moving_entity(
 
         BeginInterpolationEvent::of_translation(*who, Some(from), to)
             .over(*over)
-            .with_animation_opt_curve(animation_curve.clone())
+            .with_animation_opt_curve(*animation_curve)
             .insert(&mut cmd);
     }
 
@@ -920,7 +918,7 @@ fn begin_color_interpolation(
 
     BeginInterpolationEvent::of_color(*who, None, *to)
         .over(*over)
-        .with_animation_opt_curve(animation_curve.clone())
+        .with_animation_opt_curve(*animation_curve)
         .insert(&mut cmd);
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);

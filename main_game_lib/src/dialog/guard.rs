@@ -6,8 +6,8 @@ mod visit_once;
 
 use bevy::{
     ecs::{
-        system::{Command, Commands, In, Local, Res, ResMut, SystemId},
-        world::World,
+        system::{Commands, In, Local, Res, ResMut, SystemId},
+        world::{Command, World},
     },
     log::{error, warn},
     reflect::Reflect,

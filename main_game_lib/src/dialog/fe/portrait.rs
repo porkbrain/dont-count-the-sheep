@@ -25,7 +25,7 @@ const FONT_SIZE: f32 = 21.0;
 const CHOICE_FONT_SIZE: f32 = 17.0;
 const FONT: &str = common_assets::fonts::PENCIL1;
 /// Dark orange
-const CHOICE_HIGHLIGHT_COLOR: Color = Color::rgb(0.789, 0.455, 0.007);
+const CHOICE_HIGHLIGHT_COLOR: Color = Color::srgb(0.789, 0.455, 0.007);
 const MIN_TEXT_FRAME_TIME: Duration = Duration::from_millis(200);
 
 /// Will be true if in a dialog that takes away player control.
@@ -825,10 +825,6 @@ impl PortraitDialog {
                             flex_direction: FlexDirection::Column,
                             ..default()
                         },
-                        // a `NodeBundle` is transparent by default, so to see
-                        // the image we have to its
-                        // color to `WHITE`
-                        background_color: Color::WHITE.into(),
                         ..default()
                     },
                 ))
@@ -893,9 +889,6 @@ impl PortraitDialog {
                         },
                         ..default()
                     },
-                    // a `NodeBundle` is transparent by default, so to see the
-                    // image we have to its color to `WHITE`
-                    background_color: Color::WHITE.into(),
                     ..default()
                 },
                 UiImage::new(asset_server.load(speaker.portrait_asset_path())),

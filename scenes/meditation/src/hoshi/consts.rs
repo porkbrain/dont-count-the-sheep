@@ -86,16 +86,18 @@ mod timings_of_body_and_face_sprite_changes {
 
 pub(crate) use body_and_face_sprite_sizes::*;
 mod body_and_face_sprite_sizes {
+    use bevy::math::uvec2;
+
     use super::*;
 
     pub(crate) const BODY_ATLAS_ROWS: usize = 10;
     pub(crate) const BODY_ATLAS_COLS: usize = 10;
     /// We use padding because some sprites had artifacts from their neighbors.
-    pub(crate) const BODY_ATLAS_PADDING: Vec2 = vec2(3.0, 3.0);
+    pub(crate) const BODY_ATLAS_PADDING: UVec2 = uvec2(3, 3);
     pub(crate) const BODY_WIDTH: f32 = 35.0;
     pub(crate) const BODY_HEIGHT: f32 = 35.0;
 
-    pub(crate) const FACE_ATLAS_PADDING: Vec2 = BODY_ATLAS_PADDING;
+    pub(crate) const FACE_ATLAS_PADDING: UVec2 = BODY_ATLAS_PADDING;
     pub(crate) const FACE_ATLAS_ROWS: usize = 5;
     pub(crate) const FACE_ATLAS_COLS: usize = 5;
     /// Note that this is the sprite size.
@@ -152,11 +154,4 @@ mod arrow {
     pub(crate) const ARROW_DISTANCE_FROM_EDGE: f32 = 25.0;
     /// The closer Hoshi is the more the arrow is pushed back from the edge.
     pub(crate) const MAX_ARROW_PUSH_BACK: f32 = 15.0;
-}
-
-pub(crate) use light::*;
-mod light {
-    use bevy::math::Vec2;
-
-    pub(crate) const OCCLUDER_SIZE: Vec2 = Vec2::new(3.0, 3.0);
 }

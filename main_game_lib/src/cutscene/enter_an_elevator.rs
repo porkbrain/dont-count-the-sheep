@@ -76,7 +76,7 @@ impl IntoCutscene for EnterAnElevator {
                 who: camera,
                 to: cutscene::Destination::Entity(player),
                 over: from_millis(1000),
-                animation_curve: Some(EASE_IN_OUT.clone()),
+                animation_curve: Some(*EASE_IN_OUT),
             },
             // open the elevator door
             InsertAtlasAnimationTimerTo {
@@ -301,7 +301,7 @@ pub fn start_with_open_elevator_and_close_it(
         .world()
         .get_resource::<Assets<TextureAtlasLayout>>()
         .unwrap();
-    let last_frame = layouts.get(layout).unwrap().textures.len() - 1;
+    let last_frame = layouts.get(&layout).unwrap().textures.len() - 1;
     trace!("Setting elevator to last frame");
     // set the last frame as the current index
     elevator.get_mut::<TextureAtlas>().unwrap().index = last_frame;

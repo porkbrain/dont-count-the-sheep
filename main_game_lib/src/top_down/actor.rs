@@ -638,13 +638,9 @@ impl CharacterBundleBuilder {
                 // see the method docs
                 occupies: default(),
             },
-            SpriteSheetBundle {
+            SpriteBundle {
                 texture: asset_server
                     .load(character.sprite_atlas_texture_path()),
-                atlas: TextureAtlas {
-                    layout: character.sprite_atlas_layout_handle(),
-                    index: 0,
-                },
                 sprite: Sprite {
                     anchor: bevy::sprite::Anchor::BottomCenter,
                     color: color.unwrap_or_default(),
@@ -654,6 +650,10 @@ impl CharacterBundleBuilder {
                     initial_position.extend(ysort(initial_position)),
                 ),
                 ..default()
+            },
+            TextureAtlas {
+                layout: character.sprite_atlas_layout_handle(),
+                index: 0,
             },
         ));
     }

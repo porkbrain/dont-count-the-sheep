@@ -184,8 +184,8 @@ impl Character {
     /// * `rows` - Grid row count
     /// * `padding` - Optional padding between cells
     #[inline]
-    fn sprite_atlas(self) -> Option<(Vec2, usize, usize, Vec2)> {
-        const STANDARD_SIZE: Vec2 = Vec2::new(25.0, 46.0);
+    fn sprite_atlas(self) -> Option<(UVec2, u32, u32, UVec2)> {
+        const STANDARD_SIZE: UVec2 = UVec2::new(25, 46);
 
         match self {
             Character::Winnie => {
@@ -194,14 +194,10 @@ impl Character {
             Character::Bolt => Some((STANDARD_SIZE, 12, 1, default())),
             Character::Marie => Some((STANDARD_SIZE, 15, 1, default())),
             Character::Samizdat => Some((STANDARD_SIZE, 12, 2, default())),
-            Character::WhiteCat => {
-                Some((Vec2::new(48.0, 46.0), 6, 1, default()))
-            }
-            Character::Cooper => Some((Vec2::new(25.0, 29.0), 2, 1, default())),
-            Character::Otter => Some((Vec2::new(36.0, 46.0), 7, 1, default())),
-            Character::Phoebe => {
-                Some((Vec2::new(25.0, 46.0), 12, 2, default()))
-            }
+            Character::WhiteCat => Some((UVec2::new(48, 46), 6, 1, default())),
+            Character::Cooper => Some((UVec2::new(25, 29), 2, 1, default())),
+            Character::Otter => Some((UVec2::new(36, 46), 7, 1, default())),
+            Character::Phoebe => Some((UVec2::new(25, 46), 12, 2, default())),
             _ => None,
         }
     }
@@ -223,7 +219,7 @@ impl Character {
             None,
         );
 
-        texture_atlases.insert(self.sprite_atlas_layout_handle(), atlas);
+        texture_atlases.insert(&self.sprite_atlas_layout_handle(), atlas);
     }
 
     /// How long does it take to move one square.
@@ -269,10 +265,12 @@ impl Character {
                 (3 * time.elapsed_wrapped().as_secs() as usize / 4) % 2
             }
 
-            (Self::Winnie, TopRight) => WINNIE_COLS + 6,
-            (Self::Winnie, TopLeft) => WINNIE_COLS + 9,
+            (Self::Winnie, TopRight) => WINNIE_COLS as usize + 6,
+            (Self::Winnie, TopLeft) => WINNIE_COLS as usize + 9,
             // after a few seconds, winnie puts her hands in her pockets
-            (Self::Winnie, Bottom) if how_long.as_secs() > 5 => WINNIE_COLS,
+            (Self::Winnie, Bottom) if how_long.as_secs() > 5 => {
+                WINNIE_COLS as usize
+            }
 
             (Self::Otter, TopRight | Top | TopLeft | Left) => 2,
             (Self::Otter, BottomRight | Bottom | BottomLeft | Right) => {
@@ -323,8 +321,8 @@ impl Character {
 
             (Self::Cooper, _) => 0,
 
-            (Self::Winnie, TopRight) => WINNIE_COLS + 7 + extra,
-            (Self::Winnie, TopLeft) => WINNIE_COLS + 10 + extra,
+            (Self::Winnie, TopRight) => WINNIE_COLS as usize + 7 + extra,
+            (Self::Winnie, TopLeft) => WINNIE_COLS as usize + 10 + extra,
 
             (Self::Otter, TopRight | Right | BottomRight) => 3 + extra,
             (Self::Otter, TopLeft | Left | BottomLeft) => 5 + extra,

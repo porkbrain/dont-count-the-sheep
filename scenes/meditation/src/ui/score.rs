@@ -40,7 +40,7 @@ pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
                 TextStyle {
                     font: asset_server.load(FONT),
                     font_size: SMALL_FONT_SIZE,
-                    color: Color::hex(HIGHLIGHT_COLOR).unwrap(),
+                    color: Srgba::hex(HIGHLIGHT_COLOR).unwrap().into(),
                 },
             ),
         ));

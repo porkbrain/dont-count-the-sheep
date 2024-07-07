@@ -21,12 +21,6 @@ pub(crate) const VIDEO_SIZE: Vec2 = Vec2::new(32.0, 32.0);
 pub(crate) const VIDEO_FPS: f32 = 30.0;
 /// As more light is shone, more cracks appear on the Polpo.
 pub(crate) const MAX_CRACKS: usize = 5;
-/// By default, occluder is pushed towards the climate.
-pub(crate) const PUSH_BACK_FORCE_AT_REST: f32 = -20.0;
-/// Beyond this distance, the occluder is simply not affected by Hoshi.
-pub(crate) const NONE_OF_HOSHI_PUSH_BACK_FORCE_AT_DISTANCE: f32 = 169.0;
-pub(crate) const PUSH_BACK_FORCE_HOSHI_DISTANCE: f32 = 80.0;
-pub(crate) const OCCLUDER_SIZE: f32 = 6.5;
 /// Plays static as on old TVs.
 pub(crate) const STATIC_ATLAS_FRAMES: usize = 5;
 /// How long each frame of static is shown.
@@ -46,9 +40,6 @@ pub(crate) const BLACK_HOLE_FRAME_TIME: Duration = from_millis(40);
 /// Otherwise it looks odd when the black hole disappears instantly.
 pub(crate) const BLACK_HOLE_MIN_LIFE: Duration = from_millis(1000);
 
-/// How long does it take for the bolt to travel from Hoshi to the
-/// Polpo.
-pub(crate) const BOLT_LIFETIME: Duration = from_millis(200);
 /// How many pixels the Polpo jitters when hit by the Hoshi special.
 pub(crate) const JITTER_ON_HIT_INTENSITY: f32 = 4.0;
 /// In 1/x seconds the jitter will be gone.

@@ -1,11 +1,10 @@
 use bevy::{render::view::RenderLayers, utils::HashSet};
-use bevy_magic_light_2d::gi::types::LightOccluder2D;
 use bevy_webp_anim::WebpAnimator;
 use common_visuals::camera::render_layer;
 use rand::{random, seq::SliceRandom};
 
-use super::{consts::*, videos::ALL_VIDEOS, Polpo, PolpoOccluder, Video};
-use crate::{cameras::BackgroundLightScene, polpos::PolpoEntity, prelude::*};
+use super::{consts::*, videos::ALL_VIDEOS, Polpo, Video};
+use crate::{polpos::PolpoEntity, prelude::*};
 
 /// Manages spawning of Polpos.
 #[derive(Resource, Debug)]
@@ -67,20 +66,20 @@ pub(super) fn try_spawn_next(
     cmd.spawn((polpo, PolpoEntity))
         .insert((
             RenderLayers::layer(render_layer::OBJ),
-            SpriteSheetBundle {
+            SpriteBundle {
                 texture: asset_server.load(assets::CRACK_ATLAS),
-                atlas: TextureAtlas {
-                    index: 0,
-                    layout: texture_atlases.add(TextureAtlasLayout::from_grid(
-                        vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
-                        MAX_CRACKS,
-                        1,
-                        None,
-                        None,
-                    )),
-                },
                 transform: Transform::from_translation(translation),
                 ..default()
+            },
+            TextureAtlas {
+                index: 0,
+                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                    UVec2::splat(POLPO_SPRITE_SIZE as u32),
+                    MAX_CRACKS as u32,
+                    1,
+                    None,
+                    None,
+                )),
             },
         ))
         .with_children(|parent| {
@@ -99,20 +98,8 @@ pub(super) fn try_spawn_next(
 
             parent.spawn((
                 RenderLayers::layer(render_layer::OBJ),
-                SpriteSheetBundle {
+                SpriteBundle {
                     texture: asset_server.load(assets::TENTACLE_ATLAS),
-                    atlas: TextureAtlas {
-                        index: random::<usize>() % TENTACLE_ATLAS_COLS,
-                        layout: texture_atlases.add(
-                            TextureAtlasLayout::from_grid(
-                                vec2(POLPO_SPRITE_SIZE, POLPO_SPRITE_SIZE),
-                                TENTACLE_ATLAS_COLS,
-                                1,
-                                None,
-                                None,
-                            ),
-                        ),
-                    },
                     transform: Transform::from_translation(Vec3::new(
                         0.0,
                         0.0,
@@ -120,19 +107,20 @@ pub(super) fn try_spawn_next(
                     )),
                     ..default()
                 },
+                TextureAtlas {
+                    index: random::<usize>() % TENTACLE_ATLAS_COLS,
+                    layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                        UVec2::splat(POLPO_SPRITE_SIZE as u32),
+                        TENTACLE_ATLAS_COLS as u32,
+                        1,
+                        None,
+                        None,
+                    )),
+                },
             ));
 
             // TODO: add sound
             video.spawn(parent, &mut webp, &asset_server);
-
-            parent.spawn((
-                PolpoOccluder,
-                BackgroundLightScene,
-                SpatialBundle { ..default() },
-                LightOccluder2D {
-                    h_size: Vec2::new(OCCLUDER_SIZE, OCCLUDER_SIZE),
-                },
-            ));
         });
 }
 

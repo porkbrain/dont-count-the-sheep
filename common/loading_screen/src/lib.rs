@@ -236,11 +236,7 @@ fn spawn_loading_screen(
         RenderLayers::layer(render_layer::LOADING),
         TargetCamera(camera),
         NodeBundle {
-            background_color: BackgroundColor({
-                let mut c = PRIMARY_COLOR;
-                c.set_a(0.0);
-                c
-            }),
+            background_color: BackgroundColor(PRIMARY_COLOR.with_alpha(0.0)),
             style: Style {
                 position_type: PositionType::Absolute,
                 width: Val::Percent(100.0),
@@ -287,7 +283,7 @@ fn spawn_loading_screen(
                         timer,
                         RenderLayers::layer(render_layer::LOADING),
                     ))
-                    .insert(AtlasImageBundle {
+                    .insert(ImageBundle {
                         style: Style {
                             position_type: PositionType::Absolute,
                             width: Val::Auto,
@@ -300,10 +296,6 @@ fn spawn_loading_screen(
                             },
                             ..default()
                         },
-                        texture_atlas: TextureAtlas {
-                            layout: atlas_layouts.add(layout),
-                            ..default()
-                        },
                         image: UiImage::new(
                             asset_server.load(atlas.asset_path()),
                         ),
@@ -312,6 +304,10 @@ fn spawn_loading_screen(
                             LOADING_IMAGE_TRANSFORM_SCALE,
                             1.0,
                         )),
+                        ..default()
+                    })
+                    .insert(TextureAtlas {
+                        layout: atlas_layouts.add(layout),
                         ..default()
                     });
             });
@@ -490,7 +486,7 @@ fn fade_quad(
     let mut bg_color = query.single_mut();
     let BackgroundColor(ref mut color) = bg_color.as_mut();
 
-    let alpha = color.a();
+    let alpha = color.alpha();
     let dt = time.delta_seconds() / fade_duration.as_secs_f32();
 
     let new_alpha = match fade {
@@ -498,7 +494,7 @@ fn fade_quad(
         Fade::In => alpha + dt,
     };
 
-    color.set_a(new_alpha.clamp(0.0, 1.0));
+    color.set_alpha(new_alpha.clamp(0.0, 1.0));
 
     if !(0.0..=1.0).contains(&new_alpha) {
         trace!("Done quad {fade:?}, next {state_once_done:?}");

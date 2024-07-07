@@ -34,7 +34,6 @@ pub fn windowed_app() -> App {
                 filter: "\
                 info,\
                 game=trace,\
-                bevy_magic_light_2d=trace,\
                 common_action=trace,\
                 common_assets=trace,\
                 common_loading_screen=trace,\
@@ -99,7 +98,6 @@ pub fn windowed_app() -> App {
     }
 
     app.add_plugins((
-        bevy_magic_light_2d::Plugin,
         bevy_webp_anim::Plugin,
         common_action::Plugin,
         common_loading_screen::Plugin,
@@ -139,5 +137,5 @@ fn begin_loading_static_assets_on_startup(
 }
 
 fn exit(mut exit: EventWriter<AppExit>) {
-    exit.send(AppExit);
+    exit.send(AppExit::Success);
 }

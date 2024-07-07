@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
 
-use bevy::asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext};
+use bevy::{
+    asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext},
+    utils::ConditionalSendFuture,
+};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 
@@ -31,7 +34,12 @@ impl<T: Asset + DeserializeOwned> AssetLoader for Loader<T> {
         reader: &'a mut Reader,
         _settings: &'a Self::Settings,
         _load_context: &'a mut LoadContext,
-    ) -> bevy::utils::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> impl ConditionalSendFuture<
+        Output = Result<
+            <Self as AssetLoader>::Asset,
+            <Self as AssetLoader>::Error,
+        >,
+    > {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;

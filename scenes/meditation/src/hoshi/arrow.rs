@@ -3,18 +3,11 @@
 
 use std::f32::consts::PI;
 
-use bevy_magic_light_2d::gi::types::OmniLightSource2D;
 use common_visuals::camera::{PIXEL_VISIBLE_HEIGHT, PIXEL_VISIBLE_WIDTH};
 use main_game_lib::common_ext::QueryExt;
 
 use super::{consts::MAX_ARROW_PUSH_BACK, Hoshi};
-use crate::{
-    cameras::BackgroundLightScene, hoshi::consts::ARROW_DISTANCE_FROM_EDGE,
-    prelude::*,
-};
-
-/// The arrow is lit by a light source.
-const LIGHT_COLOR: &str = "#d9ff75";
+use crate::{hoshi::consts::ARROW_DISTANCE_FROM_EDGE, prelude::*};
 
 #[derive(Component)]
 pub(super) struct Arrow;
@@ -29,7 +22,6 @@ enum OffScreen {
 pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
     cmd.spawn((
         Arrow,
-        BackgroundLightScene,
         SpriteBundle {
             texture: asset_server.load(assets::HOSHI_ARROW),
             transform: Transform::from_translation(Vec3::new(
@@ -40,14 +32,13 @@ pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
             visibility: Visibility::Hidden,
             ..default()
         },
-        OmniLightSource2D {
-            intensity: 0.75,
-            color: Color::hex(LIGHT_COLOR).unwrap(),
-            jitter_intensity: 1.0,
-            falloff: Vec3::new(3.0, 3.0, 0.05),
-            ..default()
-        },
     ));
+}
+
+pub(super) fn despawn(mut cmd: Commands, arrow: Query<Entity, With<Arrow>>) {
+    if let Some(entity) = arrow.get_single_or_none() {
+        cmd.entity(entity).despawn_recursive();
+    }
 }
 
 /// Renders the arrow pointing to the Hoshi when it's off screen.

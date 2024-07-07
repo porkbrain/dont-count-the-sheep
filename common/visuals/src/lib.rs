@@ -10,15 +10,15 @@ mod types;
 
 use bevy::{
     app::{App, FixedUpdate, Last, Update},
+    color::Color,
     math::{cubic_splines::CubicSegment, Vec2},
-    render::color::Color,
 };
 use lazy_static::lazy_static;
 pub use types::*;
 
 /// `#0d0e1f`
 pub const PRIMARY_COLOR: Color =
-    Color::rgb(0.050980393, 0.05490196, 0.12156863);
+    Color::srgb(0.050980393, 0.05490196, 0.12156863);
 
 lazy_static! {
     /// The ubiquitous "ease-in-out" animation curve.

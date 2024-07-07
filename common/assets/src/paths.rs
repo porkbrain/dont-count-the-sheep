@@ -96,7 +96,7 @@ pub mod character_atlases {
     pub const OTTER: &str = "characters/atlases/otter1.png";
     pub const PHOEBE: &str = "characters/atlases/phoebe1.png";
 
-    pub const WINNIE_COLS: usize = 12;
+    pub const WINNIE_COLS: u32 = 12;
 }
 
 pub mod misc {
@@ -115,11 +115,11 @@ pub mod misc {
 }
 
 pub mod ui {
-    use bevy::math::Vec2;
+    use bevy::math::UVec2;
 
     pub const DIALOG_BOX: &str = "ui/dialog_box.png";
     pub const HEARTBEAT_ATLAS: &str = "ui/hud/heartbeat_atlas.png";
     pub const TIME_ATLAS: &str = "ui/hud/time_atlas.png";
 
-    pub const HEARTBEAT_ATLAS_SIZE: Vec2 = Vec2::splat(70.0);
+    pub const HEARTBEAT_ATLAS_SIZE: UVec2 = UVec2::splat(70);
 }

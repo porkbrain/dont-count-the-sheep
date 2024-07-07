@@ -438,32 +438,36 @@ mod infinity_sign {
 
 #[cfg(feature = "devtools")]
 pub(crate) fn visualize(mut gizmos: Gizmos) {
+    use bevy::color::palettes::css::{
+        GOLD, LIMEGREEN, SALMON, SEA_GREEN, VIOLET,
+    };
+
     gizmos.linestrip(
         lvl1_a::CURVE.iter_positions(100).map(|p| p.extend(0.0)),
-        Color::SEA_GREEN,
+        SEA_GREEN,
     );
 
     gizmos.linestrip(
         lvl1_b::CURVE.iter_positions(100).map(|p| p.extend(0.0)),
-        Color::LIME_GREEN,
+        LIMEGREEN,
     );
 
     gizmos.linestrip(
         from_lvl1a_to_lvl2::CURVE
             .iter_positions(100)
             .map(|p| p.extend(0.0)),
-        Color::VIOLET,
+        VIOLET,
     );
 
     gizmos.linestrip(
         lvl2_a::CURVE.iter_positions(100).map(|p| p.extend(0.0)),
-        Color::SALMON,
+        SALMON,
     );
 
     gizmos.linestrip(
         infinity_sign::CURVE
             .iter_positions(100)
             .map(|p| p.extend(0.0)),
-        Color::GOLD,
+        GOLD,
     );
 }

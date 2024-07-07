@@ -1,7 +1,7 @@
 //! Emoji's are used to express emotions in a visual way.
 
 use bevy::{
-    math::vec2,
+    math::{uvec2, vec2},
     prelude::*,
     utils::{Duration, Instant},
 };
@@ -21,7 +21,7 @@ use crate::Character;
 const MIN_EMOJI_DURATION: Duration = Duration::from_millis(1000);
 
 /// How large is a single emoji atlas tile.
-const EMOJI_SIZE: Vec2 = vec2(24.0, 22.0);
+const EMOJI_SIZE: UVec2 = uvec2(24, 22);
 
 /// System in this set consumes [`DisplayEmojiEvent`]s.
 #[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -135,8 +135,8 @@ fn play_next(
                         EMOJI_SIZE,
                         4,
                         1,
-                        Some(Vec2::splat(2.0)),
-                        Some(Vec2::splat(1.0)),
+                        Some(UVec2::splat(2)),
+                        Some(UVec2::splat(1)),
                     )),
                     index: event.emoji.initial_frame(),
                 })
@@ -164,7 +164,7 @@ impl Character {
     fn emoji_offset(self) -> Vec2 {
         let (size, ..) = self.sprite_atlas().unwrap_or_default();
 
-        vec2(0.0, size.y + EMOJI_SIZE.y / 2.0)
+        vec2(0.0, size.y as f32 + EMOJI_SIZE.y as f32 / 2.0)
     }
 }
 

@@ -25,8 +25,8 @@ use bevy::{
     ecs::{
         reflect::ReflectResource,
         schedule::common_conditions::{not, resource_exists},
-        system::{CommandQueue, Commands, Res, ResMut, Resource},
-        world::World,
+        system::{Commands, Res, ResMut, Resource},
+        world::{CommandQueue, World},
     },
     log::{error, trace, warn},
     prelude::{AssetApp, IntoSystemConfigs},

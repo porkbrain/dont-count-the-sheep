@@ -1,6 +1,6 @@
 use bevy::{
+    color::Color,
     math::{Rect, Vec2},
-    render::color::Color,
     utils::{default, HashMap},
 };
 
@@ -221,7 +221,7 @@ fn apply_section_key(
             Number(a),
         ) => {
             assert!(
-                color.replace(Color::rgba(r, g, b, a)).is_none(),
+                color.replace(Color::srgba(r, g, b, a)).is_none(),
                 "Node should not have more than one color"
             );
         }

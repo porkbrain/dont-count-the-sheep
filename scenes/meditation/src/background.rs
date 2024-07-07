@@ -1,13 +1,9 @@
 //! The background of the game comprises a starry sky and a shooting star.
 
-use bevy::{math::vec3, render::view::RenderLayers};
-use bevy_magic_light_2d::gi::types::OmniLightSource2D;
+use bevy::{math::uvec2, render::view::RenderLayers};
 use common_visuals::camera::render_layer;
 
-use crate::{cameras::BackgroundLightScene, prelude::*};
-
-pub(crate) const COLOR: Color = PRIMARY_COLOR;
-const STAR_LIGHT_COLOR: &str = "#dbcbff";
+use crate::prelude::*;
 
 const TWINKLE_DURATION: Duration = from_millis(250);
 const TWINKLE_CHANCE_PER_SECOND: f32 = 1.0 / 8.0;
@@ -16,11 +12,9 @@ const TWINKLE_COUNT: usize = 4;
 const SHOOTING_STAR_CHANCE_PER_SECOND: f32 = 1.0 / 10.0;
 const SHOOTING_STAR_FRAMES: usize = 4;
 const SHOOTING_STAR_FRAME_TIME: Duration = from_millis(50);
-const SHOOTING_STAR_WIDTH: f32 = 35.0;
-const SHOOTING_STAR_HEIGHT: f32 = 35.0;
+const SHOOTING_STAR_WIDTH: u32 = 35;
+const SHOOTING_STAR_HEIGHT: u32 = 35;
 const SHOOTING_STAR_POSITION: Vec2 = vec2(-180.0, 50.0);
-
-const GALAXY_LIGHT_INTENSITY: f32 = 0.25;
 
 pub(crate) struct Plugin;
 
@@ -56,7 +50,6 @@ fn spawn(
     ));
 
     spawn_twinkles(&mut cmd, &asset_server);
-    spawn_light_sources(&mut cmd);
     spawn_shooting_star(&mut cmd, &asset_server, &mut texture_atlases);
 }
 
@@ -106,104 +99,24 @@ fn spawn_shooting_star(
             frame_time: SHOOTING_STAR_FRAME_TIME,
             ..default()
         },
-        SpriteSheetBundle {
+        SpriteBundle {
             texture: asset_server.load(assets::SHOOTING_STAR_ATLAS),
-            atlas: TextureAtlas {
-                index: animation.first,
-                layout: texture_atlases.add(TextureAtlasLayout::from_grid(
-                    vec2(SHOOTING_STAR_WIDTH, SHOOTING_STAR_HEIGHT),
-                    SHOOTING_STAR_FRAMES,
-                    1,
-                    None,
-                    None,
-                )),
-            },
             visibility: Visibility::Hidden,
             transform: Transform::from_translation(
                 SHOOTING_STAR_POSITION.extend(zindex::SHOOTING_STARS),
             ),
             ..default()
         },
+        TextureAtlas {
+            index: animation.first,
+            layout: texture_atlases.add(TextureAtlasLayout::from_grid(
+                uvec2(SHOOTING_STAR_WIDTH, SHOOTING_STAR_HEIGHT),
+                SHOOTING_STAR_FRAMES as u32,
+                1,
+                None,
+                None,
+            )),
+        },
         animation,
-    ));
-}
-
-/// Some stars emit light.
-fn spawn_light_sources(cmd: &mut Commands) {
-    // top right star
-    cmd.spawn((
-        BackgroundLightScene,
-        SpatialBundle {
-            transform: Transform::from_translation(vec3(-187.0, 122.0, 0.0)),
-            ..default()
-        },
-        OmniLightSource2D {
-            intensity: 0.5,
-            color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
-            jitter_intensity: 0.5,
-            falloff: Vec3::new(1.0, 1.0, 0.05),
-            ..default()
-        },
-    ));
-
-    // top left star
-    cmd.spawn((
-        BackgroundLightScene,
-        SpatialBundle {
-            transform: Transform::from_translation(vec3(235.0, 67.0, 0.0)),
-            ..default()
-        },
-        OmniLightSource2D {
-            intensity: 0.5,
-            color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
-            jitter_intensity: 0.5,
-            falloff: Vec3::new(1.0, 1.0, 0.05),
-            ..default()
-        },
-    ));
-
-    // bottom left galaxy
-    cmd.spawn((
-        BackgroundLightScene,
-        SpatialBundle {
-            transform: Transform::from_translation(vec3(140.0, -45.0, 0.0)),
-            ..default()
-        },
-        OmniLightSource2D {
-            intensity: GALAXY_LIGHT_INTENSITY,
-            color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
-            falloff: Vec3::new(35.0, 35.0, 0.05),
-            ..default()
-        },
-    ));
-
-    // bottom right galaxy
-    cmd.spawn((
-        BackgroundLightScene,
-        SpatialBundle {
-            transform: Transform::from_translation(vec3(-280.0, -55.0, 0.0)),
-            ..default()
-        },
-        OmniLightSource2D {
-            intensity: GALAXY_LIGHT_INTENSITY,
-            color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
-            falloff: Vec3::new(35.0, 35.0, 0.05),
-            ..default()
-        },
-    ));
-
-    // top center galaxy
-    cmd.spawn((
-        BackgroundLightScene,
-        SpatialBundle {
-            transform: Transform::from_translation(vec3(-20.0, 150.0, 0.0)),
-            ..default()
-        },
-        OmniLightSource2D {
-            intensity: GALAXY_LIGHT_INTENSITY,
-            color: Color::hex(STAR_LIGHT_COLOR).unwrap(),
-            falloff: Vec3::new(50.0, 50.0, 0.05),
-            ..default()
-        },
     ));
 }
