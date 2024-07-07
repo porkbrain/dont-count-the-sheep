@@ -11,7 +11,12 @@ pub(crate) mod systems;
 use std::marker::PhantomData;
 
 use bevy::{
-    math::vec2, prelude::*, reflect::GetTypeRegistration,
+    asset::Asset,
+    ecs::{entity::Entity, system::Resource},
+    log::{trace, warn},
+    math::{vec2, Vec2},
+    prelude::ReflectDefault,
+    reflect::{FromReflect, GetTypeRegistration, Reflect, TypePath},
     utils::hashbrown::HashMap,
 };
 use bevy_grid_squared::{Square, SquareLayout};

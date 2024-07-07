@@ -1,17 +1,24 @@
-use std::{collections::BTreeMap, fs};
+use std::{collections::BTreeMap, fs, marker::PhantomData};
 
 use bevy::{
     color::palettes::css::{GOLD, GREEN, RED},
-    utils::HashSet,
+    prelude::*,
+    utils::{HashMap, HashSet},
     window::PrimaryWindow,
 };
 use bevy_egui::EguiContexts;
+use bevy_grid_squared::{Square, SquareLayout};
 use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
 use common_visuals::camera::MainCamera;
-use map_maker::build_pathfinding_graph::{GraphExt, LocalTileKindGraph};
 use ron::ser::PrettyConfig;
+use serde::Serialize;
+use smallvec::SmallVec;
 
-use super::*;
+use super::{
+    build_pathfinding_graph::{GraphExt, LocalTileKindGraph},
+    Tile, TileKind, TileMap, LAYOUT,
+};
+use crate::TopDownScene;
 
 #[derive(Component)]
 pub(crate) struct SquareSprite(Square);

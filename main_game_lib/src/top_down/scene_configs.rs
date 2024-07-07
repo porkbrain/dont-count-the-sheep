@@ -9,3 +9,42 @@ impl WhichTopDownScene {
         untools::camel_to_snake(self.as_ref(), false)
     }
 }
+
+/// TODO: clean up
+#[allow(missing_docs)]
+pub enum LocalTileKind {
+    Aisle1,
+    Aisle2,
+    Aisle3,
+    Aisle4,
+    BasementDoorZone,
+    BedZone,
+    BottomLeftApartmentBathroomDoorZone,
+    BottomLeftApartmentDoorZone,
+    BottomLeftApartmentZone,
+    BottomRightApartmentDoorZone,
+    BottomRightApartmentZone,
+    Building1Entrance,
+    ClinicEntrance,
+    ClinicWardEntrance,
+    CompoundEntrance,
+    DoorZone,
+    ElevatorZone,
+    EnterTowerZone,
+    ExitZone,
+    Fridges,
+    FruitsAndVeggies,
+    GoodWater,
+    GoToDowntownZone,
+    HallwayZone,
+    MallEntrance,
+    MeditationZone,
+    PlantShopEntrance,
+    PlayerApartmentZone,
+    PlayerDoorZone,
+    SewersEntrance,
+    TeaZone,
+    TwinpeaksApartmentEntrance,
+    UpperApartmentDoorZone,
+    UpperApartmentWallHiddenZone,
+}
