@@ -58,7 +58,7 @@ bevy_webp_anim = "0.4"
 bevy-inspector-egui = { version = "0.25", default-features = false, features = [
     "bevy_render",
 ] }
-leafwing-input-manager = { git = "https://github.com/dead-money/leafwing-input-manager.git", branch = "v0.14-rc" }
+leafwing-input-manager = "0.14"
 bevy_egui = "0.28"
 
 scene_building1_basement1 = { path = "scenes/building1_basement1" }
