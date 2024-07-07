@@ -70,7 +70,7 @@ dependencies = [
  "accesskit",
  "accesskit_macos",
  "accesskit_windows",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "winit",
 ]
 
@@ -401,7 +401,7 @@ dependencies = [
  "bevy_core",
  "bevy_core_pipeline",
  "bevy_ecs",
- "bevy_egui 0.28.0",
+ "bevy_egui",
  "bevy_hierarchy",
  "bevy_log",
  "bevy_math",
@@ -621,27 +621,6 @@ dependencies = [
 
 [[package]]
 name = "bevy_egui"
-version = "0.27.1"
-source = "git+https://github.com/Friz64/bevy_egui/?branch=bevy-0.14#492b99fbcd8a3100a5f8f567e93f11901a0903ff"
-dependencies = [
- "arboard",
- "bevy",
- "bytemuck",
- "console_log",
- "crossbeam-channel",
- "egui",
- "js-sys",
- "log",
- "thread_local",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "webbrowser 0.8.15",
- "winit",
-]
-
-[[package]]
-name = "bevy_egui"
 version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e4a90f30f2849a07d91e393b10c0cc05df09b5773c010ddde57dd8b583be230"
@@ -658,7 +637,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "webbrowser 1.0.1",
+ "webbrowser",
  "winit",
 ]
 
@@ -1202,7 +1181,7 @@ dependencies = [
  "bevy_math",
  "bevy_reflect",
  "bevy_utils",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "serde",
  "smol_str",
 ]
@@ -1229,7 +1208,7 @@ dependencies = [
  "bevy_window",
  "cfg-if",
  "crossbeam-channel",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "serde",
  "wasm-bindgen",
  "web-sys",
@@ -2855,10 +2834,11 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 [[package]]
 name = "leafwing-input-manager"
 version = "0.14.0"
-source = "git+https://github.com/dead-money/leafwing-input-manager.git?branch=v0.14-rc#8f60f0da81676ee44454c338fb7c1ca5ab6b94fd"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bebb7f3227809906ca7ccc981aedf7805b5edb422b4265290cc749316c0faba4"
 dependencies = [
  "bevy",
- "bevy_egui 0.27.1",
+ "bevy_egui",
  "derive_more",
  "itertools 0.13.0",
  "leafwing_input_manager_macros",
@@ -2867,8 +2847,9 @@ dependencies = [
 
 [[package]]
 name = "leafwing_input_manager_macros"
-version = "0.13.1"
-source = "git+https://github.com/dead-money/leafwing-input-manager.git?branch=v0.14-rc#8f60f0da81676ee44454c338fb7c1ca5ab6b94fd"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d065e4f0771d9cc597e76d648da18476ad01fd50cd60ee585ee500f9cd8d696"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -3060,7 +3041,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
- "bevy_egui 0.28.0",
+ "bevy_egui",
  "bevy_grid_squared",
  "bevy_pixel_camera",
  "bevy_webp_anim",
@@ -3215,7 +3196,7 @@ dependencies = [
  "log",
  "ndk-sys 0.6.0+11769913",
  "num_enum",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "thiserror",
 ]
 
@@ -4012,12 +3993,6 @@ dependencies = [
  "rayon",
  "rgb",
 ]
-
-[[package]]
-name = "raw-window-handle"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2ff9a1f06a88b01621b7ae906ef0211290d1c8a168a15542486a8f61c0833b9"
 
 [[package]]
 name = "raw-window-handle"
@@ -5436,23 +5411,6 @@ dependencies = [
 
 [[package]]
 name = "webbrowser"
-version = "0.8.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db67ae75a9405634f5882791678772c94ff5f16a66535aae186e26aa0841fc8b"
-dependencies = [
- "core-foundation",
- "home",
- "jni",
- "log",
- "ndk-context",
- "objc",
- "raw-window-handle 0.5.2",
- "url",
- "web-sys",
-]
-
-[[package]]
-name = "webbrowser"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "425ba64c1e13b1c6e8c5d2541c8fac10022ca584f33da781db01b5756aef1f4e"
@@ -5490,7 +5448,7 @@ dependencies = [
  "naga",
  "parking_lot",
  "profiling",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "smallvec",
  "static_assertions",
  "wasm-bindgen",
@@ -5519,7 +5477,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "profiling",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "rustc-hash 1.1.0",
  "smallvec",
  "thiserror",
@@ -5562,7 +5520,7 @@ dependencies = [
  "parking_lot",
  "profiling",
  "range-alloc",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "renderdoc-sys",
  "rustc-hash 1.1.0",
  "smallvec",
@@ -5972,7 +5930,7 @@ dependencies = [
  "orbclient",
  "percent-encoding",
  "pin-project",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "redox_syscall 0.4.1",
  "rustix",
  "sctk-adwaita",
