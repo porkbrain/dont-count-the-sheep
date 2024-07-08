@@ -18,8 +18,8 @@ use super::{ActorOrCharacter, BeginDialogEvent};
 use crate::{
     dialog::{self, StartDialogWhenLoaded},
     top_down::{
-        inspect_and_interact::ReadyForInteraction, layout::ZoneTile, Actor,
-        ActorTarget, Player, TileMap, TopDownScene,
+        inspect_and_interact::ReadyForInteraction, Actor, ActorTarget, Player,
+        TileMap, TopDownScene,
     },
 };
 

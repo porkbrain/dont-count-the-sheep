@@ -12,7 +12,7 @@ impl WhichTopDownScene {
 
 /// TODO: clean up
 #[allow(missing_docs)]
-pub enum LocalTileKind {
+pub enum ZoneTileKind {
     Aisle1,
     Aisle2,
     Aisle3,
