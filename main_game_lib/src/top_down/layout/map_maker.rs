@@ -2,8 +2,7 @@ use std::{collections::BTreeMap, fs};
 
 use bevy::{
     color::palettes::css::{GOLD, GREEN, RED},
-    prelude::*,
-    utils::{HashMap, HashSet},
+    utils::HashSet,
     window::PrimaryWindow,
 };
 use bevy_egui::EguiContexts;

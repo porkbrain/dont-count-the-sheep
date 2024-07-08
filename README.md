@@ -6,6 +6,8 @@ A top down pixelart game created with [Bevy](https://bevyengine.org/).
 
 Run `$ ./dev/wiki` to open the game's [wiki](wiki/README.md) locally in your browser.
 
+Our primary color is `#0d0e1f`.
+
 # Repo organization
 
 There are crates in the [`common`](common/) directory that help with [animation](common/visuals/), [input handling](common/action/), [loading screen](common/loading_screen/), and more.
