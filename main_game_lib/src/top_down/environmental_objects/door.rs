@@ -13,9 +13,9 @@ use smallvec::SmallVec;
 use crate::top_down::{ActorMovementEvent, TileKind, TileMap, TopDownScene};
 
 /// For [`Door`]
-pub struct DoorBuilder<L> {
+pub struct DoorBuilder {
     /// If an actor is in this zone, the door can be manipulated.
-    zone_tile_kind: TileKind<L>,
+    zone_tile_kind: TileKind,
 
     open_criteria: SmallVec<[DoorOpenCriteria; 3]>,
     initial_state: DoorState,
@@ -25,9 +25,9 @@ pub struct DoorBuilder<L> {
 
 /// A door that can be opened and closed.
 #[derive(Component, Reflect)]
-pub struct Door<L> {
+pub struct Door {
     /// If an actor is in this zone, the door can be manipulated.
-    zone_tile_kind: TileKind<L>,
+    zone_tile_kind: TileKind,
     /// The state is updated on runtime.
     state: DoorState,
     /// In an `OR` relationship.
@@ -77,9 +77,9 @@ pub enum DoorOpenCriteria {
 /// and only if there are events.
 pub fn toggle<T: TopDownScene>(
     mut tilemap: ResMut<TileMap<T>>,
-    mut events: EventReader<ActorMovementEvent<T::LocalTileKind>>,
+    mut events: EventReader<ActorMovementEvent>,
 
-    mut door: Query<(&mut Door<T::LocalTileKind>, &mut TextureAtlas)>,
+    mut door: Query<(&mut Door, &mut TextureAtlas)>,
 ) {
     let events = events.read().collect_vec();
 
@@ -102,9 +102,9 @@ pub fn toggle<T: TopDownScene>(
 /// the door is closed.
 fn apply_event_to_door_and_map<T: TopDownScene>(
     tilemap: &mut ResMut<TileMap<T>>,
-    door: &mut Door<T::LocalTileKind>,
+    door: &mut Door,
     sprite: &mut Mut<'_, TextureAtlas>,
-    event: &ActorMovementEvent<<T as TopDownScene>::LocalTileKind>,
+    event: &ActorMovementEvent,
 ) {
     match event {
         ActorMovementEvent::ZoneEntered { zone, who }
@@ -179,9 +179,9 @@ fn apply_event_to_door_and_map<T: TopDownScene>(
     };
 }
 
-impl<L> DoorBuilder<L> {
+impl DoorBuilder {
     /// The only required parameter is the zone tile kind that opens the door.
-    pub fn new(zone_tile_kind: impl Into<TileKind<L>>) -> Self {
+    pub fn new(zone_tile_kind: impl Into<TileKind>) -> Self {
         Self {
             zone_tile_kind: zone_tile_kind.into(),
             open_criteria: default(),
@@ -220,7 +220,7 @@ impl<L> DoorBuilder<L> {
     pub fn build_and_insert_obstacle<T: TopDownScene>(
         self,
         tilemap: &mut TileMap<T>,
-    ) -> Door<L> {
+    ) -> Door {
         let obstacle = self.obstacle.map(|(from, to)| {
             let layers = if matches!(self.initial_state, DoorState::Closed) {
                 bevy_grid_squared::shapes::rectangle_between(from, to)
@@ -253,7 +253,7 @@ impl<L> DoorBuilder<L> {
     /// Does not insert the obstacle into the tilemap.
     /// Will panic if the door is closed and the obstacle is set.
     #[must_use]
-    pub fn build<T: TopDownScene>(self) -> Door<L> {
+    pub fn build(self) -> Door {
         assert!(
             !matches!(self.initial_state, DoorState::Closed)
                 || self.obstacle.is_none(),

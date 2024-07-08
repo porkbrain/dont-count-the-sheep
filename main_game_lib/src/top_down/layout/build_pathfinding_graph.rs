@@ -38,48 +38,46 @@ use itertools::Itertools;
 
 use crate::top_down::{layout::Tile, TileKind, TileMap, TopDownScene};
 
-/// Map of tile kind variant `L` to those other variants (not including
+/// Map of tile kind variant to those other variants (not including
 /// itself - proper supersets) whose instances fully contain it (the key.)
 /// If square contains the key variant, it contains also all the variants in the
 /// value set.
 ///
 /// `(tile, its supersets)`
-pub type SupersetsOf<L> = HashMap<L, HashSet<L>>;
+pub type SupersetsOf = HashMap<TileKind, HashSet<TileKind>>;
 
-/// Map of tile kind variant `L` to those other variants (not including
+/// Map of tile kind variant to those other variants (not including
 /// itself - proper subsets) whose instances are fully contained by it (the
 /// key.) If square contains any of the value set variants, it contains also the
 /// key variant.
 ///
 /// `(tile, its subsets)`
-pub type SubsetsOf<L> = HashMap<L, HashSet<L>>;
+pub type SubsetsOf = HashMap<TileKind, HashSet<TileKind>>;
 
-/// Set of pairs of tile kind variants `L` that overlap in the same square and
+/// Set of pairs of tile kind variants that overlap in the same square and
 /// are not supersets of each other.
 ///
 /// `(tile, another)`
-pub type Overlaps<L> = HashSet<(L, L)>;
+pub type Overlaps = HashSet<(TileKind, TileKind)>;
 
-/// Set of pairs of tile kind variants `L` that are walkable neighbors and are
+/// Set of pairs of tile kind variants that are walkable neighbors and are
 /// not supersets of each other neither overlap in the same square.
 ///
 /// `(tile, another)`
-pub type Neighbors<L> = HashSet<(L, L)>;
+pub type Neighbors = HashSet<(TileKind, TileKind)>;
 
-/// Describes relationships between the local tile kind variants `L` in the
-/// tile map.
-/// That is, for a `T: TopDownScene` the `L` is `T::LocalTileKind`.
-pub struct LocalTileKindGraph<L> {
+/// Describes relationships between the tile kind variants in the tile map.
+pub struct LocalTileKindGraph {
     /// See the type alias `SupersetsOf`.
-    pub supersets_of: SupersetsOf<L>,
+    pub supersets_of: SupersetsOf,
     /// See the type alias `SubsetsOf`.
-    pub subsets_of: SubsetsOf<L>,
+    pub subsets_of: SubsetsOf,
     /// See the type alias `Overlaps`.
-    pub overlaps: Overlaps<L>,
+    pub overlaps: Overlaps,
     /// See the type alias `Neighbors`.
-    pub neighbors: Neighbors<L>,
+    pub neighbors: Neighbors,
     /// How many squares each zone comprises.
-    pub zone_sizes: HashMap<L, usize>,
+    pub zone_sizes: HashMap<TileKind, usize>,
 }
 
 /// Some useful methods for the [`Graph`] type.
@@ -94,46 +92,46 @@ pub trait GraphExt {
 /// Series of steps to compute the relationships between the local tile kind
 /// variants `L` in the tile map.
 #[derive(Default)]
-enum GraphComputeStep<L> {
+enum GraphComputeStep {
     /// First find for each tile kind variant `L` all tiles that contain
     /// every single instance of it.
-    /// This computes the [`SupersetsOf<L>`].
+    /// This computes the [`SupersetsOf`].
     #[default]
     Supersets,
     /// Then from the previous result construct the inverse of it, which is
     /// for each tile kind variant `L` all tiles that are contained in it.
-    /// This computes the [`SubsetsOf<L>`].
-    Subsets { from_supersets: SupersetsOf<L> },
+    /// This computes the [`SubsetsOf`].
+    Subsets { from_supersets: SupersetsOf },
     /// The find which tiles overlap in the same square and are not supersets
     /// of each other.
-    /// This computes the [`Overlaps<L>`].
+    /// This computes the [`Overlaps`].
     Overlaps {
-        from_supersets: SupersetsOf<L>,
-        from_subsets: SubsetsOf<L>,
+        from_supersets: SupersetsOf,
+        from_subsets: SubsetsOf,
     },
     /// Check which non overlapping tiles are walkable neighbors and
     /// are not supersets of each other.
-    /// This computes the [`Neighbors<L>`].
+    /// This computes the [`Neighbors`].
     Neighbors {
-        from_supersets: SupersetsOf<L>,
-        from_subsets: SubsetsOf<L>,
-        from_overlaps: Overlaps<L>,
+        from_supersets: SupersetsOf,
+        from_subsets: SubsetsOf,
+        from_overlaps: Overlaps,
     },
     /// Calculate how many squares each zone comprises.
     Sizes {
-        from_supersets: SupersetsOf<L>,
-        from_subsets: SubsetsOf<L>,
-        from_overlaps: Overlaps<L>,
-        from_neighbors: Neighbors<L>,
+        from_supersets: SupersetsOf,
+        from_subsets: SubsetsOf,
+        from_overlaps: Overlaps,
+        from_neighbors: Neighbors,
     },
     /// All computation for the graph finished, ready with the result.
-    Done(LocalTileKindGraph<L>),
+    Done(LocalTileKindGraph),
 }
 
 /// Whether the computation is done or not.
-enum GraphComputeResult<L> {
-    NextStep(GraphComputeStep<L>),
-    Done(LocalTileKindGraph<L>),
+enum GraphComputeResult {
+    NextStep(GraphComputeStep),
+    Done(LocalTileKindGraph),
 }
 
 impl GraphExt for Graph {
@@ -152,15 +150,10 @@ impl GraphExt for Graph {
     }
 }
 
-impl<L: Tile> LocalTileKindGraph<L>
-where
-    L: Ord,
-{
+impl LocalTileKindGraph {
     /// Find all relationships between the local tile kind variants `L` in the
     /// tile map `T`.
-    pub fn compute_from<T: TopDownScene<LocalTileKind = L>>(
-        tilemap: &TileMap<T>,
-    ) -> Self {
+    pub fn compute_from<T: TopDownScene>(tilemap: &TileMap<T>) -> Self {
         let mut compute_step = GraphComputeStep::default();
         loop {
             match compute_step.next_step(tilemap) {
@@ -187,10 +180,10 @@ where
         // are in the same group.
 
         // the index is going to be the zone group unique value in the end
-        let mut zone_groups: Vec<HashSet<L>> = default();
-        let mut successors: HashMap<L, Vec<L>> = default();
+        let mut zone_groups: Vec<HashSet<TileKind>> = default();
+        let mut successors: HashMap<TileKind, Vec<TileKind>> = default();
 
-        for zone in L::zones_iter() {
+        for zone in TileKind::zones_iter() {
             let group = if let Some((index, _)) = zone_groups
                 .iter()
                 .find_position(|group| group.contains(&zone))
@@ -268,7 +261,7 @@ where
         g.add_stmt(attr!("ranksep", 1.0).into());
 
         // map tile kinds to nodes
-        let nodes: BTreeMap<L, _> = L::zones_iter()
+        let nodes: BTreeMap<TileKind, _> = TileKind::zones_iter()
             .filter(|kind| kind.is_zone())
             .map(|kind| (kind, node!({ format!("{kind:?}").to_lowercase() })))
             .collect();
@@ -424,7 +417,7 @@ where
     }
 }
 
-impl<L: std::fmt::Debug> std::fmt::Debug for LocalTileKindGraph<L> {
+impl std::fmt::Debug for LocalTileKindGraph {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "LocalTileKindGraph")?;
         for (a, b) in &self.supersets_of {
@@ -443,11 +436,11 @@ impl<L: std::fmt::Debug> std::fmt::Debug for LocalTileKindGraph<L> {
     }
 }
 
-impl<L: Tile + Ord> GraphComputeStep<L> {
-    fn next_step<T: TopDownScene<LocalTileKind = L>>(
+impl GraphComputeStep {
+    fn next_step<T: TopDownScene>(
         self,
         map: &TileMap<T>,
-    ) -> GraphComputeResult<L> {
+    ) -> GraphComputeResult {
         let next_step = match self {
             Self::Supersets => Self::Subsets {
                 from_supersets: find_supersets(map),
@@ -503,9 +496,7 @@ impl<L: Tile + Ord> GraphComputeStep<L> {
 }
 
 /// Find which tiles are supersets of which.
-fn find_supersets<T: TopDownScene>(
-    map: &TileMap<T>,
-) -> SupersetsOf<T::LocalTileKind> {
+fn find_supersets<T: TopDownScene>(map: &TileMap<T>) -> SupersetsOf {
     let mut supersets_of: SupersetsOf<_> = default();
     for tiles in map.squares().values() {
         let locals: HashSet<_> = get_local_zones(tiles).collect();
@@ -529,8 +520,8 @@ fn find_supersets<T: TopDownScene>(
 }
 
 /// Find which tiles are subsets of which.
-fn find_subsets<L: Tile>(supersets_of: &SupersetsOf<L>) -> SubsetsOf<L> {
-    let mut subsets: SubsetsOf<L> = default();
+fn find_subsets<L: Tile>(supersets_of: &SupersetsOf) -> SubsetsOf {
+    let mut subsets: SubsetsOf = default();
 
     for (superset, subset) in
         supersets_of.iter().flat_map(|(subset, supersets)| {
@@ -550,13 +541,10 @@ fn find_subsets<L: Tile>(supersets_of: &SupersetsOf<L>) -> SubsetsOf<L> {
 /// of each other
 fn find_overlaps<T: TopDownScene>(
     map: &TileMap<T>,
-    supersets_of: &SupersetsOf<T::LocalTileKind>,
-    subsets_of: &SubsetsOf<T::LocalTileKind>,
-) -> Overlaps<T::LocalTileKind>
-where
-    T::LocalTileKind: Ord,
-{
-    let mut overlaps: Overlaps<T::LocalTileKind> = default();
+    supersets_of: &SupersetsOf,
+    subsets_of: &SubsetsOf,
+) -> Overlaps {
+    let mut overlaps: Overlaps = default();
     for tiles in map.squares().values() {
         let locals = get_local_zones(tiles).collect_vec();
 
@@ -585,14 +573,11 @@ where
 /// supersets of each other
 fn find_neighbors<T: TopDownScene>(
     map: &TileMap<T>,
-    supersets_of: &SupersetsOf<T::LocalTileKind>,
-    subsets_of: &SubsetsOf<T::LocalTileKind>,
-    overlaps: &Overlaps<T::LocalTileKind>,
-) -> Neighbors<T::LocalTileKind>
-where
-    T::LocalTileKind: Ord,
-{
-    let mut neighbors: Neighbors<T::LocalTileKind> = default();
+    supersets_of: &SupersetsOf,
+    subsets_of: &SubsetsOf,
+    overlaps: &Overlaps,
+) -> Neighbors {
+    let mut neighbors: Neighbors = default();
 
     for (sq, tiles) in map.squares().iter() {
         let locals = get_local_zones(tiles).collect_vec();
@@ -635,7 +620,7 @@ where
 
 fn count_zone_sizes<T: TopDownScene>(
     map: &TileMap<T>,
-) -> HashMap<<T as TopDownScene>::LocalTileKind, usize> {
+) -> HashMap<TileKind, usize> {
     map.squares()
         .values()
         .flat_map(|tiles| get_local_zones(tiles))
@@ -645,9 +630,7 @@ fn count_zone_sizes<T: TopDownScene>(
         })
 }
 
-fn get_local_zones<L: Tile>(
-    tiles: &[TileKind<L>],
-) -> impl Iterator<Item = L> + '_ {
+fn get_local_zones(tiles: &[TileKind]) -> impl Iterator<Item = TileKind> + '_ {
     tiles
         .iter()
         .filter(|tile| tile.is_zone())

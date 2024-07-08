@@ -67,7 +67,6 @@ impl bevy::app::Plugin for Plugin {
 pub fn default_setup_for_scene<T>(app: &mut App)
 where
     T: TopDownScene + WithStandardStateSemantics,
-    T::LocalTileKind: layout::ZoneTile<Successors = T::LocalTileKind>,
 {
     debug!("Adding assets for {}", T::type_path());
 
@@ -89,12 +88,12 @@ where
 
     debug!("Adding map layout for {}", T::type_path());
 
-    app.add_event::<ActorMovementEvent<T::LocalTileKind>>()
+    app.add_event::<ActorMovementEvent>()
         .init_asset_loader::<common_assets::ron_loader::Loader<TileMap<T>>>()
         .init_asset::<TileMap<T>>()
-        .register_type::<TileKind<T::LocalTileKind>>()
+        .register_type::<TileKind>()
         .register_type::<TileMap<T>>()
-        .register_type::<ActorMovementEvent<T::LocalTileKind>>();
+        .register_type::<ActorMovementEvent>();
 
     app.add_systems(OnEnter(loading), layout::systems::start_loading_map::<T>)
         .add_systems(
@@ -187,10 +186,10 @@ where
     )
     .add_systems(
         Update,
-        inspect_and_interact::match_interact_label_with_action_event::<T>
+        inspect_and_interact::match_interact_label_with_action_event
             .run_if(in_state(running))
-            .run_if(on_event::<ActorMovementEvent<T::LocalTileKind>>())
-            .after(emit_movement_events::<T>),
+            .run_if(on_event::<ActorMovementEvent>())
+            .after(emit_movement_events),
     );
 
     debug!("Adding camera");
@@ -233,7 +232,6 @@ where
 pub fn dev_default_setup_for_scene<T>(app: &mut App)
 where
     T: TopDownScene + WithStandardStateSemantics,
-    T::LocalTileKind: Ord + bevy::reflect::GetTypeRegistration,
 {
     use bevy_inspector_egui::quick::ResourceInspectorPlugin;
     use layout::map_maker::TileMapMakerToolbar as Toolbar;
@@ -242,14 +240,11 @@ where
         running, quitting, ..
     } = T::semantics();
 
-    app.register_type::<T::LocalTileKind>();
-
     // we insert the toolbar along with the map
-    app.register_type::<Toolbar<T::LocalTileKind>>()
-        .add_plugins(
-            ResourceInspectorPlugin::<Toolbar<T::LocalTileKind>>::new()
-                .run_if(resource_exists::<Toolbar<T::LocalTileKind>>),
-        );
+    app.register_type::<Toolbar>().add_plugins(
+        ResourceInspectorPlugin::<Toolbar>::new()
+            .run_if(resource_exists::<Toolbar>),
+    );
 
     app.add_systems(
         OnEnter(running),

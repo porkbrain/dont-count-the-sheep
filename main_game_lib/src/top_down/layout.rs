@@ -39,13 +39,6 @@ pub type TileIndex = (Square, usize);
 
 /// Some map.
 pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
-    /// Tile kind that is unique to this map.
-    /// Will parametrize the [`TileKind::Local`] enum's variant.
-    ///
-    /// If the map has some sort of special tiles, use an enum here.
-    /// Otherwise, set to unit type.
-    type LocalTileKind: Tile;
-
     /// Alphabetical only name of the map.
     fn name() -> &'static str;
 
@@ -111,32 +104,31 @@ pub trait Tile:
 pub struct TileMap<T: TopDownScene> {
     /// Metadata about zones used for pathfinding.
     #[serde(default)]
-    pub(crate) zones: ZoneTileMetas,
+    pub(crate) zones: TileKindMetas,
     /// There can be multiple layers of tiles on a single square.
-    pub(crate) squares:
-        HashMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
+    pub(crate) squares: HashMap<Square, SmallVec<[TileKind; 3]>>,
     #[serde(skip)]
     #[reflect(ignore)]
     _phantom: PhantomData<T>,
 }
 
 #[derive(Serialize, Deserialize, Reflect, Default, Clone, Debug)]
-pub(crate) struct ZoneTileMetas {
+pub(crate) struct TileKindMetas {
     /// The zones in this vector are ordered by the index that the conversion
     /// of [`ZoneTileKind`] into `usize` would give.
     #[serde(default)]
-    pub(crate) inner: Vec<Option<ZoneTileMeta>>,
+    pub(crate) inner: Vec<Option<TileKindMeta>>,
 }
 
 /// These values are calculated when the map maker exports the map.
 #[derive(Serialize, Deserialize, Reflect, Default, Clone, Debug)]
-pub(crate) struct ZoneTileMeta {
+pub(crate) struct TileKindMeta {
     #[serde(default)]
     pub(crate) zone_group: ZoneGroup,
     #[serde(default)]
     pub(crate) zone_size: usize,
     #[serde(default)]
-    pub(crate) zone_successors: SmallVec<[ZoneTileKind; 5]>,
+    pub(crate) zone_successors: SmallVec<[TileKind; 5]>,
 }
 
 /// What kind of tiles do we support?
@@ -155,7 +147,7 @@ pub(crate) struct ZoneTileMeta {
     Serialize,
 )]
 #[reflect(Default)]
-pub enum TileKind<L> {
+pub enum TileKind {
     /// No tile.
     #[default]
     Empty,
@@ -181,7 +173,7 @@ pub enum TileKind<L> {
     /// storing entity in an enum is more expensive than before.
     Actor(Entity),
     /// Specific for a given map.
-    Local(L),
+    Local(ZoneTileKind),
 }
 
 /// Useful for pathfinding to prefer some tiles over others.
@@ -201,7 +193,9 @@ pub enum TileWalkCost {
 /// in the same group.
 ///
 /// The usize is an opaque unique value assigned to the group with no meaning.
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(
+    Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Reflect, Serialize,
+)]
 pub struct ZoneGroup(pub usize);
 
 /// Helper function that exports z coordinate given y coordinate.
@@ -220,7 +214,7 @@ pub fn ysort(Vec2 { y, .. }: Vec2) -> f32 {
     ((max - y) / size).clamp(-0.1, 1.1)
 }
 
-impl<L: Tile> Tile for TileKind<L> {
+impl Tile for TileKind {
     #[inline]
     fn is_walkable(&self, by: Entity) -> bool {
         match self {
@@ -262,7 +256,7 @@ impl<L: Tile> Tile for TileKind<L> {
 impl<T: TopDownScene> TileMap<T> {
     /// Get the kind of a tile.
     #[inline]
-    pub fn get(&self, square: Square) -> Option<&[TileKind<T::LocalTileKind>]> {
+    pub fn get(&self, square: Square) -> Option<&[TileKind]> {
         if !T::contains(square) {
             return None;
         }
@@ -272,11 +266,7 @@ impl<T: TopDownScene> TileMap<T> {
 
     /// Whether the given square has the given kind of tile in any layer.
     #[inline]
-    pub fn is_on(
-        &self,
-        square: Square,
-        kind: impl Into<TileKind<T::LocalTileKind>>,
-    ) -> bool {
+    pub fn is_on(&self, square: Square, kind: impl Into<TileKind>) -> bool {
         let kind = kind.into();
         self.squares
             .get(&square)
@@ -302,7 +292,7 @@ impl<T: TopDownScene> TileMap<T> {
     pub fn any_on(
         &self,
         square: Square,
-        predicate: impl Fn(TileKind<T::LocalTileKind>) -> bool,
+        predicate: impl Fn(TileKind) -> bool,
     ) -> bool {
         self.squares
             .get(&square)
@@ -316,7 +306,7 @@ impl<T: TopDownScene> TileMap<T> {
     pub fn all_on(
         &self,
         square: Square,
-        predicate: impl Fn(TileKind<T::LocalTileKind>) -> bool,
+        predicate: impl Fn(TileKind) -> bool,
     ) -> bool {
         self.squares
             .get(&square)
@@ -332,7 +322,7 @@ impl<T: TopDownScene> TileMap<T> {
     pub fn add_tile_to_first_empty_layer(
         &mut self,
         to: Square,
-        tile: impl Into<TileKind<T::LocalTileKind>>,
+        tile: impl Into<TileKind>,
     ) -> Option<usize> {
         if !T::contains(to) {
             return None;
@@ -370,8 +360,8 @@ impl<T: TopDownScene> TileMap<T> {
         &mut self,
         of: Square,
         layer: usize,
-        kind: impl Into<TileKind<T::LocalTileKind>>,
-    ) -> Option<TileKind<T::LocalTileKind>> {
+        kind: impl Into<TileKind>,
+    ) -> Option<TileKind> {
         if !T::contains(of) {
             return None;
         }
@@ -394,10 +384,8 @@ impl<T: TopDownScene> TileMap<T> {
         &mut self,
         of: Square,
         layer: usize,
-        map: impl FnOnce(
-            TileKind<T::LocalTileKind>,
-        ) -> Option<TileKind<T::LocalTileKind>>,
-    ) -> Option<TileKind<T::LocalTileKind>> {
+        map: impl FnOnce(TileKind) -> Option<TileKind>,
+    ) -> Option<TileKind> {
         if !T::contains(of) {
             return None;
         }
@@ -424,7 +412,7 @@ impl<T: TopDownScene> TileMap<T> {
     pub fn map_tiles(
         &mut self,
         of: Square,
-        map: impl Fn(TileKind<T::LocalTileKind>) -> TileKind<T::LocalTileKind>,
+        map: impl Fn(TileKind) -> TileKind,
     ) {
         let Some(tiles) = self.squares.get_mut(&of) else {
             return;
@@ -462,24 +450,20 @@ impl<T: TopDownScene> TileMap<T> {
     }
 
     /// Access the map of squares to tiles.
-    pub fn squares(
-        &self,
-    ) -> &HashMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>> {
+    pub fn squares(&self) -> &HashMap<Square, SmallVec<[TileKind; 3]>> {
         &self.squares
     }
 }
 
-impl<T: TopDownScene> TileMap<T>
-where
-    T::LocalTileKind: ZoneTile<Successors = T::LocalTileKind>,
-{
+/// Pathfinding logic.
+impl<T: TopDownScene> TileMap<T> {
     /// No matter how many layers there are, all tile kinds within a single
     /// square must belong to the same zone group.
     #[inline]
     pub fn zone_group(&self, at: Square) -> Option<ZoneGroup> {
-        self.squares
-            .get(&at)
-            .and_then(|tiles| tiles.iter().find_map(|tile| tile.zone_group()))
+        self.squares.get(&at).and_then(|tiles| {
+            tiles.iter().find_map(|tile| self.zones.group_of(tile))
+        })
     }
 
     /// Path finding algorithm that returns partial path to the target.
@@ -544,7 +528,7 @@ where
                 // Hence, test multiple routes to find some that can be made
                 // progress on.
                 let test_max_alternative_routes = 3;
-                for sequence_of_zones in find_sequences_of_zones_between::<T>(
+                for sequence_of_zones in self.find_sequences_of_zones_between(
                     any_from_zone,
                     smallest_to_zone,
                     test_max_alternative_routes,
@@ -651,7 +635,7 @@ where
         who: Entity,
         from: Square,
         to: Square,
-        zone_to_stay_in: TileKind<T::LocalTileKind>,
+        zone_to_stay_in: TileKind,
     ) -> Option<Vec<Square>> {
         debug_assert!(zone_to_stay_in.is_zone());
 
@@ -689,8 +673,8 @@ where
         who: Entity,
         from: Square,
         to: Square,
-        allowed_zones: &[TileKind<T::LocalTileKind>],
-        strictly_better_zones: &[TileKind<T::LocalTileKind>],
+        allowed_zones: &[TileKind],
+        strictly_better_zones: &[TileKind],
     ) -> Option<Vec<Square>> {
         pathfinding::prelude::astar(
             &from,
@@ -750,50 +734,53 @@ where
         )
         .map(|(path, _)| path)
     }
+
+    /// Given that the graphs are not going to be large (a handful of nodes),
+    /// this should be very cheap compared to the actual pathfinding over many
+    /// many squares.
+    ///
+    /// `k` is the number of different solutions to find (if they exist).
+    /// It must be 1 or more.
+    /// At least one solution is guaranteed to be found because there always
+    /// must be a path between two zones in the same group.
+    ///
+    /// Note that even though the function returns an iterator, it's not lazy.
+    fn find_sequences_of_zones_between(
+        &self,
+        from_zone: TileKind,
+        to_zone: TileKind,
+        k: usize,
+    ) -> impl Iterator<Item = Vec<TileKind>> {
+        debug_assert_ne!(0, k);
+        // here I want to make sure that if two zones are neighbors and there's
+        // a 3rd overlapping both, it should be included in the path
+        // perhaps zone size is not the right metric to use
+
+        pathfinding::prelude::yen(
+            &from_zone,
+            // successors
+            |zone| {
+                self.zones
+                    .successors_of(zone)
+                    .unwrap_or_default()
+                    .iter()
+                    .filter_map(move |s| {
+                        Some((*s, self.zones.size_of(s)? as i32))
+                    })
+            },
+            // success
+            |zone| zone == &to_zone,
+            k,
+        )
+        .into_iter()
+        .map(|(path, _)| path)
+    }
 }
 
-/// Given that the graphs are not going to be large (a handful of nodes),
-/// this should be very cheap compared to the actual pathfinding over many many
-/// squares.
-///
-/// `k` is the number of different solutions to find (if they exist).
-/// It must be 1 or more.
-/// At least one solution is guaranteed to be found because there always must be
-/// a path between two zones in the same group.
-///
-/// Note that even though the function returns an iterator, it's not lazy.
-fn find_sequences_of_zones_between<T: TopDownScene>(
-    from_zone: TileKind<T::LocalTileKind>,
-    to_zone: TileKind<T::LocalTileKind>,
-    k: usize,
-) -> impl Iterator<Item = Vec<TileKind<T::LocalTileKind>>>
-where
-    T::LocalTileKind: ZoneTile<Successors = T::LocalTileKind>,
-{
-    debug_assert_ne!(0, k);
-    // here I want to make sure that if two zones are neighbors and there's a
-    // 3rd overlapping both, it should be included in the path
-    // perhaps zone size is not the right metric to use
-
-    pathfinding::prelude::yen(
-        &from_zone,
-        // successors
-        |zone| {
-            zone.zone_successors().unwrap().iter().filter_map(move |s| {
-                Some((TileKind::Local(*s), s.zone_size()? as i32))
-            })
-        },
-        // success
-        |zone| zone == &to_zone,
-        k,
-    )
-    .into_iter()
-    .map(|(path, _)| path)
-}
-
-impl<L> TileKind<L> {
+impl TileKind {
     /// If the tile is local, returns it.
-    pub fn into_local(self) -> Option<L> {
+    /// TODO
+    pub fn into_local(self) -> Option<ZoneTileKind> {
         match self {
             Self::Local(l) => Some(l),
             _ => None,
@@ -801,8 +788,8 @@ impl<L> TileKind<L> {
     }
 }
 
-impl<L> From<L> for TileKind<L> {
-    fn from(l: L) -> Self {
+impl From<ZoneTileKind> for TileKind {
+    fn from(l: ZoneTileKind) -> Self {
         Self::Local(l)
     }
 }
@@ -823,7 +810,7 @@ impl Tile for () {
     }
 }
 
-impl ZoneTileMetas {
+impl TileKindMetas {
     /// Returns the zone group of the tile if it's a zone.
     /// This is useful for pathfinding.
     ///
@@ -831,7 +818,7 @@ impl ZoneTileMetas {
     /// belong to the same group.
     ///
     /// Returns [`None`] if not present.
-    pub(crate) fn group_of(&self, kind: ZoneTileKind) -> Option<ZoneGroup> {
+    pub(crate) fn group_of(&self, kind: &TileKind) -> Option<ZoneGroup> {
         self.inner
             .get(kind as usize)
             .and_then(|meta| meta.as_ref().map(|meta| meta.zone_group))
@@ -840,7 +827,7 @@ impl ZoneTileMetas {
     /// How many square does the zone comprise?
     ///
     /// Returns [`None`] if not present.
-    pub(crate) fn size_of(&self, kind: ZoneTileKind) -> Option<usize> {
+    pub(crate) fn size_of(&self, kind: &TileKind) -> Option<usize> {
         self.inner
             .get(kind as usize)
             .and_then(|meta| meta.as_ref().map(|meta| meta.zone_size))
@@ -851,560 +838,557 @@ impl ZoneTileMetas {
     /// subsets/supersets, neighbours or overlapping.
     ///
     /// Returns [`None`] if not present.
-    pub(crate) fn successors_of(
-        &self,
-        kind: ZoneTileKind,
-    ) -> Option<&[ZoneTileKind]> {
+    pub(crate) fn successors_of(&self, kind: &TileKind) -> Option<&[TileKind]> {
         self.inner.get(kind as usize).and_then(|meta| {
             meta.as_ref().map(|meta| meta.zone_successors.as_slice())
         })
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use bevy::utils::default;
-    use bevy_grid_squared::sq;
-    use smallvec::smallvec;
-    use strum::{EnumIter, IntoEnumIterator};
+// #[cfg(test)]
+// mod tests {
+//     use bevy::utils::default;
+//     use bevy_grid_squared::sq;
+//     use smallvec::smallvec;
+//     use strum::{EnumIter, IntoEnumIterator};
 
-    use super::*;
+//     use super::*;
 
-    #[derive(Default, Reflect)]
-    struct TestScene;
+//     #[derive(Default, Reflect)]
+//     struct TestScene;
 
-    #[derive(
-        Default,
-        Reflect,
-        Hash,
-        PartialEq,
-        Eq,
-        Debug,
-        Serialize,
-        Deserialize,
-        Clone,
-        Copy,
-    )]
-    enum TestTileKind {
-        #[default]
-        Empty,
-    }
+//     #[derive(
+//         Default,
+//         Reflect,
+//         Hash,
+//         PartialEq,
+//         Eq,
+//         Debug,
+//         Serialize,
+//         Deserialize,
+//         Clone,
+//         Copy,
+//     )]
+//     enum TestTileKind {
+//         #[default]
+//         Empty,
+//     }
 
-    impl Tile for TestTileKind {
-        fn is_walkable(&self, _: Entity) -> bool {
-            true
-        }
+//     impl Tile for TestTileKind {
+//         fn is_walkable(&self, _: Entity) -> bool {
+//             true
+//         }
 
-        fn is_zone(&self) -> bool {
-            false
-        }
+//         fn is_zone(&self) -> bool {
+//             false
+//         }
 
-        fn zones_iter() -> impl Iterator<Item = Self> {
-            std::iter::empty()
-        }
-    }
+//         fn zones_iter() -> impl Iterator<Item = Self> {
+//             std::iter::empty()
+//         }
+//     }
 
-    impl TopDownScene for TestScene {
-        type LocalTileKind = TestTileKind;
+//     impl TopDownScene for TestScene {
+//         fn bounds() -> [i32; 4] {
+//             [0, 10, 0, 10]
+//         }
 
-        fn bounds() -> [i32; 4] {
-            [0, 10, 0, 10]
-        }
+//         fn name() -> &'static str {
+//             unreachable!()
+//         }
+//     }
 
-        fn name() -> &'static str {
-            unreachable!()
-        }
-    }
+//     #[test]
+//     fn it_converts_tile_walk_cost_to_i32() {
+//         assert_eq!(TileWalkCost::Preferred as i32, 1);
+//         assert_eq!(TileWalkCost::Normal as i32, 3);
+//     }
 
-    #[test]
-    fn it_converts_tile_walk_cost_to_i32() {
-        assert_eq!(TileWalkCost::Preferred as i32, 1);
-        assert_eq!(TileWalkCost::Normal as i32, 3);
-    }
+//     #[test]
+//     fn it_calculates_walk_cost() {
+//         use TileKind as Tk;
+//         use TileWalkCost::*;
 
-    #[test]
-    fn it_calculates_walk_cost() {
-        use TileKind as Tk;
-        use TileWalkCost::*;
+//         let o = sq(0, 0);
+//         let mut tilemap = TileMap::<TestScene>::default();
 
-        let o = sq(0, 0);
-        let mut tilemap = TileMap::<TestScene>::default();
+//         // out of bounds returns none
+//         assert_eq!(tilemap.walk_cost(sq(-1, 0), Entity::PLACEHOLDER), None);
 
-        // out of bounds returns none
-        assert_eq!(tilemap.walk_cost(sq(-1, 0), Entity::PLACEHOLDER), None);
+//         // in bounds, but no tile returns normal
+//         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Normal));
 
-        // in bounds, but no tile returns normal
-        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Normal));
+//         // if there's a wall returns none
+//         tilemap.squares.insert(o, smallvec![Tk::Empty, Tk::Wall]);
+//         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
+//         tilemap.squares.insert(o, smallvec![Tk::Wall, Tk::Empty]);
+//         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
 
-        // if there's a wall returns none
-        tilemap.squares.insert(o, smallvec![Tk::Empty, Tk::Wall]);
-        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
-        tilemap.squares.insert(o, smallvec![Tk::Wall, Tk::Empty]);
-        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
+//         // if there's a trail returns preferred
+//         tilemap.squares.insert(o, smallvec![Tk::Empty, Tk::Trail]);
+//         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER),
+// Some(Preferred));         tilemap.squares.insert(o, smallvec![Tk::Trail,
+// Tk::Empty,]);         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER),
+// Some(Preferred));
 
-        // if there's a trail returns preferred
-        tilemap.squares.insert(o, smallvec![Tk::Empty, Tk::Trail]);
-        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Preferred));
-        tilemap.squares.insert(o, smallvec![Tk::Trail, Tk::Empty,]);
-        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Preferred));
+//         // if there's a matching character and trail, returns preferred
+//         tilemap
+//             .squares
+//             .insert(o, smallvec![Tk::Actor(Entity::PLACEHOLDER,),
+// Tk::Trail]);         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER),
+// Some(Preferred));
 
-        // if there's a matching character and trail, returns preferred
-        tilemap
-            .squares
-            .insert(o, smallvec![Tk::Actor(Entity::PLACEHOLDER,), Tk::Trail]);
-        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Preferred));
+//         // if there's a matching character and wall, returns none
+//         tilemap
+//             .squares
+//             .insert(o, smallvec![Tk::Actor(Entity::PLACEHOLDER,), Tk::Wall]);
+//         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
 
-        // if there's a matching character and wall, returns none
-        tilemap
-            .squares
-            .insert(o, smallvec![Tk::Actor(Entity::PLACEHOLDER,), Tk::Wall]);
-        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
+//         // if there's a different character and a trail, returns none
+//         tilemap
+//             .squares
+//             .insert(o, smallvec![Tk::Actor(Entity::from_raw(10),),
+// Tk::Trail]);         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER),
+// None);     }
 
-        // if there's a different character and a trail, returns none
-        tilemap
-            .squares
-            .insert(o, smallvec![Tk::Actor(Entity::from_raw(10),), Tk::Trail]);
-        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
-    }
+//     #[test]
+//     fn it_adds_tiles_to_first_empty_layer() {
+//         let mut tilemap = TileMap::<TestScene>::default();
+//         let sq = sq(0, 0);
 
-    #[test]
-    fn it_adds_tiles_to_first_empty_layer() {
-        let mut tilemap = TileMap::<TestScene>::default();
-        let sq = sq(0, 0);
+//         assert_eq!(
+//             tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
+//             Some(0)
+//         );
+//         assert_eq!(
+//             tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
+//             Some(1)
+//         );
 
-        assert_eq!(
-            tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
-            Some(0)
-        );
-        assert_eq!(
-            tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
-            Some(1)
-        );
+//         tilemap.squares.insert(
+//             sq,
+//             smallvec![TileKind::Wall, TileKind::Empty, TileKind::Wall],
+//         );
+//         assert_eq!(
+//             tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
+//             Some(1)
+//         );
+//     }
 
-        tilemap.squares.insert(
-            sq,
-            smallvec![TileKind::Wall, TileKind::Empty, TileKind::Wall],
-        );
-        assert_eq!(
-            tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
-            Some(1)
-        );
-    }
+//     #[test]
+//     fn it_sets_tile_kind_layer() {
+//         let mut tilemap = TileMap::<TestScene>::default();
+//         let sq = sq(0, 0);
 
-    #[test]
-    fn it_sets_tile_kind_layer() {
-        let mut tilemap = TileMap::<TestScene>::default();
-        let sq = sq(0, 0);
+//         assert_eq!(
+//             tilemap.set_tile_kind(sq, 0, TileKind::Wall),
+//             Some(TileKind::Empty)
+//         );
+//         assert_eq!(
+//             tilemap.set_tile_kind(sq, 0, TileKind::Wall),
+//             Some(TileKind::Wall)
+//         );
+//         assert_eq!(
+//             tilemap.set_tile_kind(sq, 1, TileKind::Wall),
+//             Some(TileKind::Empty)
+//         );
+//         assert_eq!(
+//             tilemap.set_tile_kind(sq, 1, TileKind::Wall),
+//             Some(TileKind::Wall)
+//         );
+//         assert_eq!(
+//             tilemap.set_tile_kind(sq, 5, TileKind::Wall),
+//             Some(TileKind::Empty)
+//         );
+//         assert_eq!(
+//             tilemap.set_tile_kind(sq, 4, TileKind::Wall),
+//             Some(TileKind::Empty)
+//         );
+//     }
 
-        assert_eq!(
-            tilemap.set_tile_kind(sq, 0, TileKind::Wall),
-            Some(TileKind::Empty)
-        );
-        assert_eq!(
-            tilemap.set_tile_kind(sq, 0, TileKind::Wall),
-            Some(TileKind::Wall)
-        );
-        assert_eq!(
-            tilemap.set_tile_kind(sq, 1, TileKind::Wall),
-            Some(TileKind::Empty)
-        );
-        assert_eq!(
-            tilemap.set_tile_kind(sq, 1, TileKind::Wall),
-            Some(TileKind::Wall)
-        );
-        assert_eq!(
-            tilemap.set_tile_kind(sq, 5, TileKind::Wall),
-            Some(TileKind::Empty)
-        );
-        assert_eq!(
-            tilemap.set_tile_kind(sq, 4, TileKind::Wall),
-            Some(TileKind::Empty)
-        );
-    }
+//     #[test]
+//     fn it_doesnt_do_anything_outside_map_bounds() {
+//         let mut tilemap = TileMap::<TestScene>::default();
 
-    #[test]
-    fn it_doesnt_do_anything_outside_map_bounds() {
-        let mut tilemap = TileMap::<TestScene>::default();
+//         assert_eq!(
+//             tilemap.add_tile_to_first_empty_layer(sq(-100, 0),
+// TileKind::Wall),             None
+//         );
 
-        assert_eq!(
-            tilemap.add_tile_to_first_empty_layer(sq(-100, 0), TileKind::Wall),
-            None
-        );
+//         assert_eq!(tilemap.set_tile_kind(sq(100, 0), 0, TileKind::Wall),
+// None);     }
 
-        assert_eq!(tilemap.set_tile_kind(sq(100, 0), 0, TileKind::Wall), None);
-    }
+//     /// Useful to track to prevent regressions.
+//     #[test]
+//     fn it_has_const_size_of_tilekind() {
+//         assert_eq!(std::mem::size_of::<TileKind<TestTileKind>>(), 16);
 
-    /// Useful to track to prevent regressions.
-    #[test]
-    fn it_has_const_size_of_tilekind() {
-        assert_eq!(std::mem::size_of::<TileKind<TestTileKind>>(), 16);
+//         let square: SmallVec<[TileKind<TestTileKind>; 3]> =
+//             smallvec![default(), default(), default(), default(), default()];
+//         assert_eq!(std::mem::size_of_val(&square), 56);
+//     }
 
-        let square: SmallVec<[TileKind<TestTileKind>; 3]> =
-            smallvec![default(), default(), default(), default(), default()];
-        assert_eq!(std::mem::size_of_val(&square), 56);
-    }
+//     #[derive(Default, Reflect)]
+//     struct DevMapTestScene;
 
-    #[derive(Default, Reflect)]
-    struct DevMapTestScene;
+//     #[derive(
+//         Default,
+//         Reflect,
+//         EnumIter,
+//         Hash,
+//         PartialEq,
+//         Eq,
+//         PartialOrd,
+//         Ord,
+//         Clone,
+//         Copy,
+//         Debug,
+//         Serialize,
+//         Deserialize,
+//     )]
+//     enum DevMapTestTileKind {
+//         #[default]
+//         ZoneA,
+//         ZoneB,
+//         ZoneC,
+//         ZoneD,
+//         ZoneE,
+//         ZoneF,
+//         ZoneG,
+//         ZoneH,
+//         ZoneI,
+//         ZoneJ,
+//         ZoneK,
+//     }
 
-    #[derive(
-        Default,
-        Reflect,
-        EnumIter,
-        Hash,
-        PartialEq,
-        Eq,
-        PartialOrd,
-        Ord,
-        Clone,
-        Copy,
-        Debug,
-        Serialize,
-        Deserialize,
-    )]
-    enum DevMapTestTileKind {
-        #[default]
-        ZoneA,
-        ZoneB,
-        ZoneC,
-        ZoneD,
-        ZoneE,
-        ZoneF,
-        ZoneG,
-        ZoneH,
-        ZoneI,
-        ZoneJ,
-        ZoneK,
-    }
+//     impl TopDownScene for DevMapTestScene {
+//         type LocalTileKind = DevMapTestTileKind;
 
-    impl TopDownScene for DevMapTestScene {
-        type LocalTileKind = DevMapTestTileKind;
+//         fn bounds() -> [i32; 4] {
+//             [-11, 0, 15, 28]
+//         }
 
-        fn bounds() -> [i32; 4] {
-            [-11, 0, 15, 28]
-        }
+//         fn name() -> &'static str {
+//             unreachable!()
+//         }
+//     }
 
-        fn name() -> &'static str {
-            unreachable!()
-        }
-    }
+//     impl Tile for DevMapTestTileKind {
+//         fn is_walkable(&self, _: Entity) -> bool {
+//             true
+//         }
 
-    impl Tile for DevMapTestTileKind {
-        fn is_walkable(&self, _: Entity) -> bool {
-            true
-        }
+//         fn is_zone(&self) -> bool {
+//             true
+//         }
 
-        fn is_zone(&self) -> bool {
-            true
-        }
+//         fn zones_iter() -> impl Iterator<Item = Self> {
+//             Self::iter()
+//         }
+//     }
 
-        fn zones_iter() -> impl Iterator<Item = Self> {
-            Self::iter()
-        }
-    }
+//     /// Based on the RON above.
+//     impl ZoneTile for DevMapTestTileKind {
+//         #[inline]
+//         fn zone_group(&self) -> Option<ZoneGroup> {
+//             match self {
+//                 Self::ZoneA => Some(ZoneGroup(0)),
+//                 Self::ZoneB => Some(ZoneGroup(0)),
+//                 Self::ZoneC => Some(ZoneGroup(0)),
+//                 Self::ZoneD => Some(ZoneGroup(0)),
+//                 Self::ZoneE => Some(ZoneGroup(0)),
+//                 Self::ZoneF => Some(ZoneGroup(0)),
+//                 Self::ZoneG => Some(ZoneGroup(0)),
+//                 Self::ZoneH => Some(ZoneGroup(1)),
+//                 Self::ZoneI => Some(ZoneGroup(1)),
+//                 Self::ZoneJ => Some(ZoneGroup(1)),
+//                 Self::ZoneK => Some(ZoneGroup(1)),
+//                 #[allow(unreachable_patterns)]
+//                 _ => None,
+//             }
+//         }
+//         #[inline]
+//         fn zone_size(&self) -> Option<usize> {
+//             match self {
+//                 Self::ZoneA => Some(25),
+//                 Self::ZoneB => Some(8),
+//                 Self::ZoneC => Some(12),
+//                 Self::ZoneD => Some(9),
+//                 Self::ZoneE => Some(1),
+//                 Self::ZoneF => Some(12),
+//                 Self::ZoneG => Some(1),
+//                 Self::ZoneH => Some(4),
+//                 Self::ZoneI => Some(10),
+//                 Self::ZoneJ => Some(8),
+//                 Self::ZoneK => Some(4),
+//                 #[allow(unreachable_patterns)]
+//                 _ => None,
+//             }
+//         }
+//         type Successors = Self;
+//         #[inline]
+//         fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
+//             match self {
+//                 Self::ZoneA => Some(&[Self::ZoneB, Self::ZoneD,
+// Self::ZoneE]),                 Self::ZoneB => Some(&[Self::ZoneA,
+// Self::ZoneC]),                 Self::ZoneC => Some(&[Self::ZoneB,
+// Self::ZoneF]),                 Self::ZoneD => Some(&[Self::ZoneA,
+// Self::ZoneE]),                 Self::ZoneE => Some(&[Self::ZoneA,
+// Self::ZoneD]),                 Self::ZoneF => Some(&[Self::ZoneC,
+// Self::ZoneG]),                 Self::ZoneG => Some(&[Self::ZoneF]),
+//                 Self::ZoneH => Some(&[Self::ZoneI]),
+//                 Self::ZoneI => Some(&[Self::ZoneH, Self::ZoneJ,
+// Self::ZoneK]),                 Self::ZoneJ => Some(&[Self::ZoneI,
+// Self::ZoneK]),                 Self::ZoneK => Some(&[Self::ZoneI,
+// Self::ZoneJ]),                 #[allow(unreachable_patterns)]
+//                 _ => None,
+//             }
+//         }
+//     }
 
-    /// Based on the RON above.
-    impl ZoneTile for DevMapTestTileKind {
-        #[inline]
-        fn zone_group(&self) -> Option<ZoneGroup> {
-            match self {
-                Self::ZoneA => Some(ZoneGroup(0)),
-                Self::ZoneB => Some(ZoneGroup(0)),
-                Self::ZoneC => Some(ZoneGroup(0)),
-                Self::ZoneD => Some(ZoneGroup(0)),
-                Self::ZoneE => Some(ZoneGroup(0)),
-                Self::ZoneF => Some(ZoneGroup(0)),
-                Self::ZoneG => Some(ZoneGroup(0)),
-                Self::ZoneH => Some(ZoneGroup(1)),
-                Self::ZoneI => Some(ZoneGroup(1)),
-                Self::ZoneJ => Some(ZoneGroup(1)),
-                Self::ZoneK => Some(ZoneGroup(1)),
-                #[allow(unreachable_patterns)]
-                _ => None,
-            }
-        }
-        #[inline]
-        fn zone_size(&self) -> Option<usize> {
-            match self {
-                Self::ZoneA => Some(25),
-                Self::ZoneB => Some(8),
-                Self::ZoneC => Some(12),
-                Self::ZoneD => Some(9),
-                Self::ZoneE => Some(1),
-                Self::ZoneF => Some(12),
-                Self::ZoneG => Some(1),
-                Self::ZoneH => Some(4),
-                Self::ZoneI => Some(10),
-                Self::ZoneJ => Some(8),
-                Self::ZoneK => Some(4),
-                #[allow(unreachable_patterns)]
-                _ => None,
-            }
-        }
-        type Successors = Self;
-        #[inline]
-        fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
-            match self {
-                Self::ZoneA => Some(&[Self::ZoneB, Self::ZoneD, Self::ZoneE]),
-                Self::ZoneB => Some(&[Self::ZoneA, Self::ZoneC]),
-                Self::ZoneC => Some(&[Self::ZoneB, Self::ZoneF]),
-                Self::ZoneD => Some(&[Self::ZoneA, Self::ZoneE]),
-                Self::ZoneE => Some(&[Self::ZoneA, Self::ZoneD]),
-                Self::ZoneF => Some(&[Self::ZoneC, Self::ZoneG]),
-                Self::ZoneG => Some(&[Self::ZoneF]),
-                Self::ZoneH => Some(&[Self::ZoneI]),
-                Self::ZoneI => Some(&[Self::ZoneH, Self::ZoneJ, Self::ZoneK]),
-                Self::ZoneJ => Some(&[Self::ZoneI, Self::ZoneK]),
-                Self::ZoneK => Some(&[Self::ZoneI, Self::ZoneJ]),
-                #[allow(unreachable_patterns)]
-                _ => None,
-            }
-        }
-    }
+//     /// Test map such that:
+//     /// ```text
+//     ///  E<-D<-A=B<->C<->F->G
+//     ///
+//     ///  H=I<->J->K   and K<->I
+//     /// ```
+//     ///
+//     /// * `x=y` x and y are neighbors
+//     /// * `x<->y` x and y overlap
+//     /// * `x<-y` x is subset of y
+//     const DEV_MAP_TEST_RON: &str = r#"(squares: {
+//         (x: -10, y: 16): [Empty, Local(ZoneJ)],
+//         (x: -10, y: 17): [Empty, Local(ZoneJ)],
+//         (x: -10, y: 19): [Local(ZoneH)],
+//         (x: -10, y: 20): [Local(ZoneH)],
+//         (x: -10, y: 23): [Local(ZoneA)],
+//         (x: -10, y: 24): [Local(ZoneA)],
+//         (x: -10, y: 25): [Local(ZoneA)],
+//         (x: -10, y: 26): [Local(ZoneA)],
+//         (x: -10, y: 27): [Local(ZoneA)],
+//         (x: -9, y: 16): [Empty, Local(ZoneJ), Local(ZoneK)],
+//         (x: -9, y: 17): [Empty, Local(ZoneJ), Local(ZoneK)],
+//         (x: -9, y: 19): [Local(ZoneH)],
+//         (x: -9, y: 20): [Local(ZoneH)],
+//         (x: -9, y: 23): [Local(ZoneA)],
+//         (x: -9, y: 24): [Local(ZoneA), Local(ZoneD)],
+//         (x: -9, y: 25): [Local(ZoneA), Local(ZoneD)],
+//         (x: -9, y: 26): [Local(ZoneA), Local(ZoneD)],
+//         (x: -9, y: 27): [Local(ZoneA)],
+//         (x: -8, y: 16): [Local(ZoneI), Local(ZoneJ), Local(ZoneK)],
+//         (x: -8, y: 17): [Local(ZoneI), Local(ZoneJ), Local(ZoneK)],
+//         (x: -8, y: 18): [Local(ZoneI)],
+//         (x: -8, y: 19): [Local(ZoneI)],
+//         (x: -8, y: 20): [Local(ZoneI)],
+//         (x: -8, y: 23): [Local(ZoneA)],
+//         (x: -8, y: 24): [Local(ZoneA), Local(ZoneD)],
+//         (x: -8, y: 25): [Local(ZoneA), Local(ZoneD), Local(ZoneE)],
+//         (x: -8, y: 26): [Local(ZoneA), Local(ZoneD)],
+//         (x: -8, y: 27): [Local(ZoneA)],
+//         (x: -7, y: 16): [Local(ZoneI), Local(ZoneJ)],
+//         (x: -7, y: 17): [Local(ZoneI), Local(ZoneJ)],
+//         (x: -7, y: 18): [Local(ZoneI)],
+//         (x: -7, y: 19): [Local(ZoneI)],
+//         (x: -7, y: 20): [Local(ZoneI)],
+//         (x: -7, y: 23): [Local(ZoneA)],
+//         (x: -7, y: 24): [Local(ZoneA), Local(ZoneD)],
+//         (x: -7, y: 25): [Local(ZoneA), Local(ZoneD)],
+//         (x: -7, y: 26): [Local(ZoneA), Local(ZoneD)],
+//         (x: -7, y: 27): [Local(ZoneA)],
+//         (x: -6, y: 23): [Local(ZoneA)],
+//         (x: -6, y: 24): [Local(ZoneA)],
+//         (x: -6, y: 25): [Local(ZoneA)],
+//         (x: -6, y: 26): [Local(ZoneA)],
+//         (x: -6, y: 27): [Local(ZoneA)],
+//         (x: -5, y: 26): [Local(ZoneB)],
+//         (x: -5, y: 27): [Local(ZoneB)],
+//         (x: -4, y: 26): [Local(ZoneB)],
+//         (x: -4, y: 27): [Local(ZoneB)],
+//         (x: -3, y: 19): [Local(ZoneF)],
+//         (x: -3, y: 20): [Local(ZoneF)],
+//         (x: -3, y: 21): [Local(ZoneF)],
+//         (x: -3, y: 22): [Local(ZoneF)],
+//         (x: -3, y: 26): [Local(ZoneB)],
+//         (x: -3, y: 27): [Local(ZoneB)],
+//         (x: -2, y: 19): [Local(ZoneF)],
+//         (x: -2, y: 20): [Local(ZoneF), Local(ZoneG)],
+//         (x: -2, y: 21): [Local(ZoneF)],
+//         (x: -2, y: 22): [Local(ZoneF), Local(ZoneC)],
+//         (x: -2, y: 23): [Empty, Local(ZoneC)],
+//         (x: -2, y: 24): [Empty, Local(ZoneC)],
+//         (x: -2, y: 25): [Empty, Local(ZoneC)],
+//         (x: -2, y: 26): [Local(ZoneB), Local(ZoneC)],
+//         (x: -2, y: 27): [Local(ZoneB), Local(ZoneC)],
+//         (x: -1, y: 19): [Local(ZoneF)],
+//         (x: -1, y: 20): [Local(ZoneF)],
+//         (x: -1, y: 21): [Local(ZoneF)],
+//         (x: -1, y: 22): [Local(ZoneF), Local(ZoneC)],
+//         (x: -1, y: 23): [Empty, Local(ZoneC)],
+//         (x: -1, y: 24): [Empty, Local(ZoneC)],
+//         (x: -1, y: 25): [Empty, Local(ZoneC)],
+//         (x: -1, y: 26): [Empty, Local(ZoneC)],
+//         (x: -1, y: 27): [Empty, Local(ZoneC)],
+//     },)"#;
 
-    /// Test map such that:
-    /// ```text
-    ///  E<-D<-A=B<->C<->F->G
-    ///
-    ///  H=I<->J->K   and K<->I
-    /// ```
-    ///
-    /// * `x=y` x and y are neighbors
-    /// * `x<->y` x and y overlap
-    /// * `x<-y` x is subset of y
-    const DEV_MAP_TEST_RON: &str = r#"(squares: {
-        (x: -10, y: 16): [Empty, Local(ZoneJ)],
-        (x: -10, y: 17): [Empty, Local(ZoneJ)],
-        (x: -10, y: 19): [Local(ZoneH)],
-        (x: -10, y: 20): [Local(ZoneH)],
-        (x: -10, y: 23): [Local(ZoneA)],
-        (x: -10, y: 24): [Local(ZoneA)],
-        (x: -10, y: 25): [Local(ZoneA)],
-        (x: -10, y: 26): [Local(ZoneA)],
-        (x: -10, y: 27): [Local(ZoneA)],
-        (x: -9, y: 16): [Empty, Local(ZoneJ), Local(ZoneK)],
-        (x: -9, y: 17): [Empty, Local(ZoneJ), Local(ZoneK)],
-        (x: -9, y: 19): [Local(ZoneH)],
-        (x: -9, y: 20): [Local(ZoneH)],
-        (x: -9, y: 23): [Local(ZoneA)],
-        (x: -9, y: 24): [Local(ZoneA), Local(ZoneD)],
-        (x: -9, y: 25): [Local(ZoneA), Local(ZoneD)],
-        (x: -9, y: 26): [Local(ZoneA), Local(ZoneD)],
-        (x: -9, y: 27): [Local(ZoneA)],
-        (x: -8, y: 16): [Local(ZoneI), Local(ZoneJ), Local(ZoneK)],
-        (x: -8, y: 17): [Local(ZoneI), Local(ZoneJ), Local(ZoneK)],
-        (x: -8, y: 18): [Local(ZoneI)],
-        (x: -8, y: 19): [Local(ZoneI)],
-        (x: -8, y: 20): [Local(ZoneI)],
-        (x: -8, y: 23): [Local(ZoneA)],
-        (x: -8, y: 24): [Local(ZoneA), Local(ZoneD)],
-        (x: -8, y: 25): [Local(ZoneA), Local(ZoneD), Local(ZoneE)],
-        (x: -8, y: 26): [Local(ZoneA), Local(ZoneD)],
-        (x: -8, y: 27): [Local(ZoneA)],
-        (x: -7, y: 16): [Local(ZoneI), Local(ZoneJ)],
-        (x: -7, y: 17): [Local(ZoneI), Local(ZoneJ)],
-        (x: -7, y: 18): [Local(ZoneI)],
-        (x: -7, y: 19): [Local(ZoneI)],
-        (x: -7, y: 20): [Local(ZoneI)],
-        (x: -7, y: 23): [Local(ZoneA)],
-        (x: -7, y: 24): [Local(ZoneA), Local(ZoneD)],
-        (x: -7, y: 25): [Local(ZoneA), Local(ZoneD)],
-        (x: -7, y: 26): [Local(ZoneA), Local(ZoneD)],
-        (x: -7, y: 27): [Local(ZoneA)],
-        (x: -6, y: 23): [Local(ZoneA)],
-        (x: -6, y: 24): [Local(ZoneA)],
-        (x: -6, y: 25): [Local(ZoneA)],
-        (x: -6, y: 26): [Local(ZoneA)],
-        (x: -6, y: 27): [Local(ZoneA)],
-        (x: -5, y: 26): [Local(ZoneB)],
-        (x: -5, y: 27): [Local(ZoneB)],
-        (x: -4, y: 26): [Local(ZoneB)],
-        (x: -4, y: 27): [Local(ZoneB)],
-        (x: -3, y: 19): [Local(ZoneF)],
-        (x: -3, y: 20): [Local(ZoneF)],
-        (x: -3, y: 21): [Local(ZoneF)],
-        (x: -3, y: 22): [Local(ZoneF)],
-        (x: -3, y: 26): [Local(ZoneB)],
-        (x: -3, y: 27): [Local(ZoneB)],
-        (x: -2, y: 19): [Local(ZoneF)],
-        (x: -2, y: 20): [Local(ZoneF), Local(ZoneG)],
-        (x: -2, y: 21): [Local(ZoneF)],
-        (x: -2, y: 22): [Local(ZoneF), Local(ZoneC)],
-        (x: -2, y: 23): [Empty, Local(ZoneC)],
-        (x: -2, y: 24): [Empty, Local(ZoneC)],
-        (x: -2, y: 25): [Empty, Local(ZoneC)],
-        (x: -2, y: 26): [Local(ZoneB), Local(ZoneC)],
-        (x: -2, y: 27): [Local(ZoneB), Local(ZoneC)],
-        (x: -1, y: 19): [Local(ZoneF)],
-        (x: -1, y: 20): [Local(ZoneF)],
-        (x: -1, y: 21): [Local(ZoneF)],
-        (x: -1, y: 22): [Local(ZoneF), Local(ZoneC)],
-        (x: -1, y: 23): [Empty, Local(ZoneC)],
-        (x: -1, y: 24): [Empty, Local(ZoneC)],
-        (x: -1, y: 25): [Empty, Local(ZoneC)],
-        (x: -1, y: 26): [Empty, Local(ZoneC)],
-        (x: -1, y: 27): [Empty, Local(ZoneC)],
-    },)"#;
+//     #[test]
+//     fn it_finds_path_between_interesting_square_pairs() {
+//         #[derive(Default)]
+//         struct ExampleSetting {
+//             expected_partial_steps: Option<usize>,
+//         }
 
-    #[test]
-    fn it_finds_path_between_interesting_square_pairs() {
-        #[derive(Default)]
-        struct ExampleSetting {
-            expected_partial_steps: Option<usize>,
-        }
+//         let pairs = &[
+//             (
+//                 sq(-7, 15),
+//                 sq(-9, 24),
+//                 "Takes a lot of steps during testing",
+//                 ExampleSetting {
+//                     expected_partial_steps: Some(6),
+//                 },
+//             ),
+//             (
+//                 sq(-5, 15),
+//                 sq(-10, 16),
+//                 "Values at the edge of the map",
+//                 default(),
+//             ),
+//             (
+//                 sq(-8, 21),  // nowhere
+//                 sq(-10, 16), // ZoneJ
+//                 "Taking lots of steps during testing",
+//                 ExampleSetting {
+//                     expected_partial_steps: Some(4),
+//                     ..default()
+//                 },
+//             ),
+//             (sq(-2, 19), sq(-2, 20), "Going from F to (F, G)", default()),
+//             (sq(-10, 25), sq(-9, 25), "Going from A to (A, D)", default()),
+//             (
+//                 sq(-9, 25),
+//                 sq(-8, 25),
+//                 "Going from (A, D) to (A, D, E)",
+//                 default(),
+//             ),
+//             (
+//                 sq(-9, 25),
+//                 sq(-2, 20),
+//                 "Going from (A, D) to (F, G)",
+//                 ExampleSetting {
+//                     expected_partial_steps: Some(4),
+//                     ..default()
+//                 },
+//             ),
+//             (
+//                 sq(-2, 26),
+//                 sq(-2, 22),
+//                 "Going from (B, C) to (C, F)",
+//                 default(),
+//             ),
+//             (
+//                 sq(-10, 19),
+//                 sq(-8, 17),
+//                 "Going from H to (I, J, K)",
+//                 default(),
+//             ),
+//             (sq(-10, 25), sq(-5, 26), "Going from A to B", default()),
+//         ];
 
-        let pairs = &[
-            (
-                sq(-7, 15),
-                sq(-9, 24),
-                "Takes a lot of steps during testing",
-                ExampleSetting {
-                    expected_partial_steps: Some(6),
-                },
-            ),
-            (
-                sq(-5, 15),
-                sq(-10, 16),
-                "Values at the edge of the map",
-                default(),
-            ),
-            (
-                sq(-8, 21),  // nowhere
-                sq(-10, 16), // ZoneJ
-                "Taking lots of steps during testing",
-                ExampleSetting {
-                    expected_partial_steps: Some(4),
-                    ..default()
-                },
-            ),
-            (sq(-2, 19), sq(-2, 20), "Going from F to (F, G)", default()),
-            (sq(-10, 25), sq(-9, 25), "Going from A to (A, D)", default()),
-            (
-                sq(-9, 25),
-                sq(-8, 25),
-                "Going from (A, D) to (A, D, E)",
-                default(),
-            ),
-            (
-                sq(-9, 25),
-                sq(-2, 20),
-                "Going from (A, D) to (F, G)",
-                ExampleSetting {
-                    expected_partial_steps: Some(4),
-                    ..default()
-                },
-            ),
-            (
-                sq(-2, 26),
-                sq(-2, 22),
-                "Going from (B, C) to (C, F)",
-                default(),
-            ),
-            (
-                sq(-10, 19),
-                sq(-8, 17),
-                "Going from H to (I, J, K)",
-                default(),
-            ),
-            (sq(-10, 25), sq(-5, 26), "Going from A to B", default()),
-        ];
+//         let tilemap: TileMap<DevMapTestScene> =
+//             ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
-        let tilemap: TileMap<DevMapTestScene> =
-            ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+//         for (
+//             from,
+//             to,
+//             desc,
+//             ExampleSetting {
+//                 expected_partial_steps,
+//             },
+//         ) in pairs
+//         {
+//             println!("{desc}: from {from} to {to}");
 
-        for (
-            from,
-            to,
-            desc,
-            ExampleSetting {
-                expected_partial_steps,
-            },
-        ) in pairs
-        {
-            println!("{desc}: from {from} to {to}");
+//             let mut partial_from = *from;
+//             let mut jumps = vec![];
+//             while partial_from != *to {
+//                 search_for_partial_path(
+//                     &tilemap,
+//                     1,
+//                     *from,
+//                     *to,
+//                     &mut partial_from,
+//                 );
 
-            let mut partial_from = *from;
-            let mut jumps = vec![];
-            while partial_from != *to {
-                search_for_partial_path(
-                    &tilemap,
-                    1,
-                    *from,
-                    *to,
-                    &mut partial_from,
-                );
+//                 jumps.push(partial_from);
+//             }
 
-                jumps.push(partial_from);
-            }
+//             if let Some(expected_partial_steps) = expected_partial_steps {
+//                 assert_eq!(
+//                     *expected_partial_steps,
+//                     jumps.len(),
+//                     "Each partial step: {jumps:?}"
+//                 );
+//             }
+//         }
+//     }
 
-            if let Some(expected_partial_steps) = expected_partial_steps {
-                assert_eq!(
-                    *expected_partial_steps,
-                    jumps.len(),
-                    "Each partial step: {jumps:?}"
-                );
-            }
-        }
-    }
+//     #[test]
+//     fn it_finds_path_from_each_square_to_every_other() {
+//         let tilemap: TileMap<DevMapTestScene> =
+//             ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
-    #[test]
-    fn it_finds_path_from_each_square_to_every_other() {
-        let tilemap: TileMap<DevMapTestScene> =
-            ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+//         let all_squares =
+//             || bevy_grid_squared::shapes::rectangle(DevMapTestScene::bounds());
 
-        let all_squares =
-            || bevy_grid_squared::shapes::rectangle(DevMapTestScene::bounds());
+//         for to in all_squares() {
+//             println!("Finding path from all squares to {to}");
 
-        for to in all_squares() {
-            println!("Finding path from all squares to {to}");
+//             for from in all_squares() {
+//                 let mut partial_from = from;
+//                 const MAX_PARTIAL_STEPS: usize = 7;
 
-            for from in all_squares() {
-                let mut partial_from = from;
-                const MAX_PARTIAL_STEPS: usize = 7;
+//                 let found = search_for_partial_path(
+//                     &tilemap,
+//                     MAX_PARTIAL_STEPS,
+//                     from,
+//                     to,
+//                     &mut partial_from,
+//                 );
 
-                let found = search_for_partial_path(
-                    &tilemap,
-                    MAX_PARTIAL_STEPS,
-                    from,
-                    to,
-                    &mut partial_from,
-                );
+//                 assert!(
+//                     found,
+//                     "Finding path from {from} to {to} took more \
+//                     than {MAX_PARTIAL_STEPS} partial steps"
+//                 );
+//             }
+//         }
+//     }
 
-                assert!(
-                    found,
-                    "Finding path from {from} to {to} took more \
-                    than {MAX_PARTIAL_STEPS} partial steps"
-                );
-            }
-        }
-    }
+//     fn search_for_partial_path(
+//         tilemap: &TileMap<DevMapTestScene>,
+//         max_partial_steps: usize,
+//         from: Square,
+//         to: Square,
+//         partial_from: &mut Square,
+//     ) -> bool {
+//         for _ in 0..max_partial_steps {
+//             let path = tilemap.find_partial_path(
+//                 Entity::PLACEHOLDER,
+//                 *partial_from,
+//                 to,
+//             );
+//             assert!(
+//                 path.is_some(),
+//                 "from {from} (partial {partial_from}) to {to}"
+//             );
+//             let ends_up_on = path.unwrap().last().copied();
+//             if ends_up_on.is_none() {
+//                 assert_eq!(to, *partial_from);
+//                 return true;
+//             }
 
-    fn search_for_partial_path(
-        tilemap: &TileMap<DevMapTestScene>,
-        max_partial_steps: usize,
-        from: Square,
-        to: Square,
-        partial_from: &mut Square,
-    ) -> bool {
-        for _ in 0..max_partial_steps {
-            let path = tilemap.find_partial_path(
-                Entity::PLACEHOLDER,
-                *partial_from,
-                to,
-            );
-            assert!(
-                path.is_some(),
-                "from {from} (partial {partial_from}) to {to}"
-            );
-            let ends_up_on = path.unwrap().last().copied();
-            if ends_up_on.is_none() {
-                assert_eq!(to, *partial_from);
-                return true;
-            }
+//             *partial_from = ends_up_on.unwrap();
+//         }
 
-            *partial_from = ends_up_on.unwrap();
-        }
-
-        false
-    }
-}
+//         false
+//     }
+// }

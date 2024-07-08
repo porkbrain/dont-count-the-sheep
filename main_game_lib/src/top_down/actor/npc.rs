@@ -184,9 +184,7 @@ pub fn plan_path<T: TopDownScene>(
     mut events: EventReader<PlanPathEvent>,
 
     mut actors: Query<(Entity, &Actor, &mut NpcInTheMap)>,
-) where
-    T::LocalTileKind: ZoneTile<Successors = T::LocalTileKind>,
-{
+) {
     for PlanPathEvent(entity, target_square) in events.read() {
         let Ok((actor_entity, actor, mut npc_in_the_map)) =
             actors.get_mut(*entity)

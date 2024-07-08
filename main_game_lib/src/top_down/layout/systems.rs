@@ -55,17 +55,17 @@ pub(crate) fn try_insert_map_as_resource<T: TopDownScene>(
         }
 
         cmd.insert_resource(loaded_map);
-        cmd.init_resource::<crate::top_down::actor::ActorZoneMap<T::LocalTileKind>>();
+        cmd.init_resource::<crate::top_down::actor::ActorZoneMap>();
         cmd.entity(entity).despawn_recursive();
     }
 }
 
 pub(crate) fn remove_resources<T: TopDownScene>(mut cmd: Commands) {
     cmd.remove_resource::<TileMap<T>>();
-    cmd.remove_resource::<crate::top_down::actor::ActorZoneMap<T::LocalTileKind>>();
+    cmd.remove_resource::<crate::top_down::actor::ActorZoneMap>();
 
     #[cfg(feature = "devtools")]
     {
-        cmd.remove_resource::<map_maker::TileMapMakerToolbar<T::LocalTileKind>>();
+        cmd.remove_resource::<map_maker::TileMapMakerToolbar>();
     }
 }

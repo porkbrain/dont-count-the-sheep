@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, fs, marker::PhantomData};
+use std::{collections::BTreeMap, fs};
 
 use bevy::{
     color::palettes::css::{GOLD, GREEN, RED},
@@ -16,7 +16,7 @@ use smallvec::SmallVec;
 
 use super::{
     build_pathfinding_graph::{GraphExt, LocalTileKindGraph},
-    Tile, TileKind, TileMap, LAYOUT,
+    TileKind, TileMap, LAYOUT,
 };
 use crate::TopDownScene;
 
@@ -25,12 +25,12 @@ pub(crate) struct SquareSprite(Square);
 
 #[derive(Resource, Reflect, InspectorOptions, Default)]
 #[reflect(Resource, InspectorOptions)]
-pub(crate) struct TileMapMakerToolbar<L: Tile> {
+pub(crate) struct TileMapMakerToolbar {
     // these are configurable
     // ~
     // ~
     /// What kind of tile to paint.
-    paint: TileKind<L>,
+    paint: TileKind,
     /// Each square has an associated list of tiles.
     /// Layer refers to the index in this list.
     /// We only manipulate the indexes of the tiles that equal to the
@@ -59,7 +59,7 @@ pub(crate) struct TileMapMakerToolbar<L: Tile> {
     /// We keep the copy in sync with the map resource in terms of the tiles
     /// being laid out in the same layers.
     #[reflect(ignore)]
-    copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
+    copy_of_map: HashMap<Square, SmallVec<[TileKind; 3]>>,
     /// If set to true, will display a grid on the map.
     /// If set to false, will not display a grid on the map.
     #[reflect(ignore)]
@@ -78,10 +78,8 @@ pub(crate) struct DebugLayoutGrid;
 /// 2. button to store the map into a file
 pub(crate) fn update_ui<T: TopDownScene>(
     mut contexts: EguiContexts,
-    mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
-) where
-    T::LocalTileKind: Ord,
-{
+    mut toolbar: ResMut<TileMapMakerToolbar>,
+) {
     let ctx = contexts.ctx_mut();
     bevy_egui::egui::Window::new("Map maker")
         .vscroll(true)
@@ -118,7 +116,7 @@ pub(crate) fn spawn_debug_grid_root<T: TopDownScene>(mut cmd: Commands) {
 pub(crate) fn show_tiles_around_cursor<T: TopDownScene>(
     mut cmd: Commands,
     map: Res<TileMap<T>>,
-    mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
+    mut toolbar: ResMut<TileMapMakerToolbar>,
 
     windows: Query<&Window, With<PrimaryWindow>>,
     cameras: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -189,13 +187,13 @@ pub(crate) fn destroy_map<T: TopDownScene>(
     grid: Query<Entity, With<DebugLayoutGrid>>,
 ) {
     cmd.entity(grid.single()).despawn_recursive();
-    cmd.remove_resource::<TileMapMakerToolbar<T::LocalTileKind>>();
+    cmd.remove_resource::<TileMapMakerToolbar>();
 }
 
 pub(crate) fn change_square_kind<T: TopDownScene>(
     mouse: Res<ButtonInput<MouseButton>>,
     mut map: ResMut<TileMap<T>>,
-    mut toolbar: ResMut<TileMapMakerToolbar<T::LocalTileKind>>,
+    mut toolbar: ResMut<TileMapMakerToolbar>,
     keyboard: Res<ButtonInput<KeyCode>>,
 
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -254,7 +252,7 @@ pub(crate) fn change_square_kind<T: TopDownScene>(
 
 /// If a square can be painted, paint it.
 fn try_paint<T: TopDownScene>(
-    toolbar: &mut TileMapMakerToolbar<T::LocalTileKind>,
+    toolbar: &mut TileMapMakerToolbar,
     map: &mut TileMap<T>,
     at: Square,
 ) {
@@ -284,7 +282,7 @@ fn try_paint<T: TopDownScene>(
 
 pub(crate) fn recolor_squares<T: TopDownScene>(
     map: ResMut<TileMap<T>>,
-    toolbar: Res<TileMapMakerToolbar<T::LocalTileKind>>,
+    toolbar: Res<TileMapMakerToolbar>,
 
     mut squares: Query<(&SquareSprite, &mut Sprite)>,
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -326,11 +324,7 @@ pub(crate) fn recolor_squares<T: TopDownScene>(
     }
 }
 
-fn export_map<T: TopDownScene>(
-    toolbar: &mut TileMapMakerToolbar<T::LocalTileKind>,
-) where
-    T::LocalTileKind: Ord,
-{
+fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
     if !toolbar.display_grid {
         return;
     }
@@ -367,14 +361,11 @@ fn export_map<T: TopDownScene>(
     //
     // this struct MUST serialize to a compatible ron output as TileMap
     #[derive(Serialize)]
-    struct SortedTileMap<T: TopDownScene> {
-        squares: BTreeMap<Square, SmallVec<[TileKind<T::LocalTileKind>; 3]>>,
-        #[serde(skip)]
-        _phantom: PhantomData<T>,
+    struct SortedTileMap {
+        squares: BTreeMap<Square, SmallVec<[TileKind; 3]>>,
     }
-    let tilemap_but_sorted: SortedTileMap<T> = SortedTileMap {
+    let tilemap_but_sorted = SortedTileMap {
         squares: toolbar.copy_of_map.clone().into_iter().collect(),
-        _phantom: default(),
     };
 
     // for internal use only so who cares about unwraps and paths
@@ -394,6 +385,7 @@ fn export_map<T: TopDownScene>(
 
     let g = LocalTileKindGraph::compute_from(&TileMap::<T> {
         squares: toolbar.copy_of_map.clone(),
+        zones: default(), // TODO
         _phantom: default(),
     });
 
@@ -421,7 +413,7 @@ fn export_map<T: TopDownScene>(
     }
 }
 
-impl<L: Eq> TileKind<L> {
+impl TileKind {
     fn color(self) -> Color {
         match self {
             Self::Empty => Color::BLACK.with_alpha(0.25),
@@ -485,9 +477,9 @@ fn go_back_in_dir_tree_until_path_found(mut path: String) -> String {
     panic!("Could not find path to {path}");
 }
 
-impl<L: Tile> TileMapMakerToolbar<L> {
+impl TileMapMakerToolbar {
     pub(crate) fn new(
-        copy_of_map: HashMap<Square, SmallVec<[TileKind<L>; 3]>>,
+        copy_of_map: HashMap<Square, SmallVec<[TileKind; 3]>>,
     ) -> Self {
         Self {
             copy_of_map,
