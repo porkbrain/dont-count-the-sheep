@@ -19,10 +19,6 @@ impl TopDownScene for Downtown {
     fn name() -> &'static str {
         "downtown"
     }
-
-    fn bounds() -> [i32; 4] {
-        [-500, 500, -600, 350]
-    }
 }
 
 impl WithStandardStateSemantics for Downtown {

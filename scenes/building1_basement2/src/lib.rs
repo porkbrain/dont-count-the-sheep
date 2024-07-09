@@ -21,10 +21,6 @@ impl TopDownScene for Building1Basement2 {
     fn name() -> &'static str {
         "building1_basement2"
     }
-
-    fn bounds() -> [i32; 4] {
-        [-150, 150, -150, 150]
-    }
 }
 
 impl WithStandardStateSemantics for Building1Basement2 {

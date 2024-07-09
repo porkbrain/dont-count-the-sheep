@@ -22,10 +22,6 @@ impl TopDownScene for Compound {
     fn name() -> &'static str {
         "compound"
     }
-
-    fn bounds() -> [i32; 4] {
-        [-400, 400, -400, 400]
-    }
 }
 
 impl WithStandardStateSemantics for Compound {

@@ -42,21 +42,6 @@ pub type TileIndex = (Square, usize);
 pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     /// Alphabetical only name of the map.
     fn name() -> &'static str;
-
-    /// Size in number of tiles.
-    /// `[left, right, bottom, top]`
-    fn bounds() -> [i32; 4];
-
-    /// Whether the given square is inside the map.
-    #[inline]
-    fn contains(square: Square) -> bool {
-        let [min_x, max_x, min_y, max_y] = Self::bounds();
-
-        square.x >= min_x
-            && square.x <= max_x
-            && square.y >= min_y
-            && square.y <= max_y
-    }
 }
 
 /// Defines tile behavior.
@@ -99,10 +84,12 @@ pub trait Tile:
 }
 
 /// Holds the tiles in a hash map.
-#[derive(
-    Asset, Resource, Serialize, Deserialize, Reflect, Default, Clone, Debug,
-)]
+#[derive(Asset, Resource, Serialize, Deserialize, Reflect, Clone, Debug)]
 pub struct TileMap<T: TopDownScene> {
+    /// Size in number of tiles.
+    /// `[left, right, bottom, top]`
+    #[serde(default = "default_bounds")]
+    bounds: [i32; 4],
     /// Metadata about zones used for pathfinding.
     #[serde(default)]
     zones: TileKindMetas,
@@ -111,6 +98,12 @@ pub struct TileMap<T: TopDownScene> {
     #[serde(skip)]
     #[reflect(ignore)]
     _phantom: PhantomData<T>,
+}
+
+/// You can change these in the .ron file of the map if you need larger map.
+/// `[left, right, bottom, top]`
+fn default_bounds() -> [i32; 4] {
+    [-1_000, 1_000, -1_000, 1_000]
 }
 
 /// Maps a tile kind to its metadata that's useful for NPC pathfinding.
@@ -258,10 +251,21 @@ impl Tile for TileKind {
 }
 
 impl<T: TopDownScene> TileMap<T> {
+    /// Whether the given square is inside the map.
+    #[inline]
+    pub fn contains(&self, square: Square) -> bool {
+        let [min_x, max_x, min_y, max_y] = self.bounds;
+
+        square.x >= min_x
+            && square.x <= max_x
+            && square.y >= min_y
+            && square.y <= max_y
+    }
+
     /// Get the kind of a tile.
     #[inline]
     pub fn get(&self, square: Square) -> Option<&[TileKind]> {
-        if !T::contains(square) {
+        if !self.contains(square) {
             return None;
         }
 
@@ -286,7 +290,7 @@ impl<T: TopDownScene> TileMap<T> {
         if let Some(tiles) = self.squares.get(&square) {
             tiles.iter().all(|tile| tile.is_walkable(by))
         } else {
-            T::contains(square)
+            self.contains(square)
         }
     }
 
@@ -328,7 +332,7 @@ impl<T: TopDownScene> TileMap<T> {
         to: Square,
         tile: impl Into<TileKind>,
     ) -> Option<usize> {
-        if !T::contains(to) {
+        if !self.contains(to) {
             return None;
         }
 
@@ -366,7 +370,7 @@ impl<T: TopDownScene> TileMap<T> {
         layer: usize,
         kind: impl Into<TileKind>,
     ) -> Option<TileKind> {
-        if !T::contains(of) {
+        if !self.contains(of) {
             return None;
         }
 
@@ -390,7 +394,7 @@ impl<T: TopDownScene> TileMap<T> {
         layer: usize,
         map: impl FnOnce(TileKind) -> Option<TileKind>,
     ) -> Option<TileKind> {
-        if !T::contains(of) {
+        if !self.contains(of) {
             return None;
         }
 
@@ -446,7 +450,7 @@ impl<T: TopDownScene> TileMap<T> {
                     Some(tile.walk_cost(by)?.min(highest_cost_so_far))
                 },
             )
-        } else if T::contains(square) {
+        } else if self.contains(square) {
             Some(TileWalkCost::Normal)
         } else {
             None
@@ -846,6 +850,17 @@ mod tests {
     use bevy_grid_squared::sq;
     use smallvec::smallvec;
 
+    impl<T: TopDownScene> Default for TileMap<T> {
+        fn default() -> Self {
+            Self {
+                bounds: default_bounds(),
+                zones: TileKindMetas::default(),
+                squares: HashMap::default(),
+                _phantom: PhantomData,
+            }
+        }
+    }
+
     use super::*;
 
     #[derive(Default, Reflect)]
@@ -883,10 +898,6 @@ mod tests {
     }
 
     impl TopDownScene for TestScene {
-        fn bounds() -> [i32; 4] {
-            [0, 10, 0, 10]
-        }
-
         fn name() -> &'static str {
             unreachable!()
         }
@@ -907,7 +918,7 @@ mod tests {
         let mut tilemap = TileMap::<TestScene>::default();
 
         // out of bounds returns none
-        assert_eq!(tilemap.walk_cost(sq(-1, 0), Entity::PLACEHOLDER), None);
+        assert_eq!(tilemap.walk_cost(sq(-1001, 0), Entity::PLACEHOLDER), None);
 
         // in bounds, but no tile returns normal
         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Normal));
@@ -1003,11 +1014,11 @@ mod tests {
         let mut tilemap = TileMap::<TestScene>::default();
 
         assert_eq!(
-            tilemap.add_tile_to_first_empty_layer(sq(-100, 0), TileKind::Wall),
+            tilemap.add_tile_to_first_empty_layer(sq(-1001, 0), TileKind::Wall),
             None
         );
 
-        assert_eq!(tilemap.set_tile_kind(sq(100, 0), 0, TileKind::Wall), None);
+        assert_eq!(tilemap.set_tile_kind(sq(1001, 0), 0, TileKind::Wall), None);
     }
 
     /// Useful to track to prevent regressions.
@@ -1024,10 +1035,6 @@ mod tests {
     struct DevMapTestScene;
 
     impl TopDownScene for DevMapTestScene {
-        fn bounds() -> [i32; 4] {
-            [-11, 0, 15, 28]
-        }
-
         fn name() -> &'static str {
             unreachable!()
         }
@@ -1251,7 +1258,7 @@ mod tests {
             ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
         let all_squares =
-            || bevy_grid_squared::shapes::rectangle(DevMapTestScene::bounds());
+            || bevy_grid_squared::shapes::rectangle([-11, 0, 15, 28]);
 
         for to in all_squares() {
             println!("Finding path from all squares to {to}");

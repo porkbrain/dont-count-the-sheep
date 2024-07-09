@@ -972,10 +972,6 @@ mod tests {
     struct TestScene;
 
     impl TopDownScene for TestScene {
-        fn bounds() -> [i32; 4] {
-            [-1000, 1000, -1000, 1000]
-        }
-
         fn name() -> &'static str {
             unreachable!()
         }

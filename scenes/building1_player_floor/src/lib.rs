@@ -23,10 +23,6 @@ impl TopDownScene for Building1PlayerFloor {
     fn name() -> &'static str {
         "building1_player_floor"
     }
-
-    fn bounds() -> [i32; 4] {
-        [-150, 150, -150, 150]
-    }
 }
 
 impl WithStandardStateSemantics for Building1PlayerFloor {

@@ -21,10 +21,6 @@ impl TopDownScene for Sewers {
     fn name() -> &'static str {
         "sewers"
     }
-
-    fn bounds() -> [i32; 4] {
-        [-100, 100, -100, 100]
-    }
 }
 
 impl WithStandardStateSemantics for Sewers {

@@ -21,10 +21,6 @@ impl TopDownScene for TwinpeaksApartment {
     fn name() -> &'static str {
         "twinpeaks_apartment"
     }
-
-    fn bounds() -> [i32; 4] {
-        [-70, 60, -50, 20]
-    }
 }
 
 impl WithStandardStateSemantics for TwinpeaksApartment {

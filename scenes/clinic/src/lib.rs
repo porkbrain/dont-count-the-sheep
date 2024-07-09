@@ -21,10 +21,6 @@ impl TopDownScene for Clinic {
     fn name() -> &'static str {
         "clinic"
     }
-
-    fn bounds() -> [i32; 4] {
-        [-60, 30, -40, 10]
-    }
 }
 
 impl WithStandardStateSemantics for Clinic {
