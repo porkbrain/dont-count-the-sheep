@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://bi775uudi3uy8"]
+[gd_scene load_steps=14 format=3 uid="uid://bi775uudi3uy8"]
 
 [ext_resource type="Texture2D" uid="uid://cy7cwfigylkyd" path="res://assets/compound/tower_inside.png" id="1_pwn7c"]
 [ext_resource type="Texture2D" uid="uid://c81eqm7duppl4" path="res://assets/residential/indoors/wall_mirror.png" id="2_av753"]
@@ -8,6 +8,8 @@
 [ext_resource type="Texture2D" uid="uid://c6g7tke0jjcmg" path="res://assets/residential/indoors/side_table3.png" id="6_seuah"]
 [ext_resource type="Texture2D" uid="uid://h03jwe4lr73k" path="res://assets/residential/indoors/tissues.png" id="7_66ihp"]
 [ext_resource type="Texture2D" uid="uid://c4phqysbg8s3" path="res://assets/residential/indoors/oven.png" id="9_i02jj"]
+[ext_resource type="Texture2D" uid="uid://b0opuxwhdm2ht" path="res://assets/residential/indoors/wall_fish.png" id="9_splu5"]
+[ext_resource type="Texture2D" uid="uid://ce2di0d1v7c3w" path="res://assets/residential/indoors/calendar2.png" id="10_m3ass"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_q04iu"]
 atlas = ExtResource("9_i02jj")
@@ -39,7 +41,7 @@ position = Vector2(-29, 16)
 texture = ExtResource("1_pwn7c")
 
 [node name="WallMirror" type="Sprite2D" parent="TowerBg"]
-position = Vector2(22, -76)
+position = Vector2(21, -78)
 texture = ExtResource("2_av753")
 
 [node name="FrontWallRight" type="Sprite2D" parent="."]
@@ -78,6 +80,8 @@ position = Vector2(-11, 13)
 [node name="Stove" type="AnimatedSprite2D" parent="."]
 position = Vector2(-90, -11)
 sprite_frames = SubResource("SpriteFrames_jc6xg")
+frame = 1
+frame_progress = 0.610486
 
 [node name="YSort" type="Node2D" parent="Stove"]
 position = Vector2(13, 29)
@@ -94,3 +98,11 @@ metadata/zone = "ExitZone"
 metadata/action = "ExitScene"
 metadata/label = "Exit"
 metadata/category = "Default"
+
+[node name="WallFish" type="Sprite2D" parent="."]
+position = Vector2(-67, -38)
+texture = ExtResource("9_splu5")
+
+[node name="Calendar2" type="Sprite2D" parent="."]
+position = Vector2(67, -37)
+texture = ExtResource("10_m3ass")
