@@ -104,7 +104,7 @@ pub trait Tile:
 pub struct TileMap<T: TopDownScene> {
     /// Metadata about zones used for pathfinding.
     #[serde(default)]
-    pub(crate) zones: TileKindMetas,
+    zones: TileKindMetas,
     /// There can be multiple layers of tiles on a single square.
     pub(crate) squares: HashMap<Square, SmallVec<[TileKind; 3]>>,
     #[serde(skip)]
@@ -112,23 +112,24 @@ pub struct TileMap<T: TopDownScene> {
     _phantom: PhantomData<T>,
 }
 
+/// Maps a tile kind to its metadata that's useful for NPC pathfinding.
 #[derive(Serialize, Deserialize, Reflect, Default, Clone, Debug)]
-pub(crate) struct TileKindMetas {
+struct TileKindMetas {
     /// We could also use a vector and index is with some sort of conversion
     /// from the enum to usize.
     #[serde(default)]
-    pub(crate) inner: HashMap<TileKind, TileKindMeta>,
+    inner: HashMap<TileKind, TileKindMeta>,
 }
 
 /// These values are calculated when the map maker exports the map.
 #[derive(Serialize, Deserialize, Reflect, Default, Clone, Debug)]
-pub(crate) struct TileKindMeta {
+struct TileKindMeta {
     #[serde(default)]
-    pub(crate) zone_group: ZoneGroup,
+    zone_group: ZoneGroup,
     #[serde(default)]
-    pub(crate) zone_size: usize,
+    zone_size: usize,
     #[serde(default)]
-    pub(crate) zone_successors: SmallVec<[TileKind; 5]>,
+    zone_successors: SmallVec<[TileKind; 5]>,
 }
 
 /// What kind of tiles do we support?
@@ -198,7 +199,7 @@ pub enum TileWalkCost {
 #[derive(
     Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Reflect, Serialize,
 )]
-pub struct ZoneGroup(pub usize);
+struct ZoneGroup(usize);
 
 /// Helper function that exports z coordinate given y coordinate.
 ///
@@ -462,7 +463,7 @@ impl<T: TopDownScene> TileMap<T> {
     /// No matter how many layers there are, all tile kinds within a single
     /// square must belong to the same zone group.
     #[inline]
-    pub fn zone_group(&self, at: Square) -> Option<ZoneGroup> {
+    fn zone_group(&self, at: Square) -> Option<ZoneGroup> {
         self.squares.get(&at).and_then(|tiles| {
             tiles.iter().find_map(|tile| self.zones.group_of(tile))
         })
@@ -826,14 +827,14 @@ impl TileKindMetas {
     /// belong to the same group.
     ///
     /// Returns [`None`] if not present.
-    pub(crate) fn group_of(&self, kind: &TileKind) -> Option<ZoneGroup> {
+    fn group_of(&self, kind: &TileKind) -> Option<ZoneGroup> {
         self.inner.get(kind).map(|meta| meta.zone_group)
     }
 
     /// How many square does the zone comprise?
     ///
     /// Returns [`None`] if not present.
-    pub(crate) fn size_of(&self, kind: &TileKind) -> Option<usize> {
+    fn size_of(&self, kind: &TileKind) -> Option<usize> {
         self.inner.get(kind).map(|meta| meta.zone_size)
     }
 
@@ -842,7 +843,7 @@ impl TileKindMetas {
     /// subsets/supersets, neighbours or overlapping.
     ///
     /// Returns [`None`] if not present.
-    pub(crate) fn successors_of(&self, kind: &TileKind) -> Option<&[TileKind]> {
+    fn successors_of(&self, kind: &TileKind) -> Option<&[TileKind]> {
         self.inner
             .get(kind)
             .map(|meta| meta.zone_successors.as_slice())
