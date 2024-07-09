@@ -141,7 +141,19 @@ pub(crate) struct InspectLabelBg;
 pub struct ZoneToInspectLabelEntity {
     /// The key is the local tile kind, the value is some entity that has
     /// [`InspectLabel`] component.
-    pub map: HashMap<TileKind, Entity>,
+    map: HashMap<TileKind, Entity>,
+}
+
+impl ZoneToInspectLabelEntity {
+    /// Insert a new mapping.
+    pub fn insert(&mut self, kind: impl Into<TileKind>, entity: Entity) {
+        self.map.insert(kind.into(), entity);
+    }
+
+    /// Get the entity that has [`InspectLabel`] component for the given tile.
+    pub fn get(&self, kind: impl Into<TileKind>) -> Option<&Entity> {
+        self.map.get(&kind.into())
+    }
 }
 
 pub(crate) fn match_interact_label_with_action_event(

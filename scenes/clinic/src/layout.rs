@@ -7,10 +7,10 @@ use main_game_lib::{
     top_down::{
         actor::{self, movement_event_emitted},
         environmental_objects::{self, door::DoorBuilder},
+        scene_configs::ZoneTileKind,
     },
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use strum::IntoEnumIterator;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
@@ -45,7 +45,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             environmental_objects::door::toggle::<Clinic>
                 .run_if(Clinic::in_running_state())
-                .run_if(movement_event_emitted::<Clinic>())
+                .run_if(movement_event_emitted())
                 .after(actor::emit_movement_events::<Clinic>),
         );
     }
@@ -61,8 +61,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
-    zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<ClinicTileKind>,
+    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 }
 
 /// The names are stored in the scene file.
@@ -107,14 +106,12 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     let root = root.single();
     cmd.entity(root).despawn_recursive();
 
-    cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <Clinic as TopDownScene>::LocalTileKind,
-    >>();
+    cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
     type LocalActionKind = ClinicAction;
-    type LocalZoneKind = ClinicTileKind;
+    type LocalZoneKind = ZoneTileKind;
 
     fn on_spawned(
         &mut self,
@@ -135,8 +132,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 self.player_builder.initial_position(translation.truncate());
             }
             "Door" => {
-                let door = DoorBuilder::new(ClinicTileKind::DoorZone)
-                    .build::<Clinic>();
+                let door = DoorBuilder::new(ZoneTileKind::DoorZone).build();
                 cmd.entity(who).insert(door);
             }
             _ => {}
@@ -159,26 +155,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
         zone: Self::LocalZoneKind,
         entity: Entity,
     ) {
-        self.zone_to_inspect_label_entity.map.insert(zone, entity);
-    }
-}
-
-impl top_down::layout::Tile for ClinicTileKind {
-    #[inline]
-    fn is_walkable(&self, _: Entity) -> bool {
-        true
-    }
-
-    #[inline]
-    fn is_zone(&self) -> bool {
-        match self {
-            Self::ExitZone | Self::DoorZone => true,
-        }
-    }
-
-    #[inline]
-    fn zones_iter() -> impl Iterator<Item = Self> {
-        Self::iter().filter(|kind| kind.is_zone())
+        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 

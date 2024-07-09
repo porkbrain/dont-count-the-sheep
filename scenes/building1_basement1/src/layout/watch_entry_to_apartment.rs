@@ -1,4 +1,5 @@
 use common_visuals::BeginInterpolationEvent;
+use main_game_lib::top_down::scene_configs::ZoneTileKind;
 use top_down::{actor::Who, ActorMovementEvent, TileKind};
 
 use super::ApartmentWall;
@@ -10,18 +11,16 @@ const WALL_FADE_OUT_TRANSITION_DURATION: Duration = from_millis(500);
 const WALL_FADE_IN_TRANSITION_DURATION: Duration = from_millis(1500);
 
 /// Listens to events about entering the
-/// [`Building1Basement1TileKind::UpperApartmentWallHiddenZone`].
+/// [`ZoneTileKind::UpperApartmentWallHiddenZone`].
 ///
 /// When entered, the [`ApartmentWall`] entity is hidden.
 pub(super) fn system(
-    mut movement_events: EventReader<
-        ActorMovementEvent<<Building1Basement1 as TopDownScene>::LocalTileKind>,
-    >,
+    mut movement_events: EventReader<ActorMovementEvent>,
     mut lerp_event: EventWriter<BeginInterpolationEvent>,
 
     wall: Query<Entity, With<ApartmentWall>>,
 ) {
-    use Building1Basement1TileKind::UpperApartmentWallHiddenZone as TheZone;
+    use ZoneTileKind::UpperApartmentWallHiddenZone as TheZone;
 
     for event in movement_events.read() {
         match event {

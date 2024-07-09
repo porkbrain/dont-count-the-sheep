@@ -1,7 +1,7 @@
 use common_visuals::BeginInterpolationEvent;
 use main_game_lib::{
     common_ext::QueryExt,
-    top_down::{actor::Who, TileKind},
+    top_down::{actor::Who, scene_configs::ZoneTileKind, TileKind},
 };
 use top_down::{Actor, ActorMovementEvent, TileMap};
 
@@ -25,15 +25,13 @@ const HALLWAY_FADE_OUT_TRANSITION_DURATION: Duration = from_millis(1500);
 pub(super) fn system(
     mut cmd: Commands,
     tilemap: Res<TileMap<Building1PlayerFloor>>,
-    mut movement_events: EventReader<
-        ActorMovementEvent<Building1PlayerFloorTileKind>,
-    >,
+    mut movement_events: EventReader<ActorMovementEvent>,
     mut lerp_event: EventWriter<BeginInterpolationEvent>,
 
     player: Query<&Actor, With<Player>>,
     hallway_entities: Query<Entity, With<HallwayEntity>>,
 ) {
-    use Building1PlayerFloorTileKind::*;
+    use ZoneTileKind::*;
 
     for event in movement_events.read() {
         match event {
@@ -149,10 +147,7 @@ fn on_npc_entered_hallway(
     let is_player_in_hallway = player
         .get_single_or_none()
         .map(|player| {
-            tilemap.is_on(
-                player.walking_from,
-                Building1PlayerFloorTileKind::HallwayZone,
-            )
+            tilemap.is_on(player.walking_from, ZoneTileKind::HallwayZone)
         })
         .unwrap_or(false);
 

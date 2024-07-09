@@ -8,10 +8,11 @@ use main_game_lib::{
         start_with_open_elevator_and_close_it, STEP_TIME_ON_EXIT_ELEVATOR,
     },
     hud::daybar::UpdateDayBarEvent,
-    top_down::actor::player::TakeAwayPlayerControl,
+    top_down::{
+        actor::player::TakeAwayPlayerControl, scene_configs::ZoneTileKind,
+    },
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use strum::IntoEnumIterator;
 use top_down::{
     actor::{
         self, movement_event_emitted, CharacterBundleBuilder, CharacterExt,
@@ -52,7 +53,7 @@ impl bevy::app::Plugin for Plugin {
                 environmental_objects::door::toggle::<Building1PlayerFloor>,
             )
                 .run_if(Building1PlayerFloor::in_running_state())
-                .run_if(movement_event_emitted::<Building1PlayerFloor>())
+                .run_if(movement_event_emitted())
                 .after(actor::emit_movement_events::<Building1PlayerFloor>),
         );
     }
@@ -87,8 +88,7 @@ struct Spawner<'a> {
     atlases: &'a mut Assets<TextureAtlasLayout>,
     daybar_event: &'a mut Events<UpdateDayBarEvent>,
     tilemap: &'a mut TileMap<Building1PlayerFloor>,
-    zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<Building1PlayerFloorTileKind>,
+    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 }
 
 /// The names are stored in the scene file.
@@ -135,14 +135,12 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     let root = root.single();
     cmd.entity(root).despawn_recursive();
 
-    cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <Building1PlayerFloor as TopDownScene>::LocalTileKind,
-    >>();
+    cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
     type LocalActionKind = Building1PlayerFloorAction;
-    type LocalZoneKind = Building1PlayerFloorTileKind;
+    type LocalZoneKind = ZoneTileKind;
 
     fn on_spawned(
         &mut self,
@@ -151,8 +149,8 @@ impl<'a> TscnSpawner for Spawner<'a> {
         NodeName(name): NodeName,
         translation: Vec3,
     ) {
-        use Building1PlayerFloorTileKind::*;
         use GlobalGameStateTransition::*;
+        use ZoneTileKind::*;
 
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
@@ -199,20 +197,18 @@ impl<'a> TscnSpawner for Spawner<'a> {
             }
             "BottomLeftApartmentDoor" => {
                 cmd.entity(who).insert(
-                    DoorBuilder::new(BottomLeftApartmentDoorZone)
-                        .build::<Building1PlayerFloor>(),
+                    DoorBuilder::new(BottomLeftApartmentDoorZone).build(),
                 );
             }
             "BottomLeftApartmentBathroomDoor" => {
                 cmd.entity(who).insert(
                     DoorBuilder::new(BottomLeftApartmentBathroomDoorZone)
-                        .build::<Building1PlayerFloor>(),
+                        .build(),
                 );
             }
             "BottomRightApartmentDoor" => {
                 cmd.entity(who).insert(
-                    DoorBuilder::new(BottomRightApartmentDoorZone)
-                        .build::<Building1PlayerFloor>(),
+                    DoorBuilder::new(BottomRightApartmentDoorZone).build(),
                 );
             }
             "WinnieSleeping" => {
@@ -295,36 +291,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
         zone: Self::LocalZoneKind,
         entity: Entity,
     ) {
-        self.zone_to_inspect_label_entity.map.insert(zone, entity);
-    }
-}
-
-impl top_down::layout::Tile for Building1PlayerFloorTileKind {
-    #[inline]
-    fn is_walkable(&self, _: Entity) -> bool {
-        true
-    }
-
-    #[inline]
-    fn is_zone(&self) -> bool {
-        match self {
-            Self::BedZone
-            | Self::BottomLeftApartmentDoorZone
-            | Self::BottomLeftApartmentBathroomDoorZone
-            | Self::BottomRightApartmentDoorZone
-            | Self::BottomLeftApartmentZone
-            | Self::BottomRightApartmentZone
-            | Self::PlayerDoorZone
-            | Self::PlayerApartmentZone
-            | Self::ElevatorZone
-            | Self::HallwayZone
-            | Self::MeditationZone
-            | Self::TeaZone => true,
-        }
-    }
-
-    #[inline]
-    fn zones_iter() -> impl Iterator<Item = Self> {
-        Self::iter().filter(|kind| kind.is_zone())
+        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }

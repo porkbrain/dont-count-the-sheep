@@ -796,6 +796,12 @@ impl From<ZoneTileKind> for TileKind {
     }
 }
 
+impl From<&ZoneTileKind> for TileKind {
+    fn from(l: &ZoneTileKind) -> Self {
+        Self::Local(*l)
+    }
+}
+
 /// Allow implementation for unit type for convenience.
 /// Maps can use this if they have no special tiles.
 impl Tile for () {

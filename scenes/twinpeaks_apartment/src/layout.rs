@@ -1,9 +1,10 @@
 use bevy::render::view::RenderLayers;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
-use main_game_lib::cutscene::in_cutscene;
+use main_game_lib::{
+    cutscene::in_cutscene, top_down::scene_configs::ZoneTileKind,
+};
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use strum::IntoEnumIterator;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
@@ -49,8 +50,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
-    zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<TwinpeaksApartmentTileKind>,
+    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 
     phoebe_entity: Entity,
     phoebe_builder: &'a mut CharacterBundleBuilder,
@@ -101,14 +101,12 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     let root = root.single();
     cmd.entity(root).despawn_recursive();
 
-    cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <TwinpeaksApartment as TopDownScene>::LocalTileKind,
-    >>();
+    cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
     type LocalActionKind = TwinpeaksApartmentAction;
-    type LocalZoneKind = TwinpeaksApartmentTileKind;
+    type LocalZoneKind = ZoneTileKind;
 
     fn on_spawned(
         &mut self,
@@ -152,26 +150,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
         zone: Self::LocalZoneKind,
         entity: Entity,
     ) {
-        self.zone_to_inspect_label_entity.map.insert(zone, entity);
-    }
-}
-
-impl top_down::layout::Tile for TwinpeaksApartmentTileKind {
-    #[inline]
-    fn is_walkable(&self, _: Entity) -> bool {
-        true
-    }
-
-    #[inline]
-    fn is_zone(&self) -> bool {
-        match self {
-            Self::ExitZone => true,
-        }
-    }
-
-    #[inline]
-    fn zones_iter() -> impl Iterator<Item = Self> {
-        Self::iter().filter(|kind| kind.is_zone())
+        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 

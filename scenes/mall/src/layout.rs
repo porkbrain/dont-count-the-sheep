@@ -7,12 +7,12 @@ use main_game_lib::{
     hud::notification::NotificationFifo,
     player_stats::PlayerStats,
     top_down::{
-        actor::BeginDialogEvent, layout::LAYOUT, npc::behaviors::PatrolSequence,
+        actor::BeginDialogEvent, layout::LAYOUT,
+        npc::behaviors::PatrolSequence, scene_configs::ZoneTileKind,
     },
 };
 use rand::prelude::SliceRandom;
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use strum::IntoEnumIterator;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
@@ -59,8 +59,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
-    zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<MallTileKind>,
+    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 }
 
 /// The names are stored in the scene file.
@@ -137,14 +136,12 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     let root = root.single();
     cmd.entity(root).despawn_recursive();
 
-    cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <Mall as TopDownScene>::LocalTileKind,
-    >>();
+    cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
     type LocalActionKind = MallAction;
-    type LocalZoneKind = MallTileKind;
+    type LocalZoneKind = ZoneTileKind;
 
     fn on_spawned(
         &mut self,
@@ -189,33 +186,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
         zone: Self::LocalZoneKind,
         entity: Entity,
     ) {
-        self.zone_to_inspect_label_entity.map.insert(zone, entity);
-    }
-}
-
-impl top_down::layout::Tile for MallTileKind {
-    #[inline]
-    fn is_walkable(&self, _: Entity) -> bool {
-        true
-    }
-
-    #[inline]
-    fn is_zone(&self) -> bool {
-        match self {
-            Self::FruitsAndVeggies
-            | Self::Aisle1
-            | Self::Aisle2
-            | Self::Aisle3
-            | Self::Aisle4
-            | Self::Fridges
-            | Self::GoodWater
-            | Self::ExitZone => true,
-        }
-    }
-
-    #[inline]
-    fn zones_iter() -> impl Iterator<Item = Self> {
-        Self::iter().filter(|kind| kind.is_zone())
+        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 

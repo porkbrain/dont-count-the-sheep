@@ -18,10 +18,10 @@ use main_game_lib::{
     top_down::{
         actor::{self, movement_event_emitted, player::TakeAwayPlayerControl},
         environmental_objects::{self, door::DoorBuilder},
+        scene_configs::ZoneTileKind,
     },
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use strum::IntoEnumIterator;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
@@ -52,7 +52,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             environmental_objects::door::toggle::<Building1Basement1>
                 .run_if(Building1Basement1::in_running_state())
-                .run_if(movement_event_emitted::<Building1Basement1>())
+                .run_if(movement_event_emitted())
                 .after(actor::emit_movement_events::<Building1Basement1>),
         )
         .add_systems(
@@ -77,7 +77,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             watch_entry_to_apartment::system
                 .run_if(Building1Basement1::in_running_state())
-                .run_if(movement_event_emitted::<Building1Basement1>())
+                .run_if(movement_event_emitted())
                 .after(actor::emit_movement_events::<Building1Basement1>),
         );
     }
@@ -106,8 +106,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
-    zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<Building1Basement1TileKind>,
+    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 }
 
 /// The names are stored in the scene file.
@@ -153,14 +152,12 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     let root = root.single();
     cmd.entity(root).despawn_recursive();
 
-    cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <Building1Basement1 as TopDownScene>::LocalTileKind,
-    >>();
+    cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
     type LocalActionKind = Building1Basement1Action;
-    type LocalZoneKind = Building1Basement1TileKind;
+    type LocalZoneKind = ZoneTileKind;
 
     fn on_spawned(
         &mut self,
@@ -211,10 +208,9 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 cmd.entity(who).insert(ApartmentWall);
             }
             "DoorToTheUpperApartment" => {
-                let door = DoorBuilder::new(
-                    Building1Basement1TileKind::UpperApartmentDoorZone,
-                )
-                .build::<Building1Basement1>();
+                let door =
+                    DoorBuilder::new(ZoneTileKind::UpperApartmentDoorZone)
+                        .build();
                 cmd.entity(who).insert(door);
             }
             _ => {}
@@ -237,29 +233,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
         zone: Self::LocalZoneKind,
         entity: Entity,
     ) {
-        self.zone_to_inspect_label_entity.map.insert(zone, entity);
-    }
-}
-
-impl top_down::layout::Tile for Building1Basement1TileKind {
-    #[inline]
-    fn is_walkable(&self, _: Entity) -> bool {
-        true
-    }
-
-    #[inline]
-    fn is_zone(&self) -> bool {
-        match self {
-            Self::UpperApartmentWallHiddenZone
-            | Self::UpperApartmentDoorZone
-            | Self::BasementDoorZone
-            | Self::ElevatorZone => true,
-        }
-    }
-
-    #[inline]
-    fn zones_iter() -> impl Iterator<Item = Self> {
-        Self::iter().filter(|kind| kind.is_zone())
+        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 
