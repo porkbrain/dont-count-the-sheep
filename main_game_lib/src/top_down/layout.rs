@@ -1033,130 +1033,6 @@ mod tests {
         }
     }
 
-    fn xd() -> TileKindMetas {
-        let mut inner = HashMap::new();
-
-        inner.insert(
-            ZoneTileKind::Aisle1.into(), // A
-            TileKindMeta {
-                zone_group: ZoneGroup(0),
-                zone_size: 25,
-                zone_successors: smallvec![
-                    ZoneTileKind::Aisle2.into(),
-                    ZoneTileKind::Aisle4.into(),
-                    ZoneTileKind::Bed.into()
-                ],
-            },
-        );
-        inner.insert(
-            ZoneTileKind::Aisle2.into(), // B
-            TileKindMeta {
-                zone_group: ZoneGroup(0),
-                zone_size: 8,
-                zone_successors: smallvec![
-                    ZoneTileKind::Aisle1.into(),
-                    ZoneTileKind::Aisle3.into()
-                ],
-            },
-        );
-        inner.insert(
-            ZoneTileKind::Aisle3.into(), // C
-            TileKindMeta {
-                zone_group: ZoneGroup(0),
-                zone_size: 12,
-                zone_successors: smallvec![
-                    ZoneTileKind::Aisle2.into(),
-                    ZoneTileKind::Door.into()
-                ],
-            },
-        );
-        inner.insert(
-            ZoneTileKind::Aisle4.into(), // D
-            TileKindMeta {
-                zone_group: ZoneGroup(0),
-                zone_size: 9,
-                zone_successors: smallvec![
-                    ZoneTileKind::Aisle1.into(),
-                    ZoneTileKind::Bed.into()
-                ],
-            },
-        );
-        inner.insert(
-            ZoneTileKind::Bed.into(), // E
-            TileKindMeta {
-                zone_group: ZoneGroup(0),
-                zone_size: 1,
-                zone_successors: smallvec![
-                    ZoneTileKind::Aisle1.into(),
-                    ZoneTileKind::Aisle4.into()
-                ],
-            },
-        );
-        inner.insert(
-            ZoneTileKind::Door.into(), // F
-            TileKindMeta {
-                zone_group: ZoneGroup(0),
-                zone_size: 12,
-                zone_successors: smallvec![
-                    ZoneTileKind::Aisle3.into(),
-                    ZoneTileKind::Elevator.into()
-                ],
-            },
-        );
-        inner.insert(
-            ZoneTileKind::Elevator.into(), // G
-            TileKindMeta {
-                zone_group: ZoneGroup(0),
-                zone_size: 1,
-                zone_successors: smallvec![ZoneTileKind::Door.into()],
-            },
-        );
-        inner.insert(
-            ZoneTileKind::Exit.into(), // H
-            TileKindMeta {
-                zone_group: ZoneGroup(1),
-                zone_size: 4,
-                zone_successors: smallvec![ZoneTileKind::Tea.into()],
-            },
-        );
-        inner.insert(
-            ZoneTileKind::Tea.into(),
-            TileKindMeta {
-                zone_group: ZoneGroup(1), // I
-                zone_size: 10,
-                zone_successors: smallvec![
-                    ZoneTileKind::Exit.into(),
-                    ZoneTileKind::Fridges.into(),
-                    ZoneTileKind::Hallway.into()
-                ],
-            },
-        );
-        inner.insert(
-            ZoneTileKind::Fridges.into(), // J
-            TileKindMeta {
-                zone_group: ZoneGroup(1),
-                zone_size: 8,
-                zone_successors: smallvec![
-                    ZoneTileKind::Tea.into(),
-                    ZoneTileKind::Hallway.into()
-                ],
-            },
-        );
-        inner.insert(
-            ZoneTileKind::Hallway.into(), // K
-            TileKindMeta {
-                zone_group: ZoneGroup(1),
-                zone_size: 4,
-                zone_successors: smallvec![
-                    ZoneTileKind::Tea.into(),
-                    ZoneTileKind::Fridges.into()
-                ],
-            },
-        );
-
-        TileKindMetas { inner }
-    }
-
     /// Test map such that:
     /// ```text
     ///  E<-D<-A=B<->C<->F->G
@@ -1167,6 +1043,19 @@ mod tests {
     /// * `x=y` x and y are neighbors
     /// * `x<->y` x and y overlap
     /// * `x<-y` x is subset of y
+    ///
+    /// where
+    /// A = Aisle1,
+    /// B = Aisle2,
+    /// C = Aisle3,
+    /// D = Aisle4,
+    /// E = Bed,
+    /// F = Door,
+    /// G = Elevator,
+    /// H = Exit,
+    /// I = Tea,
+    /// J = Fridges,
+    /// K = Hallway
     const DEV_MAP_TEST_RON: &str = r#"(
         zones: (inner: {
             Zone(Exit):(zone_group:(1),zone_size:4,zone_successors:[Zone(Tea)]),
