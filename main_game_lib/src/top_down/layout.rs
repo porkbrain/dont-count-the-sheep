@@ -114,10 +114,10 @@ pub struct TileMap<T: TopDownScene> {
 
 #[derive(Serialize, Deserialize, Reflect, Default, Clone, Debug)]
 pub(crate) struct TileKindMetas {
-    /// The zones in this vector are ordered by the index that the conversion
-    /// of [`ZoneTileKind`] into `usize` would give.
+    /// We could also use a vector and index is with some sort of conversion
+    /// from the enum to usize.
     #[serde(default)]
-    pub(crate) inner: Vec<Option<TileKindMeta>>,
+    pub(crate) inner: HashMap<TileKind, TileKindMeta>,
 }
 
 /// These values are calculated when the map maker exports the map.
@@ -144,6 +144,8 @@ pub(crate) struct TileKindMeta {
     Hash,
     PartialEq,
     Reflect,
+    Ord,
+    PartialOrd,
     Serialize,
 )]
 #[reflect(Default)]
@@ -512,7 +514,7 @@ impl<T: TopDownScene> TileMap<T> {
                 let smallest_to_zone = self
                     .get(to)?
                     .iter()
-                    .filter_map(|tile| Some((tile, tile.zone_size()?)))
+                    .filter_map(|tile| Some((tile, self.zones.size_of(tile)?)))
                     .min_by_key(|(_, size)| *size)
                     .map(|(zone, _)| *zone)?;
 
@@ -819,18 +821,14 @@ impl TileKindMetas {
     ///
     /// Returns [`None`] if not present.
     pub(crate) fn group_of(&self, kind: &TileKind) -> Option<ZoneGroup> {
-        self.inner
-            .get(kind as usize)
-            .and_then(|meta| meta.as_ref().map(|meta| meta.zone_group))
+        self.inner.get(kind).map(|meta| meta.zone_group)
     }
 
     /// How many square does the zone comprise?
     ///
     /// Returns [`None`] if not present.
     pub(crate) fn size_of(&self, kind: &TileKind) -> Option<usize> {
-        self.inner
-            .get(kind as usize)
-            .and_then(|meta| meta.as_ref().map(|meta| meta.zone_size))
+        self.inner.get(kind).map(|meta| meta.zone_size)
     }
 
     /// Returns the zone successors of the tile if it's a zone.
@@ -839,9 +837,9 @@ impl TileKindMetas {
     ///
     /// Returns [`None`] if not present.
     pub(crate) fn successors_of(&self, kind: &TileKind) -> Option<&[TileKind]> {
-        self.inner.get(kind as usize).and_then(|meta| {
-            meta.as_ref().map(|meta| meta.zone_successors.as_slice())
-        })
+        self.inner
+            .get(kind)
+            .map(|meta| meta.zone_successors.as_slice())
     }
 }
 

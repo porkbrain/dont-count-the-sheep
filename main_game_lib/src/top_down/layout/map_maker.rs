@@ -2,7 +2,8 @@ use std::{collections::BTreeMap, fs};
 
 use bevy::{
     color::palettes::css::{GOLD, GREEN, RED},
-    utils::HashSet,
+    prelude::*,
+    utils::{HashMap, HashSet},
     window::PrimaryWindow,
 };
 use bevy_egui::EguiContexts;
@@ -14,7 +15,7 @@ use serde::Serialize;
 use smallvec::SmallVec;
 
 use super::{
-    build_pathfinding_graph::{GraphExt, LocalTileKindGraph},
+    build_pathfinding_graph::{GraphExt, ZoneTileKindGraph},
     TileKind, TileMap, LAYOUT,
 };
 use crate::TopDownScene;
@@ -382,7 +383,7 @@ fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
     )
     .unwrap();
 
-    let g = LocalTileKindGraph::compute_from(&TileMap::<T> {
+    let g = ZoneTileKindGraph::compute_from(&TileMap::<T> {
         squares: toolbar.copy_of_map.clone(),
         zones: default(), // TODO
         _phantom: default(),

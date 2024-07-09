@@ -189,7 +189,7 @@ where
         inspect_and_interact::match_interact_label_with_action_event
             .run_if(in_state(running))
             .run_if(on_event::<ActorMovementEvent>())
-            .after(emit_movement_events),
+            .after(emit_movement_events::<T>),
     );
 
     debug!("Adding camera");
