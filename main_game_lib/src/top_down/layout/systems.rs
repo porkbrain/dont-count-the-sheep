@@ -3,10 +3,7 @@ use common_ext::QueryExt;
 
 #[cfg(feature = "devtools")]
 use crate::top_down::layout::map_maker;
-use crate::{
-    top_down::{TileMap, TopDownScene},
-    WhichTopDownScene,
-};
+use crate::top_down::{TileMap, TopDownScene};
 
 /// Tells the game to start loading the map.
 /// We need to keep checking for this to be done by calling
@@ -14,12 +11,11 @@ use crate::{
 pub(crate) fn start_loading_map<T: TopDownScene>(
     mut cmd: Commands,
     assets: Res<AssetServer>,
-    scene: Res<State<WhichTopDownScene>>,
 ) {
-    let asset_path = format!("maps/{}.ron", scene.snake_case());
-    debug!("Loading map from {}", asset_path);
+    let asset_path = format!("maps/{}.ron", T::name());
+    debug!("Loading map {} from {}", T::type_path(), asset_path);
     let handle: Handle<TileMap<T>> = assets.load(asset_path);
-    cmd.spawn((Name::new(format!("TileMap<{}>", **scene)), handle));
+    cmd.spawn((Name::new(format!("TileMap<{}>", T::type_path())), handle));
 }
 
 /// Run this to wait for the map to be loaded and insert it as a resource.
