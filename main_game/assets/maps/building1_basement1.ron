@@ -1,4 +1,7 @@
 (
+ zones: (
+  inner: {Zone(BasementDoor): (zone_group: (5), zone_size: 24, zone_successors: []), Zone(Elevator): (zone_group: (17), zone_size: 52, zone_successors: []), Zone(UpperApartmentDoor): (zone_group: (33), zone_size: 84, zone_successors: [Zone(UpperApartmentWallHidden)]), Zone(UpperApartmentWallHidden): (zone_group: (33), zone_size: 4952, zone_successors: [Zone(UpperApartmentDoor)])},
+ ),
  squares: {
   (x: -90, y: -20): [Wall],
   (x: -89, y: -20): [Wall],

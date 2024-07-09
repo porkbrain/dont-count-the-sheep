@@ -1,4 +1,7 @@
 (
+ zones: (
+  inner: {Zone(TowerEntrance): (zone_group: (18), zone_size: 81, zone_successors: []), Zone(GoToDowntown): (zone_group: (23), zone_size: 495, zone_successors: [])},
+ ),
  squares: {
   (x: -86, y: -99): [Zone(GoToDowntown)],
   (x: -86, y: -98): [Zone(GoToDowntown)],

@@ -1,4 +1,7 @@
 (
+ zones: (
+  inner: {Zone(Exit): (zone_group: (19), zone_size: 52, zone_successors: [])},
+ ),
  squares: {
   (x: -54, y: -24): [Wall],
   (x: -54, y: -23): [Wall],

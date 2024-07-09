@@ -1,4 +1,7 @@
 (
+ zones: (
+  inner: {Zone(Door): (zone_group: (16), zone_size: 143, zone_successors: []), Zone(Exit): (zone_group: (19), zone_size: 60, zone_successors: [])},
+ ),
  squares: {
   (x: -60, y: -20): [Wall],
   (x: -59, y: -20): [Wall],
