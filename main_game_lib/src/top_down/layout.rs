@@ -1033,310 +1033,387 @@ mod tests {
         }
     }
 
-    // fn xd() -> TileKindMetas {}
+    fn xd() -> TileKindMetas {
+        let mut inner = HashMap::new();
 
-    // /// Based on the RON above.
-    // impl ZoneTile for DevMapTestTileKind {
-    //     #[inline]
-    //     fn zone_group(&self) -> Option<ZoneGroup> {
-    //         match self {
-    //             Self::ZoneA => Some(ZoneGroup(0)),
-    //             Self::ZoneB => Some(ZoneGroup(0)),
-    //             Self::ZoneC => Some(ZoneGroup(0)),
-    //             Self::ZoneD => Some(ZoneGroup(0)),
-    //             Self::ZoneE => Some(ZoneGroup(0)),
-    //             Self::ZoneF => Some(ZoneGroup(0)),
-    //             Self::ZoneG => Some(ZoneGroup(0)),
-    //             Self::ZoneH => Some(ZoneGroup(1)),
-    //             Self::ZoneI => Some(ZoneGroup(1)),
-    //             Self::ZoneJ => Some(ZoneGroup(1)),
-    //             Self::ZoneK => Some(ZoneGroup(1)),
-    //             #[allow(unreachable_patterns)]
-    //             _ => None,
-    //         }
-    //     }
-    //     #[inline]
-    //     fn zone_size(&self) -> Option<usize> {
-    //         match self {
-    //             Self::ZoneA => Some(25),
-    //             Self::ZoneB => Some(8),
-    //             Self::ZoneC => Some(12),
-    //             Self::ZoneD => Some(9),
-    //             Self::ZoneE => Some(1),
-    //             Self::ZoneF => Some(12),
-    //             Self::ZoneG => Some(1),
-    //             Self::ZoneH => Some(4),
-    //             Self::ZoneI => Some(10),
-    //             Self::ZoneJ => Some(8),
-    //             Self::ZoneK => Some(4),
-    //             #[allow(unreachable_patterns)]
-    //             _ => None,
-    //         }
-    //     }
-    //     type Successors = Self;
-    //     #[inline]
-    //     fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
-    //         match self {
-    //             Self::ZoneA => Some(&[Self::ZoneB, Self::ZoneD,
-    // Self::ZoneE]),             Self::ZoneB => Some(&[Self::ZoneA,
-    // Self::ZoneC]),             Self::ZoneC => Some(&[Self::ZoneB,
-    // Self::ZoneF]),             Self::ZoneD => Some(&[Self::ZoneA,
-    // Self::ZoneE]),             Self::ZoneE => Some(&[Self::ZoneA,
-    // Self::ZoneD]),             Self::ZoneF => Some(&[Self::ZoneC,
-    // Self::ZoneG]),             Self::ZoneG => Some(&[Self::ZoneF]),
-    //             Self::ZoneH => Some(&[Self::ZoneI]),
-    //             Self::ZoneI => Some(&[Self::ZoneH, Self::ZoneJ,
-    // Self::ZoneK]),             Self::ZoneJ => Some(&[Self::ZoneI,
-    // Self::ZoneK]),             Self::ZoneK => Some(&[Self::ZoneI,
-    // Self::ZoneJ]),             #[allow(unreachable_patterns)]
-    //             _ => None,
-    //         }
-    //     }
-    // }
+        inner.insert(
+            ZoneTileKind::Aisle1.into(), // A
+            TileKindMeta {
+                zone_group: ZoneGroup(0),
+                zone_size: 25,
+                zone_successors: smallvec![
+                    ZoneTileKind::Aisle2.into(),
+                    ZoneTileKind::Aisle4.into(),
+                    ZoneTileKind::Bed.into()
+                ],
+            },
+        );
+        inner.insert(
+            ZoneTileKind::Aisle2.into(), // B
+            TileKindMeta {
+                zone_group: ZoneGroup(0),
+                zone_size: 8,
+                zone_successors: smallvec![
+                    ZoneTileKind::Aisle1.into(),
+                    ZoneTileKind::Aisle3.into()
+                ],
+            },
+        );
+        inner.insert(
+            ZoneTileKind::Aisle3.into(), // C
+            TileKindMeta {
+                zone_group: ZoneGroup(0),
+                zone_size: 12,
+                zone_successors: smallvec![
+                    ZoneTileKind::Aisle2.into(),
+                    ZoneTileKind::Door.into()
+                ],
+            },
+        );
+        inner.insert(
+            ZoneTileKind::Aisle4.into(), // D
+            TileKindMeta {
+                zone_group: ZoneGroup(0),
+                zone_size: 9,
+                zone_successors: smallvec![
+                    ZoneTileKind::Aisle1.into(),
+                    ZoneTileKind::Bed.into()
+                ],
+            },
+        );
+        inner.insert(
+            ZoneTileKind::Bed.into(), // E
+            TileKindMeta {
+                zone_group: ZoneGroup(0),
+                zone_size: 1,
+                zone_successors: smallvec![
+                    ZoneTileKind::Aisle1.into(),
+                    ZoneTileKind::Aisle4.into()
+                ],
+            },
+        );
+        inner.insert(
+            ZoneTileKind::Door.into(), // F
+            TileKindMeta {
+                zone_group: ZoneGroup(0),
+                zone_size: 12,
+                zone_successors: smallvec![
+                    ZoneTileKind::Aisle3.into(),
+                    ZoneTileKind::Elevator.into()
+                ],
+            },
+        );
+        inner.insert(
+            ZoneTileKind::Elevator.into(), // G
+            TileKindMeta {
+                zone_group: ZoneGroup(0),
+                zone_size: 1,
+                zone_successors: smallvec![ZoneTileKind::Door.into()],
+            },
+        );
+        inner.insert(
+            ZoneTileKind::Exit.into(), // H
+            TileKindMeta {
+                zone_group: ZoneGroup(1),
+                zone_size: 4,
+                zone_successors: smallvec![ZoneTileKind::Tea.into()],
+            },
+        );
+        inner.insert(
+            ZoneTileKind::Tea.into(),
+            TileKindMeta {
+                zone_group: ZoneGroup(1), // I
+                zone_size: 10,
+                zone_successors: smallvec![
+                    ZoneTileKind::Exit.into(),
+                    ZoneTileKind::Fridges.into(),
+                    ZoneTileKind::Hallway.into()
+                ],
+            },
+        );
+        inner.insert(
+            ZoneTileKind::Fridges.into(), // J
+            TileKindMeta {
+                zone_group: ZoneGroup(1),
+                zone_size: 8,
+                zone_successors: smallvec![
+                    ZoneTileKind::Tea.into(),
+                    ZoneTileKind::Hallway.into()
+                ],
+            },
+        );
+        inner.insert(
+            ZoneTileKind::Hallway.into(), // K
+            TileKindMeta {
+                zone_group: ZoneGroup(1),
+                zone_size: 4,
+                zone_successors: smallvec![
+                    ZoneTileKind::Tea.into(),
+                    ZoneTileKind::Fridges.into()
+                ],
+            },
+        );
 
-    // /// Test map such that:
-    // /// ```text
-    // ///  E<-D<-A=B<->C<->F->G
-    // ///
-    // ///  H=I<->J->K   and K<->I
-    // /// ```
-    // ///
-    // /// * `x=y` x and y are neighbors
-    // /// * `x<->y` x and y overlap
-    // /// * `x<-y` x is subset of y
-    // const DEV_MAP_TEST_RON: &str = r#"(squares: {
-    //     (x: -10, y: 16): [Empty, Zone(ZoneJ)],
-    //     (x: -10, y: 17): [Empty, Zone(ZoneJ)],
-    //     (x: -10, y: 19): [Zone(ZoneH)],
-    //     (x: -10, y: 20): [Zone(ZoneH)],
-    //     (x: -10, y: 23): [Zone(ZoneA)],
-    //     (x: -10, y: 24): [Zone(ZoneA)],
-    //     (x: -10, y: 25): [Zone(ZoneA)],
-    //     (x: -10, y: 26): [Zone(ZoneA)],
-    //     (x: -10, y: 27): [Zone(ZoneA)],
-    //     (x: -9, y: 16): [Empty, Zone(ZoneJ), Zone(ZoneK)],
-    //     (x: -9, y: 17): [Empty, Zone(ZoneJ), Zone(ZoneK)],
-    //     (x: -9, y: 19): [Zone(ZoneH)],
-    //     (x: -9, y: 20): [Zone(ZoneH)],
-    //     (x: -9, y: 23): [Zone(ZoneA)],
-    //     (x: -9, y: 24): [Zone(ZoneA), Zone(ZoneD)],
-    //     (x: -9, y: 25): [Zone(ZoneA), Zone(ZoneD)],
-    //     (x: -9, y: 26): [Zone(ZoneA), Zone(ZoneD)],
-    //     (x: -9, y: 27): [Zone(ZoneA)],
-    //     (x: -8, y: 16): [Zone(ZoneI), Zone(ZoneJ), Zone(ZoneK)],
-    //     (x: -8, y: 17): [Zone(ZoneI), Zone(ZoneJ), Zone(ZoneK)],
-    //     (x: -8, y: 18): [Zone(ZoneI)],
-    //     (x: -8, y: 19): [Zone(ZoneI)],
-    //     (x: -8, y: 20): [Zone(ZoneI)],
-    //     (x: -8, y: 23): [Zone(ZoneA)],
-    //     (x: -8, y: 24): [Zone(ZoneA), Zone(ZoneD)],
-    //     (x: -8, y: 25): [Zone(ZoneA), Zone(ZoneD), Zone(ZoneE)],
-    //     (x: -8, y: 26): [Zone(ZoneA), Zone(ZoneD)],
-    //     (x: -8, y: 27): [Zone(ZoneA)],
-    //     (x: -7, y: 16): [Zone(ZoneI), Zone(ZoneJ)],
-    //     (x: -7, y: 17): [Zone(ZoneI), Zone(ZoneJ)],
-    //     (x: -7, y: 18): [Zone(ZoneI)],
-    //     (x: -7, y: 19): [Zone(ZoneI)],
-    //     (x: -7, y: 20): [Zone(ZoneI)],
-    //     (x: -7, y: 23): [Zone(ZoneA)],
-    //     (x: -7, y: 24): [Zone(ZoneA), Zone(ZoneD)],
-    //     (x: -7, y: 25): [Zone(ZoneA), Zone(ZoneD)],
-    //     (x: -7, y: 26): [Zone(ZoneA), Zone(ZoneD)],
-    //     (x: -7, y: 27): [Zone(ZoneA)],
-    //     (x: -6, y: 23): [Zone(ZoneA)],
-    //     (x: -6, y: 24): [Zone(ZoneA)],
-    //     (x: -6, y: 25): [Zone(ZoneA)],
-    //     (x: -6, y: 26): [Zone(ZoneA)],
-    //     (x: -6, y: 27): [Zone(ZoneA)],
-    //     (x: -5, y: 26): [Zone(ZoneB)],
-    //     (x: -5, y: 27): [Zone(ZoneB)],
-    //     (x: -4, y: 26): [Zone(ZoneB)],
-    //     (x: -4, y: 27): [Zone(ZoneB)],
-    //     (x: -3, y: 19): [Zone(ZoneF)],
-    //     (x: -3, y: 20): [Zone(ZoneF)],
-    //     (x: -3, y: 21): [Zone(ZoneF)],
-    //     (x: -3, y: 22): [Zone(ZoneF)],
-    //     (x: -3, y: 26): [Zone(ZoneB)],
-    //     (x: -3, y: 27): [Zone(ZoneB)],
-    //     (x: -2, y: 19): [Zone(ZoneF)],
-    //     (x: -2, y: 20): [Zone(ZoneF), Zone(ZoneG)],
-    //     (x: -2, y: 21): [Zone(ZoneF)],
-    //     (x: -2, y: 22): [Zone(ZoneF), Zone(ZoneC)],
-    //     (x: -2, y: 23): [Empty, Zone(ZoneC)],
-    //     (x: -2, y: 24): [Empty, Zone(ZoneC)],
-    //     (x: -2, y: 25): [Empty, Zone(ZoneC)],
-    //     (x: -2, y: 26): [Zone(ZoneB), Zone(ZoneC)],
-    //     (x: -2, y: 27): [Zone(ZoneB), Zone(ZoneC)],
-    //     (x: -1, y: 19): [Zone(ZoneF)],
-    //     (x: -1, y: 20): [Zone(ZoneF)],
-    //     (x: -1, y: 21): [Zone(ZoneF)],
-    //     (x: -1, y: 22): [Zone(ZoneF), Zone(ZoneC)],
-    //     (x: -1, y: 23): [Empty, Zone(ZoneC)],
-    //     (x: -1, y: 24): [Empty, Zone(ZoneC)],
-    //     (x: -1, y: 25): [Empty, Zone(ZoneC)],
-    //     (x: -1, y: 26): [Empty, Zone(ZoneC)],
-    //     (x: -1, y: 27): [Empty, Zone(ZoneC)],
-    // },)"#;
+        TileKindMetas { inner }
+    }
 
-    // #[test]
-    // fn it_finds_path_between_interesting_square_pairs() {
-    //     #[derive(Default)]
-    //     struct ExampleSetting {
-    //         expected_partial_steps: Option<usize>,
-    //     }
+    /// Test map such that:
+    /// ```text
+    ///  E<-D<-A=B<->C<->F->G
+    ///
+    ///  H=I<->J->K   and K<->I
+    /// ```
+    ///
+    /// * `x=y` x and y are neighbors
+    /// * `x<->y` x and y overlap
+    /// * `x<-y` x is subset of y
+    const DEV_MAP_TEST_RON: &str = r#"(
+        zones: (inner: {
+            Zone(Exit):(zone_group:(1),zone_size:4,zone_successors:[Zone(Tea)]),
+            Zone(Aisle1):(zone_group:(0),zone_size:25,zone_successors:[Zone(Aisle2),Zone(Aisle4),Zone(Bed)]),
+            Zone(Door):(zone_group:(0),zone_size:12,zone_successors:[Zone(Aisle3),Zone(Elevator)]),
+            Zone(Tea):(zone_group:(1),zone_size:10,zone_successors:[Zone(Exit),Zone(Fridges),Zone(Hallway)]),
+            Zone(Hallway):(zone_group:(1),zone_size:4,zone_successors:[Zone(Tea),Zone(Fridges)]),
+            Zone(Aisle3):(zone_group:(0),zone_size:12,zone_successors:[Zone(Aisle2),Zone(Door)]),
+            Zone(Elevator):(zone_group:(0),zone_size:1,zone_successors:[Zone(Door)]),
+            Zone(Bed):(zone_group:(0),zone_size:1,zone_successors:[Zone(Aisle1),Zone(Aisle4)]),
+            Zone(Aisle4):(zone_group:(0),zone_size:9,zone_successors:[Zone(Aisle1),Zone(Bed)]),
+            Zone(Fridges):(zone_group:(1),zone_size:8,zone_successors:[Zone(Tea),Zone(Hallway)]),
+            Zone(Aisle2):(zone_group:(0),zone_size:8,zone_successors:[Zone(Aisle1),Zone(Aisle3)])
+        }),
+        squares: {
+        (x: -10, y: 16): [Zone(Fridges)],
+        (x: -10, y: 17): [Zone(Fridges)],
+        (x: -10, y: 19): [Zone(Exit)],
+        (x: -10, y: 20): [Zone(Exit)],
+        (x: -10, y: 23): [Zone(Aisle1)],
+        (x: -10, y: 24): [Zone(Aisle1)],
+        (x: -10, y: 25): [Zone(Aisle1)],
+        (x: -10, y: 26): [Zone(Aisle1)],
+        (x: -10, y: 27): [Zone(Aisle1)],
+        (x: -9, y: 16): [Zone(Fridges), Zone(Hallway)],
+        (x: -9, y: 17): [Zone(Fridges), Zone(Hallway)],
+        (x: -9, y: 19): [Zone(Exit)],
+        (x: -9, y: 20): [Zone(Exit)],
+        (x: -9, y: 23): [Zone(Aisle1)],
+        (x: -9, y: 24): [Zone(Aisle1), Zone(Aisle4)],
+        (x: -9, y: 25): [Zone(Aisle1), Zone(Aisle4)],
+        (x: -9, y: 26): [Zone(Aisle1), Zone(Aisle4)],
+        (x: -9, y: 27): [Zone(Aisle1)],
+        (x: -8, y: 16): [Zone(Tea), Zone(Fridges), Zone(Hallway)],
+        (x: -8, y: 17): [Zone(Tea), Zone(Fridges), Zone(Hallway)],
+        (x: -8, y: 18): [Zone(Tea)],
+        (x: -8, y: 19): [Zone(Tea)],
+        (x: -8, y: 20): [Zone(Tea)],
+        (x: -8, y: 23): [Zone(Aisle1)],
+        (x: -8, y: 24): [Zone(Aisle1), Zone(Aisle4)],
+        (x: -8, y: 25): [Zone(Aisle1), Zone(Aisle4), Zone(Bed)],
+        (x: -8, y: 26): [Zone(Aisle1), Zone(Aisle4)],
+        (x: -8, y: 27): [Zone(Aisle1)],
+        (x: -7, y: 16): [Zone(Tea), Zone(Fridges)],
+        (x: -7, y: 17): [Zone(Tea), Zone(Fridges)],
+        (x: -7, y: 18): [Zone(Tea)],
+        (x: -7, y: 19): [Zone(Tea)],
+        (x: -7, y: 20): [Zone(Tea)],
+        (x: -7, y: 23): [Zone(Aisle1)],
+        (x: -7, y: 24): [Zone(Aisle1), Zone(Aisle4)],
+        (x: -7, y: 25): [Zone(Aisle1), Zone(Aisle4)],
+        (x: -7, y: 26): [Zone(Aisle1), Zone(Aisle4)],
+        (x: -7, y: 27): [Zone(Aisle1)],
+        (x: -6, y: 23): [Zone(Aisle1)],
+        (x: -6, y: 24): [Zone(Aisle1)],
+        (x: -6, y: 25): [Zone(Aisle1)],
+        (x: -6, y: 26): [Zone(Aisle1)],
+        (x: -6, y: 27): [Zone(Aisle1)],
+        (x: -5, y: 26): [Zone(Aisle2)],
+        (x: -5, y: 27): [Zone(Aisle2)],
+        (x: -4, y: 26): [Zone(Aisle2)],
+        (x: -4, y: 27): [Zone(Aisle2)],
+        (x: -3, y: 19): [Zone(Door)],
+        (x: -3, y: 20): [Zone(Door)],
+        (x: -3, y: 21): [Zone(Door)],
+        (x: -3, y: 22): [Zone(Door)],
+        (x: -3, y: 26): [Zone(Aisle2)],
+        (x: -3, y: 27): [Zone(Aisle2)],
+        (x: -2, y: 19): [Zone(Door)],
+        (x: -2, y: 20): [Zone(Door), Zone(Elevator)],
+        (x: -2, y: 21): [Zone(Door)],
+        (x: -2, y: 22): [Zone(Door), Zone(Aisle3)],
+        (x: -2, y: 23): [Zone(Aisle3)],
+        (x: -2, y: 24): [Zone(Aisle3)],
+        (x: -2, y: 25): [Zone(Aisle3)],
+        (x: -2, y: 26): [Zone(Aisle2), Zone(Aisle3)],
+        (x: -2, y: 27): [Zone(Aisle2), Zone(Aisle3)],
+        (x: -1, y: 19): [Zone(Door)],
+        (x: -1, y: 20): [Zone(Door)],
+        (x: -1, y: 21): [Zone(Door)],
+        (x: -1, y: 22): [Zone(Door), Zone(Aisle3)],
+        (x: -1, y: 23): [Zone(Aisle3)],
+        (x: -1, y: 24): [Zone(Aisle3)],
+        (x: -1, y: 25): [Zone(Aisle3)],
+        (x: -1, y: 26): [Zone(Aisle3)],
+        (x: -1, y: 27): [Zone(Aisle3)],
+    },)"#;
 
-    //     let pairs = &[
-    //         (
-    //             sq(-7, 15),
-    //             sq(-9, 24),
-    //             "Takes a lot of steps during testing",
-    //             ExampleSetting {
-    //                 expected_partial_steps: Some(6),
-    //             },
-    //         ),
-    //         (
-    //             sq(-5, 15),
-    //             sq(-10, 16),
-    //             "Values at the edge of the map",
-    //             default(),
-    //         ),
-    //         (
-    //             sq(-8, 21),  // nowhere
-    //             sq(-10, 16), // ZoneJ
-    //             "Taking lots of steps during testing",
-    //             ExampleSetting {
-    //                 expected_partial_steps: Some(4),
-    //                 ..default()
-    //             },
-    //         ),
-    //         (sq(-2, 19), sq(-2, 20), "Going from F to (F, G)", default()),
-    //         (sq(-10, 25), sq(-9, 25), "Going from A to (A, D)", default()),
-    //         (
-    //             sq(-9, 25),
-    //             sq(-8, 25),
-    //             "Going from (A, D) to (A, D, E)",
-    //             default(),
-    //         ),
-    //         (
-    //             sq(-9, 25),
-    //             sq(-2, 20),
-    //             "Going from (A, D) to (F, G)",
-    //             ExampleSetting {
-    //                 expected_partial_steps: Some(4),
-    //                 ..default()
-    //             },
-    //         ),
-    //         (
-    //             sq(-2, 26),
-    //             sq(-2, 22),
-    //             "Going from (B, C) to (C, F)",
-    //             default(),
-    //         ),
-    //         (
-    //             sq(-10, 19),
-    //             sq(-8, 17),
-    //             "Going from H to (I, J, K)",
-    //             default(),
-    //         ),
-    //         (sq(-10, 25), sq(-5, 26), "Going from A to B", default()),
-    //     ];
+    #[test]
+    fn it_finds_path_between_interesting_square_pairs() {
+        #[derive(Default)]
+        struct ExampleSetting {
+            expected_partial_steps: Option<usize>,
+        }
 
-    //     let tilemap: TileMap<DevMapTestScene> =
-    //         ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+        let pairs = &[
+            (
+                sq(-7, 15),
+                sq(-9, 24),
+                "Takes a lot of steps during testing",
+                ExampleSetting {
+                    expected_partial_steps: Some(6),
+                },
+            ),
+            (
+                sq(-5, 15),
+                sq(-10, 16),
+                "Values at the edge of the map",
+                default(),
+            ),
+            (
+                sq(-8, 21),  // nowhere
+                sq(-10, 16), // Fridges
+                "Taking lots of steps during testing",
+                ExampleSetting {
+                    expected_partial_steps: Some(4),
+                    ..default()
+                },
+            ),
+            (sq(-2, 19), sq(-2, 20), "Going from F to (F, G)", default()),
+            (sq(-10, 25), sq(-9, 25), "Going from A to (A, D)", default()),
+            (
+                sq(-9, 25),
+                sq(-8, 25),
+                "Going from (A, D) to (A, D, E)",
+                default(),
+            ),
+            (
+                sq(-9, 25),
+                sq(-2, 20),
+                "Going from (A, D) to (F, G)",
+                ExampleSetting {
+                    expected_partial_steps: Some(4),
+                    ..default()
+                },
+            ),
+            (
+                sq(-2, 26),
+                sq(-2, 22),
+                "Going from (B, C) to (C, F)",
+                default(),
+            ),
+            (
+                sq(-10, 19),
+                sq(-8, 17),
+                "Going from H to (I, J, K)",
+                default(),
+            ),
+            (sq(-10, 25), sq(-5, 26), "Going from A to B", default()),
+        ];
 
-    //     for (
-    //         from,
-    //         to,
-    //         desc,
-    //         ExampleSetting {
-    //             expected_partial_steps,
-    //         },
-    //     ) in pairs
-    //     {
-    //         println!("{desc}: from {from} to {to}");
+        let tilemap: TileMap<DevMapTestScene> =
+            ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
-    //         let mut partial_from = *from;
-    //         let mut jumps = vec![];
-    //         while partial_from != *to {
-    //             search_for_partial_path(
-    //                 &tilemap,
-    //                 1,
-    //                 *from,
-    //                 *to,
-    //                 &mut partial_from,
-    //             );
+        for (
+            from,
+            to,
+            desc,
+            ExampleSetting {
+                expected_partial_steps,
+            },
+        ) in pairs
+        {
+            println!("{desc}: from {from} to {to}");
 
-    //             jumps.push(partial_from);
-    //         }
+            let mut partial_from = *from;
+            let mut jumps = vec![];
+            while partial_from != *to {
+                search_for_partial_path(
+                    &tilemap,
+                    1,
+                    *from,
+                    *to,
+                    &mut partial_from,
+                );
 
-    //         if let Some(expected_partial_steps) = expected_partial_steps {
-    //             assert_eq!(
-    //                 *expected_partial_steps,
-    //                 jumps.len(),
-    //                 "Each partial step: {jumps:?}"
-    //             );
-    //         }
-    //     }
-    // }
+                jumps.push(partial_from);
+            }
 
-    // #[test]
-    // fn it_finds_path_from_each_square_to_every_other() {
-    //     let tilemap: TileMap<DevMapTestScene> =
-    //         ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+            if let Some(expected_partial_steps) = expected_partial_steps {
+                assert_eq!(
+                    *expected_partial_steps,
+                    jumps.len(),
+                    "Each partial step: {jumps:?}"
+                );
+            }
+        }
+    }
 
-    //     let all_squares =
-    //         || bevy_grid_squared::shapes::rectangle(DevMapTestScene::bounds());
+    #[test]
+    fn it_finds_path_from_each_square_to_every_other() {
+        let tilemap: TileMap<DevMapTestScene> =
+            ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
-    //     for to in all_squares() {
-    //         println!("Finding path from all squares to {to}");
+        let all_squares =
+            || bevy_grid_squared::shapes::rectangle(DevMapTestScene::bounds());
 
-    //         for from in all_squares() {
-    //             let mut partial_from = from;
-    //             const MAX_PARTIAL_STEPS: usize = 7;
+        for to in all_squares() {
+            println!("Finding path from all squares to {to}");
 
-    //             let found = search_for_partial_path(
-    //                 &tilemap,
-    //                 MAX_PARTIAL_STEPS,
-    //                 from,
-    //                 to,
-    //                 &mut partial_from,
-    //             );
+            for from in all_squares() {
+                let mut partial_from = from;
+                const MAX_PARTIAL_STEPS: usize = 7;
 
-    //             assert!(
-    //                 found,
-    //                 "Finding path from {from} to {to} took more \
-    //                 than {MAX_PARTIAL_STEPS} partial steps"
-    //             );
-    //         }
-    //     }
-    // }
+                let found = search_for_partial_path(
+                    &tilemap,
+                    MAX_PARTIAL_STEPS,
+                    from,
+                    to,
+                    &mut partial_from,
+                );
 
-    // fn search_for_partial_path(
-    //     tilemap: &TileMap<DevMapTestScene>,
-    //     max_partial_steps: usize,
-    //     from: Square,
-    //     to: Square,
-    //     partial_from: &mut Square,
-    // ) -> bool {
-    //     for _ in 0..max_partial_steps {
-    //         let path = tilemap.find_partial_path(
-    //             Entity::PLACEHOLDER,
-    //             *partial_from,
-    //             to,
-    //         );
-    //         assert!(
-    //             path.is_some(),
-    //             "from {from} (partial {partial_from}) to {to}"
-    //         );
-    //         let ends_up_on = path.unwrap().last().copied();
-    //         if ends_up_on.is_none() {
-    //             assert_eq!(to, *partial_from);
-    //             return true;
-    //         }
+                assert!(
+                    found,
+                    "Finding path from {from} to {to} took more \
+                    than {MAX_PARTIAL_STEPS} partial steps"
+                );
+            }
+        }
+    }
 
-    //         *partial_from = ends_up_on.unwrap();
-    //     }
+    fn search_for_partial_path(
+        tilemap: &TileMap<DevMapTestScene>,
+        max_partial_steps: usize,
+        from: Square,
+        to: Square,
+        partial_from: &mut Square,
+    ) -> bool {
+        for _ in 0..max_partial_steps {
+            let path = tilemap.find_partial_path(
+                Entity::PLACEHOLDER,
+                *partial_from,
+                to,
+            );
+            assert!(
+                path.is_some(),
+                "from {from} (partial {partial_from}) to {to}"
+            );
+            let ends_up_on = path.unwrap().last().copied();
+            if ends_up_on.is_none() {
+                assert_eq!(to, *partial_from);
+                return true;
+            }
 
-    //     false
-    // }
+            *partial_from = ends_up_on.unwrap();
+        }
+
+        false
+    }
 }
