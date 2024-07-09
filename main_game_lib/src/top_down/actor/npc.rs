@@ -18,8 +18,8 @@ use super::{ActorOrCharacter, BeginDialogEvent};
 use crate::{
     dialog::{self, StartDialogWhenLoaded},
     top_down::{
-        inspect_and_interact::ReadyForInteraction, layout::ZoneTile, Actor,
-        ActorTarget, Player, TileMap, TopDownScene,
+        inspect_and_interact::ReadyForInteraction, Actor, ActorTarget, Player,
+        TileMap, TopDownScene,
     },
 };
 
@@ -184,9 +184,7 @@ pub fn plan_path<T: TopDownScene>(
     mut events: EventReader<PlanPathEvent>,
 
     mut actors: Query<(Entity, &Actor, &mut NpcInTheMap)>,
-) where
-    T::LocalTileKind: ZoneTile<Successors = T::LocalTileKind>,
-{
+) {
     for PlanPathEvent(entity, target_square) in events.read() {
         let Ok((actor_entity, actor, mut npc_in_the_map)) =
             actors.get_mut(*entity)

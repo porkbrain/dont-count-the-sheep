@@ -40,7 +40,7 @@ pub trait TscnSpawner {
     type LocalActionKind: FromStr + Event + Clone;
 
     /// The kind of zone that can be entered by the player.
-    type LocalZoneKind: FromStr;
+    type ZoneKind: FromStr;
 
     /// Entity that has been spawned.
     /// Runs after all [`TscnSpawner::handle_plain_node`].
@@ -88,7 +88,7 @@ pub trait TscnSpawner {
     /// See also [`crate::top_down::inspect_and_interact::ZoneToInspectLabelEntity`].
     fn map_zone_to_inspect_label_entity(
         &mut self,
-        _zone: Self::LocalZoneKind,
+        _zone: Self::ZoneKind,
         _entity: Entity,
     ) {
         unimplemented!("Scene does not support mapping zones to entities")
@@ -258,14 +258,12 @@ fn node_to_entity<T: TscnSpawner>(
 
                 if let Some(zone) = child_node.metadata.remove("zone") {
                     spawner.map_zone_to_inspect_label_entity(
-                        T::LocalZoneKind::from_str(&zone).unwrap_or_else(
-                            |_| {
-                                panic!(
-                                    "Zone '{zone}' not valid for \
+                        T::ZoneKind::from_str(&zone).unwrap_or_else(|_| {
+                            panic!(
+                                "Zone '{zone}' not valid for \
                                     InspectLabel of {name:?}"
-                                )
-                            },
-                        ),
+                            )
+                        }),
                         entity,
                     );
                 }

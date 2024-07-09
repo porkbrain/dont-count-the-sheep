@@ -1,9 +1,6 @@
 pub(crate) use main_game_lib::prelude::*;
 
-pub(crate) use crate::{
-    Building1PlayerFloor, Building1PlayerFloorAction,
-    Building1PlayerFloorTileKind,
-};
+pub(crate) use crate::{Building1PlayerFloor, Building1PlayerFloorAction};
 
 /// This means that the meditation game will not start until the loading screen
 /// has been shown for at least this long, plus it takes some time for the

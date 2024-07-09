@@ -30,9 +30,9 @@ use crate::top_down::{
 
 /// Use with [`IntoSystemConfigs::run_if`] to run a system only when an actor
 /// moves.
-pub fn movement_event_emitted<T: TopDownScene>(
-) -> impl FnMut(EventReader<ActorMovementEvent<T::LocalTileKind>>) -> bool {
-    on_event::<ActorMovementEvent<T::LocalTileKind>>()
+pub fn movement_event_emitted(
+) -> impl FnMut(EventReader<ActorMovementEvent>) -> bool {
+    on_event::<ActorMovementEvent>()
 }
 
 /// Entity with this component can be moved around.
@@ -105,29 +105,29 @@ pub struct ActorTarget {
 /// stored.
 #[derive(Resource, Serialize, Deserialize, Reflect, Default)]
 #[reflect(Resource)]
-pub struct ActorZoneMap<L: Default + Eq + std::hash::Hash> {
+pub struct ActorZoneMap {
     /// Set is used to avoid duplicates.
     /// Those could arise from a map that has the same zone multiple times in
     /// the same square (different layer.)
     ///
     /// The second tuple member is whether the actor is a player.
-    map: EntityHashMap<(Character, bool, HashSet<TileKind<L>>)>,
+    map: EntityHashMap<(Character, bool, HashSet<TileKind>)>,
 }
 
 /// Some useful events for actors.
 #[derive(Event, Reflect)]
-pub enum ActorMovementEvent<T> {
+pub enum ActorMovementEvent {
     /// Is emitted when an [`Actor`] enters a zone.
     ZoneEntered {
         /// The zone that was entered.
-        zone: TileKind<T>,
+        zone: TileKind,
         /// The actor that entered the zone.
         who: Who,
     },
     /// Is emitted when an [`Actor`] leaves a zone.
     ZoneLeft {
         /// The zone that was left.
-        zone: TileKind<T>,
+        zone: TileKind,
         /// The actor that left the zone.
         who: Who,
     },
@@ -191,8 +191,8 @@ pub enum ActorOrCharacter {
 /// We also emit a zone left event when an actor is despawned.
 pub fn emit_movement_events<T: TopDownScene>(
     tilemap: Res<TileMap<T>>,
-    mut actor_zone_map: ResMut<ActorZoneMap<T::LocalTileKind>>,
-    mut event: EventWriter<ActorMovementEvent<T::LocalTileKind>>,
+    mut actor_zone_map: ResMut<ActorZoneMap>,
+    mut event: EventWriter<ActorMovementEvent>,
     mut removed: RemovedComponents<Actor>,
 
     actors: Query<(Entity, &Actor), Changed<Transform>>,
@@ -439,7 +439,7 @@ fn animate_movement_for_actor<T: TopDownScene>(
     }
 }
 
-impl<T> ActorMovementEvent<T> {
+impl ActorMovementEvent {
     /// Whether the actor is a player.
     pub fn is_player(&self) -> bool {
         match self {
@@ -972,8 +972,6 @@ mod tests {
     struct TestScene;
 
     impl TopDownScene for TestScene {
-        type LocalTileKind = ();
-
         fn bounds() -> [i32; 4] {
             [-1000, 1000, -1000, 1000]
         }

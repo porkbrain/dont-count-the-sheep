@@ -6,10 +6,9 @@ use main_game_lib::{
     cutscene::in_cutscene,
     hud::{daybar::UpdateDayBarEvent, notification::NotificationFifo},
     player_stats::PlayerStats,
-    top_down::layout::LAYOUT,
+    top_down::{layout::LAYOUT, scene_configs::ZoneTileKind},
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use strum::IntoEnumIterator;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
@@ -58,8 +57,7 @@ struct Spawner<'a> {
     player_builder: &'a mut CharacterBundleBuilder,
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
-    zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<CompoundTileKind>,
+    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
     camera_translation: &'a mut Vec3,
     daybar_event: &'a mut Events<UpdateDayBarEvent>,
     transition: GlobalGameStateTransition,
@@ -114,14 +112,12 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     let root = root.single();
     cmd.entity(root).despawn_recursive();
 
-    cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <Compound as TopDownScene>::LocalTileKind,
-    >>();
+    cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
     type LocalActionKind = CompoundAction;
-    type LocalZoneKind = CompoundTileKind;
+    type ZoneKind = ZoneTileKind;
 
     fn on_spawned(
         &mut self,
@@ -180,29 +176,10 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
     fn map_zone_to_inspect_label_entity(
         &mut self,
-        zone: Self::LocalZoneKind,
+        zone: Self::ZoneKind,
         entity: Entity,
     ) {
-        self.zone_to_inspect_label_entity.map.insert(zone, entity);
-    }
-}
-
-impl top_down::layout::Tile for CompoundTileKind {
-    #[inline]
-    fn is_walkable(&self, _: Entity) -> bool {
-        true
-    }
-
-    #[inline]
-    fn is_zone(&self) -> bool {
-        match self {
-            Self::EnterTowerZone | Self::GoToDowntownZone => true,
-        }
-    }
-
-    #[inline]
-    fn zones_iter() -> impl Iterator<Item = Self> {
-        Self::iter().filter(|kind| kind.is_zone())
+        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 

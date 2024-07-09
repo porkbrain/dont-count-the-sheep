@@ -366,7 +366,7 @@ enum SectionKeyBuilder {
     Position(Vector2Expecting),
     /// e.g. `sprite_frames = SubResource("SpriteFrames_33ymd")`
     SpriteFrames(SubResourceExpecting),
-    /// e.g. `metadata/zone = "ElevatorZone"`
+    /// e.g. `metadata/zone = "Elevator"`
     /// or   `metadata/label = "Elevator"`
     ///
     /// The string is the key "zone" or "label" etc.

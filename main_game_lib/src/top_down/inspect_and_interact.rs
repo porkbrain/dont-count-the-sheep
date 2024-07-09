@@ -30,7 +30,7 @@ use lazy_static::lazy_static;
 use strum::EnumString;
 
 use super::actor::player::TakeAwayPlayerControl;
-use crate::top_down::{ActorMovementEvent, Player, TileKind, TopDownScene};
+use crate::top_down::{ActorMovementEvent, Player, TileKind};
 
 /// Useful for error labels.
 pub const LIGHT_RED: Color = Color::srgb(1.0, 0.7, 0.7);
@@ -129,7 +129,7 @@ pub(crate) struct InspectLabelText;
 #[derive(Component, Reflect)]
 pub(crate) struct InspectLabelBg;
 
-/// A helper resource that maps local tile kinds to entities that have
+/// A helper resource that maps zone tile kinds to entities that have
 /// [`InspectLabel`] component.
 ///
 /// When entities are mapped this way, they are assigned the
@@ -138,42 +138,47 @@ pub(crate) struct InspectLabelBg;
 /// In godot, this is done by using InspectLabel node with specific metadata.
 /// See the wiki for more information.
 #[derive(Resource, Reflect, Default)]
-pub struct ZoneToInspectLabelEntity<L> {
-    /// The key is the local tile kind, the value is some entity that has
+pub struct ZoneToInspectLabelEntity {
+    /// The key is the zone tile kind, the value is some entity that has
     /// [`InspectLabel`] component.
-    pub map: HashMap<L, Entity>,
+    map: HashMap<TileKind, Entity>,
 }
 
-pub(crate) fn match_interact_label_with_action_event<T: TopDownScene>(
+impl ZoneToInspectLabelEntity {
+    /// Insert a new mapping.
+    pub fn insert(&mut self, kind: impl Into<TileKind>, entity: Entity) {
+        self.map.insert(kind.into(), entity);
+    }
+
+    /// Get the entity that has [`InspectLabel`] component for the given tile.
+    pub fn get(&self, kind: impl Into<TileKind>) -> Option<&Entity> {
+        self.map.get(&kind.into())
+    }
+}
+
+pub(crate) fn match_interact_label_with_action_event(
     mut cmd: Commands,
-    mut events: EventReader<ActorMovementEvent<T::LocalTileKind>>,
-    zone_to_inspect_label_entity: Res<
-        ZoneToInspectLabelEntity<T::LocalTileKind>,
-    >,
+    mut events: EventReader<ActorMovementEvent>,
+    zone_to_inspect_label_entity: Res<ZoneToInspectLabelEntity>,
 ) {
     for event in events.read().filter(|event| event.is_player()) {
         match event {
-            ActorMovementEvent::ZoneEntered {
-                zone: TileKind::Local(local_zone),
-                ..
-            } => {
-                zone_to_inspect_label_entity.map.get(local_zone).inspect(
-                    |entity| {
+            ActorMovementEvent::ZoneEntered { zone, .. } => {
+                zone_to_inspect_label_entity
+                    .map
+                    .get(zone)
+                    .inspect(|entity| {
                         cmd.entity(**entity).insert(ReadyForInteraction);
-                    },
-                );
+                    });
             }
-            ActorMovementEvent::ZoneLeft {
-                zone: TileKind::Local(local_zone),
-                ..
-            } => {
-                zone_to_inspect_label_entity.map.get(local_zone).inspect(
-                    |entity| {
+            ActorMovementEvent::ZoneLeft { zone, .. } => {
+                zone_to_inspect_label_entity
+                    .map
+                    .get(zone)
+                    .inspect(|entity| {
                         cmd.entity(**entity).remove::<ReadyForInteraction>();
-                    },
-                );
+                    });
             }
-            _ => {}
         };
     }
 }
