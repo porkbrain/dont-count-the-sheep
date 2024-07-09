@@ -840,550 +840,503 @@ impl TileKindMetas {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use bevy::utils::default;
-//     use bevy_grid_squared::sq;
-//     use smallvec::smallvec;
-//     use strum::{EnumIter, IntoEnumIterator};
+#[cfg(test)]
+mod tests {
+    use bevy::utils::default;
+    use bevy_grid_squared::sq;
+    use smallvec::smallvec;
 
-//     use super::*;
+    use super::*;
 
-//     #[derive(Default, Reflect)]
-//     struct TestScene;
+    #[derive(Default, Reflect)]
+    struct TestScene;
 
-//     #[derive(
-//         Default,
-//         Reflect,
-//         Hash,
-//         PartialEq,
-//         Eq,
-//         Debug,
-//         Serialize,
-//         Deserialize,
-//         Clone,
-//         Copy,
-//     )]
-//     enum TestTileKind {
-//         #[default]
-//         Empty,
-//     }
+    #[derive(
+        Default,
+        Reflect,
+        Hash,
+        PartialEq,
+        Eq,
+        Debug,
+        Serialize,
+        Deserialize,
+        Clone,
+        Copy,
+    )]
+    enum TestTileKind {
+        #[default]
+        Empty,
+    }
 
-//     impl Tile for TestTileKind {
-//         fn is_walkable(&self, _: Entity) -> bool {
-//             true
-//         }
+    impl Tile for TestTileKind {
+        fn is_walkable(&self, _: Entity) -> bool {
+            true
+        }
 
-//         fn is_zone(&self) -> bool {
-//             false
-//         }
+        fn is_zone(&self) -> bool {
+            false
+        }
 
-//         fn zones_iter() -> impl Iterator<Item = Self> {
-//             std::iter::empty()
-//         }
-//     }
+        fn zones_iter() -> impl Iterator<Item = Self> {
+            std::iter::empty()
+        }
+    }
 
-//     impl TopDownScene for TestScene {
-//         fn bounds() -> [i32; 4] {
-//             [0, 10, 0, 10]
-//         }
+    impl TopDownScene for TestScene {
+        fn bounds() -> [i32; 4] {
+            [0, 10, 0, 10]
+        }
 
-//         fn name() -> &'static str {
-//             unreachable!()
-//         }
-//     }
+        fn name() -> &'static str {
+            unreachable!()
+        }
+    }
 
-//     #[test]
-//     fn it_converts_tile_walk_cost_to_i32() {
-//         assert_eq!(TileWalkCost::Preferred as i32, 1);
-//         assert_eq!(TileWalkCost::Normal as i32, 3);
-//     }
+    #[test]
+    fn it_converts_tile_walk_cost_to_i32() {
+        assert_eq!(TileWalkCost::Preferred as i32, 1);
+        assert_eq!(TileWalkCost::Normal as i32, 3);
+    }
 
-//     #[test]
-//     fn it_calculates_walk_cost() {
-//         use TileKind as Tk;
-//         use TileWalkCost::*;
+    #[test]
+    fn it_calculates_walk_cost() {
+        use TileKind as Tk;
+        use TileWalkCost::*;
 
-//         let o = sq(0, 0);
-//         let mut tilemap = TileMap::<TestScene>::default();
+        let o = sq(0, 0);
+        let mut tilemap = TileMap::<TestScene>::default();
 
-//         // out of bounds returns none
-//         assert_eq!(tilemap.walk_cost(sq(-1, 0), Entity::PLACEHOLDER), None);
+        // out of bounds returns none
+        assert_eq!(tilemap.walk_cost(sq(-1, 0), Entity::PLACEHOLDER), None);
 
-//         // in bounds, but no tile returns normal
-//         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Normal));
+        // in bounds, but no tile returns normal
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Normal));
 
-//         // if there's a wall returns none
-//         tilemap.squares.insert(o, smallvec![Tk::Empty, Tk::Wall]);
-//         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
-//         tilemap.squares.insert(o, smallvec![Tk::Wall, Tk::Empty]);
-//         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
+        // if there's a wall returns none
+        tilemap.squares.insert(o, smallvec![Tk::Empty, Tk::Wall]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
+        tilemap.squares.insert(o, smallvec![Tk::Wall, Tk::Empty]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
 
-//         // if there's a trail returns preferred
-//         tilemap.squares.insert(o, smallvec![Tk::Empty, Tk::Trail]);
-//         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER),
-// Some(Preferred));         tilemap.squares.insert(o, smallvec![Tk::Trail,
-// Tk::Empty,]);         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER),
-// Some(Preferred));
+        // if there's a trail returns preferred
+        tilemap.squares.insert(o, smallvec![Tk::Empty, Tk::Trail]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Preferred));
+        tilemap.squares.insert(o, smallvec![Tk::Trail, Tk::Empty,]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Preferred));
 
-//         // if there's a matching character and trail, returns preferred
-//         tilemap
-//             .squares
-//             .insert(o, smallvec![Tk::Actor(Entity::PLACEHOLDER,),
-// Tk::Trail]);         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER),
-// Some(Preferred));
+        // if there's a matching character and trail, returns preferred
+        tilemap
+            .squares
+            .insert(o, smallvec![Tk::Actor(Entity::PLACEHOLDER,), Tk::Trail]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Preferred));
 
-//         // if there's a matching character and wall, returns none
-//         tilemap
-//             .squares
-//             .insert(o, smallvec![Tk::Actor(Entity::PLACEHOLDER,), Tk::Wall]);
-//         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
+        // if there's a matching character and wall, returns none
+        tilemap
+            .squares
+            .insert(o, smallvec![Tk::Actor(Entity::PLACEHOLDER,), Tk::Wall]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
 
-//         // if there's a different character and a trail, returns none
-//         tilemap
-//             .squares
-//             .insert(o, smallvec![Tk::Actor(Entity::from_raw(10),),
-// Tk::Trail]);         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER),
-// None);     }
+        // if there's a different character and a trail, returns none
+        tilemap
+            .squares
+            .insert(o, smallvec![Tk::Actor(Entity::from_raw(10),), Tk::Trail]);
+        assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), None);
+    }
 
-//     #[test]
-//     fn it_adds_tiles_to_first_empty_layer() {
-//         let mut tilemap = TileMap::<TestScene>::default();
-//         let sq = sq(0, 0);
+    #[test]
+    fn it_adds_tiles_to_first_empty_layer() {
+        let mut tilemap = TileMap::<TestScene>::default();
+        let sq = sq(0, 0);
 
-//         assert_eq!(
-//             tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
-//             Some(0)
-//         );
-//         assert_eq!(
-//             tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
-//             Some(1)
-//         );
+        assert_eq!(
+            tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
+            Some(0)
+        );
+        assert_eq!(
+            tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
+            Some(1)
+        );
 
-//         tilemap.squares.insert(
-//             sq,
-//             smallvec![TileKind::Wall, TileKind::Empty, TileKind::Wall],
-//         );
-//         assert_eq!(
-//             tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
-//             Some(1)
-//         );
-//     }
+        tilemap.squares.insert(
+            sq,
+            smallvec![TileKind::Wall, TileKind::Empty, TileKind::Wall],
+        );
+        assert_eq!(
+            tilemap.add_tile_to_first_empty_layer(sq, TileKind::Wall),
+            Some(1)
+        );
+    }
 
-//     #[test]
-//     fn it_sets_tile_kind_layer() {
-//         let mut tilemap = TileMap::<TestScene>::default();
-//         let sq = sq(0, 0);
+    #[test]
+    fn it_sets_tile_kind_layer() {
+        let mut tilemap = TileMap::<TestScene>::default();
+        let sq = sq(0, 0);
 
-//         assert_eq!(
-//             tilemap.set_tile_kind(sq, 0, TileKind::Wall),
-//             Some(TileKind::Empty)
-//         );
-//         assert_eq!(
-//             tilemap.set_tile_kind(sq, 0, TileKind::Wall),
-//             Some(TileKind::Wall)
-//         );
-//         assert_eq!(
-//             tilemap.set_tile_kind(sq, 1, TileKind::Wall),
-//             Some(TileKind::Empty)
-//         );
-//         assert_eq!(
-//             tilemap.set_tile_kind(sq, 1, TileKind::Wall),
-//             Some(TileKind::Wall)
-//         );
-//         assert_eq!(
-//             tilemap.set_tile_kind(sq, 5, TileKind::Wall),
-//             Some(TileKind::Empty)
-//         );
-//         assert_eq!(
-//             tilemap.set_tile_kind(sq, 4, TileKind::Wall),
-//             Some(TileKind::Empty)
-//         );
-//     }
+        assert_eq!(
+            tilemap.set_tile_kind(sq, 0, TileKind::Wall),
+            Some(TileKind::Empty)
+        );
+        assert_eq!(
+            tilemap.set_tile_kind(sq, 0, TileKind::Wall),
+            Some(TileKind::Wall)
+        );
+        assert_eq!(
+            tilemap.set_tile_kind(sq, 1, TileKind::Wall),
+            Some(TileKind::Empty)
+        );
+        assert_eq!(
+            tilemap.set_tile_kind(sq, 1, TileKind::Wall),
+            Some(TileKind::Wall)
+        );
+        assert_eq!(
+            tilemap.set_tile_kind(sq, 5, TileKind::Wall),
+            Some(TileKind::Empty)
+        );
+        assert_eq!(
+            tilemap.set_tile_kind(sq, 4, TileKind::Wall),
+            Some(TileKind::Empty)
+        );
+    }
 
-//     #[test]
-//     fn it_doesnt_do_anything_outside_map_bounds() {
-//         let mut tilemap = TileMap::<TestScene>::default();
+    #[test]
+    fn it_doesnt_do_anything_outside_map_bounds() {
+        let mut tilemap = TileMap::<TestScene>::default();
 
-//         assert_eq!(
-//             tilemap.add_tile_to_first_empty_layer(sq(-100, 0),
-// TileKind::Wall),             None
-//         );
+        assert_eq!(
+            tilemap.add_tile_to_first_empty_layer(sq(-100, 0), TileKind::Wall),
+            None
+        );
 
-//         assert_eq!(tilemap.set_tile_kind(sq(100, 0), 0, TileKind::Wall),
-// None);     }
+        assert_eq!(tilemap.set_tile_kind(sq(100, 0), 0, TileKind::Wall), None);
+    }
 
-//     /// Useful to track to prevent regressions.
-//     #[test]
-//     fn it_has_const_size_of_tilekind() {
-//         assert_eq!(std::mem::size_of::<TileKind<TestTileKind>>(), 16);
+    /// Useful to track to prevent regressions.
+    #[test]
+    fn it_has_const_size_of_tilekind() {
+        assert_eq!(std::mem::size_of::<TileKind>(), 16);
 
-//         let square: SmallVec<[TileKind<TestTileKind>; 3]> =
-//             smallvec![default(), default(), default(), default(), default()];
-//         assert_eq!(std::mem::size_of_val(&square), 56);
-//     }
+        let square: SmallVec<[TileKind; 3]> =
+            smallvec![default(), default(), default(), default(), default()];
+        assert_eq!(std::mem::size_of_val(&square), 56);
+    }
 
-//     #[derive(Default, Reflect)]
-//     struct DevMapTestScene;
+    #[derive(Default, Reflect)]
+    struct DevMapTestScene;
 
-//     #[derive(
-//         Default,
-//         Reflect,
-//         EnumIter,
-//         Hash,
-//         PartialEq,
-//         Eq,
-//         PartialOrd,
-//         Ord,
-//         Clone,
-//         Copy,
-//         Debug,
-//         Serialize,
-//         Deserialize,
-//     )]
-//     enum DevMapTestTileKind {
-//         #[default]
-//         ZoneA,
-//         ZoneB,
-//         ZoneC,
-//         ZoneD,
-//         ZoneE,
-//         ZoneF,
-//         ZoneG,
-//         ZoneH,
-//         ZoneI,
-//         ZoneJ,
-//         ZoneK,
-//     }
+    impl TopDownScene for DevMapTestScene {
+        fn bounds() -> [i32; 4] {
+            [-11, 0, 15, 28]
+        }
 
-//     impl TopDownScene for DevMapTestScene {
-//         type LocalTileKind = DevMapTestTileKind;
+        fn name() -> &'static str {
+            unreachable!()
+        }
+    }
 
-//         fn bounds() -> [i32; 4] {
-//             [-11, 0, 15, 28]
-//         }
+    // fn xd() -> TileKindMetas {}
 
-//         fn name() -> &'static str {
-//             unreachable!()
-//         }
-//     }
+    // /// Based on the RON above.
+    // impl ZoneTile for DevMapTestTileKind {
+    //     #[inline]
+    //     fn zone_group(&self) -> Option<ZoneGroup> {
+    //         match self {
+    //             Self::ZoneA => Some(ZoneGroup(0)),
+    //             Self::ZoneB => Some(ZoneGroup(0)),
+    //             Self::ZoneC => Some(ZoneGroup(0)),
+    //             Self::ZoneD => Some(ZoneGroup(0)),
+    //             Self::ZoneE => Some(ZoneGroup(0)),
+    //             Self::ZoneF => Some(ZoneGroup(0)),
+    //             Self::ZoneG => Some(ZoneGroup(0)),
+    //             Self::ZoneH => Some(ZoneGroup(1)),
+    //             Self::ZoneI => Some(ZoneGroup(1)),
+    //             Self::ZoneJ => Some(ZoneGroup(1)),
+    //             Self::ZoneK => Some(ZoneGroup(1)),
+    //             #[allow(unreachable_patterns)]
+    //             _ => None,
+    //         }
+    //     }
+    //     #[inline]
+    //     fn zone_size(&self) -> Option<usize> {
+    //         match self {
+    //             Self::ZoneA => Some(25),
+    //             Self::ZoneB => Some(8),
+    //             Self::ZoneC => Some(12),
+    //             Self::ZoneD => Some(9),
+    //             Self::ZoneE => Some(1),
+    //             Self::ZoneF => Some(12),
+    //             Self::ZoneG => Some(1),
+    //             Self::ZoneH => Some(4),
+    //             Self::ZoneI => Some(10),
+    //             Self::ZoneJ => Some(8),
+    //             Self::ZoneK => Some(4),
+    //             #[allow(unreachable_patterns)]
+    //             _ => None,
+    //         }
+    //     }
+    //     type Successors = Self;
+    //     #[inline]
+    //     fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
+    //         match self {
+    //             Self::ZoneA => Some(&[Self::ZoneB, Self::ZoneD,
+    // Self::ZoneE]),             Self::ZoneB => Some(&[Self::ZoneA,
+    // Self::ZoneC]),             Self::ZoneC => Some(&[Self::ZoneB,
+    // Self::ZoneF]),             Self::ZoneD => Some(&[Self::ZoneA,
+    // Self::ZoneE]),             Self::ZoneE => Some(&[Self::ZoneA,
+    // Self::ZoneD]),             Self::ZoneF => Some(&[Self::ZoneC,
+    // Self::ZoneG]),             Self::ZoneG => Some(&[Self::ZoneF]),
+    //             Self::ZoneH => Some(&[Self::ZoneI]),
+    //             Self::ZoneI => Some(&[Self::ZoneH, Self::ZoneJ,
+    // Self::ZoneK]),             Self::ZoneJ => Some(&[Self::ZoneI,
+    // Self::ZoneK]),             Self::ZoneK => Some(&[Self::ZoneI,
+    // Self::ZoneJ]),             #[allow(unreachable_patterns)]
+    //             _ => None,
+    //         }
+    //     }
+    // }
 
-//     impl Tile for DevMapTestTileKind {
-//         fn is_walkable(&self, _: Entity) -> bool {
-//             true
-//         }
+    // /// Test map such that:
+    // /// ```text
+    // ///  E<-D<-A=B<->C<->F->G
+    // ///
+    // ///  H=I<->J->K   and K<->I
+    // /// ```
+    // ///
+    // /// * `x=y` x and y are neighbors
+    // /// * `x<->y` x and y overlap
+    // /// * `x<-y` x is subset of y
+    // const DEV_MAP_TEST_RON: &str = r#"(squares: {
+    //     (x: -10, y: 16): [Empty, Zone(ZoneJ)],
+    //     (x: -10, y: 17): [Empty, Zone(ZoneJ)],
+    //     (x: -10, y: 19): [Zone(ZoneH)],
+    //     (x: -10, y: 20): [Zone(ZoneH)],
+    //     (x: -10, y: 23): [Zone(ZoneA)],
+    //     (x: -10, y: 24): [Zone(ZoneA)],
+    //     (x: -10, y: 25): [Zone(ZoneA)],
+    //     (x: -10, y: 26): [Zone(ZoneA)],
+    //     (x: -10, y: 27): [Zone(ZoneA)],
+    //     (x: -9, y: 16): [Empty, Zone(ZoneJ), Zone(ZoneK)],
+    //     (x: -9, y: 17): [Empty, Zone(ZoneJ), Zone(ZoneK)],
+    //     (x: -9, y: 19): [Zone(ZoneH)],
+    //     (x: -9, y: 20): [Zone(ZoneH)],
+    //     (x: -9, y: 23): [Zone(ZoneA)],
+    //     (x: -9, y: 24): [Zone(ZoneA), Zone(ZoneD)],
+    //     (x: -9, y: 25): [Zone(ZoneA), Zone(ZoneD)],
+    //     (x: -9, y: 26): [Zone(ZoneA), Zone(ZoneD)],
+    //     (x: -9, y: 27): [Zone(ZoneA)],
+    //     (x: -8, y: 16): [Zone(ZoneI), Zone(ZoneJ), Zone(ZoneK)],
+    //     (x: -8, y: 17): [Zone(ZoneI), Zone(ZoneJ), Zone(ZoneK)],
+    //     (x: -8, y: 18): [Zone(ZoneI)],
+    //     (x: -8, y: 19): [Zone(ZoneI)],
+    //     (x: -8, y: 20): [Zone(ZoneI)],
+    //     (x: -8, y: 23): [Zone(ZoneA)],
+    //     (x: -8, y: 24): [Zone(ZoneA), Zone(ZoneD)],
+    //     (x: -8, y: 25): [Zone(ZoneA), Zone(ZoneD), Zone(ZoneE)],
+    //     (x: -8, y: 26): [Zone(ZoneA), Zone(ZoneD)],
+    //     (x: -8, y: 27): [Zone(ZoneA)],
+    //     (x: -7, y: 16): [Zone(ZoneI), Zone(ZoneJ)],
+    //     (x: -7, y: 17): [Zone(ZoneI), Zone(ZoneJ)],
+    //     (x: -7, y: 18): [Zone(ZoneI)],
+    //     (x: -7, y: 19): [Zone(ZoneI)],
+    //     (x: -7, y: 20): [Zone(ZoneI)],
+    //     (x: -7, y: 23): [Zone(ZoneA)],
+    //     (x: -7, y: 24): [Zone(ZoneA), Zone(ZoneD)],
+    //     (x: -7, y: 25): [Zone(ZoneA), Zone(ZoneD)],
+    //     (x: -7, y: 26): [Zone(ZoneA), Zone(ZoneD)],
+    //     (x: -7, y: 27): [Zone(ZoneA)],
+    //     (x: -6, y: 23): [Zone(ZoneA)],
+    //     (x: -6, y: 24): [Zone(ZoneA)],
+    //     (x: -6, y: 25): [Zone(ZoneA)],
+    //     (x: -6, y: 26): [Zone(ZoneA)],
+    //     (x: -6, y: 27): [Zone(ZoneA)],
+    //     (x: -5, y: 26): [Zone(ZoneB)],
+    //     (x: -5, y: 27): [Zone(ZoneB)],
+    //     (x: -4, y: 26): [Zone(ZoneB)],
+    //     (x: -4, y: 27): [Zone(ZoneB)],
+    //     (x: -3, y: 19): [Zone(ZoneF)],
+    //     (x: -3, y: 20): [Zone(ZoneF)],
+    //     (x: -3, y: 21): [Zone(ZoneF)],
+    //     (x: -3, y: 22): [Zone(ZoneF)],
+    //     (x: -3, y: 26): [Zone(ZoneB)],
+    //     (x: -3, y: 27): [Zone(ZoneB)],
+    //     (x: -2, y: 19): [Zone(ZoneF)],
+    //     (x: -2, y: 20): [Zone(ZoneF), Zone(ZoneG)],
+    //     (x: -2, y: 21): [Zone(ZoneF)],
+    //     (x: -2, y: 22): [Zone(ZoneF), Zone(ZoneC)],
+    //     (x: -2, y: 23): [Empty, Zone(ZoneC)],
+    //     (x: -2, y: 24): [Empty, Zone(ZoneC)],
+    //     (x: -2, y: 25): [Empty, Zone(ZoneC)],
+    //     (x: -2, y: 26): [Zone(ZoneB), Zone(ZoneC)],
+    //     (x: -2, y: 27): [Zone(ZoneB), Zone(ZoneC)],
+    //     (x: -1, y: 19): [Zone(ZoneF)],
+    //     (x: -1, y: 20): [Zone(ZoneF)],
+    //     (x: -1, y: 21): [Zone(ZoneF)],
+    //     (x: -1, y: 22): [Zone(ZoneF), Zone(ZoneC)],
+    //     (x: -1, y: 23): [Empty, Zone(ZoneC)],
+    //     (x: -1, y: 24): [Empty, Zone(ZoneC)],
+    //     (x: -1, y: 25): [Empty, Zone(ZoneC)],
+    //     (x: -1, y: 26): [Empty, Zone(ZoneC)],
+    //     (x: -1, y: 27): [Empty, Zone(ZoneC)],
+    // },)"#;
 
-//         fn is_zone(&self) -> bool {
-//             true
-//         }
+    // #[test]
+    // fn it_finds_path_between_interesting_square_pairs() {
+    //     #[derive(Default)]
+    //     struct ExampleSetting {
+    //         expected_partial_steps: Option<usize>,
+    //     }
 
-//         fn zones_iter() -> impl Iterator<Item = Self> {
-//             Self::iter()
-//         }
-//     }
+    //     let pairs = &[
+    //         (
+    //             sq(-7, 15),
+    //             sq(-9, 24),
+    //             "Takes a lot of steps during testing",
+    //             ExampleSetting {
+    //                 expected_partial_steps: Some(6),
+    //             },
+    //         ),
+    //         (
+    //             sq(-5, 15),
+    //             sq(-10, 16),
+    //             "Values at the edge of the map",
+    //             default(),
+    //         ),
+    //         (
+    //             sq(-8, 21),  // nowhere
+    //             sq(-10, 16), // ZoneJ
+    //             "Taking lots of steps during testing",
+    //             ExampleSetting {
+    //                 expected_partial_steps: Some(4),
+    //                 ..default()
+    //             },
+    //         ),
+    //         (sq(-2, 19), sq(-2, 20), "Going from F to (F, G)", default()),
+    //         (sq(-10, 25), sq(-9, 25), "Going from A to (A, D)", default()),
+    //         (
+    //             sq(-9, 25),
+    //             sq(-8, 25),
+    //             "Going from (A, D) to (A, D, E)",
+    //             default(),
+    //         ),
+    //         (
+    //             sq(-9, 25),
+    //             sq(-2, 20),
+    //             "Going from (A, D) to (F, G)",
+    //             ExampleSetting {
+    //                 expected_partial_steps: Some(4),
+    //                 ..default()
+    //             },
+    //         ),
+    //         (
+    //             sq(-2, 26),
+    //             sq(-2, 22),
+    //             "Going from (B, C) to (C, F)",
+    //             default(),
+    //         ),
+    //         (
+    //             sq(-10, 19),
+    //             sq(-8, 17),
+    //             "Going from H to (I, J, K)",
+    //             default(),
+    //         ),
+    //         (sq(-10, 25), sq(-5, 26), "Going from A to B", default()),
+    //     ];
 
-//     /// Based on the RON above.
-//     impl ZoneTile for DevMapTestTileKind {
-//         #[inline]
-//         fn zone_group(&self) -> Option<ZoneGroup> {
-//             match self {
-//                 Self::ZoneA => Some(ZoneGroup(0)),
-//                 Self::ZoneB => Some(ZoneGroup(0)),
-//                 Self::ZoneC => Some(ZoneGroup(0)),
-//                 Self::ZoneD => Some(ZoneGroup(0)),
-//                 Self::ZoneE => Some(ZoneGroup(0)),
-//                 Self::ZoneF => Some(ZoneGroup(0)),
-//                 Self::ZoneG => Some(ZoneGroup(0)),
-//                 Self::ZoneH => Some(ZoneGroup(1)),
-//                 Self::ZoneI => Some(ZoneGroup(1)),
-//                 Self::ZoneJ => Some(ZoneGroup(1)),
-//                 Self::ZoneK => Some(ZoneGroup(1)),
-//                 #[allow(unreachable_patterns)]
-//                 _ => None,
-//             }
-//         }
-//         #[inline]
-//         fn zone_size(&self) -> Option<usize> {
-//             match self {
-//                 Self::ZoneA => Some(25),
-//                 Self::ZoneB => Some(8),
-//                 Self::ZoneC => Some(12),
-//                 Self::ZoneD => Some(9),
-//                 Self::ZoneE => Some(1),
-//                 Self::ZoneF => Some(12),
-//                 Self::ZoneG => Some(1),
-//                 Self::ZoneH => Some(4),
-//                 Self::ZoneI => Some(10),
-//                 Self::ZoneJ => Some(8),
-//                 Self::ZoneK => Some(4),
-//                 #[allow(unreachable_patterns)]
-//                 _ => None,
-//             }
-//         }
-//         type Successors = Self;
-//         #[inline]
-//         fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
-//             match self {
-//                 Self::ZoneA => Some(&[Self::ZoneB, Self::ZoneD,
-// Self::ZoneE]),                 Self::ZoneB => Some(&[Self::ZoneA,
-// Self::ZoneC]),                 Self::ZoneC => Some(&[Self::ZoneB,
-// Self::ZoneF]),                 Self::ZoneD => Some(&[Self::ZoneA,
-// Self::ZoneE]),                 Self::ZoneE => Some(&[Self::ZoneA,
-// Self::ZoneD]),                 Self::ZoneF => Some(&[Self::ZoneC,
-// Self::ZoneG]),                 Self::ZoneG => Some(&[Self::ZoneF]),
-//                 Self::ZoneH => Some(&[Self::ZoneI]),
-//                 Self::ZoneI => Some(&[Self::ZoneH, Self::ZoneJ,
-// Self::ZoneK]),                 Self::ZoneJ => Some(&[Self::ZoneI,
-// Self::ZoneK]),                 Self::ZoneK => Some(&[Self::ZoneI,
-// Self::ZoneJ]),                 #[allow(unreachable_patterns)]
-//                 _ => None,
-//             }
-//         }
-//     }
+    //     let tilemap: TileMap<DevMapTestScene> =
+    //         ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
-//     /// Test map such that:
-//     /// ```text
-//     ///  E<-D<-A=B<->C<->F->G
-//     ///
-//     ///  H=I<->J->K   and K<->I
-//     /// ```
-//     ///
-//     /// * `x=y` x and y are neighbors
-//     /// * `x<->y` x and y overlap
-//     /// * `x<-y` x is subset of y
-//     const DEV_MAP_TEST_RON: &str = r#"(squares: {
-//         (x: -10, y: 16): [Empty, Zone(ZoneJ)],
-//         (x: -10, y: 17): [Empty, Zone(ZoneJ)],
-//         (x: -10, y: 19): [Zone(ZoneH)],
-//         (x: -10, y: 20): [Zone(ZoneH)],
-//         (x: -10, y: 23): [Zone(ZoneA)],
-//         (x: -10, y: 24): [Zone(ZoneA)],
-//         (x: -10, y: 25): [Zone(ZoneA)],
-//         (x: -10, y: 26): [Zone(ZoneA)],
-//         (x: -10, y: 27): [Zone(ZoneA)],
-//         (x: -9, y: 16): [Empty, Zone(ZoneJ), Zone(ZoneK)],
-//         (x: -9, y: 17): [Empty, Zone(ZoneJ), Zone(ZoneK)],
-//         (x: -9, y: 19): [Zone(ZoneH)],
-//         (x: -9, y: 20): [Zone(ZoneH)],
-//         (x: -9, y: 23): [Zone(ZoneA)],
-//         (x: -9, y: 24): [Zone(ZoneA), Zone(ZoneD)],
-//         (x: -9, y: 25): [Zone(ZoneA), Zone(ZoneD)],
-//         (x: -9, y: 26): [Zone(ZoneA), Zone(ZoneD)],
-//         (x: -9, y: 27): [Zone(ZoneA)],
-//         (x: -8, y: 16): [Zone(ZoneI), Zone(ZoneJ), Zone(ZoneK)],
-//         (x: -8, y: 17): [Zone(ZoneI), Zone(ZoneJ), Zone(ZoneK)],
-//         (x: -8, y: 18): [Zone(ZoneI)],
-//         (x: -8, y: 19): [Zone(ZoneI)],
-//         (x: -8, y: 20): [Zone(ZoneI)],
-//         (x: -8, y: 23): [Zone(ZoneA)],
-//         (x: -8, y: 24): [Zone(ZoneA), Zone(ZoneD)],
-//         (x: -8, y: 25): [Zone(ZoneA), Zone(ZoneD), Zone(ZoneE)],
-//         (x: -8, y: 26): [Zone(ZoneA), Zone(ZoneD)],
-//         (x: -8, y: 27): [Zone(ZoneA)],
-//         (x: -7, y: 16): [Zone(ZoneI), Zone(ZoneJ)],
-//         (x: -7, y: 17): [Zone(ZoneI), Zone(ZoneJ)],
-//         (x: -7, y: 18): [Zone(ZoneI)],
-//         (x: -7, y: 19): [Zone(ZoneI)],
-//         (x: -7, y: 20): [Zone(ZoneI)],
-//         (x: -7, y: 23): [Zone(ZoneA)],
-//         (x: -7, y: 24): [Zone(ZoneA), Zone(ZoneD)],
-//         (x: -7, y: 25): [Zone(ZoneA), Zone(ZoneD)],
-//         (x: -7, y: 26): [Zone(ZoneA), Zone(ZoneD)],
-//         (x: -7, y: 27): [Zone(ZoneA)],
-//         (x: -6, y: 23): [Zone(ZoneA)],
-//         (x: -6, y: 24): [Zone(ZoneA)],
-//         (x: -6, y: 25): [Zone(ZoneA)],
-//         (x: -6, y: 26): [Zone(ZoneA)],
-//         (x: -6, y: 27): [Zone(ZoneA)],
-//         (x: -5, y: 26): [Zone(ZoneB)],
-//         (x: -5, y: 27): [Zone(ZoneB)],
-//         (x: -4, y: 26): [Zone(ZoneB)],
-//         (x: -4, y: 27): [Zone(ZoneB)],
-//         (x: -3, y: 19): [Zone(ZoneF)],
-//         (x: -3, y: 20): [Zone(ZoneF)],
-//         (x: -3, y: 21): [Zone(ZoneF)],
-//         (x: -3, y: 22): [Zone(ZoneF)],
-//         (x: -3, y: 26): [Zone(ZoneB)],
-//         (x: -3, y: 27): [Zone(ZoneB)],
-//         (x: -2, y: 19): [Zone(ZoneF)],
-//         (x: -2, y: 20): [Zone(ZoneF), Zone(ZoneG)],
-//         (x: -2, y: 21): [Zone(ZoneF)],
-//         (x: -2, y: 22): [Zone(ZoneF), Zone(ZoneC)],
-//         (x: -2, y: 23): [Empty, Zone(ZoneC)],
-//         (x: -2, y: 24): [Empty, Zone(ZoneC)],
-//         (x: -2, y: 25): [Empty, Zone(ZoneC)],
-//         (x: -2, y: 26): [Zone(ZoneB), Zone(ZoneC)],
-//         (x: -2, y: 27): [Zone(ZoneB), Zone(ZoneC)],
-//         (x: -1, y: 19): [Zone(ZoneF)],
-//         (x: -1, y: 20): [Zone(ZoneF)],
-//         (x: -1, y: 21): [Zone(ZoneF)],
-//         (x: -1, y: 22): [Zone(ZoneF), Zone(ZoneC)],
-//         (x: -1, y: 23): [Empty, Zone(ZoneC)],
-//         (x: -1, y: 24): [Empty, Zone(ZoneC)],
-//         (x: -1, y: 25): [Empty, Zone(ZoneC)],
-//         (x: -1, y: 26): [Empty, Zone(ZoneC)],
-//         (x: -1, y: 27): [Empty, Zone(ZoneC)],
-//     },)"#;
+    //     for (
+    //         from,
+    //         to,
+    //         desc,
+    //         ExampleSetting {
+    //             expected_partial_steps,
+    //         },
+    //     ) in pairs
+    //     {
+    //         println!("{desc}: from {from} to {to}");
 
-//     #[test]
-//     fn it_finds_path_between_interesting_square_pairs() {
-//         #[derive(Default)]
-//         struct ExampleSetting {
-//             expected_partial_steps: Option<usize>,
-//         }
+    //         let mut partial_from = *from;
+    //         let mut jumps = vec![];
+    //         while partial_from != *to {
+    //             search_for_partial_path(
+    //                 &tilemap,
+    //                 1,
+    //                 *from,
+    //                 *to,
+    //                 &mut partial_from,
+    //             );
 
-//         let pairs = &[
-//             (
-//                 sq(-7, 15),
-//                 sq(-9, 24),
-//                 "Takes a lot of steps during testing",
-//                 ExampleSetting {
-//                     expected_partial_steps: Some(6),
-//                 },
-//             ),
-//             (
-//                 sq(-5, 15),
-//                 sq(-10, 16),
-//                 "Values at the edge of the map",
-//                 default(),
-//             ),
-//             (
-//                 sq(-8, 21),  // nowhere
-//                 sq(-10, 16), // ZoneJ
-//                 "Taking lots of steps during testing",
-//                 ExampleSetting {
-//                     expected_partial_steps: Some(4),
-//                     ..default()
-//                 },
-//             ),
-//             (sq(-2, 19), sq(-2, 20), "Going from F to (F, G)", default()),
-//             (sq(-10, 25), sq(-9, 25), "Going from A to (A, D)", default()),
-//             (
-//                 sq(-9, 25),
-//                 sq(-8, 25),
-//                 "Going from (A, D) to (A, D, E)",
-//                 default(),
-//             ),
-//             (
-//                 sq(-9, 25),
-//                 sq(-2, 20),
-//                 "Going from (A, D) to (F, G)",
-//                 ExampleSetting {
-//                     expected_partial_steps: Some(4),
-//                     ..default()
-//                 },
-//             ),
-//             (
-//                 sq(-2, 26),
-//                 sq(-2, 22),
-//                 "Going from (B, C) to (C, F)",
-//                 default(),
-//             ),
-//             (
-//                 sq(-10, 19),
-//                 sq(-8, 17),
-//                 "Going from H to (I, J, K)",
-//                 default(),
-//             ),
-//             (sq(-10, 25), sq(-5, 26), "Going from A to B", default()),
-//         ];
+    //             jumps.push(partial_from);
+    //         }
 
-//         let tilemap: TileMap<DevMapTestScene> =
-//             ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+    //         if let Some(expected_partial_steps) = expected_partial_steps {
+    //             assert_eq!(
+    //                 *expected_partial_steps,
+    //                 jumps.len(),
+    //                 "Each partial step: {jumps:?}"
+    //             );
+    //         }
+    //     }
+    // }
 
-//         for (
-//             from,
-//             to,
-//             desc,
-//             ExampleSetting {
-//                 expected_partial_steps,
-//             },
-//         ) in pairs
-//         {
-//             println!("{desc}: from {from} to {to}");
+    // #[test]
+    // fn it_finds_path_from_each_square_to_every_other() {
+    //     let tilemap: TileMap<DevMapTestScene> =
+    //         ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
-//             let mut partial_from = *from;
-//             let mut jumps = vec![];
-//             while partial_from != *to {
-//                 search_for_partial_path(
-//                     &tilemap,
-//                     1,
-//                     *from,
-//                     *to,
-//                     &mut partial_from,
-//                 );
+    //     let all_squares =
+    //         || bevy_grid_squared::shapes::rectangle(DevMapTestScene::bounds());
 
-//                 jumps.push(partial_from);
-//             }
+    //     for to in all_squares() {
+    //         println!("Finding path from all squares to {to}");
 
-//             if let Some(expected_partial_steps) = expected_partial_steps {
-//                 assert_eq!(
-//                     *expected_partial_steps,
-//                     jumps.len(),
-//                     "Each partial step: {jumps:?}"
-//                 );
-//             }
-//         }
-//     }
+    //         for from in all_squares() {
+    //             let mut partial_from = from;
+    //             const MAX_PARTIAL_STEPS: usize = 7;
 
-//     #[test]
-//     fn it_finds_path_from_each_square_to_every_other() {
-//         let tilemap: TileMap<DevMapTestScene> =
-//             ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+    //             let found = search_for_partial_path(
+    //                 &tilemap,
+    //                 MAX_PARTIAL_STEPS,
+    //                 from,
+    //                 to,
+    //                 &mut partial_from,
+    //             );
 
-//         let all_squares =
-//             || bevy_grid_squared::shapes::rectangle(DevMapTestScene::bounds());
+    //             assert!(
+    //                 found,
+    //                 "Finding path from {from} to {to} took more \
+    //                 than {MAX_PARTIAL_STEPS} partial steps"
+    //             );
+    //         }
+    //     }
+    // }
 
-//         for to in all_squares() {
-//             println!("Finding path from all squares to {to}");
+    // fn search_for_partial_path(
+    //     tilemap: &TileMap<DevMapTestScene>,
+    //     max_partial_steps: usize,
+    //     from: Square,
+    //     to: Square,
+    //     partial_from: &mut Square,
+    // ) -> bool {
+    //     for _ in 0..max_partial_steps {
+    //         let path = tilemap.find_partial_path(
+    //             Entity::PLACEHOLDER,
+    //             *partial_from,
+    //             to,
+    //         );
+    //         assert!(
+    //             path.is_some(),
+    //             "from {from} (partial {partial_from}) to {to}"
+    //         );
+    //         let ends_up_on = path.unwrap().last().copied();
+    //         if ends_up_on.is_none() {
+    //             assert_eq!(to, *partial_from);
+    //             return true;
+    //         }
 
-//             for from in all_squares() {
-//                 let mut partial_from = from;
-//                 const MAX_PARTIAL_STEPS: usize = 7;
+    //         *partial_from = ends_up_on.unwrap();
+    //     }
 
-//                 let found = search_for_partial_path(
-//                     &tilemap,
-//                     MAX_PARTIAL_STEPS,
-//                     from,
-//                     to,
-//                     &mut partial_from,
-//                 );
-
-//                 assert!(
-//                     found,
-//                     "Finding path from {from} to {to} took more \
-//                     than {MAX_PARTIAL_STEPS} partial steps"
-//                 );
-//             }
-//         }
-//     }
-
-//     fn search_for_partial_path(
-//         tilemap: &TileMap<DevMapTestScene>,
-//         max_partial_steps: usize,
-//         from: Square,
-//         to: Square,
-//         partial_from: &mut Square,
-//     ) -> bool {
-//         for _ in 0..max_partial_steps {
-//             let path = tilemap.find_partial_path(
-//                 Entity::PLACEHOLDER,
-//                 *partial_from,
-//                 to,
-//             );
-//             assert!(
-//                 path.is_some(),
-//                 "from {from} (partial {partial_from}) to {to}"
-//             );
-//             let ends_up_on = path.unwrap().last().copied();
-//             if ends_up_on.is_none() {
-//                 assert_eq!(to, *partial_from);
-//                 return true;
-//             }
-
-//             *partial_from = ends_up_on.unwrap();
-//         }
-
-//         false
-//     }
-// }
+    //     false
+    // }
+}
