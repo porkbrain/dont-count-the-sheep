@@ -275,13 +275,23 @@ impl ZoneTileKindGraph {
         g.add_stmt(attr!("nodesep", 0.5).into());
         g.add_stmt(attr!("ranksep", 1.0).into());
 
+        fn dotgraph_node_name(kind: TileKind) -> String {
+            match kind {
+                TileKind::Actor(_)
+                | TileKind::Trail
+                | TileKind::Empty
+                | TileKind::Wall => unreachable!("Tile {kind:?} is not a zone"),
+                TileKind::Zone(zone) => zone.to_string().to_lowercase(),
+            }
+        }
+
         // map tile kinds to nodes
         let nodes: BTreeMap<TileKind, _> = TileKind::zones_iter()
             .filter(|kind| {
                 // we only care about zones that are present in this map
                 self.zone_sizes.get(kind).copied().unwrap_or_default() > 0
             })
-            .map(|kind| (kind, node!({ format!("{kind:?}").to_lowercase() })))
+            .map(|kind| (kind, node!({ dotgraph_node_name(kind) })))
             .collect();
         // add nodes straight away - some might not be in any relationship, and
         // we want them in the graph
@@ -300,9 +310,10 @@ impl ZoneTileKindGraph {
                 if own_supersets.is_none() {
                     Some((
                         *superset,
-                        subgraph!(id!(
-                            format!("cluster_{superset:?}").to_lowercase()
-                        )),
+                        subgraph!(id!(format!(
+                            "cluster_{}",
+                            dotgraph_node_name(*superset)
+                        ))),
                     ))
                 } else {
                     None
