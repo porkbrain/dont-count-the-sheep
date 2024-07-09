@@ -18,7 +18,7 @@ use super::{
     build_pathfinding_graph::{GraphExt, ZoneTileKindGraph},
     TileKind, TileMap, LAYOUT,
 };
-use crate::TopDownScene;
+use crate::{top_down::layout::TileKindMeta, TopDownScene};
 
 #[derive(Component)]
 pub(crate) struct SquareSprite(Square);
@@ -356,15 +356,30 @@ fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
         !tiles.is_empty()
     });
 
+    let g = ZoneTileKindGraph::compute_from(&TileMap::<T> {
+        squares: toolbar.copy_of_map.clone(),
+        zones: default(), // this field is being computed, we don't need it
+        _phantom: default(),
+    });
+    // metadata for pathfinding
+    let zones = g.calculate_zone_tile_metadata();
+
     // equivalent to tile map, but sorted so that we can serialize it
     // and the output is deterministic
     //
     // this struct MUST serialize to a compatible ron output as TileMap
     #[derive(Serialize)]
     struct SortedTileMap {
+        zones: SortedTileKindMetas,
         squares: BTreeMap<Square, SmallVec<[TileKind; 3]>>,
     }
+    #[derive(Serialize)]
+    struct SortedTileKindMetas {
+        inner: BTreeMap<TileKind, TileKindMeta>,
+    }
+
     let tilemap_but_sorted = SortedTileMap {
+        zones: SortedTileKindMetas { inner: zones },
         squares: toolbar.copy_of_map.clone().into_iter().collect(),
     };
 
@@ -383,25 +398,11 @@ fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
     )
     .unwrap();
 
-    let g = ZoneTileKindGraph::compute_from(&TileMap::<T> {
-        squares: toolbar.copy_of_map.clone(),
-        zones: default(), // TODO
-        _phantom: default(),
-    });
-
-    let scene_path =
-        go_back_in_dir_tree_until_path_found(format!("scenes/{}", T::name()));
-
-    let zone_tile_impl_rs = g.generate_zone_tile_impl_rs();
-    fs::write(
-        format!("{scene_path}/src/autogen/zone_tile_impl.rs"),
-        zone_tile_impl_rs,
-    )
-    .unwrap();
-
     let dot_g = g.as_dotgraph(T::name());
     info!("Graphviz dot graph: \n{}", dot_g.as_dot());
 
+    let scene_path =
+        go_back_in_dir_tree_until_path_found(format!("scenes/{}", T::name()));
     match dot_g.into_svg() {
         Ok(svg) => {
             fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg)
