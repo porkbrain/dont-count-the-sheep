@@ -1,4 +1,4 @@
-[gd_scene load_steps=198 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=208 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://5dhtpbjd5ool" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://kkt2uh6il68y" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -99,6 +99,8 @@
 [ext_resource type="Texture2D" uid="uid://dkdeafwvf6f5h" path="res://assets/downtown/watterfall_atlas.png" id="103_uywo5"]
 [ext_resource type="Texture2D" uid="uid://60ugx27a137v" path="res://assets/downtown/wall_stone_fence_vertical.png" id="103_vkery"]
 [ext_resource type="Texture2D" uid="uid://bjgm5fviny1y5" path="res://assets/environment/rock_atlas.png" id="105_ebl5n"]
+[ext_resource type="Texture2D" uid="uid://pwifle8ahh0t" path="res://assets/environment/sand_castle_atlas.png" id="105_y3ny0"]
+[ext_resource type="Texture2D" uid="uid://np0excjbnmpb" path="res://assets/environment/wave_atlas.png" id="106_k1x1h"]
 [ext_resource type="Texture2D" uid="uid://dkfxoywhhxmth" path="res://assets/environment/rock_atlas2.png" id="106_p6rmm"]
 [ext_resource type="Texture2D" uid="uid://dfpdrfyab8lnf" path="res://assets/environment/stain1.png" id="107_6vnka"]
 [ext_resource type="Texture2D" uid="uid://dlfp1v8h2fqb6" path="res://assets/downtown/building_abandoned.png" id="109_bu4df"]
@@ -122,6 +124,7 @@
 [ext_resource type="Texture2D" uid="uid://b3cvi5c0kohk7" path="res://assets/food/food_cointainer.png" id="117_swtnr"]
 [ext_resource type="Texture2D" uid="uid://flmsi8faj5jk" path="res://assets/downtown/electric_antenna2.png" id="119_j4h0q"]
 [ext_resource type="Texture2D" uid="uid://1r1hvvyh00iu" path="res://assets/downtown/hanging_plants3.png" id="121_nkue0"]
+[ext_resource type="Texture2D" uid="uid://d3lmwm3dvtbtv" path="res://assets/environment/flipflops.png" id="125_hos4p"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("4_fu7bc")
@@ -366,6 +369,57 @@ animations = [{
 "loop": true,
 "name": &"default",
 "speed": 2.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wnvun"]
+atlas = ExtResource("105_y3ny0")
+region = Rect2(0, 0, 28, 36)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_miq6o"]
+atlas = ExtResource("105_y3ny0")
+region = Rect2(28, 0, 28, 36)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lveak"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wnvun")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_miq6o")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k288e"]
+atlas = ExtResource("106_k1x1h")
+region = Rect2(0, 0, 131, 45)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_h0j3x"]
+atlas = ExtResource("106_k1x1h")
+region = Rect2(131, 0, 131, 45)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_58k3m"]
+atlas = ExtResource("106_k1x1h")
+region = Rect2(262, 0, 131, 45)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_0721s"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_k288e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_h0j3x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_58k3m")
+}],
+"loop": true,
+"name": &"default",
+"speed": 3.0
 }]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8vkgk"]
@@ -5647,6 +5701,24 @@ texture = ExtResource("94_soxyt")
 z_index = -3
 position = Vector2(233, 1408)
 texture = ExtResource("96_h5ain")
+
+[node name="sandcastle" type="AnimatedSprite2D" parent="ShoreRoot/BeachFront"]
+position = Vector2(-790, -197)
+sprite_frames = SubResource("SpriteFrames_lveak")
+autoplay = "default"
+frame_progress = 0.988922
+
+[node name="wave" type="AnimatedSprite2D" parent="ShoreRoot/BeachFront"]
+position = Vector2(84, -135)
+sprite_frames = SubResource("SpriteFrames_0721s")
+autoplay = "default"
+frame_progress = 0.999287
+
+[node name="wave2" type="AnimatedSprite2D" parent="ShoreRoot/BeachFront"]
+position = Vector2(206, -152)
+sprite_frames = SubResource("SpriteFrames_0721s")
+autoplay = "default"
+frame_progress = 0.29839
 
 [node name="Manhole" type="Sprite2D" parent="."]
 z_index = -1
@@ -14026,3 +14098,7 @@ texture = ExtResource("114_6se48")
 
 [node name="YSort" type="Node2D" parent="ElectricPole8"]
 position = Vector2(1, 65)
+
+[node name="Flipflops" type="Sprite2D" parent="."]
+position = Vector2(-241, 1269)
+texture = ExtResource("125_hos4p")

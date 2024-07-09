@@ -18,13 +18,12 @@ Self::Fridges => Some(ZoneGroup(1)),
 } #[inline] fn zone_size(&self) -> Option<usize>
 {
     #[allow(clippy::match_single_binding)] match self
-    { Self::ExitZone => Some(153),
-Self::GoodWater => Some(40),
-Self::FruitsAndVeggies => Some(1139),
-Self::Aisle1 => Some(255),
+    { Self::GoodWater => Some(40),
+Self::FruitsAndVeggies => Some(1092),
+Self::Aisle1 => Some(234),
 Self::Aisle2 => Some(471),
-Self::Aisle3 => Some(398),
-Self::Aisle4 => Some(289),
+Self::Aisle3 => Some(394),
+Self::Aisle4 => Some(257),
 Self::Fridges => Some(204),
  #[allow(unreachable_patterns)] _ => None, }
 } type Successors = Self; #[inline] fn zone_successors(&self) -> Option<&'static

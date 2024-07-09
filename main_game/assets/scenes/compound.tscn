@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://cfuxf3w4hro7y"]
+[gd_scene load_steps=31 format=3 uid="uid://cfuxf3w4hro7y"]
 
 [ext_resource type="Texture2D" uid="uid://58ji12gkirbl" path="res://assets/compound/compound_bg.png" id="1_ubi6a"]
 [ext_resource type="Texture2D" uid="uid://cfg13e2oo8f38" path="res://assets/downtown/fence_stone.png" id="2_0w2gu"]
@@ -29,6 +29,7 @@
 [ext_resource type="Texture2D" uid="uid://oroa0xkc4ok0" path="res://assets/downtown/hanging_plants2.png" id="27_sx323"]
 [ext_resource type="Texture2D" uid="uid://bxw8mq2ynsea7" path="res://assets/compound/greenhouse.png" id="28_aojpr"]
 [ext_resource type="Texture2D" uid="uid://c2qvs82sxkb4t" path="res://assets/compound/greenhouse_white.png" id="29_2ov1p"]
+[ext_resource type="Texture2D" uid="uid://boqfud81ek7xo" path="res://assets/compound/clothing_line.png" id="30_nuyol"]
 
 [node name="Compound" type="Node2D"]
 
@@ -313,7 +314,7 @@ texture = ExtResource("3_slirt")
 position = Vector2(5, 73)
 
 [node name="Jehlicnan" type="Sprite2D" parent="AroundBarn"]
-position = Vector2(79, 223)
+position = Vector2(79, 225)
 texture = ExtResource("4_codlm")
 
 [node name="YSort" type="Node2D" parent="AroundBarn/Jehlicnan"]
@@ -486,3 +487,7 @@ texture = ExtResource("29_2ov1p")
 
 [node name="YSort" type="Node2D" parent="GreenhouseWhite"]
 position = Vector2(0, 89)
+
+[node name="ClothingLine" type="Sprite2D" parent="."]
+position = Vector2(-25, 273)
+texture = ExtResource("30_nuyol")

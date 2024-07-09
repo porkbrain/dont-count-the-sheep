@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://dajava8pv8ysd"]
+
+[ext_resource type="Texture2D" uid="uid://bo4wq2i0bkr8c" path="res://assets/compound/barn_interior.png" id="1_2glsl"]
+[ext_resource type="Texture2D" uid="uid://dhbfxi5fhc2uf" path="res://assets/residential/indoors/wall_fish2.png" id="2_ukrpc"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="BarnInterior" type="Sprite2D" parent="."]
+position = Vector2(-23, 14)
+texture = ExtResource("1_2glsl")
+
+[node name="WallFish3" type="Sprite2D" parent="."]
+position = Vector2(74, -60)
+texture = ExtResource("2_ukrpc")
