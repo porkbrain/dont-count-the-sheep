@@ -23,7 +23,7 @@ use serde::{Deserialize, Serialize};
 
 use self::npc::BehaviorTree;
 use crate::top_down::{
-    layout::{ysort, Tile, TileIndex, TopDownScene, LAYOUT},
+    layout::{ysort, TileIndex, TopDownScene, LAYOUT},
     npc::NpcInTheMap,
     InspectLabelCategory, Player, TileKind, TileMap,
 };

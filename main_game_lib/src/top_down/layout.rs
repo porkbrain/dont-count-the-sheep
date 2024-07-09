@@ -16,11 +16,11 @@ use bevy::{
     log::{trace, warn},
     math::{vec2, Vec2},
     prelude::ReflectDefault,
-    reflect::{FromReflect, GetTypeRegistration, Reflect, TypePath},
+    reflect::{Reflect, TypePath},
     utils::hashbrown::HashMap,
 };
 use bevy_grid_squared::{Square, SquareLayout};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 use strum::IntoEnumIterator;
 
@@ -42,45 +42,6 @@ pub type TileIndex = (Square, usize);
 pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
     /// Alphabetical only name of the map.
     fn name() -> &'static str;
-}
-
-/// Defines tile behavior.
-pub trait Tile:
-    TypePath
-    + GetTypeRegistration
-    + Clone
-    + Copy
-    + Default
-    + DeserializeOwned
-    + Eq
-    + FromReflect
-    + PartialEq
-    + Serialize
-    + std::fmt::Debug
-    + std::hash::Hash
-{
-    /// Whether the tile can be stepped on by an actor with given entity.
-    fn is_walkable(&self, by: Entity) -> bool;
-
-    /// Whether a tile represents a zone.
-    /// A zone is a group of tiles that are connected to each other and entities
-    /// enter and leave them.
-    /// This is used to emit events about entering/leaving zones.
-    fn is_zone(&self) -> bool;
-
-    /// Returns an iterator over all the zone tiles.
-    /// This is used to automatically construct graph of zone relationships
-    /// for pathfinding.
-    fn zones_iter() -> impl Iterator<Item = Self>;
-
-    /// Returns [`None`] if not walkable, otherwise the cost of walking to the
-    /// tile.
-    /// This is useful for pathfinding.
-    /// The higher the cost, the less likely the character will want to walk
-    /// over it.
-    fn walk_cost(&self, by: Entity) -> Option<TileWalkCost> {
-        self.is_walkable(by).then_some(TileWalkCost::Normal)
-    }
 }
 
 /// Holds the tiles in a hash map.
@@ -211,9 +172,10 @@ pub fn ysort(Vec2 { y, .. }: Vec2) -> f32 {
     ((max - y) / size).clamp(-0.1, 1.1)
 }
 
-impl Tile for TileKind {
+impl TileKind {
     #[inline]
-    fn is_walkable(&self, by: Entity) -> bool {
+    /// Whether the tile can be stepped on by an actor with given entity.
+    pub fn is_walkable(&self, by: Entity) -> bool {
         match self {
             Self::Empty => true,
             Self::Wall => false,
@@ -224,8 +186,13 @@ impl Tile for TileKind {
         }
     }
 
+    /// Returns [`None`] if not walkable, otherwise the cost of walking to the
+    /// tile.
+    /// This is useful for pathfinding.
+    /// The higher the cost, the less likely the character will want to walk
+    /// over it.
     #[inline]
-    fn walk_cost(&self, by: Entity) -> Option<TileWalkCost> {
+    pub fn walk_cost(&self, by: Entity) -> Option<TileWalkCost> {
         match self {
             Self::Wall => None,
             Self::Empty => Some(TileWalkCost::Normal),
@@ -236,16 +203,20 @@ impl Tile for TileKind {
         }
     }
 
+    /// Whether a tile represents a zone.
+    /// A zone is a group of tiles that are connected to each other and entities
+    /// enter and leave them.
+    /// This is used to emit events about entering/leaving zones.
     #[inline]
-    fn is_zone(&self) -> bool {
-        match self {
-            Self::Zone(_) => true,
-            _ => false,
-        }
+    pub fn is_zone(&self) -> bool {
+        matches!(self, Self::Zone(_))
     }
 
+    /// Returns an iterator over all the zone tiles.
+    /// This is used to automatically construct graph of zone relationships
+    /// for pathfinding.
     #[inline]
-    fn zones_iter() -> impl Iterator<Item = Self> {
+    pub fn zones_iter() -> impl Iterator<Item = Self> {
         ZoneTileKind::iter().map(Self::Zone)
     }
 }
@@ -797,22 +768,6 @@ impl From<&ZoneTileKind> for TileKind {
     }
 }
 
-/// Allow implementation for unit type for convenience.
-/// Maps can use this if they have no special tiles.
-impl Tile for () {
-    fn is_walkable(&self, _: Entity) -> bool {
-        true
-    }
-
-    fn is_zone(&self) -> bool {
-        false
-    }
-
-    fn zones_iter() -> impl Iterator<Item = Self> {
-        std::iter::empty()
-    }
-}
-
 impl TileKindMetas {
     /// Returns the zone group of the tile if it's a zone.
     /// This is useful for pathfinding.
@@ -865,37 +820,6 @@ mod tests {
 
     #[derive(Default, Reflect)]
     struct TestScene;
-
-    #[derive(
-        Default,
-        Reflect,
-        Hash,
-        PartialEq,
-        Eq,
-        Debug,
-        Serialize,
-        Deserialize,
-        Clone,
-        Copy,
-    )]
-    enum TestTileKind {
-        #[default]
-        Empty,
-    }
-
-    impl Tile for TestTileKind {
-        fn is_walkable(&self, _: Entity) -> bool {
-            true
-        }
-
-        fn is_zone(&self) -> bool {
-            false
-        }
-
-        fn zones_iter() -> impl Iterator<Item = Self> {
-            std::iter::empty()
-        }
-    }
 
     impl TopDownScene for TestScene {
         fn name() -> &'static str {
