@@ -41,7 +41,7 @@ pub(super) fn system(
                         is_player: true, ..
                     },
                 zone:
-                    TileKind::Local(
+                    TileKind::Zone(
                         HallwayZone
                         | BottomLeftApartmentZone
                         | BottomRightApartmentZone,
@@ -55,7 +55,7 @@ pub(super) fn system(
                         is_player: true, ..
                     },
                 zone:
-                    TileKind::Local(
+                    TileKind::Zone(
                         HallwayZone
                         | BottomLeftApartmentZone
                         | BottomRightApartmentZone,
@@ -71,7 +71,7 @@ pub(super) fn system(
                         ..
                     },
                 zone:
-                    TileKind::Local(
+                    TileKind::Zone(
                         HallwayZone
                         | BottomLeftApartmentZone
                         | BottomRightApartmentZone,
@@ -93,7 +93,7 @@ pub(super) fn system(
                         ..
                     },
                 zone:
-                    TileKind::Local(
+                    TileKind::Zone(
                         HallwayZone
                         | BottomLeftApartmentZone
                         | BottomRightApartmentZone,

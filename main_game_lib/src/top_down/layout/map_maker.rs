@@ -345,7 +345,7 @@ fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
                 TileKind::Wall | TileKind::Empty | TileKind::Trail => {}
                 // fine for now but we might want to skip some of these in the
                 // future
-                TileKind::Local(_) => {}
+                TileKind::Zone(_) => {}
             }
         }
 
@@ -420,7 +420,7 @@ impl TileKind {
             Self::Wall => Color::BLACK.with_alpha(0.8),
             Self::Trail => Color::WHITE.with_alpha(0.25),
             Self::Actor { .. } => GOLD.with_alpha(0.25).into(),
-            Self::Local(_) => RED.with_alpha(0.25).into(),
+            Self::Zone(_) => RED.with_alpha(0.25).into(),
         }
     }
 
@@ -431,7 +431,7 @@ impl TileKind {
             Self::Trail => Color::WHITE.with_alpha(0.5),
             // no point as it's not selectable
             Self::Actor { .. } => self.color(),
-            Self::Local(_) => GREEN.with_alpha(0.25).into(),
+            Self::Zone(_) => GREEN.with_alpha(0.25).into(),
         }
     }
 }

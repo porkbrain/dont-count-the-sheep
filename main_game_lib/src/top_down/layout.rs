@@ -176,7 +176,7 @@ pub enum TileKind {
     /// storing entity in an enum is more expensive than before.
     Actor(Entity),
     /// Specific for a given map.
-    Local(ZoneTileKind),
+    Zone(ZoneTileKind),
 }
 
 /// Useful for pathfinding to prefer some tiles over others.
@@ -226,7 +226,7 @@ impl Tile for TileKind {
             Self::Trail => true,
             Self::Actor(entity) if *entity == by => true,
             Self::Actor(_) => false, // don't walk over others
-            Self::Local(l) => l.is_walkable(by),
+            Self::Zone(l) => l.is_walkable(by),
         }
     }
 
@@ -238,14 +238,14 @@ impl Tile for TileKind {
             Self::Trail => Some(TileWalkCost::Preferred),
             Self::Actor(entity) if *entity == by => Some(TileWalkCost::Normal),
             Self::Actor(_) => None, // don't walk over others
-            Self::Local(l) => l.walk_cost(by),
+            Self::Zone(l) => l.walk_cost(by),
         }
     }
 
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::Local(l) => l.is_zone(),
+            Self::Zone(l) => l.is_zone(),
             _ => false,
         }
     }
@@ -780,26 +780,15 @@ impl<T: TopDownScene> TileMap<T> {
     }
 }
 
-impl TileKind {
-    /// If the tile is local, returns it.
-    /// TODO
-    pub fn into_local(self) -> Option<ZoneTileKind> {
-        match self {
-            Self::Local(l) => Some(l),
-            _ => None,
-        }
-    }
-}
-
 impl From<ZoneTileKind> for TileKind {
     fn from(l: ZoneTileKind) -> Self {
-        Self::Local(l)
+        Self::Zone(l)
     }
 }
 
 impl From<&ZoneTileKind> for TileKind {
     fn from(l: &ZoneTileKind) -> Self {
-        Self::Local(*l)
+        Self::Zone(*l)
     }
 }
 
@@ -1162,77 +1151,77 @@ impl TileKindMetas {
 //     /// * `x<->y` x and y overlap
 //     /// * `x<-y` x is subset of y
 //     const DEV_MAP_TEST_RON: &str = r#"(squares: {
-//         (x: -10, y: 16): [Empty, Local(ZoneJ)],
-//         (x: -10, y: 17): [Empty, Local(ZoneJ)],
-//         (x: -10, y: 19): [Local(ZoneH)],
-//         (x: -10, y: 20): [Local(ZoneH)],
-//         (x: -10, y: 23): [Local(ZoneA)],
-//         (x: -10, y: 24): [Local(ZoneA)],
-//         (x: -10, y: 25): [Local(ZoneA)],
-//         (x: -10, y: 26): [Local(ZoneA)],
-//         (x: -10, y: 27): [Local(ZoneA)],
-//         (x: -9, y: 16): [Empty, Local(ZoneJ), Local(ZoneK)],
-//         (x: -9, y: 17): [Empty, Local(ZoneJ), Local(ZoneK)],
-//         (x: -9, y: 19): [Local(ZoneH)],
-//         (x: -9, y: 20): [Local(ZoneH)],
-//         (x: -9, y: 23): [Local(ZoneA)],
-//         (x: -9, y: 24): [Local(ZoneA), Local(ZoneD)],
-//         (x: -9, y: 25): [Local(ZoneA), Local(ZoneD)],
-//         (x: -9, y: 26): [Local(ZoneA), Local(ZoneD)],
-//         (x: -9, y: 27): [Local(ZoneA)],
-//         (x: -8, y: 16): [Local(ZoneI), Local(ZoneJ), Local(ZoneK)],
-//         (x: -8, y: 17): [Local(ZoneI), Local(ZoneJ), Local(ZoneK)],
-//         (x: -8, y: 18): [Local(ZoneI)],
-//         (x: -8, y: 19): [Local(ZoneI)],
-//         (x: -8, y: 20): [Local(ZoneI)],
-//         (x: -8, y: 23): [Local(ZoneA)],
-//         (x: -8, y: 24): [Local(ZoneA), Local(ZoneD)],
-//         (x: -8, y: 25): [Local(ZoneA), Local(ZoneD), Local(ZoneE)],
-//         (x: -8, y: 26): [Local(ZoneA), Local(ZoneD)],
-//         (x: -8, y: 27): [Local(ZoneA)],
-//         (x: -7, y: 16): [Local(ZoneI), Local(ZoneJ)],
-//         (x: -7, y: 17): [Local(ZoneI), Local(ZoneJ)],
-//         (x: -7, y: 18): [Local(ZoneI)],
-//         (x: -7, y: 19): [Local(ZoneI)],
-//         (x: -7, y: 20): [Local(ZoneI)],
-//         (x: -7, y: 23): [Local(ZoneA)],
-//         (x: -7, y: 24): [Local(ZoneA), Local(ZoneD)],
-//         (x: -7, y: 25): [Local(ZoneA), Local(ZoneD)],
-//         (x: -7, y: 26): [Local(ZoneA), Local(ZoneD)],
-//         (x: -7, y: 27): [Local(ZoneA)],
-//         (x: -6, y: 23): [Local(ZoneA)],
-//         (x: -6, y: 24): [Local(ZoneA)],
-//         (x: -6, y: 25): [Local(ZoneA)],
-//         (x: -6, y: 26): [Local(ZoneA)],
-//         (x: -6, y: 27): [Local(ZoneA)],
-//         (x: -5, y: 26): [Local(ZoneB)],
-//         (x: -5, y: 27): [Local(ZoneB)],
-//         (x: -4, y: 26): [Local(ZoneB)],
-//         (x: -4, y: 27): [Local(ZoneB)],
-//         (x: -3, y: 19): [Local(ZoneF)],
-//         (x: -3, y: 20): [Local(ZoneF)],
-//         (x: -3, y: 21): [Local(ZoneF)],
-//         (x: -3, y: 22): [Local(ZoneF)],
-//         (x: -3, y: 26): [Local(ZoneB)],
-//         (x: -3, y: 27): [Local(ZoneB)],
-//         (x: -2, y: 19): [Local(ZoneF)],
-//         (x: -2, y: 20): [Local(ZoneF), Local(ZoneG)],
-//         (x: -2, y: 21): [Local(ZoneF)],
-//         (x: -2, y: 22): [Local(ZoneF), Local(ZoneC)],
-//         (x: -2, y: 23): [Empty, Local(ZoneC)],
-//         (x: -2, y: 24): [Empty, Local(ZoneC)],
-//         (x: -2, y: 25): [Empty, Local(ZoneC)],
-//         (x: -2, y: 26): [Local(ZoneB), Local(ZoneC)],
-//         (x: -2, y: 27): [Local(ZoneB), Local(ZoneC)],
-//         (x: -1, y: 19): [Local(ZoneF)],
-//         (x: -1, y: 20): [Local(ZoneF)],
-//         (x: -1, y: 21): [Local(ZoneF)],
-//         (x: -1, y: 22): [Local(ZoneF), Local(ZoneC)],
-//         (x: -1, y: 23): [Empty, Local(ZoneC)],
-//         (x: -1, y: 24): [Empty, Local(ZoneC)],
-//         (x: -1, y: 25): [Empty, Local(ZoneC)],
-//         (x: -1, y: 26): [Empty, Local(ZoneC)],
-//         (x: -1, y: 27): [Empty, Local(ZoneC)],
+//         (x: -10, y: 16): [Empty, Zone(ZoneJ)],
+//         (x: -10, y: 17): [Empty, Zone(ZoneJ)],
+//         (x: -10, y: 19): [Zone(ZoneH)],
+//         (x: -10, y: 20): [Zone(ZoneH)],
+//         (x: -10, y: 23): [Zone(ZoneA)],
+//         (x: -10, y: 24): [Zone(ZoneA)],
+//         (x: -10, y: 25): [Zone(ZoneA)],
+//         (x: -10, y: 26): [Zone(ZoneA)],
+//         (x: -10, y: 27): [Zone(ZoneA)],
+//         (x: -9, y: 16): [Empty, Zone(ZoneJ), Zone(ZoneK)],
+//         (x: -9, y: 17): [Empty, Zone(ZoneJ), Zone(ZoneK)],
+//         (x: -9, y: 19): [Zone(ZoneH)],
+//         (x: -9, y: 20): [Zone(ZoneH)],
+//         (x: -9, y: 23): [Zone(ZoneA)],
+//         (x: -9, y: 24): [Zone(ZoneA), Zone(ZoneD)],
+//         (x: -9, y: 25): [Zone(ZoneA), Zone(ZoneD)],
+//         (x: -9, y: 26): [Zone(ZoneA), Zone(ZoneD)],
+//         (x: -9, y: 27): [Zone(ZoneA)],
+//         (x: -8, y: 16): [Zone(ZoneI), Zone(ZoneJ), Zone(ZoneK)],
+//         (x: -8, y: 17): [Zone(ZoneI), Zone(ZoneJ), Zone(ZoneK)],
+//         (x: -8, y: 18): [Zone(ZoneI)],
+//         (x: -8, y: 19): [Zone(ZoneI)],
+//         (x: -8, y: 20): [Zone(ZoneI)],
+//         (x: -8, y: 23): [Zone(ZoneA)],
+//         (x: -8, y: 24): [Zone(ZoneA), Zone(ZoneD)],
+//         (x: -8, y: 25): [Zone(ZoneA), Zone(ZoneD), Zone(ZoneE)],
+//         (x: -8, y: 26): [Zone(ZoneA), Zone(ZoneD)],
+//         (x: -8, y: 27): [Zone(ZoneA)],
+//         (x: -7, y: 16): [Zone(ZoneI), Zone(ZoneJ)],
+//         (x: -7, y: 17): [Zone(ZoneI), Zone(ZoneJ)],
+//         (x: -7, y: 18): [Zone(ZoneI)],
+//         (x: -7, y: 19): [Zone(ZoneI)],
+//         (x: -7, y: 20): [Zone(ZoneI)],
+//         (x: -7, y: 23): [Zone(ZoneA)],
+//         (x: -7, y: 24): [Zone(ZoneA), Zone(ZoneD)],
+//         (x: -7, y: 25): [Zone(ZoneA), Zone(ZoneD)],
+//         (x: -7, y: 26): [Zone(ZoneA), Zone(ZoneD)],
+//         (x: -7, y: 27): [Zone(ZoneA)],
+//         (x: -6, y: 23): [Zone(ZoneA)],
+//         (x: -6, y: 24): [Zone(ZoneA)],
+//         (x: -6, y: 25): [Zone(ZoneA)],
+//         (x: -6, y: 26): [Zone(ZoneA)],
+//         (x: -6, y: 27): [Zone(ZoneA)],
+//         (x: -5, y: 26): [Zone(ZoneB)],
+//         (x: -5, y: 27): [Zone(ZoneB)],
+//         (x: -4, y: 26): [Zone(ZoneB)],
+//         (x: -4, y: 27): [Zone(ZoneB)],
+//         (x: -3, y: 19): [Zone(ZoneF)],
+//         (x: -3, y: 20): [Zone(ZoneF)],
+//         (x: -3, y: 21): [Zone(ZoneF)],
+//         (x: -3, y: 22): [Zone(ZoneF)],
+//         (x: -3, y: 26): [Zone(ZoneB)],
+//         (x: -3, y: 27): [Zone(ZoneB)],
+//         (x: -2, y: 19): [Zone(ZoneF)],
+//         (x: -2, y: 20): [Zone(ZoneF), Zone(ZoneG)],
+//         (x: -2, y: 21): [Zone(ZoneF)],
+//         (x: -2, y: 22): [Zone(ZoneF), Zone(ZoneC)],
+//         (x: -2, y: 23): [Empty, Zone(ZoneC)],
+//         (x: -2, y: 24): [Empty, Zone(ZoneC)],
+//         (x: -2, y: 25): [Empty, Zone(ZoneC)],
+//         (x: -2, y: 26): [Zone(ZoneB), Zone(ZoneC)],
+//         (x: -2, y: 27): [Zone(ZoneB), Zone(ZoneC)],
+//         (x: -1, y: 19): [Zone(ZoneF)],
+//         (x: -1, y: 20): [Zone(ZoneF)],
+//         (x: -1, y: 21): [Zone(ZoneF)],
+//         (x: -1, y: 22): [Zone(ZoneF), Zone(ZoneC)],
+//         (x: -1, y: 23): [Empty, Zone(ZoneC)],
+//         (x: -1, y: 24): [Empty, Zone(ZoneC)],
+//         (x: -1, y: 25): [Empty, Zone(ZoneC)],
+//         (x: -1, y: 26): [Empty, Zone(ZoneC)],
+//         (x: -1, y: 27): [Empty, Zone(ZoneC)],
 //     },)"#;
 
 //     #[test]

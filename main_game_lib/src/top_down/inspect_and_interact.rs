@@ -129,7 +129,7 @@ pub(crate) struct InspectLabelText;
 #[derive(Component, Reflect)]
 pub(crate) struct InspectLabelBg;
 
-/// A helper resource that maps local tile kinds to entities that have
+/// A helper resource that maps zone tile kinds to entities that have
 /// [`InspectLabel`] component.
 ///
 /// When entities are mapped this way, they are assigned the
@@ -139,7 +139,7 @@ pub(crate) struct InspectLabelBg;
 /// See the wiki for more information.
 #[derive(Resource, Reflect, Default)]
 pub struct ZoneToInspectLabelEntity {
-    /// The key is the local tile kind, the value is some entity that has
+    /// The key is the zone tile kind, the value is some entity that has
     /// [`InspectLabel`] component.
     map: HashMap<TileKind, Entity>,
 }

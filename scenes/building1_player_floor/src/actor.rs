@@ -180,19 +180,19 @@ fn toggle_zone_hints(
     for event in events.read().filter(|event| event.is_player()) {
         match event {
             ActorMovementEvent::ZoneEntered { zone, .. } => match *zone {
-                TileKind::Local(MeditationZone) => {
+                TileKind::Zone(MeditationZone) => {
                     *meditating.single_mut() = Visibility::Visible;
                 }
-                TileKind::Local(BedZone) => {
+                TileKind::Zone(BedZone) => {
                     *sleeping.single_mut() = Visibility::Visible;
                 }
                 _ => {}
             },
             ActorMovementEvent::ZoneLeft { zone, .. } => match *zone {
-                TileKind::Local(MeditationZone) => {
+                TileKind::Zone(MeditationZone) => {
                     *meditating.single_mut() = Visibility::Hidden;
                 }
-                TileKind::Local(BedZone) => {
+                TileKind::Zone(BedZone) => {
                     *sleeping.single_mut() = Visibility::Hidden;
                 }
                 _ => {}

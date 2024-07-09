@@ -101,7 +101,7 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
 
 impl<'a> TscnSpawner for Spawner<'a> {
     type LocalActionKind = Building1Basement2Action;
-    type LocalZoneKind = ZoneTileKind;
+    type ZoneKind = ZoneTileKind;
 
     fn on_spawned(
         &mut self,
@@ -141,7 +141,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
     fn map_zone_to_inspect_label_entity(
         &mut self,
-        zone: Self::LocalZoneKind,
+        zone: Self::ZoneKind,
         entity: Entity,
     ) {
         self.zone_to_inspect_label_entity.insert(zone, entity);

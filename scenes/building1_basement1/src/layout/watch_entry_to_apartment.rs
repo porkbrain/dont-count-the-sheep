@@ -29,7 +29,7 @@ pub(super) fn system(
                     Who {
                         is_player: true, ..
                     },
-                zone: TileKind::Local(TheZone),
+                zone: TileKind::Zone(TheZone),
             } => {
                 trace!("Hiding apartment wall");
                 lerp_event.send(
@@ -46,7 +46,7 @@ pub(super) fn system(
                     Who {
                         is_player: true, ..
                     },
-                zone: TileKind::Local(TheZone),
+                zone: TileKind::Zone(TheZone),
             } => {
                 trace!("Showing apartment wall");
                 lerp_event.send(
