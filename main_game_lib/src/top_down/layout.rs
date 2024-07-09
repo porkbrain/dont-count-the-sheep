@@ -220,7 +220,7 @@ impl Tile for TileKind {
             Self::Trail => true,
             Self::Actor(entity) if *entity == by => true,
             Self::Actor(_) => false, // don't walk over others
-            Self::Zone(l) => l.is_walkable(by),
+            Self::Zone(_) => true,
         }
     }
 
@@ -232,14 +232,14 @@ impl Tile for TileKind {
             Self::Trail => Some(TileWalkCost::Preferred),
             Self::Actor(entity) if *entity == by => Some(TileWalkCost::Normal),
             Self::Actor(_) => None, // don't walk over others
-            Self::Zone(l) => l.walk_cost(by),
+            Self::Zone(_) => Some(TileWalkCost::Normal),
         }
     }
 
     #[inline]
     fn is_zone(&self) -> bool {
         match self {
-            Self::Zone(l) => l.is_zone(),
+            Self::Zone(_) => true,
             _ => false,
         }
     }
