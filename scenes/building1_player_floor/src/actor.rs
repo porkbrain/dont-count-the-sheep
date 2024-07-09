@@ -73,7 +73,7 @@ fn start_meditation_minigame(
 ) {
     if daybar.is_depleted() {
         if let Some(entity) = zone_to_inspect_label_entity
-            .get(ZoneTileKind::MeditationZone)
+            .get(ZoneTileKind::Meditation)
             .copied()
         {
             inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
@@ -175,24 +175,24 @@ fn toggle_zone_hints(
         (With<MeditatingHint>, Without<SleepingHint>),
     >,
 ) {
-    use ZoneTileKind::{BedZone, MeditationZone};
+    use ZoneTileKind::{Bed, Meditation};
 
     for event in events.read().filter(|event| event.is_player()) {
         match event {
             ActorMovementEvent::ZoneEntered { zone, .. } => match *zone {
-                TileKind::Zone(MeditationZone) => {
+                TileKind::Zone(Meditation) => {
                     *meditating.single_mut() = Visibility::Visible;
                 }
-                TileKind::Zone(BedZone) => {
+                TileKind::Zone(Bed) => {
                     *sleeping.single_mut() = Visibility::Visible;
                 }
                 _ => {}
             },
             ActorMovementEvent::ZoneLeft { zone, .. } => match *zone {
-                TileKind::Zone(MeditationZone) => {
+                TileKind::Zone(Meditation) => {
                     *meditating.single_mut() = Visibility::Hidden;
                 }
-                TileKind::Zone(BedZone) => {
+                TileKind::Zone(Bed) => {
                     *sleeping.single_mut() = Visibility::Hidden;
                 }
                 _ => {}

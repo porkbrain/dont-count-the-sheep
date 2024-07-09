@@ -91,7 +91,7 @@ frame_progress = 0.843261
 [node name="HallwayEntity" type="Node" parent="Elevator"]
 
 [node name="InspectLabel" type="Node" parent="Elevator"]
-metadata/zone = "ElevatorZone"
+metadata/zone = "Elevator"
 metadata/action = "EnterElevator"
 metadata/label = "Elevator"
 metadata/category = "Default"

@@ -42,9 +42,7 @@ pub(super) fn system(
                     },
                 zone:
                     TileKind::Zone(
-                        HallwayZone
-                        | BottomLeftApartmentZone
-                        | BottomRightApartmentZone,
+                        Hallway | BottomLeftApartment | BottomRightApartment,
                     ),
             } => {
                 on_player_entered_hallway(&mut lerp_event, &hallway_entities);
@@ -56,9 +54,7 @@ pub(super) fn system(
                     },
                 zone:
                     TileKind::Zone(
-                        HallwayZone
-                        | BottomLeftApartmentZone
-                        | BottomRightApartmentZone,
+                        Hallway | BottomLeftApartment | BottomRightApartment,
                     ),
             } => {
                 on_player_left_hallway(&mut lerp_event, &hallway_entities);
@@ -72,9 +68,7 @@ pub(super) fn system(
                     },
                 zone:
                     TileKind::Zone(
-                        HallwayZone
-                        | BottomLeftApartmentZone
-                        | BottomRightApartmentZone,
+                        Hallway | BottomLeftApartment | BottomRightApartment,
                     ),
             } => {
                 on_npc_entered_hallway(
@@ -94,9 +88,7 @@ pub(super) fn system(
                     },
                 zone:
                     TileKind::Zone(
-                        HallwayZone
-                        | BottomLeftApartmentZone
-                        | BottomRightApartmentZone,
+                        Hallway | BottomLeftApartment | BottomRightApartment,
                     ),
             } => {
                 on_npc_left_hallway(&mut cmd, &mut lerp_event, *entity);
@@ -146,9 +138,7 @@ fn on_npc_entered_hallway(
 
     let is_player_in_hallway = player
         .get_single_or_none()
-        .map(|player| {
-            tilemap.is_on(player.walking_from, ZoneTileKind::HallwayZone)
-        })
+        .map(|player| tilemap.is_on(player.walking_from, ZoneTileKind::Hallway))
         .unwrap_or(false);
 
     // if actor in the hallway but player is not, we need to change

@@ -209,8 +209,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
             }
             "DoorToTheUpperApartment" => {
                 let door =
-                    DoorBuilder::new(ZoneTileKind::UpperApartmentDoorZone)
-                        .build();
+                    DoorBuilder::new(ZoneTileKind::UpperApartmentDoor).build();
                 cmd.entity(who).insert(door);
             }
             _ => {}

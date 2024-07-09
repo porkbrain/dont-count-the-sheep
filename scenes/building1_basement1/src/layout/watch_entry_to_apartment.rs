@@ -11,7 +11,7 @@ const WALL_FADE_OUT_TRANSITION_DURATION: Duration = from_millis(500);
 const WALL_FADE_IN_TRANSITION_DURATION: Duration = from_millis(1500);
 
 /// Listens to events about entering the
-/// [`ZoneTileKind::UpperApartmentWallHiddenZone`].
+/// [`ZoneTileKind::UpperApartmentWallHidden`].
 ///
 /// When entered, the [`ApartmentWall`] entity is hidden.
 pub(super) fn system(
@@ -20,7 +20,7 @@ pub(super) fn system(
 
     wall: Query<Entity, With<ApartmentWall>>,
 ) {
-    use ZoneTileKind::UpperApartmentWallHiddenZone as TheZone;
+    use ZoneTileKind::UpperApartmentWallHidden as TheZone;
 
     for event in movement_events.read() {
         match event {

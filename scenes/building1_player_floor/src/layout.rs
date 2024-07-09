@@ -150,7 +150,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
         translation: Vec3,
     ) {
         use GlobalGameStateTransition::*;
-        use ZoneTileKind::*;
 
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
@@ -180,7 +179,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 }
             }
             "PlayerApartmentDoor" => {
-                let door = DoorBuilder::new(PlayerDoorZone)
+                let door = DoorBuilder::new(ZoneTileKind::PlayerDoor)
                     .add_open_criteria(DoorOpenCriteria::Character(
                         common_story::Character::Winnie,
                     ))
@@ -197,18 +196,22 @@ impl<'a> TscnSpawner for Spawner<'a> {
             }
             "BottomLeftApartmentDoor" => {
                 cmd.entity(who).insert(
-                    DoorBuilder::new(BottomLeftApartmentDoorZone).build(),
+                    DoorBuilder::new(ZoneTileKind::BottomLeftApartmentDoor)
+                        .build(),
                 );
             }
             "BottomLeftApartmentBathroomDoor" => {
                 cmd.entity(who).insert(
-                    DoorBuilder::new(BottomLeftApartmentBathroomDoorZone)
-                        .build(),
+                    DoorBuilder::new(
+                        ZoneTileKind::BottomLeftApartmentBathroomDoor,
+                    )
+                    .build(),
                 );
             }
             "BottomRightApartmentDoor" => {
                 cmd.entity(who).insert(
-                    DoorBuilder::new(BottomRightApartmentDoorZone).build(),
+                    DoorBuilder::new(ZoneTileKind::BottomRightApartmentDoor)
+                        .build(),
                 );
             }
             "WinnieSleeping" => {

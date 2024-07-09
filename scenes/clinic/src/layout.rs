@@ -132,7 +132,7 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 self.player_builder.initial_position(translation.truncate());
             }
             "Door" => {
-                let door = DoorBuilder::new(ZoneTileKind::DoorZone).build();
+                let door = DoorBuilder::new(ZoneTileKind::Door).build();
                 cmd.entity(who).insert(door);
             }
             _ => {}
