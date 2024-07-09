@@ -43,14 +43,27 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<ChangeHighlightedInspectLabelEvent>();
 
         #[cfg(feature = "devtools")]
-        app.register_type::<Actor>()
-            .register_type::<ActorTarget>()
-            .register_type::<InspectLabel>()
-            .register_type::<InspectLabelCategory>()
-            .register_type::<npc::NpcInTheMap>()
-            .register_type::<npc::PlanPathEvent>()
-            .register_type::<npc::BehaviorLeaf>()
-            .register_type::<npc::BehaviorPaused>();
+        {
+            use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+            use layout::map_maker::TileMapMakerToolbar as Toolbar;
+
+            app.register_type::<Toolbar>()
+                .register_type::<Actor>()
+                .register_type::<ActorTarget>()
+                .register_type::<TileKind>()
+                .register_type::<ActorMovementEvent>()
+                .register_type::<InspectLabel>()
+                .register_type::<InspectLabelCategory>()
+                .register_type::<npc::NpcInTheMap>()
+                .register_type::<npc::PlanPathEvent>()
+                .register_type::<npc::BehaviorLeaf>()
+                .register_type::<npc::BehaviorPaused>();
+
+            app.add_plugins(
+                ResourceInspectorPlugin::<Toolbar>::new()
+                    .run_if(resource_exists::<Toolbar>),
+            );
+        }
     }
 }
 
@@ -90,10 +103,7 @@ where
 
     app.add_event::<ActorMovementEvent>()
         .init_asset_loader::<common_assets::ron_loader::Loader<TileMap<T>>>()
-        .init_asset::<TileMap<T>>()
-        .register_type::<TileKind>()
-        .register_type::<TileMap<T>>()
-        .register_type::<ActorMovementEvent>();
+        .init_asset::<TileMap<T>>();
 
     app.add_systems(OnEnter(loading), layout::systems::start_loading_map::<T>)
         .add_systems(
@@ -233,18 +243,11 @@ pub fn dev_default_setup_for_scene<T>(app: &mut App)
 where
     T: TopDownScene + WithStandardStateSemantics,
 {
-    use bevy_inspector_egui::quick::ResourceInspectorPlugin;
-    use layout::map_maker::TileMapMakerToolbar as Toolbar;
-
     let StandardStateSemantics {
         running, quitting, ..
     } = T::semantics();
 
-    // we insert the toolbar along with the map
-    app.register_type::<Toolbar>().add_plugins(
-        ResourceInspectorPlugin::<Toolbar>::new()
-            .run_if(resource_exists::<Toolbar>),
-    );
+    app.register_type::<TileMap<T>>();
 
     app.add_systems(
         OnEnter(running),

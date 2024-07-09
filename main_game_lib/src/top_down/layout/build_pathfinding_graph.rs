@@ -35,7 +35,6 @@ use bevy::{
 };
 use graphviz_rust::{dot_generator::*, dot_structures::*};
 use itertools::Itertools;
-use smallvec::SmallVec;
 
 use super::{TileKindMeta, ZoneGroup};
 use crate::top_down::{layout::Tile, TileKind, TileMap, TopDownScene};
@@ -237,36 +236,24 @@ impl ZoneTileKindGraph {
             }
         }
 
-        // 1. zone group
-
-        for zone in TileKind::zones_iter() {
-            // the index is the group
-            if let Some(group) =
-                zone_groups.iter().position(|group| group.contains(&zone))
-            {
-                metas.entry(zone).or_default().zone_group = ZoneGroup(group);
-            }
-        }
-
-        // 2. zone size
-
+        // store zone group, size and successors if the zone is present in the
+        // map
         for (zone, size) in &self.zone_sizes {
-            if *size != 0 {
-                metas.entry(*zone).or_default().zone_size = *size;
+            if *size == 0 {
+                continue;
             }
-        }
 
-        // 3. successors
-
-        let successors: BTreeMap<_, _> = successors.iter().collect();
-        for (zone, successors) in successors {
-            let mut successors: SmallVec<_> =
-                successors.iter().cloned().collect();
-
-            if !successors.is_empty() {
+            if let Some(zone_group) =
+                zone_groups.iter().position(|group| group.contains(zone))
+            {
+                let mut successors =
+                    successors.get(zone).cloned().unwrap_or_default();
                 successors.sort();
-                metas.entry(*zone).or_default().zone_successors =
-                    successors.clone();
+
+                let entry = metas.entry(*zone).or_default();
+                entry.zone_size = *size;
+                entry.zone_successors = successors.into_iter().collect();
+                entry.zone_group = ZoneGroup(zone_group);
             }
         }
 
@@ -290,7 +277,10 @@ impl ZoneTileKindGraph {
 
         // map tile kinds to nodes
         let nodes: BTreeMap<TileKind, _> = TileKind::zones_iter()
-            .filter(|kind| kind.is_zone())
+            .filter(|kind| {
+                // we only care about zones that are present in this map
+                self.zone_sizes.get(kind).copied().unwrap_or_default() > 0
+            })
             .map(|kind| (kind, node!({ format!("{kind:?}").to_lowercase() })))
             .collect();
         // add nodes straight away - some might not be in any relationship, and

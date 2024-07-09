@@ -22,6 +22,7 @@ use bevy::{
 use bevy_grid_squared::{Square, SquareLayout};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use smallvec::SmallVec;
+use strum::IntoEnumIterator;
 
 use super::scene_configs::ZoneTileKind;
 
@@ -252,7 +253,7 @@ impl Tile for TileKind {
 
     #[inline]
     fn zones_iter() -> impl Iterator<Item = Self> {
-        std::iter::empty()
+        ZoneTileKind::iter().map(Self::Zone)
     }
 }
 
