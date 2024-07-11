@@ -16,10 +16,10 @@ use main_game_lib::{
             SpawnLabelBgAndTextParams, ZoneToInspectLabelEntity, LIGHT_RED,
         },
         npc::behaviors::PatrolSequence,
+        scene_configs::ZoneTileKind,
     },
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use strum::IntoEnumIterator;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     layout::LAYOUT,
@@ -85,8 +85,7 @@ struct Spawner<'a> {
     player_entity: Entity,
     transition: GlobalGameStateTransition,
     daybar_event: &'a mut Events<UpdateDayBarEvent>,
-    zone_to_inspect_label_entity:
-        &'a mut ZoneToInspectLabelEntity<DowntownTileKind>,
+    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 
     samizdat_entity: Entity,
     samizdat_patrol_points: &'a mut Vec<Square>,
@@ -182,14 +181,12 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     let root = root.single();
     cmd.entity(root).despawn_recursive();
 
-    cmd.remove_resource::<ZoneToInspectLabelEntity<
-        <Downtown as TopDownScene>::LocalTileKind,
-    >>();
+    cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
 impl<'a> TscnSpawner for Spawner<'a> {
     type LocalActionKind = DowntownAction;
-    type LocalZoneKind = DowntownTileKind;
+    type ZoneKind = ZoneTileKind;
 
     fn on_spawned(
         &mut self,
@@ -262,36 +259,10 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
     fn map_zone_to_inspect_label_entity(
         &mut self,
-        zone: Self::LocalZoneKind,
+        zone: Self::ZoneKind,
         entity: Entity,
     ) {
-        self.zone_to_inspect_label_entity.map.insert(zone, entity);
-    }
-}
-
-impl top_down::layout::Tile for DowntownTileKind {
-    #[inline]
-    fn is_walkable(&self, _: Entity) -> bool {
-        true
-    }
-
-    #[inline]
-    fn is_zone(&self) -> bool {
-        match self {
-            Self::Building1Entrance
-            | Self::CompoundEntrance
-            | Self::SewersEntrance
-            | Self::MallEntrance
-            | Self::ClinicEntrance
-            | Self::ClinicWardEntrance
-            | Self::PlantShopEntrance
-            | Self::TwinpeaksApartmentEntrance => true,
-        }
-    }
-
-    #[inline]
-    fn zones_iter() -> impl Iterator<Item = Self> {
-        Self::iter().filter(|kind| kind.is_zone())
+        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 
@@ -303,16 +274,14 @@ fn enter_building1(mut transition_params: TransitionParams) {
 fn enter_mall(
     mut transition_params: TransitionParams,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
-    zone_to_inspect_label_entity: Res<
-        ZoneToInspectLabelEntity<DowntownTileKind>,
-    >,
+    zone_to_inspect_label_entity: Res<ZoneToInspectLabelEntity>,
     daybar: Res<DayBar>,
 ) {
     if !daybar.is_it_time_for(DayBarDependent::MallOpenHours) {
         show_label_closed(
             &zone_to_inspect_label_entity,
             &mut inspect_label_events,
-            &DowntownTileKind::MallEntrance,
+            &ZoneTileKind::MallEntrance,
         );
 
         return;
@@ -324,16 +293,14 @@ fn enter_mall(
 fn enter_clinic(
     mut transition_params: TransitionParams,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
-    zone_to_inspect_label_entity: Res<
-        ZoneToInspectLabelEntity<DowntownTileKind>,
-    >,
+    zone_to_inspect_label_entity: Res<ZoneToInspectLabelEntity>,
     daybar: Res<DayBar>,
 ) {
     if !daybar.is_it_time_for(DayBarDependent::ClinicOpenHours) {
         show_label_closed(
             &zone_to_inspect_label_entity,
             &mut inspect_label_events,
-            &DowntownTileKind::ClinicEntrance,
+            &ZoneTileKind::ClinicEntrance,
         );
 
         return;
@@ -345,16 +312,14 @@ fn enter_clinic(
 fn enter_clinic_ward(
     mut transition_params: TransitionParams,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
-    zone_to_inspect_label_entity: Res<
-        ZoneToInspectLabelEntity<DowntownTileKind>,
-    >,
+    zone_to_inspect_label_entity: Res<ZoneToInspectLabelEntity>,
     daybar: Res<DayBar>,
 ) {
     if !daybar.is_it_time_for(DayBarDependent::ClinicOpenHours) {
         show_label_closed(
             &zone_to_inspect_label_entity,
             &mut inspect_label_events,
-            &DowntownTileKind::ClinicWardEntrance,
+            &ZoneTileKind::ClinicWardEntrance,
         );
 
         return;
@@ -366,16 +331,14 @@ fn enter_clinic_ward(
 fn enter_plant_shop(
     mut transition_params: TransitionParams,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
-    zone_to_inspect_label_entity: Res<
-        ZoneToInspectLabelEntity<DowntownTileKind>,
-    >,
+    zone_to_inspect_label_entity: Res<ZoneToInspectLabelEntity>,
     daybar: Res<DayBar>,
 ) {
     if !daybar.is_it_time_for(DayBarDependent::PlantShopOpenHours) {
         show_label_closed(
             &zone_to_inspect_label_entity,
             &mut inspect_label_events,
-            &DowntownTileKind::PlantShopEntrance,
+            &ZoneTileKind::PlantShopEntrance,
         );
 
         return;
@@ -398,13 +361,11 @@ fn enter_compound(mut transition_params: TransitionParams) {
 }
 
 fn show_label_closed(
-    zone_to_inspect_label_entity: &ZoneToInspectLabelEntity<DowntownTileKind>,
+    zone_to_inspect_label_entity: &ZoneToInspectLabelEntity,
     inspect_label_events: &mut EventWriter<ChangeHighlightedInspectLabelEvent>,
-    zone_kind: &DowntownTileKind,
+    zone_kind: &ZoneTileKind,
 ) {
-    if let Some(entity) =
-        zone_to_inspect_label_entity.map.get(zone_kind).copied()
-    {
+    if let Some(entity) = zone_to_inspect_label_entity.get(zone_kind).copied() {
         inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
             entity,
             spawn_params: SpawnLabelBgAndTextParams {

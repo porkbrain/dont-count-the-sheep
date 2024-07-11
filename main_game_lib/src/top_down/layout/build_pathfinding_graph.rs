@@ -10,10 +10,10 @@
 //! - [`Overlaps`]
 //! - [`Neighbors`]
 //!
-//! Build a [`LocalTileKindGraph`] from a tile map with the
-//! [`LocalTileKindGraph::compute_from`].
+//! Build a [`ZoneTileKindGraph`] from a tile map with the
+//! [`ZoneTileKindGraph::compute_from`].
 //!
-//! You can visualize how the graph with the [`LocalTileKindGraph::as_dotgraph`]
+//! You can visualize how the graph with the [`ZoneTileKindGraph::as_dotgraph`]
 //! method.
 //! The graph can be either converted to an SVG with the [`GraphExt::into_svg`]
 //! or a [DOT][wiki-dot] string with the [`GraphExt::as_dot`] method.
@@ -36,54 +36,53 @@ use bevy::{
 use graphviz_rust::{dot_generator::*, dot_structures::*};
 use itertools::Itertools;
 
+use super::{TileKindMeta, ZoneGroup};
 use crate::top_down::{layout::Tile, TileKind, TileMap, TopDownScene};
 
-/// Map of tile kind variant `L` to those other variants (not including
+/// Map of tile kind variant to those other variants (not including
 /// itself - proper supersets) whose instances fully contain it (the key.)
 /// If square contains the key variant, it contains also all the variants in the
 /// value set.
 ///
 /// `(tile, its supersets)`
-pub type SupersetsOf<L> = HashMap<L, HashSet<L>>;
+pub(crate) type SupersetsOf = HashMap<TileKind, HashSet<TileKind>>;
 
-/// Map of tile kind variant `L` to those other variants (not including
+/// Map of tile kind variant to those other variants (not including
 /// itself - proper subsets) whose instances are fully contained by it (the
 /// key.) If square contains any of the value set variants, it contains also the
 /// key variant.
 ///
 /// `(tile, its subsets)`
-pub type SubsetsOf<L> = HashMap<L, HashSet<L>>;
+pub(crate) type SubsetsOf = HashMap<TileKind, HashSet<TileKind>>;
 
-/// Set of pairs of tile kind variants `L` that overlap in the same square and
+/// Set of pairs of tile kind variants that overlap in the same square and
 /// are not supersets of each other.
 ///
 /// `(tile, another)`
-pub type Overlaps<L> = HashSet<(L, L)>;
+pub(crate) type Overlaps = HashSet<(TileKind, TileKind)>;
 
-/// Set of pairs of tile kind variants `L` that are walkable neighbors and are
+/// Set of pairs of tile kind variants that are walkable neighbors and are
 /// not supersets of each other neither overlap in the same square.
 ///
 /// `(tile, another)`
-pub type Neighbors<L> = HashSet<(L, L)>;
+pub(crate) type Neighbors = HashSet<(TileKind, TileKind)>;
 
-/// Describes relationships between the local tile kind variants `L` in the
-/// tile map.
-/// That is, for a `T: TopDownScene` the `L` is `T::LocalTileKind`.
-pub struct LocalTileKindGraph<L> {
+/// Describes relationships between the tile kind variants in the tile map.
+pub(crate) struct ZoneTileKindGraph {
     /// See the type alias `SupersetsOf`.
-    pub supersets_of: SupersetsOf<L>,
+    pub(crate) supersets_of: SupersetsOf,
     /// See the type alias `SubsetsOf`.
-    pub subsets_of: SubsetsOf<L>,
+    pub(crate) subsets_of: SubsetsOf,
     /// See the type alias `Overlaps`.
-    pub overlaps: Overlaps<L>,
+    pub(crate) overlaps: Overlaps,
     /// See the type alias `Neighbors`.
-    pub neighbors: Neighbors<L>,
+    pub(crate) neighbors: Neighbors,
     /// How many squares each zone comprises.
-    pub zone_sizes: HashMap<L, usize>,
+    pub(crate) zone_sizes: HashMap<TileKind, usize>,
 }
 
 /// Some useful methods for the [`Graph`] type.
-pub trait GraphExt {
+pub(crate) trait GraphExt {
     /// Returns SVG bytes of the graph.
     fn into_svg(self) -> Result<Vec<u8>, std::io::Error>;
 
@@ -91,49 +90,49 @@ pub trait GraphExt {
     fn as_dot(&self) -> String;
 }
 
-/// Series of steps to compute the relationships between the local tile kind
-/// variants `L` in the tile map.
+/// Series of steps to compute the relationships between the zone tile kind
+/// variants in the tile map.
 #[derive(Default)]
-enum GraphComputeStep<L> {
-    /// First find for each tile kind variant `L` all tiles that contain
+enum GraphComputeStep {
+    /// First find for each tile kind variant all tiles that contain
     /// every single instance of it.
-    /// This computes the [`SupersetsOf<L>`].
+    /// This computes the [`SupersetsOf`].
     #[default]
     Supersets,
     /// Then from the previous result construct the inverse of it, which is
-    /// for each tile kind variant `L` all tiles that are contained in it.
-    /// This computes the [`SubsetsOf<L>`].
-    Subsets { from_supersets: SupersetsOf<L> },
+    /// for each tile kind variant all tiles that are contained in it.
+    /// This computes the [`SubsetsOf`].
+    Subsets { from_supersets: SupersetsOf },
     /// The find which tiles overlap in the same square and are not supersets
     /// of each other.
-    /// This computes the [`Overlaps<L>`].
+    /// This computes the [`Overlaps`].
     Overlaps {
-        from_supersets: SupersetsOf<L>,
-        from_subsets: SubsetsOf<L>,
+        from_supersets: SupersetsOf,
+        from_subsets: SubsetsOf,
     },
     /// Check which non overlapping tiles are walkable neighbors and
     /// are not supersets of each other.
-    /// This computes the [`Neighbors<L>`].
+    /// This computes the [`Neighbors`].
     Neighbors {
-        from_supersets: SupersetsOf<L>,
-        from_subsets: SubsetsOf<L>,
-        from_overlaps: Overlaps<L>,
+        from_supersets: SupersetsOf,
+        from_subsets: SubsetsOf,
+        from_overlaps: Overlaps,
     },
     /// Calculate how many squares each zone comprises.
     Sizes {
-        from_supersets: SupersetsOf<L>,
-        from_subsets: SubsetsOf<L>,
-        from_overlaps: Overlaps<L>,
-        from_neighbors: Neighbors<L>,
+        from_supersets: SupersetsOf,
+        from_subsets: SubsetsOf,
+        from_overlaps: Overlaps,
+        from_neighbors: Neighbors,
     },
     /// All computation for the graph finished, ready with the result.
-    Done(LocalTileKindGraph<L>),
+    Done(ZoneTileKindGraph),
 }
 
 /// Whether the computation is done or not.
-enum GraphComputeResult<L> {
-    NextStep(GraphComputeStep<L>),
-    Done(LocalTileKindGraph<L>),
+enum GraphComputeResult {
+    NextStep(GraphComputeStep),
+    Done(ZoneTileKindGraph),
 }
 
 impl GraphExt for Graph {
@@ -152,15 +151,10 @@ impl GraphExt for Graph {
     }
 }
 
-impl<L: Tile> LocalTileKindGraph<L>
-where
-    L: Ord,
-{
-    /// Find all relationships between the local tile kind variants `L` in the
+impl ZoneTileKindGraph {
+    /// Find all relationships between the zone tile kind variants in the
     /// tile map `T`.
-    pub fn compute_from<T: TopDownScene<LocalTileKind = L>>(
-        tilemap: &TileMap<T>,
-    ) -> Self {
+    pub(crate) fn compute_from<T: TopDownScene>(tilemap: &TileMap<T>) -> Self {
         let mut compute_step = GraphComputeStep::default();
         loop {
             match compute_step.next_step(tilemap) {
@@ -174,12 +168,11 @@ where
         }
     }
 
-    /// Generates a valid Rust implementation of the
-    /// [`crate::top_down::layout::ZoneTile`] trait for `L`.
-    ///
-    /// This is deterministically autogenerated when map edited via map maker
-    /// tool.
-    pub fn generate_zone_tile_impl_rs(&self) -> String {
+    pub(crate) fn calculate_zone_tile_metadata(
+        &self,
+    ) -> BTreeMap<TileKind, TileKindMeta> {
+        let mut metas: BTreeMap<TileKind, TileKindMeta> = default();
+
         // Group zones into zones that are connected to each other.
         // This means that if zone A overlaps, neighbors is a subset or superset
         // of zone B, they both belong to the same group.
@@ -187,10 +180,10 @@ where
         // are in the same group.
 
         // the index is going to be the zone group unique value in the end
-        let mut zone_groups: Vec<HashSet<L>> = default();
-        let mut successors: HashMap<L, Vec<L>> = default();
+        let mut zone_groups: Vec<HashSet<TileKind>> = default();
+        let mut successors: HashMap<TileKind, Vec<TileKind>> = default();
 
-        for zone in L::zones_iter() {
+        for zone in TileKind::zones_iter() {
             let group = if let Some((index, _)) = zone_groups
                 .iter()
                 .find_position(|group| group.contains(&zone))
@@ -243,22 +236,37 @@ where
             }
         }
 
-        // now generate the Rust impl
+        // store zone group, size and successors if the zone is present in the
+        // map
+        for (zone, size) in &self.zone_sizes {
+            if *size == 0 {
+                continue;
+            }
 
-        autogen::impl_zone_tile_trait(
-            &self.zone_sizes,
-            &zone_groups,
-            &successors,
-        )
+            if let Some(zone_group) =
+                zone_groups.iter().position(|group| group.contains(zone))
+            {
+                let mut successors =
+                    successors.get(zone).cloned().unwrap_or_default();
+                successors.sort();
+
+                let entry = metas.entry(*zone).or_default();
+                entry.zone_size = *size;
+                entry.zone_successors = successors.into_iter().collect();
+                entry.zone_group = ZoneGroup(zone_group);
+            }
+        }
+
+        metas
     }
 
     /// Returns a [`Graph`] representation of the relationships between the
-    /// local tile kind variants `L` in the tile map.
+    /// zone tile kind variants in the tile map.
     ///
     /// The ID of the graph will be `graph_{name}`.
     ///
     /// We order everything to make the graph deterministic.
-    pub fn as_dotgraph(
+    pub(crate) fn as_dotgraph(
         &self,
         name: impl Display,
     ) -> graphviz_rust::dot_structures::Graph {
@@ -267,10 +275,23 @@ where
         g.add_stmt(attr!("nodesep", 0.5).into());
         g.add_stmt(attr!("ranksep", 1.0).into());
 
+        fn dotgraph_node_name(kind: TileKind) -> String {
+            match kind {
+                TileKind::Actor(_)
+                | TileKind::Trail
+                | TileKind::Empty
+                | TileKind::Wall => unreachable!("Tile {kind:?} is not a zone"),
+                TileKind::Zone(zone) => zone.to_string().to_lowercase(),
+            }
+        }
+
         // map tile kinds to nodes
-        let nodes: BTreeMap<L, _> = L::zones_iter()
-            .filter(|kind| kind.is_zone())
-            .map(|kind| (kind, node!({ format!("{kind:?}").to_lowercase() })))
+        let nodes: BTreeMap<TileKind, _> = TileKind::zones_iter()
+            .filter(|kind| {
+                // we only care about zones that are present in this map
+                self.zone_sizes.get(kind).copied().unwrap_or_default() > 0
+            })
+            .map(|kind| (kind, node!({ dotgraph_node_name(kind) })))
             .collect();
         // add nodes straight away - some might not be in any relationship, and
         // we want them in the graph
@@ -289,9 +310,10 @@ where
                 if own_supersets.is_none() {
                     Some((
                         *superset,
-                        subgraph!(id!(
-                            format!("cluster_{superset:?}").to_lowercase()
-                        )),
+                        subgraph!(id!(format!(
+                            "cluster_{}",
+                            dotgraph_node_name(*superset)
+                        ))),
                     ))
                 } else {
                     None
@@ -424,9 +446,9 @@ where
     }
 }
 
-impl<L: std::fmt::Debug> std::fmt::Debug for LocalTileKindGraph<L> {
+impl std::fmt::Debug for ZoneTileKindGraph {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "LocalTileKindGraph")?;
+        writeln!(f, "ZoneTileKindGraph")?;
         for (a, b) in &self.supersets_of {
             writeln!(f, "{a:?} is subset of {b:?}")?;
         }
@@ -443,11 +465,11 @@ impl<L: std::fmt::Debug> std::fmt::Debug for LocalTileKindGraph<L> {
     }
 }
 
-impl<L: Tile + Ord> GraphComputeStep<L> {
-    fn next_step<T: TopDownScene<LocalTileKind = L>>(
+impl GraphComputeStep {
+    fn next_step<T: TopDownScene>(
         self,
         map: &TileMap<T>,
-    ) -> GraphComputeResult<L> {
+    ) -> GraphComputeResult {
         let next_step = match self {
             Self::Supersets => Self::Subsets {
                 from_supersets: find_supersets(map),
@@ -488,7 +510,7 @@ impl<L: Tile + Ord> GraphComputeStep<L> {
                 from_subsets,
                 from_overlaps,
                 from_neighbors,
-            } => Self::Done(LocalTileKindGraph {
+            } => Self::Done(ZoneTileKindGraph {
                 neighbors: from_neighbors,
                 supersets_of: from_supersets,
                 subsets_of: from_subsets,
@@ -503,24 +525,22 @@ impl<L: Tile + Ord> GraphComputeStep<L> {
 }
 
 /// Find which tiles are supersets of which.
-fn find_supersets<T: TopDownScene>(
-    map: &TileMap<T>,
-) -> SupersetsOf<T::LocalTileKind> {
-    let mut supersets_of: SupersetsOf<_> = default();
+fn find_supersets<T: TopDownScene>(map: &TileMap<T>) -> SupersetsOf {
+    let mut supersets_of: SupersetsOf = default();
     for tiles in map.squares().values() {
-        let locals: HashSet<_> = get_local_zones(tiles).collect();
+        let zones: HashSet<_> = get_zones(tiles).collect();
 
-        for local in locals.iter().copied() {
-            let local_supersets =
-                supersets_of.entry(local).or_insert_with(|| {
-                    T::LocalTileKind::zones_iter()
+        for zone in zones.iter().copied() {
+            let zone_supersets =
+                supersets_of.entry(zone).or_insert_with(|| {
+                    TileKind::zones_iter()
                         .filter(|superset| {
-                            superset != &local && superset.is_zone()
+                            superset != &zone && superset.is_zone()
                         })
                         .collect()
                 });
 
-            local_supersets.retain(|another| locals.contains(another));
+            zone_supersets.retain(|another| zones.contains(another));
         }
     }
     supersets_of.retain(|_, supersets| !supersets.is_empty());
@@ -529,8 +549,8 @@ fn find_supersets<T: TopDownScene>(
 }
 
 /// Find which tiles are subsets of which.
-fn find_subsets<L: Tile>(supersets_of: &SupersetsOf<L>) -> SubsetsOf<L> {
-    let mut subsets: SubsetsOf<L> = default();
+fn find_subsets(supersets_of: &SupersetsOf) -> SubsetsOf {
+    let mut subsets: SubsetsOf = default();
 
     for (superset, subset) in
         supersets_of.iter().flat_map(|(subset, supersets)| {
@@ -550,29 +570,26 @@ fn find_subsets<L: Tile>(supersets_of: &SupersetsOf<L>) -> SubsetsOf<L> {
 /// of each other
 fn find_overlaps<T: TopDownScene>(
     map: &TileMap<T>,
-    supersets_of: &SupersetsOf<T::LocalTileKind>,
-    subsets_of: &SubsetsOf<T::LocalTileKind>,
-) -> Overlaps<T::LocalTileKind>
-where
-    T::LocalTileKind: Ord,
-{
-    let mut overlaps: Overlaps<T::LocalTileKind> = default();
+    supersets_of: &SupersetsOf,
+    subsets_of: &SubsetsOf,
+) -> Overlaps {
+    let mut overlaps: Overlaps = default();
     for tiles in map.squares().values() {
-        let locals = get_local_zones(tiles).collect_vec();
+        let zones = get_zones(tiles).collect_vec();
 
-        for local in locals.clone() {
-            let local_supersets = supersets_of.get(&local);
-            let local_subsets = subsets_of.get(&local);
+        for zone in zones.clone() {
+            let zone_supersets = supersets_of.get(&zone);
+            let zone_subsets = subsets_of.get(&zone);
 
-            for another in locals.clone() {
-                if local == another
-                    || local_supersets.is_some_and(|s| s.contains(&another))
-                    || local_subsets.is_some_and(|s| s.contains(&another))
+            for another in zones.clone() {
+                if zone == another
+                    || zone_supersets.is_some_and(|s| s.contains(&another))
+                    || zone_subsets.is_some_and(|s| s.contains(&another))
                 {
                     continue;
                 }
 
-                let pair = (local.min(another), another.max(local));
+                let pair = (zone.min(another), another.max(zone));
                 overlaps.insert(pair);
             }
         }
@@ -585,20 +602,17 @@ where
 /// supersets of each other
 fn find_neighbors<T: TopDownScene>(
     map: &TileMap<T>,
-    supersets_of: &SupersetsOf<T::LocalTileKind>,
-    subsets_of: &SubsetsOf<T::LocalTileKind>,
-    overlaps: &Overlaps<T::LocalTileKind>,
-) -> Neighbors<T::LocalTileKind>
-where
-    T::LocalTileKind: Ord,
-{
-    let mut neighbors: Neighbors<T::LocalTileKind> = default();
+    supersets_of: &SupersetsOf,
+    subsets_of: &SubsetsOf,
+    overlaps: &Overlaps,
+) -> Neighbors {
+    let mut neighbors: Neighbors = default();
 
     for (sq, tiles) in map.squares().iter() {
-        let locals = get_local_zones(tiles).collect_vec();
+        let zones = get_zones(tiles).collect_vec();
 
         for neighbor_sq in sq.neighbors_with_diagonal() {
-            let Some(neighbor_locals) = map.squares().get(&neighbor_sq) else {
+            let Some(neighbor_tiles) = map.squares().get(&neighbor_sq) else {
                 continue;
             };
 
@@ -606,22 +620,21 @@ where
                 continue;
             }
 
-            let neighbor_locals =
-                get_local_zones(neighbor_locals).collect_vec();
+            let neighbor_zones = get_zones(neighbor_tiles).collect_vec();
 
-            for local in locals.clone() {
-                let local_supersets = supersets_of.get(&local);
-                let local_subsets = subsets_of.get(&local);
+            for zone in zones.clone() {
+                let zone_supersets = supersets_of.get(&zone);
+                let zone_subsets = subsets_of.get(&zone);
 
-                for another in neighbor_locals.clone() {
-                    if local == another
-                        || local_supersets.is_some_and(|s| s.contains(&another))
-                        || local_subsets.is_some_and(|s| s.contains(&another))
+                for another in neighbor_zones.clone() {
+                    if zone == another
+                        || zone_supersets.is_some_and(|s| s.contains(&another))
+                        || zone_subsets.is_some_and(|s| s.contains(&another))
                     {
                         continue;
                     }
 
-                    let pair = (local.min(another), another.max(local));
+                    let pair = (zone.min(another), another.max(zone));
                     if !overlaps.contains(&pair) {
                         neighbors.insert(pair);
                     }
@@ -635,162 +648,16 @@ where
 
 fn count_zone_sizes<T: TopDownScene>(
     map: &TileMap<T>,
-) -> HashMap<<T as TopDownScene>::LocalTileKind, usize> {
+) -> HashMap<TileKind, usize> {
     map.squares()
         .values()
-        .flat_map(|tiles| get_local_zones(tiles))
+        .flat_map(|tiles| get_zones(tiles))
         .fold(HashMap::new(), |mut acc, zone| {
             *acc.entry(zone).or_insert(0) += 1;
             acc
         })
 }
 
-fn get_local_zones<L: Tile>(
-    tiles: &[TileKind<L>],
-) -> impl Iterator<Item = L> + '_ {
-    tiles
-        .iter()
-        .filter(|tile| tile.is_zone())
-        .filter_map(|tile| tile.into_local())
-}
-
-mod autogen {
-    use std::{collections::BTreeMap, iter};
-
-    use bevy::{
-        reflect::TypePath,
-        utils::{HashMap, HashSet},
-    };
-    use itertools::Itertools;
-
-    use crate::top_down::layout::Tile;
-
-    pub(super) fn impl_zone_tile_trait<L: Tile + Ord>(
-        sizes: &HashMap<L, usize>,
-        zone_groups: &[HashSet<L>],
-        successors: &HashMap<L, Vec<L>>,
-    ) -> String {
-        let autogen = stringify!(
-            #[rustfmt::skip]
-            /// This is an autogenerated implementation by the map maker tool.
-            impl main_game_lib::top_down::layout::ZoneTile for %L% {
-                %IMPL_ZONE_GROUP%
-
-                %IMPL_ZONE_SIZE%
-
-                %IMPL_ZONE_SUCCESSORS%
-            }
-        );
-
-        let mut output = autogen
-            .replace("%IMPL_ZONE_GROUP%", &impl_zone_group(zone_groups))
-            .replace("%IMPL_ZONE_SIZE%", &impl_zone_size(sizes))
-            .replace(
-                "%IMPL_ZONE_SUCCESSORS%",
-                &impl_zone_successors(successors),
-            )
-            .replace("%L%", crate_type_path::<L>().as_str());
-
-        output.push('\n');
-        output
-    }
-
-    fn impl_zone_group<L: Tile>(zone_groups: &[HashSet<L>]) -> String {
-        let autogen = stringify!(
-            #[inline]
-            fn zone_group(&self) -> Option<main_game_lib::top_down::layout::ZoneGroup> {
-                use main_game_lib::top_down::layout::ZoneGroup;
-                #[allow(clippy::match_single_binding)]
-                match self {
-                    %ZONE_GROUPS%
-                    #[allow(unreachable_patterns)]
-                    _ => None,
-                }
-            }
-        );
-
-        let mut zone_groups_str = String::new();
-        for zone in L::zones_iter() {
-            // the index is the group
-            let group = zone_groups
-                .iter()
-                .position(|group| group.contains(&zone))
-                .unwrap();
-
-            zone_groups_str.push_str(&format!(
-                "Self::{zone:?} => Some(ZoneGroup({group})),\n",
-            ));
-        }
-
-        autogen.replace("%ZONE_GROUPS%", &zone_groups_str)
-    }
-
-    fn impl_zone_size<L: Tile + Ord>(sizes: &HashMap<L, usize>) -> String {
-        let autogen = stringify!(
-            #[inline]
-            fn zone_size(&self) -> Option<usize> {
-                #[allow(clippy::match_single_binding)]
-                match self {
-                    %ZONE_GROUPS%
-                    #[allow(unreachable_patterns)]
-                    _ => None,
-                }
-            }
-        );
-
-        let sizes: BTreeMap<_, _> = sizes.iter().collect();
-        let mut zone_sizes_str = String::new();
-        for (zone, size) in sizes {
-            zone_sizes_str
-                .push_str(&format!("Self::{zone:?} => Some({size}),\n",));
-        }
-
-        autogen.replace("%ZONE_GROUPS%", &zone_sizes_str)
-    }
-
-    fn impl_zone_successors<L: Tile + Ord>(
-        successors: &HashMap<L, Vec<L>>,
-    ) -> String {
-        let autogen = stringify!(
-            type Successors = Self;
-
-            #[inline]
-            fn zone_successors(&self) -> Option<&'static [Self::Successors]> {
-                #[allow(clippy::match_single_binding)]
-                match self {
-                    %ZONE_GROUPS%
-                    #[allow(unreachable_patterns)]
-                    _ => None,
-                }
-            }
-        );
-
-        let successors: BTreeMap<_, _> = successors.iter().collect();
-        let mut zone_successors_str = String::new();
-        for (zone, successors) in successors {
-            let mut successors: Vec<_> = successors.iter().collect();
-            successors.sort();
-
-            let successors_str = successors
-                .into_iter()
-                .map(|zone| format!("Self::{zone:?}"))
-                .join(",");
-            zone_successors_str.push_str(&format!(
-                "Self::{zone:?} => Some(&[{successors_str}]),\n",
-            ));
-        }
-
-        let mut output = autogen
-            .replace("%L%", crate_type_path::<L>().as_str())
-            .replace("%ZONE_GROUPS%", &zone_successors_str);
-
-        output.push('\n');
-        output
-    }
-
-    fn crate_type_path<L: TypePath>() -> String {
-        iter::once("crate")
-            .chain(L::type_path().split("::").skip(1))
-            .join("::")
-    }
+fn get_zones(tiles: &[TileKind]) -> impl Iterator<Item = TileKind> + '_ {
+    tiles.iter().filter(|tile| tile.is_zone()).map(|tile| *tile)
 }

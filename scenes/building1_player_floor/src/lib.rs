@@ -6,13 +6,11 @@
 #![allow(clippy::too_many_arguments)]
 
 mod actor;
-mod autogen;
 mod layout;
 mod prelude;
 
 use common_loading_screen::LoadingScreenState;
 use prelude::*;
-use serde::{Deserialize, Serialize};
 
 use crate::layout::LayoutEntity;
 
@@ -22,8 +20,6 @@ use crate::layout::LayoutEntity;
 pub struct Building1PlayerFloor;
 
 impl TopDownScene for Building1PlayerFloor {
-    type LocalTileKind = Building1PlayerFloorTileKind;
-
     fn name() -> &'static str {
         "building1_player_floor"
     }
@@ -45,45 +41,6 @@ impl WithStandardStateSemantics for Building1PlayerFloor {
     fn quitting() -> GlobalGameState {
         GlobalGameState::QuittingBuilding1PlayerFloor
     }
-}
-
-/// We arbitrarily derive the [`Default`] to allow reflection.
-/// It does not have a meaningful default value.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Default,
-    Deserialize,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    Reflect,
-    Serialize,
-    strum::Display,
-    strum::EnumIter,
-    strum::EnumString,
-)]
-#[reflect(Default)]
-#[allow(clippy::enum_variant_names)]
-pub enum Building1PlayerFloorTileKind {
-    /// We want to darken the hallway when the player is in the apartment.
-    HallwayZone,
-    /// Everything that's in the player's apartment.
-    PlayerApartmentZone,
-    #[default]
-    BedZone,
-    ElevatorZone,
-    PlayerDoorZone,
-    MeditationZone,
-    TeaZone,
-    BottomLeftApartmentZone,
-    BottomLeftApartmentDoorZone,
-    BottomLeftApartmentBathroomDoorZone,
-    BottomRightApartmentZone,
-    BottomRightApartmentDoorZone,
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]

@@ -22,6 +22,10 @@ pub enum GlobalGameState {
     /// Populates the save log with the default values.
     NewGame,
 
+    LoadingTopDownScene(WhichTopDownScene),
+    RunningTopDownScene(WhichTopDownScene),
+    LeavingTopDownScene(WhichTopDownScene),
+
     /// Sets up the floor with player's first apartment
     LoadingBuilding1PlayerFloor,
     AtBuilding1PlayerFloor,
@@ -86,6 +90,51 @@ pub enum GlobalGameState {
 
     /// Performs all necessary cleanup and exits the game.
     Exit,
+}
+
+/// Will be present as a resource if the game is in any top-down scene which
+/// is our 2D game's most ubiquitous scene kind.
+/// We use [`ComputedStates`] for this.
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub struct InTopDownScene(TopDownSceneState);
+
+/// What is the current state of the top-down scene?
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub enum TopDownSceneState {
+    /// Scene is being prepared.
+    /// This entails loading assets and setting up the scene.
+    Loading,
+    /// Scene is running.
+    /// The player can interact with the scene.
+    Running,
+    /// Scene is being cleaned up.
+    /// This entails fading out the scene and unloading assets.
+    Leaving,
+}
+
+/// All the named top-down scenes.
+///
+/// Is also present if the game is in a top-down scene using the
+/// [`ComputedStates`].
+#[derive(
+    Clone, Copy, PartialEq, Eq, Hash, Debug, strum::Display, strum::AsRefStr,
+)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
+#[allow(missing_docs)]
+pub enum WhichTopDownScene {
+    Building1PlayerFloor,
+    Building1Basement1,
+    Building1Basement2,
+    Clinic,
+    ClinicWard,
+    PlantShop,
+    Sewers,
+    TwinpeaksApartment,
+    Mall,
+    Meditation,
+    Downtown,
+    Compound,
+    CompoundTower,
 }
 
 /// What are the allowed transitions between game states?
@@ -303,6 +352,12 @@ impl GlobalGameState {
                 None,
             ),
 
+            LoadingTopDownScene(_)
+            | RunningTopDownScene(_)
+            | LeavingTopDownScene(_) => {
+                // TODO
+                return None;
+            }
             Blank | Exit | NewGame => return None,
         };
 
@@ -388,5 +443,39 @@ impl<'w, 's> TransitionParams<'w, 's> {
 
         *self.transition = transition;
         self.next_state.set(transition.from_state());
+    }
+}
+
+impl ComputedStates for InTopDownScene {
+    type SourceStates = Option<GlobalGameState>;
+
+    fn compute(sources: Self::SourceStates) -> Option<Self> {
+        match sources {
+            Some(GlobalGameState::LoadingTopDownScene(_)) => {
+                Some(InTopDownScene(TopDownSceneState::Loading))
+            }
+            Some(GlobalGameState::RunningTopDownScene(_)) => {
+                Some(InTopDownScene(TopDownSceneState::Running))
+            }
+            Some(GlobalGameState::LeavingTopDownScene(_)) => {
+                Some(InTopDownScene(TopDownSceneState::Leaving))
+            }
+            _ => None,
+        }
+    }
+}
+
+impl ComputedStates for WhichTopDownScene {
+    type SourceStates = Option<GlobalGameState>;
+
+    fn compute(sources: Self::SourceStates) -> Option<Self> {
+        match sources {
+            Some(
+                GlobalGameState::LoadingTopDownScene(scene)
+                | GlobalGameState::RunningTopDownScene(scene)
+                | GlobalGameState::LeavingTopDownScene(scene),
+            ) => Some(scene),
+            _ => None,
+        }
     }
 }

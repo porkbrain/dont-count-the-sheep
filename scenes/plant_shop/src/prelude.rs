@@ -1,3 +1,3 @@
 pub(crate) use main_game_lib::prelude::*;
 
-pub(crate) use crate::{PlantShop, PlantShopAction, PlantShopTileKind};
+pub(crate) use crate::{PlantShop, PlantShopAction};

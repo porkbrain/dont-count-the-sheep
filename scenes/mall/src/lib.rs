@@ -4,13 +4,11 @@
 #![feature(trivial_bounds)]
 #![feature(let_chains)]
 
-mod autogen;
 mod layout;
 mod prelude;
 
 use common_loading_screen::LoadingScreenState;
 use prelude::*;
-use serde::{Deserialize, Serialize};
 
 use crate::layout::LayoutEntity;
 
@@ -20,8 +18,6 @@ use crate::layout::LayoutEntity;
 pub struct Mall;
 
 impl TopDownScene for Mall {
-    type LocalTileKind = MallTileKind;
-
     fn name() -> &'static str {
         "mall"
     }
@@ -43,39 +39,6 @@ impl WithStandardStateSemantics for Mall {
     fn quitting() -> GlobalGameState {
         GlobalGameState::QuittingMall
     }
-}
-
-/// We arbitrarily derive the [`Default`] to allow reflection.
-/// It does not have a meaningful default value.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Default,
-    Deserialize,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    Reflect,
-    Serialize,
-    strum::Display,
-    strum::EnumIter,
-    strum::EnumString,
-)]
-#[reflect(Default)]
-#[allow(clippy::enum_variant_names)]
-pub enum MallTileKind {
-    #[default]
-    ExitZone,
-    GoodWater,
-    FruitsAndVeggies,
-    Aisle1,
-    Aisle2,
-    Aisle3,
-    Aisle4,
-    Fridges,
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString)]

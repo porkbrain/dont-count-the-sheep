@@ -558,7 +558,7 @@ texture = ExtResource("4_njet2")
 position = Vector2(0, -21)
 
 [node name="InspectLabel" type="Node" parent="PlayerApartment/BackwallFurniture/MeditationChair/Label"]
-metadata/zone = "MeditationZone"
+metadata/zone = "Meditation"
 metadata/action = "StartMeditation"
 metadata/label = "Meditate"
 
@@ -578,7 +578,7 @@ texture = ExtResource("5_u86a4")
 position = Vector2(-70, -49)
 
 [node name="InspectLabel" type="Node" parent="PlayerApartment/BackwallFurniture/GoToSleep"]
-metadata/zone = "BedZone"
+metadata/zone = "Bed"
 metadata/action = "Sleep"
 metadata/label = "Sleep"
 
@@ -586,7 +586,7 @@ metadata/label = "Sleep"
 position = Vector2(132, -111)
 
 [node name="InspectLabel" type="Node" parent="PlayerApartment/BackwallFurniture/BrewTea"]
-metadata/zone = "TeaZone"
+metadata/zone = "Tea"
 metadata/action = "BrewTea"
 metadata/label = "Winnie  Put  the  Kettle  On"
 
@@ -702,7 +702,7 @@ sprite_frames = SubResource("SpriteFrames_33ymd")
 position = Vector2(0, 21)
 
 [node name="InspectLabel" type="Node" parent="Hallway/HallwayBg/Elevator/Label"]
-metadata/zone = "ElevatorZone"
+metadata/zone = "Elevator"
 metadata/action = "EnterElevator"
 metadata/label = "Elevator"
 metadata/category = "Default"

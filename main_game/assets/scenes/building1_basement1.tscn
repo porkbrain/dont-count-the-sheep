@@ -239,7 +239,7 @@ sprite_frames = SubResource("SpriteFrames_yt0x5")
 position = Vector2(0, 21)
 
 [node name="InspectLabel" type="Node" parent="Elevator/Label"]
-metadata/zone = "ElevatorZone"
+metadata/zone = "Elevator"
 metadata/action = "EnterElevator"
 metadata/label = "Elevator"
 metadata/category = "Default"
@@ -253,7 +253,7 @@ sprite_frames = SubResource("SpriteFrames_lgcyy")
 position = Vector2(0, -31)
 
 [node name="InspectLabel" type="Node" parent="DoorToBasement2/Label"]
-metadata/zone = "BasementDoorZone"
+metadata/zone = "BasementDoor"
 metadata/action = "EnterBasement2"
 metadata/label = "Storage Room"
 metadata/category = "Default"

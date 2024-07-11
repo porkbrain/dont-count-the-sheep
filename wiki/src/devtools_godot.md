@@ -102,7 +102,7 @@ Here's an exhaustive list of components (defined as `Node` type with their names
 
   - `label`: The text to display on the object.
   - `action`: An optional name of the event to fire when the object is interacted with.
-  - `zone`: An optional name of a local tile kind that the player must be in to interact with the object.
+  - `zone`: An optional name of a zone tile kind that the player must be in to interact with the object.
   - `category`: Optional. See [_Inspecting the World: Categories_](ability_to_inspect.md#categories).
 
 - `Point`: A component with no metadata.

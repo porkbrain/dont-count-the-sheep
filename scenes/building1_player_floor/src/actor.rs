@@ -10,10 +10,13 @@ use main_game_lib::{
     cutscene::{self, in_cutscene, CutsceneStep, IntoCutscene},
     dialog::DialogGraph,
     hud::daybar::DayBar,
-    top_down::inspect_and_interact::{
-        ChangeHighlightedInspectLabelEvent,
-        ChangeHighlightedInspectLabelEventConsumer, SpawnLabelBgAndTextParams,
-        ZoneToInspectLabelEntity, LIGHT_RED,
+    top_down::{
+        inspect_and_interact::{
+            ChangeHighlightedInspectLabelEvent,
+            ChangeHighlightedInspectLabelEventConsumer,
+            SpawnLabelBgAndTextParams, ZoneToInspectLabelEntity, LIGHT_RED,
+        },
+        scene_configs::ZoneTileKind,
     },
 };
 use top_down::{
@@ -51,7 +54,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             toggle_zone_hints
-                .run_if(movement_event_emitted::<Building1PlayerFloor>())
+                .run_if(movement_event_emitted())
                 .run_if(Building1PlayerFloor::in_running_state())
                 .after(emit_movement_events::<Building1PlayerFloor>),
         );
@@ -63,17 +66,14 @@ fn start_meditation_minigame(
     mut cmd: Commands,
     mut emoji_events: EventWriter<DisplayEmojiEvent>,
     mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
-    zone_to_inspect_label_entity: Res<
-        ZoneToInspectLabelEntity<Building1PlayerFloorTileKind>,
-    >,
+    zone_to_inspect_label_entity: Res<ZoneToInspectLabelEntity>,
     daybar: Res<DayBar>,
 
     player: Query<Entity, With<Player>>,
 ) {
     if daybar.is_depleted() {
         if let Some(entity) = zone_to_inspect_label_entity
-            .map
-            .get(&Building1PlayerFloorTileKind::MeditationZone)
+            .get(ZoneTileKind::Meditation)
             .copied()
         {
             inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
@@ -164,11 +164,7 @@ fn enter_the_elevator(
 /// Shows hint for bed or for meditating when player is in the zone to actually
 /// interact with those objects.
 fn toggle_zone_hints(
-    mut events: EventReader<
-        ActorMovementEvent<
-            <Building1PlayerFloor as TopDownScene>::LocalTileKind,
-        >,
-    >,
+    mut events: EventReader<ActorMovementEvent>,
 
     mut sleeping: Query<
         &mut Visibility,
@@ -179,26 +175,24 @@ fn toggle_zone_hints(
         (With<MeditatingHint>, Without<SleepingHint>),
     >,
 ) {
+    use ZoneTileKind::{Bed, Meditation};
+
     for event in events.read().filter(|event| event.is_player()) {
         match event {
             ActorMovementEvent::ZoneEntered { zone, .. } => match *zone {
-                TileKind::Local(
-                    Building1PlayerFloorTileKind::MeditationZone,
-                ) => {
+                TileKind::Zone(Meditation) => {
                     *meditating.single_mut() = Visibility::Visible;
                 }
-                TileKind::Local(Building1PlayerFloorTileKind::BedZone) => {
+                TileKind::Zone(Bed) => {
                     *sleeping.single_mut() = Visibility::Visible;
                 }
                 _ => {}
             },
             ActorMovementEvent::ZoneLeft { zone, .. } => match *zone {
-                TileKind::Local(
-                    Building1PlayerFloorTileKind::MeditationZone,
-                ) => {
+                TileKind::Zone(Meditation) => {
                     *meditating.single_mut() = Visibility::Hidden;
                 }
-                TileKind::Local(Building1PlayerFloorTileKind::BedZone) => {
+                TileKind::Zone(Bed) => {
                     *sleeping.single_mut() = Visibility::Hidden;
                 }
                 _ => {}

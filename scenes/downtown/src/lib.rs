@@ -3,13 +3,11 @@
 #![allow(clippy::type_complexity)]
 #![allow(clippy::too_many_arguments)]
 
-mod autogen;
 mod layout;
 mod prelude;
 
 use common_loading_screen::LoadingScreenState;
 use prelude::*;
-use serde::{Deserialize, Serialize};
 
 /// Important scene struct.
 /// We use it as identifiable generic in some common logic such as layout or
@@ -18,8 +16,6 @@ use serde::{Deserialize, Serialize};
 pub(crate) struct Downtown;
 
 impl TopDownScene for Downtown {
-    type LocalTileKind = DowntownTileKind;
-
     fn name() -> &'static str {
         "downtown"
     }
@@ -41,39 +37,6 @@ impl WithStandardStateSemantics for Downtown {
     fn quitting() -> GlobalGameState {
         GlobalGameState::QuittingDowntown
     }
-}
-
-/// We arbitrarily derive the [`Default`] to allow reflection.
-/// It does not have a meaningful default value.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Default,
-    Deserialize,
-    Eq,
-    Hash,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    Reflect,
-    Serialize,
-    strum::Display,
-    strum::EnumIter,
-    strum::EnumString,
-)]
-#[reflect(Default)]
-#[allow(clippy::enum_variant_names)]
-pub enum DowntownTileKind {
-    #[default]
-    Building1Entrance,
-    SewersEntrance,
-    MallEntrance,
-    CompoundEntrance,
-    ClinicEntrance,
-    ClinicWardEntrance,
-    PlantShopEntrance,
-    TwinpeaksApartmentEntrance,
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString, Eq, PartialEq)]
