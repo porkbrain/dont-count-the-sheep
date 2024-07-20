@@ -19,7 +19,7 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Building1Basement1;
 pub(crate) struct Plugin;
 
 #[derive(TypePath, Default, Debug)]
-pub struct Building1Basement1;
+struct Building1Basement1;
 
 impl main_game_lib::rscn::TscnInBevy for Building1Basement1 {
     fn tscn_asset_path() -> String {
@@ -28,7 +28,7 @@ impl main_game_lib::rscn::TscnInBevy for Building1Basement1 {
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString, Eq, PartialEq)]
-pub enum Building1Basement1Action {
+enum Building1Basement1Action {
     EnterElevator,
     EnterBasement2,
 }
@@ -83,14 +83,14 @@ impl bevy::app::Plugin for Plugin {
 /// It opens when an actor is near it and closes when the actor leaves or
 /// enters.
 #[derive(Component)]
-pub(crate) struct Elevator;
+struct Elevator;
 /// The door sprite that leads to the storage basement.
 #[derive(Component)]
-pub(crate) struct DoorToStorageBasement;
+struct DoorToStorageBasement;
 /// There's a wall that separates an apartment from the hallway.
 /// This door gets hidden when the player is near or in the apartment.
 #[derive(Component)]
-pub(crate) struct ApartmentWall;
+struct ApartmentWall;
 
 struct Spawner<'a> {
     transition: GlobalGameStateTransition,

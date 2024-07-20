@@ -15,7 +15,6 @@ members = [
     "main_game_lib",
     "main_game",
     "scenes/clinic_ward",
-    "scenes/clinic",
     "scenes/compound_tower",
     "scenes/compound",
     "scenes/downtown",
@@ -62,7 +61,6 @@ bevy_egui = "0.28"
 scene_top_down = { path = "scenes/top_down" }
 scene_building1_basement2 = { path = "scenes/building1_basement2" }
 scene_building1_player_floor = { path = "scenes/building1_player_floor" }
-scene_clinic = { path = "scenes/clinic" }
 scene_clinic_ward = { path = "scenes/clinic_ward" }
 scene_compound = { path = "scenes/compound" }
 scene_compound_tower = { path = "scenes/compound_tower" }

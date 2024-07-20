@@ -5,9 +5,7 @@ use main_game_lib::{
     hud::notification::NotificationFifo,
     player_stats::PlayerStats,
     top_down::{
-        actor::{self, movement_event_emitted},
-        environmental_objects::{self, door::DoorBuilder},
-        scene_configs::ZoneTileKind,
+        environmental_objects::door::DoorBuilder, scene_configs::ZoneTileKind,
     },
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
@@ -19,10 +17,28 @@ use top_down::{
 
 use crate::prelude::*;
 
+const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Clinic;
+
+#[derive(TypePath, Default, Debug)]
+struct Clinic;
+
+impl main_game_lib::rscn::TscnInBevy for Clinic {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
+    }
+}
+
+#[derive(Event, Reflect, Clone, strum::EnumString)]
+enum ClinicAction {
+    ExitScene,
+}
+
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<ClinicAction>();
+
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Clinic>,
@@ -40,21 +56,9 @@ impl bevy::app::Plugin for Plugin {
             exit.run_if(on_event::<ClinicAction>())
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
-        )
-        .add_systems(
-            Update,
-            environmental_objects::door::toggle
-                .run_if(in_scene_running_state(THIS_SCENE))
-                .run_if(movement_event_emitted())
-                .after(actor::emit_movement_events),
         );
     }
 }
-
-/// Assigned to the root of the scene.
-/// We then recursively despawn it on scene leave.
-#[derive(Component)]
-pub(crate) struct LayoutEntity;
 
 struct Spawner<'a> {
     player_entity: Entity,

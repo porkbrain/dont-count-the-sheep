@@ -14,16 +14,7 @@ path = "src/main.rs"
 devtools = [
     "main_game_lib/devtools",
     "scene_top_down/devtools",
-    "scene_clinic_ward/devtools",
-    "scene_clinic/devtools",
-    "scene_compound_tower/devtools",
-    "scene_compound/devtools",
-    "scene_downtown/devtools",
-    "scene_mall/devtools",
     "scene_meditation/devtools",
-    "scene_plant_shop/devtools",
-    "scene_sewers/devtools",
-    "scene_twinpeaks_apartment/devtools",
 ]
 
 
@@ -34,13 +25,4 @@ common_store.workspace = true
 common_story.workspace = true
 main_game_lib.workspace = true
 scene_top_down.workspace = true
-scene_clinic_ward.workspace = true
-scene_clinic.workspace = true
-scene_compound_tower.workspace = true
-scene_compound.workspace = true
-scene_downtown.workspace = true
-scene_mall.workspace = true
 scene_meditation.workspace = true
-scene_plant_shop.workspace = true
-scene_sewers.workspace = true
-scene_twinpeaks_apartment.workspace = true

@@ -30,10 +30,7 @@ use top_down::{
     actor::{
         self, movement_event_emitted, CharacterBundleBuilder, CharacterExt,
     },
-    environmental_objects::{
-        self,
-        door::{DoorBuilder, DoorOpenCriteria, DoorState},
-    },
+    environmental_objects::door::{DoorBuilder, DoorOpenCriteria, DoorState},
     inspect_and_interact::ZoneToInspectLabelEntity,
     layout::LAYOUT,
     ActorTarget, TileMap,
@@ -55,7 +52,7 @@ const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(750);
 const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Building1PlayerFloor;
 
 #[derive(TypePath, Default, Debug)]
-pub struct Building1PlayerFloor;
+struct Building1PlayerFloor;
 
 impl main_game_lib::rscn::TscnInBevy for Building1PlayerFloor {
     fn tscn_asset_path() -> String {
@@ -64,7 +61,7 @@ impl main_game_lib::rscn::TscnInBevy for Building1PlayerFloor {
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
-pub enum Building1PlayerFloorAction {
+enum Building1PlayerFloorAction {
     EnterElevator,
     StartMeditation,
     Sleep,
@@ -119,10 +116,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
-            (
-                watch_entry_to_hallway::system,
-                environmental_objects::door::toggle,
-            )
+            watch_entry_to_hallway::system
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(movement_event_emitted())
                 .after(actor::emit_movement_events),
@@ -133,19 +127,19 @@ impl bevy::app::Plugin for Plugin {
 /// Hallway is darkened when the player is in the apartment but once the player
 /// approaches the door or is in the hallway, it's lit up.
 #[derive(Component)]
-pub(crate) struct HallwayEntity;
+struct HallwayEntity;
 /// Elevator is a special entity that has a sprite sheet with several frames.
 /// It opens when an actor is near it and closes when the actor leaves or
 /// enters.
 #[derive(Component)]
-pub(crate) struct Elevator;
+struct Elevator;
 /// Assigned to a sprite that shows Winnie meditating in the chair.
 /// This sprite is hidden by default.
 #[derive(Component)]
-pub(crate) struct MeditatingHint;
+struct MeditatingHint;
 /// Same as [`MeditatingHint`] but for the bed.
 #[derive(Component)]
-pub(crate) struct SleepingHint;
+struct SleepingHint;
 
 struct Spawner<'a> {
     transition: GlobalGameStateTransition,
@@ -160,6 +154,7 @@ struct Spawner<'a> {
 
 /// The names are stored in the scene file.
 /// See Godot scene file for details.
+#[allow(clippy::too_many_arguments)]
 fn spawn(
     mut cmd: Commands,
     transition: Res<GlobalGameStateTransition>,

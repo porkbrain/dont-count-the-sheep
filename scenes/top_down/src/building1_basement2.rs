@@ -17,7 +17,7 @@ use crate::prelude::*;
 const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Building1Basement2;
 
 #[derive(TypePath, Default, Debug)]
-pub struct Building1Basement2;
+struct Building1Basement2;
 
 impl main_game_lib::rscn::TscnInBevy for Building1Basement2 {
     fn tscn_asset_path() -> String {
@@ -26,7 +26,7 @@ impl main_game_lib::rscn::TscnInBevy for Building1Basement2 {
 }
 
 #[derive(Event, Reflect, Clone, strum::EnumString)]
-pub enum Building1Basement2Action {
+enum Building1Basement2Action {
     Exit,
 }
 
@@ -61,7 +61,7 @@ impl bevy::app::Plugin for Plugin {
 
 /// The door sprite that leads to the storage basement.
 #[derive(Component)]
-pub(crate) struct DoorToStorageBasement;
+struct DoorToStorageBasement;
 
 struct Spawner<'a> {
     player_entity: Entity,

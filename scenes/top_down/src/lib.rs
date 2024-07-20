@@ -7,6 +7,7 @@
 mod building1_basement1;
 mod building1_basement2;
 mod building1_player_floor;
+mod clinic;
 mod layout;
 mod prelude;
 
@@ -24,6 +25,7 @@ pub fn add(app: &mut App) {
         building1_basement1::Plugin,
         building1_basement2::Plugin,
         building1_player_floor::Plugin,
+        clinic::Plugin,
     ));
 
     debug!("Adding game loop");
@@ -118,6 +120,10 @@ fn exit(
         }
         Sleeping => {
             next_state.set(WhichTopDownScene::Building1PlayerFloor.loading());
+        }
+
+        ClinicToDowntown => {
+            next_state.set(WhichTopDownScene::Downtown.loading());
         }
 
         _ => {
