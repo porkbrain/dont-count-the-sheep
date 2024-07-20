@@ -28,10 +28,10 @@ use leafwing_input_manager::plugin::InputManagerSystem;
 
 use self::inspect_and_interact::ChangeHighlightedInspectLabelEvent;
 use crate::{
-    cutscene::in_cutscene, in_top_down_running_state,
+    cutscene::in_cutscene, in_scene_loading_state, in_scene_running_state,
+    in_top_down_running_state,
     top_down::inspect_and_interact::ChangeHighlightedInspectLabelEventConsumer,
-    InTopDownScene, StandardStateSemantics, TopDownSceneState,
-    WithStandardStateSemantics,
+    InTopDownScene, TopDownSceneState, WhichTopDownScene,
 };
 
 /// Does not add any systems, only registers generic-less types.
@@ -178,63 +178,63 @@ impl bevy::app::Plugin for Plugin {
 /// - [`crate::top_down::actor::npc::plan_path`]
 /// - [`crate::top_down::actor::npc::run_path`]
 /// - [`crate::top_down::actor::player::move_around`]
-pub fn default_setup_for_scene<T>(app: &mut App)
+pub fn default_setup_for_scene<T>(app: &mut App, scene: WhichTopDownScene)
 where
-    T: TopDownScene + WithStandardStateSemantics,
+    T: TopDownScene,
 {
-    debug!("Adding assets for {}", T::type_path());
-
-    let StandardStateSemantics {
-        running, loading, ..
-    } = T::semantics();
-
     debug!("Adding map layout for {}", T::type_path());
 
     app.init_asset_loader::<common_assets::ron_loader::Loader<TileMap<T>>>()
         .init_asset::<TileMap<T>>();
 
-    app.add_systems(OnEnter(loading), layout::systems::start_loading_map::<T>)
-        .add_systems(
-            First,
-            layout::systems::try_insert_map_as_resource::<T>
-                .run_if(in_state(loading)),
+    app.add_systems(
+        OnEnter(scene.loading()),
+        layout::systems::start_loading_map::<T>,
+    )
+    .add_systems(
+        First,
+        layout::systems::try_insert_map_as_resource::<T>
+            .run_if(in_scene_loading_state(scene)),
+    )
+    .add_systems(
+        FixedUpdate,
+        actor::animate_movement::<T>.run_if(in_scene_running_state(scene)),
+    )
+    .add_systems(
+        Update,
+        actor::emit_movement_events::<T>
+            .run_if(in_scene_running_state(scene))
+            // so that we can emit this event on current frame
+            .after(actor::player::move_around::<T>),
+    )
+    .add_systems(
+        Update,
+        actor::player::move_around::<T>
+            .run_if(in_scene_running_state(scene))
+            .run_if(common_action::move_action_pressed())
+            .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
+    )
+    .add_systems(
+        Update,
+        (
+            actor::npc::drive_behavior,
+            actor::npc::plan_path::<T>
+                .run_if(on_event::<actor::npc::PlanPathEvent>()),
+            actor::npc::run_path::<T>,
         )
-        .add_systems(
-            FixedUpdate,
-            actor::animate_movement::<T>.run_if(in_state(running)),
-        )
-        .add_systems(
-            Update,
-            actor::emit_movement_events::<T>
-                .run_if(in_state(running))
-                // so that we can emit this event on current frame
-                .after(actor::player::move_around::<T>),
-        )
-        .add_systems(
-            Update,
-            actor::player::move_around::<T>
-                .run_if(in_state(running))
-                .run_if(common_action::move_action_pressed())
-                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
-        )
-        .add_systems(
-            Update,
-            (
-                actor::npc::drive_behavior,
-                actor::npc::plan_path::<T>
-                    .run_if(on_event::<actor::npc::PlanPathEvent>()),
-                actor::npc::run_path::<T>,
-            )
-                .chain()
-                .run_if(in_state(running)),
-        )
-        .add_systems(OnExit(running), layout::systems::remove_resources::<T>);
+            .chain()
+            .run_if(in_scene_running_state(scene)),
+    )
+    .add_systems(
+        OnExit(scene.running()),
+        layout::systems::remove_resources::<T>,
+    );
 
     debug!("Adding interaction systems for {}", T::type_path());
     app.add_systems(
         Update,
         inspect_and_interact::match_interact_label_with_action_event
-            .run_if(in_state(running))
+            .run_if(in_scene_running_state(scene))
             .run_if(on_event::<ActorMovementEvent>())
             .after(emit_movement_events::<T>),
     );
@@ -245,7 +245,7 @@ where
         FixedUpdate,
         cameras::track_player_with_main_camera
             .after(actor::animate_movement::<T>)
-            .run_if(in_state(running))
+            .run_if(in_scene_running_state(scene))
             .run_if(not(in_cutscene()))
             .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
     );
@@ -256,24 +256,20 @@ where
 /// We draw an overlay with tiles that you can edit with left and right mouse
 /// buttons.
 #[cfg(feature = "devtools")]
-pub fn dev_default_setup_for_scene<T>(app: &mut App)
+pub fn dev_default_setup_for_scene<T>(app: &mut App, scene: WhichTopDownScene)
 where
-    T: TopDownScene + WithStandardStateSemantics,
+    T: TopDownScene,
 {
-    let StandardStateSemantics {
-        running, quitting, ..
-    } = T::semantics();
-
     app.register_type::<TileMap<T>>();
 
     app.add_systems(
-        OnEnter(running),
+        OnEnter(scene.running()),
         layout::map_maker::spawn_debug_grid_root::<T>,
     )
     .add_systems(
         Update,
         layout::map_maker::show_tiles_around_cursor::<T>
-            .run_if(in_state(running)),
+            .run_if(in_scene_running_state(scene)),
     )
     .add_systems(
         Update,
@@ -282,8 +278,8 @@ where
             layout::map_maker::recolor_squares::<T>,
             layout::map_maker::update_ui::<T>,
         )
-            .run_if(in_state(running))
+            .run_if(in_scene_running_state(scene))
             .chain(),
     )
-    .add_systems(OnExit(quitting), layout::map_maker::destroy_map::<T>);
+    .add_systems(OnExit(scene.leaving()), layout::map_maker::destroy_map::<T>);
 }

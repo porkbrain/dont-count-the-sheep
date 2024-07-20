@@ -146,20 +146,6 @@ pub enum GlobalGameStateTransition {
     DowntownToClinicWard,
 }
 
-/// Typical scene has several states with standard semantics.
-pub struct StandardStateSemantics {
-    /// The state when the scene is loading.
-    /// Setups up resources.
-    pub loading: GlobalGameState,
-    /// The state when the scene is running.
-    pub running: GlobalGameState,
-    /// The state when the scene is quitting.
-    /// Cleans up resources.
-    pub quitting: GlobalGameState,
-    /// Some scenes have a paused state.
-    pub paused: Option<GlobalGameState>,
-}
-
 /// Helper params that are used in transitions.
 /// Use [`TransitionParams::begin`] to start a transition.
 #[derive(SystemParam)]
@@ -172,49 +158,6 @@ pub struct TransitionParams<'w, 's> {
     pub next_state: ResMut<'w, NextState<GlobalGameState>>,
     /// Always set to start state.
     pub next_loading_screen_state: ResMut<'w, NextState<LoadingScreenState>>,
-}
-
-/// Typical scene has several states with standard semantics.
-pub trait WithStandardStateSemantics {
-    /// The state when the scene is loading.
-    fn loading() -> GlobalGameState;
-    /// The state when the scene is running.
-    fn running() -> GlobalGameState;
-    /// The state when the scene is quitting.
-    fn quitting() -> GlobalGameState;
-
-    /// Some scenes have a paused state.
-    fn paused() -> Option<GlobalGameState> {
-        None
-    }
-
-    /// Converts these methods into a struct
-    fn semantics() -> StandardStateSemantics {
-        StandardStateSemantics {
-            loading: Self::loading(),
-            running: Self::running(),
-            quitting: Self::quitting(),
-            paused: Self::paused(),
-        }
-    }
-
-    /// Helper to check if the state is in the loading state.
-    fn in_loading_state(
-    ) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
-        in_state(Self::loading())
-    }
-
-    /// Helper to check if the state is in the running state.
-    fn in_running_state(
-    ) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
-        in_state(Self::running())
-    }
-
-    /// Helper to check if the state is in the quitting state.
-    fn in_quitting_state(
-    ) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
-        in_state(Self::quitting())
-    }
 }
 
 /// Helper to check if the state is in specific top down scene loading state.

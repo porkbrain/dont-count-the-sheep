@@ -39,7 +39,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             spawn
-                .run_if(Building1PlayerFloor::in_loading_state())
+                .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap<Building1PlayerFloor>>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<
                     Building1PlayerFloor,
@@ -52,7 +52,7 @@ impl bevy::app::Plugin for Plugin {
                 watch_entry_to_hallway::system,
                 environmental_objects::door::toggle::<Building1PlayerFloor>,
             )
-                .run_if(Building1PlayerFloor::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(movement_event_emitted())
                 .after(actor::emit_movement_events::<Building1PlayerFloor>),
         );

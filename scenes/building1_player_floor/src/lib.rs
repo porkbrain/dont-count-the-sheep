@@ -68,20 +68,20 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(Building1PlayerFloor::in_loading_state())
+            .run_if(in_scene_loading_state(THIS_SCENE))
             .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_scene.run_if(Building1PlayerFloor::in_loading_state()),
+        enter_the_scene.run_if(in_scene_loading_state(THIS_SCENE)),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(Building1PlayerFloor::in_running_state())
+            .run_if(in_scene_running_state(THIS_SCENE))
             .run_if(in_state(common_loading_screen::wait_state())),
     );
 
@@ -90,7 +90,7 @@ pub fn add(app: &mut App) {
         // wait for the loading screen to fade in before changing state,
         // otherwise the player might see a flicker
         exit.run_if(in_state(common_loading_screen::wait_state()))
-            .run_if(Building1PlayerFloor::in_quitting_state()),
+            .run_if(in_scene_leaving_state(THIS_SCENE)),
     );
 
     info!("Added {Building1PlayerFloor:?} to app");

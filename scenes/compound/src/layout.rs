@@ -28,7 +28,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             spawn
-                .run_if(Compound::in_loading_state())
+                .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap<Compound>>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Compound>()),
         )
@@ -41,7 +41,7 @@ impl bevy::app::Plugin for Plugin {
                 enter_tower
                     .run_if(on_event_variant(CompoundAction::EnterTower)),
             )
-                .run_if(Compound::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         );
     }

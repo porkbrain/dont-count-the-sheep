@@ -30,7 +30,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             spawn
-                .run_if(Clinic::in_loading_state())
+                .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap<Clinic>>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Clinic>()),
         )
@@ -38,13 +38,13 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             exit.run_if(on_event::<ClinicAction>())
-                .run_if(Clinic::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         )
         .add_systems(
             Update,
             environmental_objects::door::toggle::<Clinic>
-                .run_if(Clinic::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(movement_event_emitted())
                 .after(actor::emit_movement_events::<Clinic>),
         );

@@ -25,7 +25,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             spawn
-                .run_if(Building1Basement2::in_loading_state())
+                .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap<Building1Basement2>>)
                 .run_if(
                     rscn::tscn_loaded_but_not_spawned::<Building1Basement2>(),
@@ -35,7 +35,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             exit.run_if(on_event::<Building1Basement2Action>())
-                .run_if(Building1Basement2::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         );
     }
