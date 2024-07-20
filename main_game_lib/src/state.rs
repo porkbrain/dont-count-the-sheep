@@ -82,7 +82,6 @@ pub enum WhichTopDownScene {
     Sewers,
     TwinpeaksApartment,
     Mall,
-    Meditation,
     Downtown,
     Compound,
     CompoundTower,

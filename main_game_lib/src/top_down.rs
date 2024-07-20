@@ -23,7 +23,7 @@ use actor::{emit_movement_events, BeginDialogEvent};
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::prelude::*;
 pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
-pub use layout::{TileKind, TileMap, TopDownScene};
+pub use layout::{TileKind, TileMap};
 use leafwing_input_manager::plugin::InputManagerSystem;
 
 use self::inspect_and_interact::ChangeHighlightedInspectLabelEvent;
@@ -43,6 +43,8 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<BeginDialogEvent>()
             .add_event::<ChangeHighlightedInspectLabelEvent>()
             .add_event::<ActorMovementEvent>();
+
+        app.add_plugins(environmental_objects::Plugin);
 
         //
         // Assets

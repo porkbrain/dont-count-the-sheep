@@ -1,0 +1,23 @@
+[package]
+name = "scene_top_down"
+version.workspace = true
+edition.workspace = true
+
+
+[features]
+devtools = [
+    "main_game_lib/devtools",
+    "common_story/devtools",
+    "common_visuals/devtools",
+]
+
+
+[dependencies]
+bevy_grid_squared.workspace = true
+bevy.workspace = true
+common_loading_screen.workspace = true
+common_story.workspace = true
+common_visuals.workspace = true
+main_game_lib.workspace = true
+rand.workspace = true
+strum.workspace = true

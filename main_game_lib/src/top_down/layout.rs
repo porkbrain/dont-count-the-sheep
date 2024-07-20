@@ -14,7 +14,7 @@ use bevy::{
     log::{trace, warn},
     math::{vec2, Vec2},
     prelude::ReflectDefault,
-    reflect::{Reflect, TypePath},
+    reflect::Reflect,
     utils::hashbrown::HashMap,
 };
 use bevy_grid_squared::{Square, SquareLayout};
@@ -35,11 +35,6 @@ pub const LAYOUT: SquareLayout = SquareLayout {
 
 /// A tile is uniquely identified by (`x`, `y`) of the square and a layer index.
 pub type TileIndex = (Square, usize);
-
-/// Some map.
-pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
-    //
-}
 
 /// Holds the tiles in a hash map.
 #[derive(Asset, Resource, Serialize, Deserialize, Reflect, Clone, Debug)]
