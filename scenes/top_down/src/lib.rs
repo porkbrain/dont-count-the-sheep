@@ -129,7 +129,7 @@ fn exit(
             next_state.set(WhichTopDownScene::Building1Basement1.loading());
         }
         Building1PlayerFloorToMeditation => {
-            next_state.set(WhichTopDownScene::Meditation.loading());
+            next_state.set(GlobalGameState::LoadingMeditation);
         }
         Building1PlayerFloorToDowntown => {
             next_state.set(WhichTopDownScene::Downtown.loading());
