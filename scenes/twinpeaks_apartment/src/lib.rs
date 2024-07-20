@@ -23,20 +23,6 @@ impl TopDownScene for TwinpeaksApartment {
     }
 }
 
-impl WithStandardStateSemantics for TwinpeaksApartment {
-    fn loading() -> GlobalGameState {
-        WhichTopDownScene::TwinpeaksApartment.loading()
-    }
-
-    fn running() -> GlobalGameState {
-        WhichTopDownScene::TwinpeaksApartment.running()
-    }
-
-    fn quitting() -> GlobalGameState {
-        WhichTopDownScene::TwinpeaksApartment.leaving()
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString)]
 pub enum TwinpeaksApartmentAction {
     ExitScene,
@@ -47,10 +33,12 @@ pub fn add(app: &mut App) {
 
     app.add_event::<TwinpeaksApartmentAction>();
 
-    top_down::default_setup_for_scene::<TwinpeaksApartment>(app);
+    top_down::default_setup_for_scene::<TwinpeaksApartment>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<TwinpeaksApartment>(app);
+    top_down::dev_default_setup_for_scene::<TwinpeaksApartment>(
+        app, THIS_SCENE,
+    );
 
     debug!("Adding plugins");
 
@@ -106,7 +94,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering {TwinpeaksApartment:?}");
-    next_state.set(TwinpeaksApartment::running());
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(

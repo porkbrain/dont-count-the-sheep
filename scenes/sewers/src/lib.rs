@@ -23,20 +23,6 @@ impl TopDownScene for Sewers {
     }
 }
 
-impl WithStandardStateSemantics for Sewers {
-    fn loading() -> GlobalGameState {
-        WhichTopDownScene::Sewers.loading()
-    }
-
-    fn running() -> GlobalGameState {
-        WhichTopDownScene::Sewers.running()
-    }
-
-    fn quitting() -> GlobalGameState {
-        WhichTopDownScene::Sewers.leaving()
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString)]
 pub enum SewersAction {
     ExitScene,
@@ -47,10 +33,10 @@ pub fn add(app: &mut App) {
 
     app.add_event::<SewersAction>();
 
-    top_down::default_setup_for_scene::<Sewers>(app);
+    top_down::default_setup_for_scene::<Sewers>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Sewers>(app);
+    top_down::dev_default_setup_for_scene::<Sewers>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -106,7 +92,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering {Sewers:?}");
-    next_state.set(Sewers::running());
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(

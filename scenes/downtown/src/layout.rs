@@ -33,7 +33,7 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(Downtown::loading()),
+            OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Downtown>,
         )
         .add_systems(
@@ -44,7 +44,7 @@ impl bevy::app::Plugin for Plugin {
                 .run_if(any_with_component::<MainCamera>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Downtown>()),
         )
-        .add_systems(OnExit(Downtown::quitting()), despawn)
+        .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
             (

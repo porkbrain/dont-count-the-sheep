@@ -23,20 +23,6 @@ impl TopDownScene for ClinicWard {
     }
 }
 
-impl WithStandardStateSemantics for ClinicWard {
-    fn loading() -> GlobalGameState {
-        WhichTopDownScene::ClinicWard.loading()
-    }
-
-    fn running() -> GlobalGameState {
-        WhichTopDownScene::ClinicWard.running()
-    }
-
-    fn quitting() -> GlobalGameState {
-        WhichTopDownScene::ClinicWard.leaving()
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
 pub enum ClinicWardAction {
     ExitScene,
@@ -47,10 +33,10 @@ pub fn add(app: &mut App) {
 
     app.add_event::<ClinicWardAction>();
 
-    top_down::default_setup_for_scene::<ClinicWard>(app);
+    top_down::default_setup_for_scene::<ClinicWard>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<ClinicWard>(app);
+    top_down::dev_default_setup_for_scene::<ClinicWard>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -106,7 +92,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering {ClinicWard:?}");
-    next_state.set(ClinicWard::running());
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(

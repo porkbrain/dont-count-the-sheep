@@ -23,20 +23,6 @@ impl TopDownScene for Clinic {
     }
 }
 
-impl WithStandardStateSemantics for Clinic {
-    fn loading() -> GlobalGameState {
-        WhichTopDownScene::Clinic.loading()
-    }
-
-    fn running() -> GlobalGameState {
-        WhichTopDownScene::Clinic.running()
-    }
-
-    fn quitting() -> GlobalGameState {
-        WhichTopDownScene::Clinic.leaving()
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString)]
 pub enum ClinicAction {
     ExitScene,
@@ -47,10 +33,10 @@ pub fn add(app: &mut App) {
 
     app.add_event::<ClinicAction>();
 
-    top_down::default_setup_for_scene::<Clinic>(app);
+    top_down::default_setup_for_scene::<Clinic>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Clinic>(app);
+    top_down::dev_default_setup_for_scene::<Clinic>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -106,7 +92,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering {Clinic:?}");
-    next_state.set(Clinic::running());
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(

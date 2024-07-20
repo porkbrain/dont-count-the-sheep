@@ -13,3 +13,6 @@ pub(crate) const WINNIE_IN_BATHROOM_TRANSITION_FOR_AT_LEAST: Duration =
 
 /// Walk down slowly otherwise it'll happen before the player even sees it.
 pub(crate) const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(750);
+
+pub(crate) const THIS_SCENE: WhichTopDownScene =
+    WhichTopDownScene::Building1PlayerFloor;

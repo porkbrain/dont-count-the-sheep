@@ -23,20 +23,6 @@ impl TopDownScene for PlantShop {
     }
 }
 
-impl WithStandardStateSemantics for PlantShop {
-    fn loading() -> GlobalGameState {
-        WhichTopDownScene::PlantShop.loading()
-    }
-
-    fn running() -> GlobalGameState {
-        WhichTopDownScene::PlantShop.running()
-    }
-
-    fn quitting() -> GlobalGameState {
-        WhichTopDownScene::PlantShop.leaving()
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
 pub enum PlantShopAction {
     ExitScene,
@@ -47,10 +33,10 @@ pub fn add(app: &mut App) {
 
     app.add_event::<PlantShopAction>();
 
-    top_down::default_setup_for_scene::<PlantShop>(app);
+    top_down::default_setup_for_scene::<PlantShop>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<PlantShop>(app);
+    top_down::dev_default_setup_for_scene::<PlantShop>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -106,7 +92,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering {PlantShop:?}");
-    next_state.set(PlantShop::running());
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(

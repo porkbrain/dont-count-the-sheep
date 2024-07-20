@@ -18,7 +18,7 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(TwinpeaksApartment::loading()),
+            OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<TwinpeaksApartment>,
         )
         .add_systems(
@@ -30,7 +30,7 @@ impl bevy::app::Plugin for Plugin {
                     rscn::tscn_loaded_but_not_spawned::<TwinpeaksApartment>(),
                 ),
         )
-        .add_systems(OnExit(TwinpeaksApartment::quitting()), despawn)
+        .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
             exit.run_if(on_event::<TwinpeaksApartmentAction>())
@@ -175,6 +175,6 @@ fn exit(
         next_loading_screen_state.set(common_loading_screen::start_state());
 
         *transition = GlobalGameStateTransition::TwinpeaksApartmentToDowntown;
-        next_state.set(TwinpeaksApartment::quitting());
+        next_state.set(THIS_SCENE.leaving());
     }
 }

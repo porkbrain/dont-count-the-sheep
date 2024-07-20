@@ -106,7 +106,7 @@ fn start_meditation_minigame(
         vec![
             CutsceneStep::TakeAwayPlayerControl(player),
             CutsceneStep::ChangeGlobalState {
-                to: Building1PlayerFloor::quitting(),
+                to: THIS_SCENE.leaving(),
                 with:
                     GlobalGameStateTransition::Building1PlayerFloorToMeditation,
             },
@@ -209,7 +209,7 @@ fn sleep(mut cmd: Commands, player: Query<Entity, With<Player>>) {
     vec![
         CutsceneStep::TakeAwayPlayerControl(player),
         CutsceneStep::ChangeGlobalState {
-            to: Building1PlayerFloor::quitting(),
+            to: THIS_SCENE.leaving(),
             with: GlobalGameStateTransition::Sleeping,
         },
         CutsceneStep::StartLoadingScreen {

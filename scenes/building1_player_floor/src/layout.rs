@@ -33,7 +33,7 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(Building1PlayerFloor::loading()),
+            OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Building1PlayerFloor>,
         )
         .add_systems(
@@ -45,7 +45,7 @@ impl bevy::app::Plugin for Plugin {
                     Building1PlayerFloor,
                 >()),
         )
-        .add_systems(OnExit(Building1PlayerFloor::quitting()), despawn)
+        .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
             (

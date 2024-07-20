@@ -18,7 +18,7 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(CompoundTower::loading()),
+            OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<CompoundTower>,
         )
         .add_systems(
@@ -28,7 +28,7 @@ impl bevy::app::Plugin for Plugin {
                 .run_if(resource_exists::<TileMap<CompoundTower>>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<CompoundTower>()),
         )
-        .add_systems(OnExit(CompoundTower::quitting()), despawn)
+        .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
             exit.run_if(on_event_variant(CompoundTowerAction::ExitScene))

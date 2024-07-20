@@ -23,20 +23,6 @@ impl TopDownScene for CompoundTower {
     }
 }
 
-impl WithStandardStateSemantics for CompoundTower {
-    fn loading() -> GlobalGameState {
-        WhichTopDownScene::CompoundTower.loading()
-    }
-
-    fn running() -> GlobalGameState {
-        WhichTopDownScene::CompoundTower.running()
-    }
-
-    fn quitting() -> GlobalGameState {
-        WhichTopDownScene::CompoundTower.leaving()
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
 pub enum CompoundTowerAction {
     ExitScene,
@@ -47,10 +33,10 @@ pub fn add(app: &mut App) {
 
     app.add_event::<CompoundTowerAction>();
 
-    top_down::default_setup_for_scene::<CompoundTower>(app);
+    top_down::default_setup_for_scene::<CompoundTower>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<CompoundTower>(app);
+    top_down::dev_default_setup_for_scene::<CompoundTower>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -106,7 +92,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering {CompoundTower:?}");
-    next_state.set(CompoundTower::running());
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(

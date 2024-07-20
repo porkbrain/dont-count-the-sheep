@@ -23,20 +23,6 @@ impl TopDownScene for Mall {
     }
 }
 
-impl WithStandardStateSemantics for Mall {
-    fn loading() -> GlobalGameState {
-        WhichTopDownScene::Mall.loading()
-    }
-
-    fn running() -> GlobalGameState {
-        WhichTopDownScene::Mall.running()
-    }
-
-    fn quitting() -> GlobalGameState {
-        WhichTopDownScene::Mall.leaving()
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString)]
 pub enum MallAction {
     ExitScene,
@@ -48,10 +34,10 @@ pub fn add(app: &mut App) {
 
     app.add_event::<MallAction>();
 
-    top_down::default_setup_for_scene::<Mall>(app);
+    top_down::default_setup_for_scene::<Mall>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Mall>(app);
+    top_down::dev_default_setup_for_scene::<Mall>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -107,7 +93,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering {Mall:?}");
-    next_state.set(Mall::running());
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(

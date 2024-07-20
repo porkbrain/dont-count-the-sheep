@@ -24,20 +24,6 @@ impl TopDownScene for Compound {
     }
 }
 
-impl WithStandardStateSemantics for Compound {
-    fn loading() -> GlobalGameState {
-        WhichTopDownScene::Compound.loading()
-    }
-
-    fn running() -> GlobalGameState {
-        WhichTopDownScene::Compound.running()
-    }
-
-    fn quitting() -> GlobalGameState {
-        WhichTopDownScene::Compound.leaving()
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
 pub enum CompoundAction {
     GoToDowntown,
@@ -49,10 +35,10 @@ pub fn add(app: &mut App) {
 
     app.add_event::<CompoundAction>();
 
-    top_down::default_setup_for_scene::<Compound>(app);
+    top_down::default_setup_for_scene::<Compound>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Compound>(app);
+    top_down::dev_default_setup_for_scene::<Compound>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -108,7 +94,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering {Compound:?}");
-    next_state.set(Compound::running());
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(
