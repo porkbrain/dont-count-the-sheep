@@ -1,6 +1,6 @@
 (
  zones: (
-  inner: {Zone(Building1Entrance): (zone_group: (12), zone_size: 33, zone_successors: []), Zone(ClinicEntrance): (zone_group: (13), zone_size: 6, zone_successors: []), Zone(ClinicWardEntrance): (zone_group: (14), zone_size: 6, zone_successors: []), Zone(CompoundEntrance): (zone_group: (15), zone_size: 405, zone_successors: []), Zone(MallEntrance): (zone_group: (25), zone_size: 165, zone_successors: []), Zone(PlantShopEntrance): (zone_group: (27), zone_size: 44, zone_successors: []), Zone(SewersEntrance): (zone_group: (30), zone_size: 60, zone_successors: []), Zone(TwinpeaksApartmentEntrance): (zone_group: (32), zone_size: 44, zone_successors: [])},
+  inner: {Zone(Building1Entrance): (zone_group: (11), zone_size: 33, zone_successors: []), Zone(ClinicEntrance): (zone_group: (12), zone_size: 6, zone_successors: []), Zone(ClinicWardEntrance): (zone_group: (13), zone_size: 6, zone_successors: []), Zone(CompoundEntrance): (zone_group: (14), zone_size: 405, zone_successors: []), Zone(MallEntrance): (zone_group: (24), zone_size: 165, zone_successors: []), Zone(PlantShopEntrance): (zone_group: (26), zone_size: 44, zone_successors: []), Zone(SewersEntrance): (zone_group: (29), zone_size: 60, zone_successors: []), Zone(TwinpeaksApartmentEntrance): (zone_group: (31), zone_size: 44, zone_successors: [])},
  ),
  squares: {
   (x: -263, y: -291): [Wall],
