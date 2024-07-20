@@ -1,39 +1,45 @@
-mod watch_entry_to_apartment;
-
-use bevy::render::view::RenderLayers;
-use bevy_grid_squared::sq;
-use common_loading_screen::LoadingScreenSettings;
-use common_visuals::camera::{render_layer, MainCamera};
+use common_visuals::BeginInterpolationEvent;
 use main_game_lib::{
-    common_ext::QueryExt,
     cutscene::{
-        self,
         enter_an_elevator::{
             start_with_open_elevator_and_close_it, STEP_TIME_ON_EXIT_ELEVATOR,
         },
         enter_dark_door::EnterDarkDoor,
-        in_cutscene, IntoCutscene,
     },
-    dialog::DialogGraph,
     top_down::{
-        actor::{self, movement_event_emitted, player::TakeAwayPlayerControl},
-        environmental_objects::{self, door::DoorBuilder},
-        scene_configs::ZoneTileKind,
+        actor::Who, environmental_objects::door::DoorBuilder,
+        ActorMovementEvent,
     },
-};
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
-use top_down::{
-    actor::{CharacterBundleBuilder, CharacterExt},
-    inspect_and_interact::ZoneToInspectLabelEntity,
-    TileMap,
 };
 
 use crate::prelude::*;
 
+pub(crate) const THIS_SCENE: WhichTopDownScene =
+    WhichTopDownScene::Building1Basement1;
+
 pub(crate) struct Plugin;
+
+/// Important scene struct.
+/// We use it as identifiable generic in common logic.
+#[derive(TypePath, Default, Debug)]
+pub struct Building1Basement1;
+
+impl main_game_lib::rscn::TscnInBevy for Building1Basement1 {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
+    }
+}
+
+#[derive(Event, Reflect, Clone, strum::EnumString, Eq, PartialEq)]
+pub enum Building1Basement1Action {
+    EnterElevator,
+    EnterBasement2,
+}
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<Building1Basement1Action>();
+
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Building1Basement1>,
@@ -48,13 +54,6 @@ impl bevy::app::Plugin for Plugin {
                 ),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
-        .add_systems(
-            Update,
-            environmental_objects::door::toggle
-                .run_if(in_scene_running_state(THIS_SCENE))
-                .run_if(movement_event_emitted())
-                .after(actor::emit_movement_events),
-        )
         .add_systems(
             Update,
             enter_the_elevator
@@ -75,7 +74,7 @@ impl bevy::app::Plugin for Plugin {
         )
         .add_systems(
             Update,
-            watch_entry_to_apartment::system
+            watch_entry_to_apartment
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(movement_event_emitted())
                 .after(actor::emit_movement_events),
@@ -83,10 +82,6 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-/// Assigned to the root of the scene.
-/// We then recursively despawn it on scene leave.
-#[derive(Component)]
-pub(crate) struct LayoutEntity;
 /// Elevator is a special entity that has a sprite sheet with several frames.
 /// It opens when an actor is near it and closes when the actor leaves or
 /// enters.
@@ -312,4 +307,64 @@ fn enter_basement2(
         loading_screen: LoadingScreenSettings { ..default() },
     }
     .spawn(&mut cmd);
+}
+
+/// How long does it take for the entity to go transparent
+const WALL_FADE_OUT_TRANSITION_DURATION: Duration = from_millis(500);
+/// How long does it take for the entity to go to its full color.
+const WALL_FADE_IN_TRANSITION_DURATION: Duration = from_millis(1500);
+
+/// Listens to events about entering the
+/// [`ZoneTileKind::UpperApartmentWallHidden`].
+///
+/// When entered, the [`ApartmentWall`] entity is hidden.
+fn watch_entry_to_apartment(
+    mut movement_events: EventReader<ActorMovementEvent>,
+    mut lerp_event: EventWriter<BeginInterpolationEvent>,
+
+    wall: Query<Entity, With<ApartmentWall>>,
+) {
+    use ZoneTileKind::UpperApartmentWallHidden as TheZone;
+
+    for event in movement_events.read() {
+        match event {
+            ActorMovementEvent::ZoneEntered {
+                who:
+                    Who {
+                        is_player: true, ..
+                    },
+                zone: TileKind::Zone(TheZone),
+            } => {
+                trace!("Hiding apartment wall");
+                lerp_event.send(
+                    BeginInterpolationEvent::of_color(
+                        wall.single(),
+                        None,
+                        Color::NONE,
+                    )
+                    .over(WALL_FADE_OUT_TRANSITION_DURATION),
+                );
+            }
+            ActorMovementEvent::ZoneLeft {
+                who:
+                    Who {
+                        is_player: true, ..
+                    },
+                zone: TileKind::Zone(TheZone),
+            } => {
+                trace!("Showing apartment wall");
+                lerp_event.send(
+                    BeginInterpolationEvent::of_color(
+                        wall.single(),
+                        None,
+                        Color::WHITE,
+                    )
+                    .over(WALL_FADE_IN_TRANSITION_DURATION),
+                );
+            }
+
+            // we don't care about other events
+            _ => {}
+        }
+    }
 }

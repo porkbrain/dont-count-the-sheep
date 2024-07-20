@@ -2,8 +2,6 @@
 //! There are different [`DoorOpenCriteria`] that can be used to open the door.
 //! Optionally, the door can have an obstacle that's inserted into the map when
 //! the door is closed.
-//!
-//! You must register the `environmental_objects::door::toggle` system.
 
 use bevy::prelude::*;
 use bevy_grid_squared::Square;

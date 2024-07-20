@@ -44,6 +44,8 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<ChangeHighlightedInspectLabelEvent>()
             .add_event::<ActorMovementEvent>();
 
+        app.add_plugins(environmental_objects::Plugin);
+
         //
         // Assets
         //

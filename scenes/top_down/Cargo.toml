@@ -1,5 +1,5 @@
 [package]
-name = "scene_building1_basement1"
+name = "scene_top_down"
 version.workspace = true
 edition.workspace = true
 

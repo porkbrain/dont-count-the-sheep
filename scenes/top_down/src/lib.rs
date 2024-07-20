@@ -4,6 +4,7 @@
 #![feature(trivial_bounds)]
 #![feature(let_chains)]
 
+mod building1_basement1;
 mod layout;
 mod prelude;
 
@@ -12,31 +13,12 @@ use prelude::*;
 
 use crate::layout::LayoutEntity;
 
-/// Important scene struct.
-/// We use it as identifiable generic in common logic.
-#[derive(TypePath, Default, Debug)]
-pub struct Building1Basement1;
-
-impl main_game_lib::rscn::TscnInBevy for Building1Basement1 {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
-    }
-}
-
-#[derive(Event, Reflect, Clone, strum::EnumString, Eq, PartialEq)]
-pub enum Building1Basement1Action {
-    EnterElevator,
-    EnterBasement2,
-}
-
 pub fn add(app: &mut App) {
-    info!("Adding {THIS_SCENE} to app");
-
-    app.add_event::<Building1Basement1Action>();
+    info!("Adding top down scenes to app");
 
     debug!("Adding plugins");
 
-    app.add_plugins(layout::Plugin);
+    app.add_plugins(building1_basement1::Plugin);
 
     debug!("Adding game loop");
 
@@ -45,20 +27,20 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(in_scene_loading_state(THIS_SCENE))
+            .run_if(in_top_down_loading_state())
             .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_scene.run_if(in_scene_loading_state(THIS_SCENE)),
+        enter_the_scene.run_if(in_top_down_loading_state()),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(in_scene_running_state(THIS_SCENE))
+            .run_if(in_top_down_running_state())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
@@ -67,10 +49,8 @@ pub fn add(app: &mut App) {
         // wait for the loading screen to fade in before changing state,
         // otherwise the player might see a flicker
         exit.run_if(in_state(common_loading_screen::wait_state()))
-            .run_if(in_scene_leaving_state(THIS_SCENE)),
+            .run_if(in_top_down_leaving_state()),
     );
-
-    info!("Added {THIS_SCENE} to app");
 }
 
 fn finish_when_everything_loaded(
@@ -86,17 +66,21 @@ fn finish_when_everything_loaded(
     next_loading_state.set(common_loading_screen::finish_state());
 }
 
-fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
-    info!("Entering {THIS_SCENE}");
-    next_state.set(THIS_SCENE.running());
+fn enter_the_scene(
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+    scene: Res<State<WhichTopDownScene>>,
+) {
+    info!("Entering {}", **scene);
+    next_state.set(scene.running());
 }
 
 fn exit(
     transition: Res<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
+    scene: Res<State<WhichTopDownScene>>,
 ) {
-    info!("Leaving {THIS_SCENE}");
+    info!("Leaving {}", **scene);
 
     // be a good guy and don't invade other game loops with "Enter"
     controls.consume(&GlobalAction::Interact);
@@ -113,7 +97,7 @@ fn exit(
             next_state.set(WhichTopDownScene::Building1Basement2.loading());
         }
         _ => {
-            unreachable!("Invalid {THIS_SCENE} transition {transition:?}");
+            unreachable!("Invalid {} transition {transition:?}", **scene);
         }
     }
 }
@@ -123,10 +107,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_has_valid_tscn_scene() {
-        const TSCN: &str = include_str!(
-            "../../../main_game/assets/scenes/building1_basement1.tscn",
-        );
-        rscn::parse(TSCN, &default());
+    fn it_has_valid_tscn_scenes() {
+        for entry in std::fs::read_dir("../../main_game/assets/scenes")
+            .expect("Cannot find scene assets")
+        {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.is_file() {
+                let path = path.to_str().unwrap();
+                if path.ends_with(".tscn") {
+                    let tscn = std::fs::read_to_string(path).unwrap();
+                    println!("Parsing {path:?}");
+                    rscn::parse(&tscn, &default());
+                }
+            }
+        }
     }
 }
