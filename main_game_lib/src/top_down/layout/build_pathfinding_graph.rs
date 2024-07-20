@@ -37,7 +37,7 @@ use graphviz_rust::{dot_generator::*, dot_structures::*};
 use itertools::Itertools;
 
 use super::{TileKindMeta, ZoneGroup};
-use crate::top_down::{layout::Tile, TileKind, TileMap, TopDownScene};
+use crate::top_down::{TileKind, TileMap, TopDownScene};
 
 /// Map of tile kind variant to those other variants (not including
 /// itself - proper supersets) whose instances fully contain it (the key.)

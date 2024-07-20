@@ -21,10 +21,6 @@ impl TopDownScene for Mall {
     fn name() -> &'static str {
         "mall"
     }
-
-    fn bounds() -> [i32; 4] {
-        [-94, 75, -40, 40]
-    }
 }
 
 impl WithStandardStateSemantics for Mall {

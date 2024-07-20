@@ -21,10 +21,6 @@ impl TopDownScene for PlantShop {
     fn name() -> &'static str {
         "plant_shop"
     }
-
-    fn bounds() -> [i32; 4] {
-        [-70, 40, -50, 20]
-    }
 }
 
 impl WithStandardStateSemantics for PlantShop {

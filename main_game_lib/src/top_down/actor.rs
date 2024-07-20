@@ -23,7 +23,7 @@ use serde::{Deserialize, Serialize};
 
 use self::npc::BehaviorTree;
 use crate::top_down::{
-    layout::{ysort, Tile, TileIndex, TopDownScene, LAYOUT},
+    layout::{ysort, TileIndex, TopDownScene, LAYOUT},
     npc::NpcInTheMap,
     InspectLabelCategory, Player, TileKind, TileMap,
 };
@@ -972,10 +972,6 @@ mod tests {
     struct TestScene;
 
     impl TopDownScene for TestScene {
-        fn bounds() -> [i32; 4] {
-            [-1000, 1000, -1000, 1000]
-        }
-
         fn name() -> &'static str {
             unreachable!()
         }

@@ -79,6 +79,7 @@ pub(crate) struct DebugLayoutGrid;
 pub(crate) fn update_ui<T: TopDownScene>(
     mut contexts: EguiContexts,
     mut toolbar: ResMut<TileMapMakerToolbar>,
+    map: Res<TileMap<T>>,
 ) {
     let ctx = contexts.ctx_mut();
     bevy_egui::egui::Window::new("Map maker")
@@ -95,7 +96,7 @@ pub(crate) fn update_ui<T: TopDownScene>(
             // 2.
             //
             if ui.button("Store map").clicked() {
-                export_map::<T>(&mut toolbar);
+                export_map::<T>(&mut toolbar, &map);
             }
         });
 }
@@ -139,7 +140,7 @@ pub(crate) fn show_tiles_around_cursor<T: TopDownScene>(
         return;
     };
 
-    let [left, right, bottom, top] = T::bounds();
+    let [left, right, bottom, top] = map.bounds;
 
     // calculate a smaller rectangle +- 20 squares around the cursor
     let left = clicked_at.x.saturating_sub(20).clamp(left, right);
@@ -256,7 +257,7 @@ fn try_paint<T: TopDownScene>(
     map: &mut TileMap<T>,
     at: Square,
 ) {
-    if !T::contains(at) {
+    if !map.contains(at) {
         return;
     }
 
@@ -324,14 +325,17 @@ pub(crate) fn recolor_squares<T: TopDownScene>(
     }
 }
 
-fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
+fn export_map<T: TopDownScene>(
+    toolbar: &mut TileMapMakerToolbar,
+    map: &TileMap<T>,
+) {
     if !toolbar.display_grid {
         return;
     }
 
     // filter out needless squares
     toolbar.copy_of_map.retain(|sq, tiles| {
-        if !T::contains(*sq) {
+        if !map.contains(*sq) {
             return false;
         }
 
@@ -357,6 +361,7 @@ fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
     });
 
     let g = ZoneTileKindGraph::compute_from(&TileMap::<T> {
+        bounds: map.bounds, // copy bounds info
         squares: toolbar.copy_of_map.clone(),
         zones: default(), // this field is being computed, we don't need it
         _phantom: default(),

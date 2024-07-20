@@ -21,10 +21,6 @@ impl TopDownScene for CompoundTower {
     fn name() -> &'static str {
         "compound_tower"
     }
-
-    fn bounds() -> [i32; 4] {
-        [-70, 40, -50, 20]
-    }
 }
 
 impl WithStandardStateSemantics for CompoundTower {
