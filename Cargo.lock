@@ -1637,7 +1637,6 @@ dependencies = [
  "common_assets",
  "common_visuals",
  "rand",
- "strum",
 ]
 
 [[package]]
@@ -1656,7 +1655,6 @@ dependencies = [
  "rusqlite_migration",
  "serde",
  "serde_json",
- "strum",
 ]
 
 [[package]]
@@ -1666,12 +1664,9 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_grid_squared",
- "common_action",
  "common_assets",
- "common_store",
  "common_visuals",
  "serde",
- "serde_with",
  "strum",
 ]
 

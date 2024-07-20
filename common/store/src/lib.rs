@@ -1,4 +1,5 @@
 //! A way to communicate between scenes and across time (save/load).
+
 #![deny(missing_docs)]
 
 use std::{

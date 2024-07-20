@@ -14,4 +14,3 @@ bevy.workspace = true
 common_assets.workspace = true
 common_visuals.workspace = true
 rand.workspace = true
-strum.workspace = true
