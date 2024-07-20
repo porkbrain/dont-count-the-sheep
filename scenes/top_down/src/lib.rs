@@ -5,6 +5,8 @@
 #![feature(let_chains)]
 
 mod building1_basement1;
+mod building1_basement2;
+mod building1_player_floor;
 mod layout;
 mod prelude;
 
@@ -18,7 +20,11 @@ pub fn add(app: &mut App) {
 
     debug!("Adding plugins");
 
-    app.add_plugins(building1_basement1::Plugin);
+    app.add_plugins((
+        building1_basement1::Plugin,
+        building1_basement2::Plugin,
+        building1_player_floor::Plugin,
+    ));
 
     debug!("Adding game loop");
 
@@ -96,6 +102,24 @@ fn exit(
         Building1Basement1ToBasement2 => {
             next_state.set(WhichTopDownScene::Building1Basement2.loading());
         }
+
+        Building1Basement2ToBasement1 => {
+            next_state.set(WhichTopDownScene::Building1Basement1.loading());
+        }
+
+        Building1PlayerFloorToBuilding1Basement1 => {
+            next_state.set(WhichTopDownScene::Building1Basement1.loading());
+        }
+        Building1PlayerFloorToMeditation => {
+            next_state.set(WhichTopDownScene::Meditation.loading());
+        }
+        Building1PlayerFloorToDowntown => {
+            next_state.set(WhichTopDownScene::Downtown.loading());
+        }
+        Sleeping => {
+            next_state.set(WhichTopDownScene::Building1PlayerFloor.loading());
+        }
+
         _ => {
             unreachable!("Invalid {} transition {transition:?}", **scene);
         }

@@ -49,18 +49,16 @@ fn main() {
     info!("Adding scenes");
 
     scene_top_down::add(&mut app);
-    scene_building1_basement2::add(&mut app);
-    scene_building1_player_floor::add(&mut app);
-    scene_clinic_ward::add(&mut app);
-    scene_clinic::add(&mut app);
-    scene_compound_tower::add(&mut app);
-    scene_compound::add(&mut app);
-    scene_downtown::add(&mut app);
-    scene_mall::add(&mut app);
-    scene_meditation::add(&mut app);
-    scene_plant_shop::add(&mut app);
-    scene_sewers::add(&mut app);
-    scene_twinpeaks_apartment::add(&mut app);
+    // scene_clinic_ward::add(&mut app);
+    // scene_clinic::add(&mut app);
+    // scene_compound_tower::add(&mut app);
+    // scene_compound::add(&mut app);
+    // scene_downtown::add(&mut app);
+    // scene_mall::add(&mut app);
+    // scene_meditation::add(&mut app);
+    // scene_plant_shop::add(&mut app);
+    // scene_sewers::add(&mut app);
+    // scene_twinpeaks_apartment::add(&mut app);
 
     info!("Starting Don't Count The Sheep");
     app.run();

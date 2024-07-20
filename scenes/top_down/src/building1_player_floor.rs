@@ -2,14 +2,27 @@ mod watch_entry_to_hallway;
 
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::{sq, GridDirection};
+use common_story::emoji::{
+    DisplayEmojiEvent, DisplayEmojiEventConsumer, EmojiKind,
+};
 use common_visuals::camera::render_layer;
 use main_game_lib::{
-    cutscene::enter_an_elevator::{
-        start_with_open_elevator_and_close_it, STEP_TIME_ON_EXIT_ELEVATOR,
+    cutscene::{
+        enter_an_elevator::{
+            start_with_open_elevator_and_close_it, STEP_TIME_ON_EXIT_ELEVATOR,
+        },
+        CutsceneStep,
     },
-    hud::daybar::UpdateDayBarEvent,
+    hud::daybar::{DayBar, UpdateDayBarEvent},
     top_down::{
-        actor::player::TakeAwayPlayerControl, scene_configs::ZoneTileKind,
+        actor::{emit_movement_events, player::TakeAwayPlayerControl},
+        inspect_and_interact::{
+            ChangeHighlightedInspectLabelEvent,
+            ChangeHighlightedInspectLabelEventConsumer,
+            SpawnLabelBgAndTextParams, LIGHT_RED,
+        },
+        scene_configs::ZoneTileKind,
+        ActorMovementEvent,
     },
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
@@ -28,10 +41,66 @@ use top_down::{
 
 use crate::prelude::*;
 
+/// This means that the meditation game will not start until the loading screen
+/// has been shown for at least this long, plus it takes some time for the
+/// fading to happen.
+const WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST: Duration =
+    from_millis(1500);
+/// Hard coded to make the animation play out.
+const WINNIE_IN_BATHROOM_TRANSITION_FOR_AT_LEAST: Duration = from_millis(3500);
+
+/// Walk down slowly otherwise it'll happen before the player even sees it.
+const STEP_TIME_ONLOAD_FROM_MEDITATION: Duration = from_millis(750);
+
+const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Building1PlayerFloor;
+
+#[derive(TypePath, Default, Debug)]
+pub struct Building1PlayerFloor;
+
+impl main_game_lib::rscn::TscnInBevy for Building1PlayerFloor {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
+    }
+}
+
+#[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
+pub enum Building1PlayerFloorAction {
+    EnterElevator,
+    StartMeditation,
+    Sleep,
+    BrewTea,
+}
+
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            (
+                start_meditation_minigame.run_if(on_event_variant(
+                    Building1PlayerFloorAction::StartMeditation,
+                )),
+                sleep.run_if(on_event_variant(
+                    Building1PlayerFloorAction::Sleep,
+                )),
+                enter_the_elevator.run_if(on_event_variant(
+                    Building1PlayerFloorAction::EnterElevator,
+                )),
+            )
+                .before(DisplayEmojiEventConsumer)
+                .before(ChangeHighlightedInspectLabelEventConsumer)
+                .run_if(in_scene_running_state(THIS_SCENE))
+                .run_if(not(in_cutscene())),
+        )
+        .add_systems(
+            Update,
+            toggle_zone_hints
+                .run_if(movement_event_emitted())
+                .run_if(in_scene_running_state(THIS_SCENE))
+                .after(emit_movement_events),
+        );
+
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Building1PlayerFloor>,
@@ -296,4 +365,170 @@ impl<'a> TscnSpawner for Spawner<'a> {
     ) {
         self.zone_to_inspect_label_entity.insert(zone, entity);
     }
+}
+
+/// Will change the game state to meditation minigame.
+fn start_meditation_minigame(
+    mut cmd: Commands,
+    mut emoji_events: EventWriter<DisplayEmojiEvent>,
+    mut inspect_label_events: EventWriter<ChangeHighlightedInspectLabelEvent>,
+    zone_to_inspect_label_entity: Res<ZoneToInspectLabelEntity>,
+    daybar: Res<DayBar>,
+
+    player: Query<Entity, With<Player>>,
+) {
+    if daybar.is_depleted() {
+        if let Some(entity) = zone_to_inspect_label_entity
+            .get(ZoneTileKind::Meditation)
+            .copied()
+        {
+            inspect_label_events.send(ChangeHighlightedInspectLabelEvent {
+                entity,
+                spawn_params: SpawnLabelBgAndTextParams {
+                    highlighted: true,
+                    overwrite_font_color: Some(LIGHT_RED),
+                    // LOCALIZATION
+                    overwrite_display_text: Some("(too tired)".to_string()),
+                },
+            });
+        } else {
+            error!("Cannot find meditation zone inspect label entity");
+        }
+
+        if let Some(on_parent) = player.get_single_or_none() {
+            emoji_events.send(DisplayEmojiEvent {
+                emoji: EmojiKind::Tired,
+                on_parent,
+                offset_for: common_story::Character::Winnie,
+            });
+        } else {
+            error!("Cannot find player entity");
+        }
+    } else {
+        let Some(player) = player.get_single_or_none() else {
+            return;
+        };
+
+        vec![
+            CutsceneStep::TakeAwayPlayerControl(player),
+            CutsceneStep::ChangeGlobalState {
+                to: THIS_SCENE.leaving(),
+                with:
+                    GlobalGameStateTransition::Building1PlayerFloorToMeditation,
+            },
+            CutsceneStep::StartLoadingScreen {
+                settings: Some(LoadingScreenSettings {
+                    atlas: Some(common_loading_screen::LoadingScreenAtlas::Space),
+                    stare_at_loading_screen_for_at_least: Some(
+                        WHEN_ENTERING_MEDITATION_SHOW_LOADING_IMAGE_FOR_AT_LEAST,
+                    ),
+                    ..default()
+                })
+            }
+        ].spawn(&mut cmd);
+    }
+}
+
+/// By entering the elevator, the player can leave this scene.
+fn enter_the_elevator(
+    mut cmd: Commands,
+    mut assets: ResMut<Assets<DialogGraph>>,
+
+    player: Query<Entity, With<Player>>,
+    elevator: Query<Entity, With<Elevator>>,
+    camera: Query<Entity, With<MainCamera>>,
+    points: Query<(&Name, &rscn::Point)>,
+) {
+    use GlobalGameStateTransition::*;
+
+    if let Some(player) = player.get_single_or_none() {
+        let point_in_elevator = {
+            let (_, rscn::Point(pos)) = points
+                .iter()
+                .find(|(name, _)| **name == Name::new("InElevator"))
+                .expect("InElevator point not found");
+
+            *pos
+        };
+
+        cutscene::enter_an_elevator::spawn(
+            &mut cmd,
+            &mut assets,
+            player,
+            elevator.single(),
+            camera.single(),
+            point_in_elevator,
+            // LOCALIZATION
+            &[
+                (Building1PlayerFloorToDowntown, "go to downtown"),
+                (Building1PlayerFloorToBuilding1Basement1, "go to basement"),
+            ],
+        );
+    }
+}
+
+/// Shows hint for bed or for meditating when player is in the zone to actually
+/// interact with those objects.
+fn toggle_zone_hints(
+    mut events: EventReader<ActorMovementEvent>,
+
+    mut sleeping: Query<
+        &mut Visibility,
+        (With<SleepingHint>, Without<MeditatingHint>),
+    >,
+    mut meditating: Query<
+        &mut Visibility,
+        (With<MeditatingHint>, Without<SleepingHint>),
+    >,
+) {
+    use ZoneTileKind::{Bed, Meditation};
+
+    for event in events.read().filter(|event| event.is_player()) {
+        match event {
+            ActorMovementEvent::ZoneEntered { zone, .. } => match *zone {
+                TileKind::Zone(Meditation) => {
+                    *meditating.single_mut() = Visibility::Visible;
+                }
+                TileKind::Zone(Bed) => {
+                    *sleeping.single_mut() = Visibility::Visible;
+                }
+                _ => {}
+            },
+            ActorMovementEvent::ZoneLeft { zone, .. } => match *zone {
+                TileKind::Zone(Meditation) => {
+                    *meditating.single_mut() = Visibility::Hidden;
+                }
+                TileKind::Zone(Bed) => {
+                    *sleeping.single_mut() = Visibility::Hidden;
+                }
+                _ => {}
+            },
+        }
+    }
+}
+
+fn sleep(mut cmd: Commands, player: Query<Entity, With<Player>>) {
+    let Some(player) = player.get_single_or_none() else {
+        return;
+    };
+
+    vec![
+        CutsceneStep::TakeAwayPlayerControl(player),
+        CutsceneStep::ChangeGlobalState {
+            to: THIS_SCENE.leaving(),
+            with: GlobalGameStateTransition::Sleeping,
+        },
+        CutsceneStep::StartLoadingScreen {
+            settings: Some(LoadingScreenSettings {
+                atlas: Some(
+                    common_loading_screen::LoadingScreenAtlas::WinnieInBathroom,
+                ),
+                stare_at_loading_screen_for_at_least: Some(
+                    WINNIE_IN_BATHROOM_TRANSITION_FOR_AT_LEAST,
+                ),
+                ..default()
+            }),
+        },
+    ]
+    .spawn(&mut cmd);
 }

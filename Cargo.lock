@@ -3135,8 +3135,6 @@ dependencies = [
  "common_store",
  "common_story",
  "main_game_lib",
- "scene_building1_basement2",
- "scene_building1_player_floor",
  "scene_clinic",
  "scene_clinic_ward",
  "scene_compound",
@@ -4316,50 +4314,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
-]
-
-[[package]]
-name = "scene_building1_basement2"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_grid_squared",
- "bevy_pixel_camera",
- "common_action",
- "common_assets",
- "common_loading_screen",
- "common_store",
- "common_story",
- "common_visuals",
- "itertools 0.13.0",
- "lazy_static",
- "main_game_lib",
- "rand",
- "serde",
- "smallvec",
- "strum",
-]
-
-[[package]]
-name = "scene_building1_player_floor"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_grid_squared",
- "bevy_pixel_camera",
- "common_action",
- "common_assets",
- "common_loading_screen",
- "common_store",
- "common_story",
- "common_visuals",
- "itertools 0.13.0",
- "lazy_static",
- "main_game_lib",
- "rand",
- "serde",
- "smallvec",
- "strum",
 ]
 
 [[package]]

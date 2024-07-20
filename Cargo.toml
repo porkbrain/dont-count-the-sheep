@@ -14,8 +14,6 @@ members = [
     "common/visuals",
     "main_game_lib",
     "main_game",
-    "scenes/building1_basement2",
-    "scenes/building1_player_floor",
     "scenes/clinic_ward",
     "scenes/clinic",
     "scenes/compound_tower",

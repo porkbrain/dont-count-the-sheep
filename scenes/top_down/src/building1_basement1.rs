@@ -14,13 +14,10 @@ use main_game_lib::{
 
 use crate::prelude::*;
 
-pub(crate) const THIS_SCENE: WhichTopDownScene =
-    WhichTopDownScene::Building1Basement1;
+const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Building1Basement1;
 
 pub(crate) struct Plugin;
 
-/// Important scene struct.
-/// We use it as identifiable generic in common logic.
 #[derive(TypePath, Default, Debug)]
 pub struct Building1Basement1;
 
