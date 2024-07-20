@@ -28,10 +28,10 @@ use leafwing_input_manager::plugin::InputManagerSystem;
 
 use self::inspect_and_interact::ChangeHighlightedInspectLabelEvent;
 use crate::{
-    cutscene::in_cutscene, in_scene_loading_state, in_scene_running_state,
+    cutscene::in_cutscene, in_top_down_loading_state,
     in_top_down_running_state,
     top_down::inspect_and_interact::ChangeHighlightedInspectLabelEventConsumer,
-    InTopDownScene, TopDownSceneState, WhichTopDownScene,
+    InTopDownScene,
 };
 
 /// Does not add any systems, only registers generic-less types.
@@ -52,25 +52,80 @@ impl bevy::app::Plugin for Plugin {
             .init_asset::<TileMap>();
 
         app.add_systems(
-                OnEnter(InTopDownScene(TopDownSceneState::Loading)),
+                OnEnter(InTopDownScene::loading()),
                 common_assets::store::insert_as_resource::<common_story::StoryAssets>,
             )
             .add_systems(
-                OnExit(InTopDownScene(TopDownSceneState::Leaving)),
+                OnExit(InTopDownScene::leaving()),
                 common_assets::store::remove_as_resource::<common_story::StoryAssets>,
             );
+
+        //
+        // TileMap
+        //
+
+        app.add_systems(
+            OnExit(InTopDownScene::running()),
+            layout::systems::remove_resources,
+        )
+        .add_systems(
+            OnEnter(InTopDownScene::loading()),
+            layout::systems::start_loading_map,
+        )
+        .add_systems(
+            First,
+            layout::systems::try_insert_map_as_resource
+                .run_if(in_top_down_loading_state()),
+        )
+        .add_systems(
+            FixedUpdate,
+            actor::animate_movement.run_if(in_top_down_running_state()),
+        )
+        .add_systems(
+            Update,
+            actor::emit_movement_events
+                .run_if(in_top_down_running_state())
+                // so that we can emit this event on current frame
+                .after(actor::player::move_around),
+        )
+        .add_systems(
+            Update,
+            actor::player::move_around
+                .run_if(in_top_down_running_state())
+                .run_if(common_action::move_action_pressed())
+                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
+        )
+        .add_systems(
+            Update,
+            (
+                actor::npc::drive_behavior,
+                actor::npc::plan_path
+                    .run_if(on_event::<actor::npc::PlanPathEvent>()),
+                actor::npc::run_path,
+            )
+                .chain()
+                .run_if(in_top_down_running_state()),
+        );
 
         //
         // Camera
         //
 
         app.add_systems(
-            OnEnter(InTopDownScene(TopDownSceneState::Loading)),
+            OnEnter(InTopDownScene::loading()),
             common_visuals::camera::spawn,
         )
         .add_systems(
-            OnExit(InTopDownScene(TopDownSceneState::Leaving)),
+            OnExit(InTopDownScene::leaving()),
             common_visuals::camera::despawn,
+        )
+        .add_systems(
+            FixedUpdate,
+            cameras::track_player_with_main_camera
+                .after(actor::animate_movement)
+                .run_if(in_top_down_running_state())
+                .run_if(not(in_cutscene()))
+                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
         );
 
         //
@@ -125,6 +180,13 @@ impl bevy::app::Plugin for Plugin {
                     )),
             )
                 .run_if(in_top_down_running_state()),
+        )
+        .add_systems(
+            Update,
+            inspect_and_interact::match_interact_label_with_action_event
+                .run_if(in_top_down_running_state())
+                .run_if(on_event::<ActorMovementEvent>())
+                .after(emit_movement_events),
         );
 
         //
@@ -132,11 +194,11 @@ impl bevy::app::Plugin for Plugin {
         //
 
         app.add_systems(
-            OnEnter(InTopDownScene(TopDownSceneState::Running)),
+            OnEnter(InTopDownScene::running()),
             (crate::hud::daybar::spawn, crate::hud::notification::spawn),
         )
         .add_systems(
-            OnExit(InTopDownScene(TopDownSceneState::Running)),
+            OnExit(InTopDownScene::running()),
             (
                 crate::hud::daybar::despawn,
                 crate::hud::notification::despawn,
@@ -170,112 +232,34 @@ impl bevy::app::Plugin for Plugin {
                 ResourceInspectorPlugin::<Toolbar>::new()
                     .run_if(resource_exists::<Toolbar>),
             );
+
+            // You can press `Enter` to export the map.
+            // This will overwrite the RON file.
+            // We draw an overlay with tiles that you can edit with left and
+            // right mouse buttons.
+            app.add_systems(
+                OnEnter(InTopDownScene::running()),
+                layout::map_maker::spawn_debug_grid_root,
+            )
+            .add_systems(
+                Update,
+                layout::map_maker::show_tiles_around_cursor
+                    .run_if(in_top_down_running_state()),
+            )
+            .add_systems(
+                Update,
+                (
+                    layout::map_maker::change_square_kind,
+                    layout::map_maker::recolor_squares,
+                    layout::map_maker::update_ui,
+                )
+                    .run_if(in_top_down_running_state())
+                    .chain(),
+            )
+            .add_systems(
+                OnExit(InTopDownScene::leaving()),
+                layout::map_maker::destroy_map,
+            );
         }
     }
-}
-
-/// Registers unique `T` types, asset loader for the map RON file, and systems
-/// including from other packages:
-/// - [`crate::top_down::actor::animate_movement`]
-/// - [`crate::top_down::actor::emit_movement_events`]
-/// - [`crate::top_down::actor::npc::drive_behavior`]
-/// - [`crate::top_down::actor::npc::plan_path`]
-/// - [`crate::top_down::actor::npc::run_path`]
-/// - [`crate::top_down::actor::player::move_around`]
-pub fn default_setup_for_scene<T>(app: &mut App, scene: WhichTopDownScene)
-where
-    T: TopDownScene,
-{
-    debug!("Adding map layout for {}", T::type_path());
-
-    app.add_systems(
-        OnEnter(scene.loading()),
-        layout::systems::start_loading_map,
-    )
-    .add_systems(
-        First,
-        layout::systems::try_insert_map_as_resource
-            .run_if(in_scene_loading_state(scene)),
-    )
-    .add_systems(
-        FixedUpdate,
-        actor::animate_movement.run_if(in_scene_running_state(scene)),
-    )
-    .add_systems(
-        Update,
-        actor::emit_movement_events
-            .run_if(in_scene_running_state(scene))
-            // so that we can emit this event on current frame
-            .after(actor::player::move_around),
-    )
-    .add_systems(
-        Update,
-        actor::player::move_around
-            .run_if(in_scene_running_state(scene))
-            .run_if(common_action::move_action_pressed())
-            .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
-    )
-    .add_systems(
-        Update,
-        (
-            actor::npc::drive_behavior,
-            actor::npc::plan_path
-                .run_if(on_event::<actor::npc::PlanPathEvent>()),
-            actor::npc::run_path,
-        )
-            .chain()
-            .run_if(in_scene_running_state(scene)),
-    )
-    .add_systems(OnExit(scene.running()), layout::systems::remove_resources);
-
-    debug!("Adding interaction systems for {}", T::type_path());
-    app.add_systems(
-        Update,
-        inspect_and_interact::match_interact_label_with_action_event
-            .run_if(in_scene_running_state(scene))
-            .run_if(on_event::<ActorMovementEvent>())
-            .after(emit_movement_events),
-    );
-
-    debug!("Adding camera");
-
-    app.add_systems(
-        FixedUpdate,
-        cameras::track_player_with_main_camera
-            .after(actor::animate_movement)
-            .run_if(in_scene_running_state(scene))
-            .run_if(not(in_cutscene()))
-            .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
-    );
-}
-
-/// You can press `Enter` to export the map.
-/// This will overwrite the RON file.
-/// We draw an overlay with tiles that you can edit with left and right mouse
-/// buttons.
-#[cfg(feature = "devtools")]
-pub fn dev_default_setup_for_scene<T>(app: &mut App, scene: WhichTopDownScene)
-where
-    T: TopDownScene,
-{
-    app.add_systems(
-        OnEnter(scene.running()),
-        layout::map_maker::spawn_debug_grid_root,
-    )
-    .add_systems(
-        Update,
-        layout::map_maker::show_tiles_around_cursor
-            .run_if(in_scene_running_state(scene)),
-    )
-    .add_systems(
-        Update,
-        (
-            layout::map_maker::change_square_kind,
-            layout::map_maker::recolor_squares,
-            layout::map_maker::update_ui,
-        )
-            .run_if(in_scene_running_state(scene))
-            .chain(),
-    )
-    .add_systems(OnExit(scene.leaving()), layout::map_maker::destroy_map);
 }

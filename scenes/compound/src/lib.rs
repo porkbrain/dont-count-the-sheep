@@ -37,11 +37,6 @@ pub fn add(app: &mut App) {
 
     app.add_event::<CompoundAction>();
 
-    top_down::default_setup_for_scene::<Compound>(app, THIS_SCENE);
-
-    #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Compound>(app, THIS_SCENE);
-
     debug!("Adding plugins");
 
     app.add_plugins(layout::Plugin);
