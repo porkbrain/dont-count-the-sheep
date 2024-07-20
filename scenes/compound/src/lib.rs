@@ -22,7 +22,7 @@ impl TopDownScene for Compound {}
 
 impl main_game_lib::rscn::TscnInBevy for Compound {
     fn tscn_asset_path() -> String {
-        THIS_SCENE.snake_case()
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
 }
 

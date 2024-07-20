@@ -19,7 +19,7 @@ impl TopDownScene for Downtown {}
 
 impl main_game_lib::rscn::TscnInBevy for Downtown {
     fn tscn_asset_path() -> String {
-        THIS_SCENE.snake_case()
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
 }
 

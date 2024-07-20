@@ -21,7 +21,7 @@ impl TopDownScene for PlantShop {}
 
 impl main_game_lib::rscn::TscnInBevy for PlantShop {
     fn tscn_asset_path() -> String {
-        THIS_SCENE.snake_case()
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
 }
 

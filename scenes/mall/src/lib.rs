@@ -21,7 +21,7 @@ impl TopDownScene for Mall {}
 
 impl main_game_lib::rscn::TscnInBevy for Mall {
     fn tscn_asset_path() -> String {
-        THIS_SCENE.snake_case()
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
 }
 
