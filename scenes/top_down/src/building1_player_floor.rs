@@ -75,6 +75,8 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<Building1PlayerFloorAction>();
+
         app.add_systems(
             Update,
             (
@@ -128,10 +130,6 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-/// Assigned to the root of the scene.
-/// We then recursively despawn it on scene leave.
-#[derive(Component)]
-pub(crate) struct LayoutEntity;
 /// Hallway is darkened when the player is in the apartment but once the player
 /// approaches the door or is in the hallway, it's lit up.
 #[derive(Component)]

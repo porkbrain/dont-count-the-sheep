@@ -34,6 +34,8 @@ pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<Building1Basement2Action>();
+
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Building1Basement2>,

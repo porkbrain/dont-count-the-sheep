@@ -49,6 +49,7 @@ pub fn windowed_app() -> App {
                 main_game_lib::top_down::cameras=debug,\
                 main_game_lib::top_down::layout=debug,\
                 main_game_lib::rscn=debug,\
+                scene_top_down=trace,\
                 "
                 .to_string(),
                 ..default()
