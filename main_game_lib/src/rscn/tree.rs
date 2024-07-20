@@ -281,7 +281,11 @@ fn apply_section_key(
                 .iter()
                 .find(|res| res.id == id)
                 .expect("sub resource should exist");
-            assert_eq!(1, res.section_keys.len());
+            assert_eq!(
+                1,
+                res.section_keys.len(),
+                "SpriteFrames should have exactly one animation"
+            );
 
             let SectionKey::SingleAnim(anim) = &res.section_keys[0] else {
                 panic!(
