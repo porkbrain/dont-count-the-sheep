@@ -8,8 +8,12 @@ mod building1_basement1;
 mod building1_basement2;
 mod building1_player_floor;
 mod clinic;
+mod clinic_ward;
+mod compound;
 mod layout;
+mod plant_shop;
 mod prelude;
+mod sewers;
 
 use common_loading_screen::LoadingScreenState;
 use prelude::*;
@@ -25,7 +29,11 @@ pub fn add(app: &mut App) {
         building1_basement1::Plugin,
         building1_basement2::Plugin,
         building1_player_floor::Plugin,
+        clinic_ward::Plugin,
         clinic::Plugin,
+        compound::Plugin,
+        plant_shop::Plugin,
+        sewers::Plugin,
     ));
 
     debug!("Adding game loop");
@@ -123,6 +131,25 @@ fn exit(
         }
 
         ClinicToDowntown => {
+            next_state.set(WhichTopDownScene::Downtown.loading());
+        }
+
+        ClinicWardToDowntown => {
+            next_state.set(WhichTopDownScene::Downtown.loading());
+        }
+
+        CompoundToDowntown => {
+            next_state.set(WhichTopDownScene::Downtown.loading());
+        }
+        CompoundToTower => {
+            next_state.set(WhichTopDownScene::CompoundTower.loading());
+        }
+
+        SewersToDowntown => {
+            next_state.set(WhichTopDownScene::Downtown.loading());
+        }
+
+        PlantShopToDowntown => {
             next_state.set(WhichTopDownScene::Downtown.loading());
         }
 

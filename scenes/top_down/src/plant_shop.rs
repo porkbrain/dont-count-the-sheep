@@ -13,10 +13,28 @@ use top_down::{
 
 use crate::prelude::*;
 
+const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::PlantShop;
+
+#[derive(TypePath, Default, Debug)]
+struct PlantShop;
+
+impl main_game_lib::rscn::TscnInBevy for PlantShop {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
+    }
+}
+
+#[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
+enum PlantShopAction {
+    ExitScene,
+}
+
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<PlantShopAction>();
+
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<PlantShop>,
@@ -37,11 +55,6 @@ impl bevy::app::Plugin for Plugin {
         );
     }
 }
-
-/// Assigned to the root of the scene.
-/// We then recursively despawn it on scene leave.
-#[derive(Component)]
-pub(crate) struct LayoutEntity;
 
 struct Spawner<'a> {
     player_entity: Entity,
