@@ -18,6 +18,7 @@ pub mod vec2_ext;
 use bevy::{app::AppExit, prelude::*};
 use bevy_pixel_camera::PixelCameraPlugin;
 pub use common_ext;
+use prelude::rscn::TscnInBevy;
 
 use crate::prelude::*;
 
@@ -48,7 +49,7 @@ pub fn windowed_app() -> App {
                 main_game_lib::top_down::environmental_objects::door=debug,\
                 main_game_lib::top_down::cameras=debug,\
                 main_game_lib::top_down::layout=debug,\
-                scene_building1_player_floor=trace,\
+                main_game_lib::rscn=debug,\
                 "
                 .to_string(),
                 ..default()
@@ -103,12 +104,12 @@ pub fn windowed_app() -> App {
         common_loading_screen::Plugin,
         common_store::Plugin,
         common_story::Plugin,
-        crate::top_down::Plugin,
         common_visuals::Plugin,
-        cutscene::Plugin,
-        PixelCameraPlugin,
-        crate::hud::Plugin,
+        crate::cutscene::Plugin,
         crate::dialog::Plugin,
+        crate::hud::Plugin,
+        crate::top_down::Plugin,
+        PixelCameraPlugin,
     ));
 
     info!("Plugins added");
@@ -138,4 +139,10 @@ fn begin_loading_static_assets_on_startup(
 
 fn exit(mut exit: EventWriter<AppExit>) {
     exit.send(AppExit::Success);
+}
+
+impl<T: TopDownScene> TscnInBevy for T {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", T::name())
+    }
 }
