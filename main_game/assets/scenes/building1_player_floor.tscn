@@ -1,4 +1,4 @@
-[gd_scene load_steps=115 format=3 uid="uid://dyrtqlwb1xtvf"]
+[gd_scene load_steps=118 format=3 uid="uid://dyrtqlwb1xtvf"]
 
 [ext_resource type="Texture2D" uid="uid://darta8tusokhc" path="res://assets/residential/indoors/player_apartment_bg.png" id="1_70osf"]
 [ext_resource type="Texture2D" uid="uid://h5w2770frdhg" path="res://assets/residential/indoors/cloud_atlas.png" id="2_yacc0"]
@@ -48,6 +48,9 @@
 [ext_resource type="Texture2D" uid="uid://c24128k3soyhf" path="res://assets/items/pill_box.png" id="46_r200y"]
 [ext_resource type="Texture2D" uid="uid://dolvlk268uyvh" path="res://assets/environment/box_cardboard_sideways.png" id="47_jy22a"]
 [ext_resource type="Texture2D" uid="uid://bl6casbqthnd3" path="res://assets/environment/plate_cookies.png" id="48_jgxiy"]
+[ext_resource type="Texture2D" uid="uid://ctfvqwyu7rfpw" path="res://assets/environment/filter_yellow.png" id="49_e4apf"]
+[ext_resource type="Texture2D" uid="uid://bbvgexcjujtws" path="res://assets/environment/filter_purple.png" id="50_laek6"]
+[ext_resource type="Texture2D" uid="uid://drpvso2tmnxi2" path="res://assets/environment/filter_pink.png" id="51_8xqr1"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nte4w"]
 atlas = ExtResource("2_yacc0")
@@ -941,3 +944,18 @@ texture = ExtResource("18_fe7mm")
 
 [node name="YSort" type="Node2D" parent="Package"]
 position = Vector2(1, 4)
+
+[node name="FilterYellow" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(0, 2)
+texture = ExtResource("49_e4apf")
+
+[node name="FilterPurple" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(-31, 2)
+texture = ExtResource("50_laek6")
+
+[node name="FilterPink" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(-52, 66)
+texture = ExtResource("51_8xqr1")

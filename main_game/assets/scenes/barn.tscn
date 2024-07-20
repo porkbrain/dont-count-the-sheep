@@ -1,7 +1,16 @@
-[gd_scene load_steps=3 format=3 uid="uid://dajava8pv8ysd"]
+[gd_scene load_steps=11 format=3 uid="uid://dajava8pv8ysd"]
 
 [ext_resource type="Texture2D" uid="uid://bo4wq2i0bkr8c" path="res://assets/compound/barn_interior.png" id="1_2glsl"]
 [ext_resource type="Texture2D" uid="uid://dhbfxi5fhc2uf" path="res://assets/residential/indoors/wall_fish2.png" id="2_ukrpc"]
+[ext_resource type="Texture2D" uid="uid://vtfof2e0ei40" path="res://assets/residential/indoors/clinic_clock.png" id="4_rrsnu"]
+[ext_resource type="Texture2D" uid="uid://cnxj4juluqxlo" path="res://assets/compound/window.png" id="5_43hc4"]
+[ext_resource type="Texture2D" uid="uid://cgd4gem7h52i6" path="res://assets/residential/indoors/toilet.png" id="6_cr7wq"]
+[ext_resource type="Texture2D" uid="uid://ls84jkhn2yie" path="res://assets/compound/window_light.png" id="6_xbloy"]
+[ext_resource type="Texture2D" uid="uid://bkn08mi2q7fcx" path="res://assets/compound/table.png" id="8_h4ttt"]
+[ext_resource type="Texture2D" uid="uid://dbbu6xgobs5xu" path="res://assets/residential/indoors/sink.png" id="8_n6hoc"]
+[ext_resource type="Texture2D" uid="uid://cvyy2s0l68njm" path="res://assets/compound/fridge.png" id="9_b5hlb"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ll0bw"]
 
 [node name="Node2D" type="Node2D"]
 
@@ -10,5 +19,37 @@ position = Vector2(-23, 14)
 texture = ExtResource("1_2glsl")
 
 [node name="WallFish3" type="Sprite2D" parent="."]
-position = Vector2(74, -60)
+position = Vector2(71, -45)
 texture = ExtResource("2_ukrpc")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(152.801, -37.4987)
+sprite_frames = SubResource("SpriteFrames_ll0bw")
+
+[node name="ClinicClock" type="Sprite2D" parent="."]
+position = Vector2(103, -60)
+texture = ExtResource("4_rrsnu")
+
+[node name="Window" type="Sprite2D" parent="."]
+position = Vector2(-49, -40)
+texture = ExtResource("5_43hc4")
+
+[node name="WindowLight" type="Sprite2D" parent="."]
+position = Vector2(-49, -12)
+texture = ExtResource("6_xbloy")
+
+[node name="Toilet" type="Sprite2D" parent="."]
+position = Vector2(232, 48)
+texture = ExtResource("6_cr7wq")
+
+[node name="Sink" type="Sprite2D" parent="."]
+position = Vector2(190, -11)
+texture = ExtResource("8_n6hoc")
+
+[node name="Table" type="Sprite2D" parent="."]
+position = Vector2(-52, 39)
+texture = ExtResource("8_h4ttt")
+
+[node name="Fridge" type="Sprite2D" parent="."]
+position = Vector2(146, -22)
+texture = ExtResource("9_b5hlb")
