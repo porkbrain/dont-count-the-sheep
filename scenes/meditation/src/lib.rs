@@ -187,7 +187,7 @@ fn all_cleaned_up(
             next_state.set(GlobalGameState::LoadingMeditation);
         }
         MeditationToBuilding1PlayerFloor => {
-            next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
+            next_state.set(WhichTopDownScene::Building1PlayerFloor.loading());
         }
         _ => {
             unreachable!("Invalid meditation transition {transition:?}");

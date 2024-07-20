@@ -23,34 +23,22 @@ impl TopDownScene for Building1Basement2 {
     }
 }
 
-impl WithStandardStateSemantics for Building1Basement2 {
-    fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingBuilding1Basement2
-    }
-
-    fn running() -> GlobalGameState {
-        GlobalGameState::AtBuilding1Basement2
-    }
-
-    fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingBuilding1Basement2
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString)]
 pub enum Building1Basement2Action {
     Exit,
 }
 
 pub fn add(app: &mut App) {
-    info!("Adding {Building1Basement2:?} to app");
+    info!("Adding {THIS_SCENE} to app");
 
     app.add_event::<Building1Basement2Action>();
 
-    top_down::default_setup_for_scene::<Building1Basement2>(app);
+    top_down::default_setup_for_scene::<Building1Basement2>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Building1Basement2>(app);
+    top_down::dev_default_setup_for_scene::<Building1Basement2>(
+        app, THIS_SCENE,
+    );
 
     debug!("Adding plugins");
 
@@ -63,20 +51,20 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(Building1Basement2::in_loading_state())
+            .run_if(in_scene_loading_state(THIS_SCENE))
             .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_scene.run_if(Building1Basement2::in_loading_state()),
+        enter_the_scene.run_if(in_scene_loading_state(THIS_SCENE)),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(Building1Basement2::in_running_state())
+            .run_if(in_scene_running_state(THIS_SCENE))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
@@ -85,10 +73,10 @@ pub fn add(app: &mut App) {
         // wait for the loading screen to fade in before changing state,
         // otherwise the player might see a flicker
         exit.run_if(in_state(common_loading_screen::wait_state()))
-            .run_if(Building1Basement2::in_quitting_state()),
+            .run_if(in_scene_leaving_state(THIS_SCENE)),
     );
 
-    info!("Added {Building1Basement2:?} to app");
+    info!("Added {THIS_SCENE} to app");
 }
 
 fn finish_when_everything_loaded(
@@ -105,8 +93,8 @@ fn finish_when_everything_loaded(
 }
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
-    info!("Entering {Building1Basement2:?}");
-    next_state.set(Building1Basement2::running());
+    info!("Entering {THIS_SCENE}");
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(
@@ -114,7 +102,7 @@ fn exit(
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 ) {
-    info!("Leaving {Building1Basement2:?}");
+    info!("Leaving {THIS_SCENE}");
 
     // be a good guy and don't invade other game loops with "Enter"
     controls.consume(&GlobalAction::Interact);
@@ -122,12 +110,10 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         Building1Basement2ToBasement1 => {
-            next_state.set(GlobalGameState::LoadingBuilding1Basement1);
+            next_state.set(WhichTopDownScene::Building1Basement1.loading());
         }
         _ => {
-            unreachable!(
-                "Invalid {Building1Basement2:?} transition {transition:?}"
-            );
+            unreachable!("Invalid {THIS_SCENE} transition {transition:?}");
         }
     }
 }

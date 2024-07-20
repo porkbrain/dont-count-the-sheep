@@ -180,7 +180,7 @@ impl ZoneTileKindGraph {
         // are in the same group.
 
         // the index is going to be the zone group unique value in the end
-        let mut zone_groups: Vec<HashSet<TileKind>> = default();
+        let mut zone_groups: Vec<BTreeSet<TileKind>> = default();
         let mut successors: HashMap<TileKind, Vec<TileKind>> = default();
 
         for zone in TileKind::zones_iter() {

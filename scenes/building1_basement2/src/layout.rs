@@ -19,23 +19,23 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(Building1Basement2::loading()),
+            OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Building1Basement2>,
         )
         .add_systems(
             Update,
             spawn
-                .run_if(Building1Basement2::in_loading_state())
+                .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap<Building1Basement2>>)
                 .run_if(
                     rscn::tscn_loaded_but_not_spawned::<Building1Basement2>(),
                 ),
         )
-        .add_systems(OnExit(Building1Basement2::quitting()), despawn)
+        .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
             exit.run_if(on_event::<Building1Basement2Action>())
-                .run_if(Building1Basement2::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         );
     }
@@ -180,7 +180,7 @@ fn exit(
             player,
             door: door.single(),
             door_entrance,
-            change_global_state_to: Building1Basement2::quitting(),
+            change_global_state_to: THIS_SCENE.leaving(),
             transition:
                 GlobalGameStateTransition::Building1Basement2ToBasement1,
             loading_screen: default(),

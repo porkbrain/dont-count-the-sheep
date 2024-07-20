@@ -21,20 +21,6 @@ impl TopDownScene for Downtown {
     }
 }
 
-impl WithStandardStateSemantics for Downtown {
-    fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingDowntown
-    }
-
-    fn running() -> GlobalGameState {
-        GlobalGameState::AtDowntown
-    }
-
-    fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingDowntown
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString, Eq, PartialEq)]
 pub enum DowntownAction {
     EnterBuilding1,
@@ -52,10 +38,10 @@ pub fn add(app: &mut App) {
 
     app.add_event::<DowntownAction>();
 
-    top_down::default_setup_for_scene::<Downtown>(app);
+    top_down::default_setup_for_scene::<Downtown>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Downtown>(app);
+    top_down::dev_default_setup_for_scene::<Downtown>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -68,19 +54,19 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(Downtown::in_loading_state())
+            .run_if(in_scene_loading_state(THIS_SCENE))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_scene.run_if(Downtown::in_loading_state()),
+        enter_the_scene.run_if(in_scene_loading_state(THIS_SCENE)),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(Downtown::in_running_state())
+            .run_if(in_scene_running_state(THIS_SCENE))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
@@ -89,7 +75,7 @@ pub fn add(app: &mut App) {
         // wait for the loading screen to fade in before changing state,
         // otherwise the player might see a flicker
         exit.run_if(in_state(common_loading_screen::wait_state()))
-            .run_if(Downtown::in_quitting_state()),
+            .run_if(in_scene_leaving_state(THIS_SCENE)),
     );
 
     info!("Added downtown to app");
@@ -110,7 +96,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering downtown");
-    next_state.set(Downtown::running());
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(
@@ -126,28 +112,28 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         DowntownToBuilding1PlayerFloor => {
-            next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
+            next_state.set(WhichTopDownScene::Building1PlayerFloor.loading());
         }
         DowntownToMall => {
-            next_state.set(GlobalGameState::LoadingMall);
+            next_state.set(WhichTopDownScene::Mall.loading());
         }
         DowntownToCompound => {
-            next_state.set(GlobalGameState::LoadingCompound);
+            next_state.set(WhichTopDownScene::Compound.loading());
         }
         DowntownToClinic => {
-            next_state.set(GlobalGameState::LoadingClinic);
+            next_state.set(WhichTopDownScene::Clinic.loading());
         }
         DowntownToClinicWard => {
-            next_state.set(GlobalGameState::LoadingClinicWard);
+            next_state.set(WhichTopDownScene::ClinicWard.loading());
         }
         DowntownToPlantShop => {
-            next_state.set(GlobalGameState::LoadingPlantShop);
+            next_state.set(WhichTopDownScene::PlantShop.loading());
         }
         DowntownToSewers => {
-            next_state.set(GlobalGameState::LoadingSewers);
+            next_state.set(WhichTopDownScene::Sewers.loading());
         }
         DowntownToTwinpeaksApartment => {
-            next_state.set(GlobalGameState::LoadingTwinpeaksApartment);
+            next_state.set(WhichTopDownScene::TwinpeaksApartment.loading());
         }
         _ => {
             unreachable!("Invalid Downtown transition {transition:?}");

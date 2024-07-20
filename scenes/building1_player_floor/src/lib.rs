@@ -25,20 +25,6 @@ impl TopDownScene for Building1PlayerFloor {
     }
 }
 
-impl WithStandardStateSemantics for Building1PlayerFloor {
-    fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingBuilding1PlayerFloor
-    }
-
-    fn running() -> GlobalGameState {
-        GlobalGameState::AtBuilding1PlayerFloor
-    }
-
-    fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingBuilding1PlayerFloor
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
 pub enum Building1PlayerFloorAction {
     EnterElevator,
@@ -48,14 +34,16 @@ pub enum Building1PlayerFloorAction {
 }
 
 pub fn add(app: &mut App) {
-    info!("Adding {Building1PlayerFloor:?} to app");
+    info!("Adding {THIS_SCENE} to app");
 
     app.add_event::<Building1PlayerFloorAction>();
 
-    top_down::default_setup_for_scene::<Building1PlayerFloor>(app);
+    top_down::default_setup_for_scene::<Building1PlayerFloor>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Building1PlayerFloor>(app);
+    top_down::dev_default_setup_for_scene::<Building1PlayerFloor>(
+        app, THIS_SCENE,
+    );
 
     debug!("Adding plugins");
 
@@ -68,20 +56,20 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(Building1PlayerFloor::in_loading_state())
+            .run_if(in_scene_loading_state(THIS_SCENE))
             .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_scene.run_if(Building1PlayerFloor::in_loading_state()),
+        enter_the_scene.run_if(in_scene_loading_state(THIS_SCENE)),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(Building1PlayerFloor::in_running_state())
+            .run_if(in_scene_running_state(THIS_SCENE))
             .run_if(in_state(common_loading_screen::wait_state())),
     );
 
@@ -90,10 +78,10 @@ pub fn add(app: &mut App) {
         // wait for the loading screen to fade in before changing state,
         // otherwise the player might see a flicker
         exit.run_if(in_state(common_loading_screen::wait_state()))
-            .run_if(Building1PlayerFloor::in_quitting_state()),
+            .run_if(in_scene_leaving_state(THIS_SCENE)),
     );
 
-    info!("Added {Building1PlayerFloor:?} to app");
+    info!("Added {THIS_SCENE} to app");
 }
 
 fn finish_when_everything_loaded(
@@ -110,8 +98,8 @@ fn finish_when_everything_loaded(
 }
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
-    info!("Entering {Building1PlayerFloor:?}");
-    next_state.set(Building1PlayerFloor::running());
+    info!("Entering {THIS_SCENE}");
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(
@@ -119,7 +107,7 @@ fn exit(
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
 ) {
-    info!("Leaving {Building1PlayerFloor:?}");
+    info!("Leaving {THIS_SCENE}");
 
     // be a good guy and don't invade other game loops with "Enter"
     controls.consume(&GlobalAction::Interact);
@@ -127,21 +115,19 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         Building1PlayerFloorToBuilding1Basement1 => {
-            next_state.set(GlobalGameState::LoadingBuilding1Basement1);
+            next_state.set(WhichTopDownScene::Building1Basement1.loading());
         }
         Building1PlayerFloorToMeditation => {
-            next_state.set(GlobalGameState::LoadingMeditation);
+            next_state.set(WhichTopDownScene::Meditation.loading());
         }
         Building1PlayerFloorToDowntown => {
-            next_state.set(GlobalGameState::LoadingDowntown);
+            next_state.set(WhichTopDownScene::Downtown.loading());
         }
         Sleeping => {
-            next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
+            next_state.set(WhichTopDownScene::Building1PlayerFloor.loading());
         }
         _ => {
-            unreachable!(
-                "Invalid {Building1PlayerFloor:?} transition {transition:?}"
-            );
+            unreachable!("Invalid {THIS_SCENE} transition {transition:?}");
         }
     }
 }

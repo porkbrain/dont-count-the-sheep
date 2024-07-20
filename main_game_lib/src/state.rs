@@ -26,43 +26,6 @@ pub enum GlobalGameState {
     RunningTopDownScene(WhichTopDownScene),
     LeavingTopDownScene(WhichTopDownScene),
 
-    /// Sets up the floor with player's first apartment
-    LoadingBuilding1PlayerFloor,
-    AtBuilding1PlayerFloor,
-    QuittingBuilding1PlayerFloor,
-
-    LoadingBuilding1Basement1,
-    AtBuilding1Basement1,
-    QuittingBuilding1Basement1,
-
-    LoadingBuilding1Basement2,
-    AtBuilding1Basement2,
-    QuittingBuilding1Basement2,
-
-    LoadingClinic,
-    AtClinic,
-    QuittingClinic,
-
-    LoadingClinicWard,
-    AtClinicWard,
-    QuittingClinicWard,
-
-    LoadingPlantShop,
-    AtPlantShop,
-    QuittingPlantShop,
-
-    LoadingSewers,
-    AtSewers,
-    QuittingSewers,
-
-    LoadingTwinpeaksApartment,
-    AtTwinpeaksApartment,
-    QuittingTwinpeaksApartment,
-
-    LoadingMall,
-    AtMall,
-    QuittingMall,
-
     /// Change the game state to this state to run systems that setup the
     /// meditation game in the background.
     /// Nothing is shown to the player yet.
@@ -76,18 +39,6 @@ pub enum GlobalGameState {
     /// meditation game in the background.
     QuittingMeditation,
 
-    LoadingDowntown,
-    AtDowntown,
-    QuittingDowntown,
-
-    LoadingCompound,
-    AtCompound,
-    QuittingCompound,
-
-    LoadingCompoundTower,
-    AtCompoundTower,
-    QuittingCompoundTower,
-
     /// Performs all necessary cleanup and exits the game.
     Exit,
 }
@@ -95,11 +46,11 @@ pub enum GlobalGameState {
 /// Will be present as a resource if the game is in any top-down scene which
 /// is our 2D game's most ubiquitous scene kind.
 /// We use [`ComputedStates`] for this.
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub struct InTopDownScene(TopDownSceneState);
+#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
+pub struct InTopDownScene(pub TopDownSceneState);
 
 /// What is the current state of the top-down scene?
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 pub enum TopDownSceneState {
     /// Scene is being prepared.
     /// This entails loading assets and setting up the scene.
@@ -195,20 +146,6 @@ pub enum GlobalGameStateTransition {
     DowntownToClinicWard,
 }
 
-/// Typical scene has several states with standard semantics.
-pub struct StandardStateSemantics {
-    /// The state when the scene is loading.
-    /// Setups up resources.
-    pub loading: GlobalGameState,
-    /// The state when the scene is running.
-    pub running: GlobalGameState,
-    /// The state when the scene is quitting.
-    /// Cleans up resources.
-    pub quitting: GlobalGameState,
-    /// Some scenes have a paused state.
-    pub paused: Option<GlobalGameState>,
-}
-
 /// Helper params that are used in transitions.
 /// Use [`TransitionParams::begin`] to start a transition.
 #[derive(SystemParam)]
@@ -223,157 +160,50 @@ pub struct TransitionParams<'w, 's> {
     pub next_loading_screen_state: ResMut<'w, NextState<LoadingScreenState>>,
 }
 
-/// Typical scene has several states with standard semantics.
-pub trait WithStandardStateSemantics {
-    /// The state when the scene is loading.
-    fn loading() -> GlobalGameState;
-    /// The state when the scene is running.
-    fn running() -> GlobalGameState;
-    /// The state when the scene is quitting.
-    fn quitting() -> GlobalGameState;
-
-    /// Some scenes have a paused state.
-    fn paused() -> Option<GlobalGameState> {
-        None
-    }
-
-    /// Converts these methods into a struct
-    fn semantics() -> StandardStateSemantics {
-        StandardStateSemantics {
-            loading: Self::loading(),
-            running: Self::running(),
-            quitting: Self::quitting(),
-            paused: Self::paused(),
-        }
-    }
-
-    /// Helper to check if the state is in the loading state.
-    fn in_loading_state(
-    ) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
-        in_state(Self::loading())
-    }
-
-    /// Helper to check if the state is in the running state.
-    fn in_running_state(
-    ) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
-        in_state(Self::running())
-    }
-
-    /// Helper to check if the state is in the quitting state.
-    fn in_quitting_state(
-    ) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
-        in_state(Self::quitting())
-    }
+/// Helper to check if the state is in specific top down scene loading state.
+pub fn in_scene_loading_state(
+    scene: WhichTopDownScene,
+) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
+    in_state(GlobalGameState::LoadingTopDownScene(scene))
 }
 
-impl GlobalGameState {
-    /// Many scenes have a standard state semantics: loading, running, quitting
-    /// and paused.
-    pub fn state_semantics(self) -> Option<StandardStateSemantics> {
-        use GlobalGameState::*;
+/// Helper to check if the state is in specific top down scene running state.
+pub fn in_scene_running_state(
+    scene: WhichTopDownScene,
+) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
+    in_state(GlobalGameState::RunningTopDownScene(scene))
+}
 
-        let (loading, running, quitting, paused) = match self {
-            LoadingBuilding1PlayerFloor
-            | AtBuilding1PlayerFloor
-            | QuittingBuilding1PlayerFloor => (
-                LoadingBuilding1PlayerFloor,
-                AtBuilding1PlayerFloor,
-                QuittingBuilding1PlayerFloor,
-                None,
-            ),
+/// Helper to check if the state is in specific top down scene leaving state.
+pub fn in_scene_leaving_state(
+    scene: WhichTopDownScene,
+) -> impl FnMut(Option<Res<State<GlobalGameState>>>) -> bool + Clone {
+    in_state(GlobalGameState::LeavingTopDownScene(scene))
+}
 
-            LoadingMall | AtMall | QuittingMall => {
-                (LoadingMall, AtMall, QuittingMall, None)
-            }
+/// Helper to check if the state is in _any_ top down scene loading state.
+pub fn in_top_down_loading_state(
+) -> impl FnMut(Option<Res<State<InTopDownScene>>>) -> bool + Clone {
+    in_state(InTopDownScene(TopDownSceneState::Loading))
+}
 
-            LoadingBuilding1Basement1
-            | AtBuilding1Basement1
-            | QuittingBuilding1Basement1 => (
-                LoadingBuilding1Basement1,
-                AtBuilding1Basement1,
-                QuittingBuilding1Basement1,
-                None,
-            ),
+/// Helper to check if the state is in _any_ top down scene running state.
+pub fn in_top_down_running_state(
+) -> impl FnMut(Option<Res<State<InTopDownScene>>>) -> bool + Clone {
+    in_state(InTopDownScene(TopDownSceneState::Running))
+}
 
-            LoadingBuilding1Basement2
-            | AtBuilding1Basement2
-            | QuittingBuilding1Basement2 => (
-                LoadingBuilding1Basement2,
-                AtBuilding1Basement2,
-                QuittingBuilding1Basement2,
-                None,
-            ),
-
-            LoadingClinic | AtClinic | QuittingClinic => {
-                (LoadingClinic, AtClinic, QuittingClinic, None)
-            }
-
-            LoadingClinicWard | AtClinicWard | QuittingClinicWard => {
-                (LoadingClinicWard, AtClinicWard, QuittingClinicWard, None)
-            }
-
-            LoadingPlantShop | AtPlantShop | QuittingPlantShop => {
-                (LoadingPlantShop, AtPlantShop, QuittingPlantShop, None)
-            }
-
-            LoadingSewers | AtSewers | QuittingSewers => {
-                (LoadingSewers, AtSewers, QuittingSewers, None)
-            }
-
-            LoadingTwinpeaksApartment
-            | AtTwinpeaksApartment
-            | QuittingTwinpeaksApartment => (
-                LoadingTwinpeaksApartment,
-                AtTwinpeaksApartment,
-                QuittingTwinpeaksApartment,
-                None,
-            ),
-
-            LoadingMeditation | InGameMeditation | MeditationInMenu
-            | QuittingMeditation => (
-                LoadingMeditation,
-                InGameMeditation,
-                QuittingMeditation,
-                Some(MeditationInMenu),
-            ),
-
-            LoadingDowntown | AtDowntown | QuittingDowntown => {
-                (LoadingDowntown, AtDowntown, QuittingDowntown, None)
-            }
-
-            LoadingCompound | AtCompound | QuittingCompound => {
-                (LoadingCompound, AtCompound, QuittingCompound, None)
-            }
-
-            LoadingCompoundTower | AtCompoundTower | QuittingCompoundTower => (
-                LoadingCompoundTower,
-                AtCompoundTower,
-                QuittingCompoundTower,
-                None,
-            ),
-
-            LoadingTopDownScene(_)
-            | RunningTopDownScene(_)
-            | LeavingTopDownScene(_) => {
-                // TODO
-                return None;
-            }
-            Blank | Exit | NewGame => return None,
-        };
-
-        Some(StandardStateSemantics {
-            loading,
-            running,
-            quitting,
-            paused,
-        })
-    }
+/// Helper to check if the state is in _any_ top down scene leaving state.
+pub fn in_top_down_leaving_state(
+) -> impl FnMut(Option<Res<State<InTopDownScene>>>) -> bool + Clone {
+    in_state(InTopDownScene(TopDownSceneState::Leaving))
 }
 
 impl GlobalGameStateTransition {
     /// We expect the transition to start at this state.
     pub fn from_state(self) -> GlobalGameState {
         use GlobalGameStateTransition::*;
+        use WhichTopDownScene::*;
 
         match self {
             BlankToNewGame => GlobalGameState::Blank,
@@ -385,17 +215,11 @@ impl GlobalGameStateTransition {
             Building1PlayerFloorToMeditation
             | Building1PlayerFloorToBuilding1Basement1
             | Sleeping
-            | Building1PlayerFloorToDowntown => {
-                GlobalGameState::QuittingBuilding1PlayerFloor
-            }
+            | Building1PlayerFloorToDowntown => Building1PlayerFloor.leaving(),
             Building1Basement1ToBasement2
             | Building1Basement1ToPlayerFloor
-            | Building1Basement1ToDowntown => {
-                GlobalGameState::QuittingBuilding1Basement1
-            }
-            Building1Basement2ToBasement1 => {
-                GlobalGameState::QuittingBuilding1Basement2
-            }
+            | Building1Basement1ToDowntown => Building1Basement1.leaving(),
+            Building1Basement2ToBasement1 => Building1Basement2.leaving(),
             DowntownToBuilding1PlayerFloor
             | DowntownToClinic
             | DowntownToClinicWard
@@ -403,18 +227,16 @@ impl GlobalGameStateTransition {
             | DowntownToMall
             | DowntownToPlantShop
             | DowntownToSewers
-            | DowntownToTwinpeaksApartment => GlobalGameState::QuittingDowntown,
-            ClinicToDowntown => GlobalGameState::QuittingClinic,
-            ClinicWardToDowntown => GlobalGameState::QuittingClinicWard,
-            PlantShopToDowntown => GlobalGameState::QuittingPlantShop,
-            SewersToDowntown => GlobalGameState::QuittingSewers,
-            CompoundToDowntown => GlobalGameState::QuittingCompound,
-            CompoundToTower => GlobalGameState::QuittingCompound,
-            TwinpeaksApartmentToDowntown => {
-                GlobalGameState::QuittingTwinpeaksApartment
-            }
-            MallToDowntown => GlobalGameState::QuittingMall,
-            TowerToCompound => GlobalGameState::QuittingCompoundTower,
+            | DowntownToTwinpeaksApartment => Downtown.leaving(),
+            ClinicToDowntown => Clinic.leaving(),
+            ClinicWardToDowntown => ClinicWard.leaving(),
+            PlantShopToDowntown => PlantShop.leaving(),
+            SewersToDowntown => Sewers.leaving(),
+            CompoundToDowntown => Compound.leaving(),
+            CompoundToTower => Compound.leaving(),
+            TwinpeaksApartmentToDowntown => TwinpeaksApartment.leaving(),
+            MallToDowntown => Mall.leaving(),
+            TowerToCompound => CompoundTower.leaving(),
         }
     }
 }
@@ -477,5 +299,29 @@ impl ComputedStates for WhichTopDownScene {
             ) => Some(scene),
             _ => None,
         }
+    }
+}
+
+impl InTopDownScene {
+    /// Is the scene in the [`TopDownSceneState::Running`] state?
+    pub fn is_running(self) -> bool {
+        matches!(self.0, TopDownSceneState::Running)
+    }
+}
+
+impl WhichTopDownScene {
+    /// Instance of the scene in the loading state.
+    pub fn loading(self) -> GlobalGameState {
+        GlobalGameState::LoadingTopDownScene(self)
+    }
+
+    /// Instance of the scene in the running state.
+    pub fn running(self) -> GlobalGameState {
+        GlobalGameState::RunningTopDownScene(self)
+    }
+
+    /// Instance of the scene in the leaving state.
+    pub fn leaving(self) -> GlobalGameState {
+        GlobalGameState::LeavingTopDownScene(self)
     }
 }

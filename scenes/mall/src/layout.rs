@@ -26,22 +26,22 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(Mall::loading()),
+            OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Mall>,
         )
         .add_systems(
             Update,
             spawn
-                .run_if(Mall::in_loading_state())
+                .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap<Mall>>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Mall>()),
         )
-        .add_systems(OnExit(Mall::quitting()), despawn)
+        .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
             (exit, talk_to_ginger_cat)
                 .run_if(on_event::<MallAction>())
-                .run_if(Mall::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         );
     }

@@ -48,14 +48,14 @@ impl bevy::app::Plugin for Plugin {
             )
                 .before(DisplayEmojiEventConsumer)
                 .before(ChangeHighlightedInspectLabelEventConsumer)
-                .run_if(Building1PlayerFloor::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         )
         .add_systems(
             Update,
             toggle_zone_hints
                 .run_if(movement_event_emitted())
-                .run_if(Building1PlayerFloor::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .after(emit_movement_events::<Building1PlayerFloor>),
         );
     }
@@ -106,7 +106,7 @@ fn start_meditation_minigame(
         vec![
             CutsceneStep::TakeAwayPlayerControl(player),
             CutsceneStep::ChangeGlobalState {
-                to: Building1PlayerFloor::quitting(),
+                to: THIS_SCENE.leaving(),
                 with:
                     GlobalGameStateTransition::Building1PlayerFloorToMeditation,
             },
@@ -209,7 +209,7 @@ fn sleep(mut cmd: Commands, player: Query<Entity, With<Player>>) {
     vec![
         CutsceneStep::TakeAwayPlayerControl(player),
         CutsceneStep::ChangeGlobalState {
-            to: Building1PlayerFloor::quitting(),
+            to: THIS_SCENE.leaving(),
             with: GlobalGameStateTransition::Sleeping,
         },
         CutsceneStep::StartLoadingScreen {

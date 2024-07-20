@@ -24,20 +24,6 @@ impl TopDownScene for Compound {
     }
 }
 
-impl WithStandardStateSemantics for Compound {
-    fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingCompound
-    }
-
-    fn running() -> GlobalGameState {
-        GlobalGameState::AtCompound
-    }
-
-    fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingCompound
-    }
-}
-
 #[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
 pub enum CompoundAction {
     GoToDowntown,
@@ -49,10 +35,10 @@ pub fn add(app: &mut App) {
 
     app.add_event::<CompoundAction>();
 
-    top_down::default_setup_for_scene::<Compound>(app);
+    top_down::default_setup_for_scene::<Compound>(app, THIS_SCENE);
 
     #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Compound>(app);
+    top_down::dev_default_setup_for_scene::<Compound>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -65,20 +51,20 @@ pub fn add(app: &mut App) {
     app.add_systems(
         Last,
         finish_when_everything_loaded
-            .run_if(Compound::in_loading_state())
+            .run_if(in_scene_loading_state(THIS_SCENE))
             .run_if(|q: Query<(), With<LayoutEntity>>| !q.is_empty())
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
     // ready to enter the game when the loading screen is completely gone
     app.add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
-        enter_the_scene.run_if(Compound::in_loading_state()),
+        enter_the_scene.run_if(in_scene_loading_state(THIS_SCENE)),
     );
 
     app.add_systems(
         Update,
         common_loading_screen::finish
-            .run_if(Compound::in_running_state())
+            .run_if(in_scene_running_state(THIS_SCENE))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     );
 
@@ -87,7 +73,7 @@ pub fn add(app: &mut App) {
         // wait for the loading screen to fade in before changing state,
         // otherwise the player might see a flicker
         exit.run_if(in_state(common_loading_screen::wait_state()))
-            .run_if(Compound::in_quitting_state()),
+            .run_if(in_scene_leaving_state(THIS_SCENE)),
     );
 
     info!("Added {Compound:?} to app");
@@ -108,7 +94,7 @@ fn finish_when_everything_loaded(
 
 fn enter_the_scene(mut next_state: ResMut<NextState<GlobalGameState>>) {
     info!("Entering {Compound:?}");
-    next_state.set(Compound::running());
+    next_state.set(THIS_SCENE.running());
 }
 
 fn exit(
@@ -124,10 +110,10 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         CompoundToDowntown => {
-            next_state.set(GlobalGameState::LoadingDowntown);
+            next_state.set(WhichTopDownScene::Downtown.loading());
         }
         CompoundToTower => {
-            next_state.set(GlobalGameState::LoadingCompoundTower);
+            next_state.set(WhichTopDownScene::CompoundTower.loading());
         }
         _ => {
             unreachable!("Invalid {Compound:?} transition {transition:?}");

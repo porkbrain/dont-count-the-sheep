@@ -4,7 +4,10 @@ use bevy::{
 };
 use common_store::{DialogStore, GlobalStore};
 use common_story::Character;
-use main_game_lib::{dialog, state::GlobalGameState};
+use main_game_lib::{
+    dialog,
+    state::{GlobalGameState, WhichTopDownScene},
+};
 
 pub(crate) fn on_enter(
     mut next_state: ResMut<NextState<GlobalGameState>>,
@@ -37,5 +40,5 @@ pub(crate) fn on_enter(
             dialog::TypedNamespace::InitialPhoebe,
         );
 
-    next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
+    next_state.set(WhichTopDownScene::Building1PlayerFloor.loading());
 }

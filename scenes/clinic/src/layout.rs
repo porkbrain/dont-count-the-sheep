@@ -24,27 +24,27 @@ pub(crate) struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            OnEnter(Clinic::loading()),
+            OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Clinic>,
         )
         .add_systems(
             Update,
             spawn
-                .run_if(Clinic::in_loading_state())
+                .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap<Clinic>>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Clinic>()),
         )
-        .add_systems(OnExit(Clinic::quitting()), despawn)
+        .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
             exit.run_if(on_event::<ClinicAction>())
-                .run_if(Clinic::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         )
         .add_systems(
             Update,
             environmental_objects::door::toggle::<Clinic>
-                .run_if(Clinic::in_running_state())
+                .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(movement_event_emitted())
                 .after(actor::emit_movement_events::<Clinic>),
         );

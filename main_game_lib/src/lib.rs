@@ -72,10 +72,12 @@ pub fn windowed_app() -> App {
     info!("Initializing Don't Count The Sheep");
 
     app.init_state::<GlobalGameState>()
+        .add_computed_state::<WhichTopDownScene>()
+        .add_computed_state::<InTopDownScene>()
+        .init_resource::<GlobalGameStateTransition>()
         // TODO: load from save file
         .init_resource::<player_stats::PlayerStats>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
-        .init_resource::<GlobalGameStateTransition>()
         .init_asset::<crate::rscn::TscnTree>()
         .init_asset_loader::<crate::rscn::TscnLoader>()
         .init_asset_loader::<common_assets::ignore_loader::Loader>();
