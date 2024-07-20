@@ -169,8 +169,6 @@ pub struct SpriteFrames {
 }
 
 /// Marks scene as "can be loaded from .tscn".
-///
-/// Autoimplemented for [`TopDownScene`]s.
 pub trait TscnInBevy: Send + Sync + 'static {
     /// Asset path of the `.tscn` file associated with this scene.
     fn tscn_asset_path() -> String;
