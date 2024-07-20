@@ -37,7 +37,7 @@ use graphviz_rust::{dot_generator::*, dot_structures::*};
 use itertools::Itertools;
 
 use super::{TileKindMeta, ZoneGroup};
-use crate::top_down::{layout::Tile, TileKind, TileMap, TopDownScene};
+use crate::top_down::{TileKind, TileMap};
 
 /// Map of tile kind variant to those other variants (not including
 /// itself - proper supersets) whose instances fully contain it (the key.)
@@ -153,8 +153,8 @@ impl GraphExt for Graph {
 
 impl ZoneTileKindGraph {
     /// Find all relationships between the zone tile kind variants in the
-    /// tile map `T`.
-    pub(crate) fn compute_from<T: TopDownScene>(tilemap: &TileMap<T>) -> Self {
+    /// tile map.
+    pub(crate) fn compute_from(tilemap: &TileMap) -> Self {
         let mut compute_step = GraphComputeStep::default();
         loop {
             match compute_step.next_step(tilemap) {
@@ -180,7 +180,7 @@ impl ZoneTileKindGraph {
         // are in the same group.
 
         // the index is going to be the zone group unique value in the end
-        let mut zone_groups: Vec<HashSet<TileKind>> = default();
+        let mut zone_groups: Vec<BTreeSet<TileKind>> = default();
         let mut successors: HashMap<TileKind, Vec<TileKind>> = default();
 
         for zone in TileKind::zones_iter() {
@@ -466,10 +466,7 @@ impl std::fmt::Debug for ZoneTileKindGraph {
 }
 
 impl GraphComputeStep {
-    fn next_step<T: TopDownScene>(
-        self,
-        map: &TileMap<T>,
-    ) -> GraphComputeResult {
+    fn next_step(self, map: &TileMap) -> GraphComputeResult {
         let next_step = match self {
             Self::Supersets => Self::Subsets {
                 from_supersets: find_supersets(map),
@@ -525,7 +522,7 @@ impl GraphComputeStep {
 }
 
 /// Find which tiles are supersets of which.
-fn find_supersets<T: TopDownScene>(map: &TileMap<T>) -> SupersetsOf {
+fn find_supersets(map: &TileMap) -> SupersetsOf {
     let mut supersets_of: SupersetsOf = default();
     for tiles in map.squares().values() {
         let zones: HashSet<_> = get_zones(tiles).collect();
@@ -568,8 +565,8 @@ fn find_subsets(supersets_of: &SupersetsOf) -> SubsetsOf {
 
 /// Find which tiles overlap in the same square and are not supersets
 /// of each other
-fn find_overlaps<T: TopDownScene>(
-    map: &TileMap<T>,
+fn find_overlaps(
+    map: &TileMap,
     supersets_of: &SupersetsOf,
     subsets_of: &SubsetsOf,
 ) -> Overlaps {
@@ -600,8 +597,8 @@ fn find_overlaps<T: TopDownScene>(
 
 /// Check which non overlapping tiles are walkable neighbors but are not
 /// supersets of each other
-fn find_neighbors<T: TopDownScene>(
-    map: &TileMap<T>,
+fn find_neighbors(
+    map: &TileMap,
     supersets_of: &SupersetsOf,
     subsets_of: &SubsetsOf,
     overlaps: &Overlaps,
@@ -646,9 +643,7 @@ fn find_neighbors<T: TopDownScene>(
     neighbors
 }
 
-fn count_zone_sizes<T: TopDownScene>(
-    map: &TileMap<T>,
-) -> HashMap<TileKind, usize> {
+fn count_zone_sizes(map: &TileMap) -> HashMap<TileKind, usize> {
     map.squares()
         .values()
         .flat_map(|tiles| get_zones(tiles))

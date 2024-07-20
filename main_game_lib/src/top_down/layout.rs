@@ -8,19 +8,17 @@ mod build_pathfinding_graph;
 pub(crate) mod map_maker;
 pub(crate) mod systems;
 
-use std::marker::PhantomData;
-
 use bevy::{
     asset::Asset,
     ecs::{entity::Entity, system::Resource},
     log::{trace, warn},
     math::{vec2, Vec2},
     prelude::ReflectDefault,
-    reflect::{FromReflect, GetTypeRegistration, Reflect, TypePath},
+    reflect::Reflect,
     utils::hashbrown::HashMap,
 };
 use bevy_grid_squared::{Square, SquareLayout};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 use strum::IntoEnumIterator;
 
@@ -38,79 +36,24 @@ pub const LAYOUT: SquareLayout = SquareLayout {
 /// A tile is uniquely identified by (`x`, `y`) of the square and a layer index.
 pub type TileIndex = (Square, usize);
 
-/// Some map.
-pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
-    /// Alphabetical only name of the map.
-    fn name() -> &'static str;
-
+/// Holds the tiles in a hash map.
+#[derive(Asset, Resource, Serialize, Deserialize, Reflect, Clone, Debug)]
+pub struct TileMap {
     /// Size in number of tiles.
     /// `[left, right, bottom, top]`
-    fn bounds() -> [i32; 4];
-
-    /// Whether the given square is inside the map.
-    #[inline]
-    fn contains(square: Square) -> bool {
-        let [min_x, max_x, min_y, max_y] = Self::bounds();
-
-        square.x >= min_x
-            && square.x <= max_x
-            && square.y >= min_y
-            && square.y <= max_y
-    }
-}
-
-/// Defines tile behavior.
-pub trait Tile:
-    TypePath
-    + GetTypeRegistration
-    + Clone
-    + Copy
-    + Default
-    + DeserializeOwned
-    + Eq
-    + FromReflect
-    + PartialEq
-    + Serialize
-    + std::fmt::Debug
-    + std::hash::Hash
-{
-    /// Whether the tile can be stepped on by an actor with given entity.
-    fn is_walkable(&self, by: Entity) -> bool;
-
-    /// Whether a tile represents a zone.
-    /// A zone is a group of tiles that are connected to each other and entities
-    /// enter and leave them.
-    /// This is used to emit events about entering/leaving zones.
-    fn is_zone(&self) -> bool;
-
-    /// Returns an iterator over all the zone tiles.
-    /// This is used to automatically construct graph of zone relationships
-    /// for pathfinding.
-    fn zones_iter() -> impl Iterator<Item = Self>;
-
-    /// Returns [`None`] if not walkable, otherwise the cost of walking to the
-    /// tile.
-    /// This is useful for pathfinding.
-    /// The higher the cost, the less likely the character will want to walk
-    /// over it.
-    fn walk_cost(&self, by: Entity) -> Option<TileWalkCost> {
-        self.is_walkable(by).then_some(TileWalkCost::Normal)
-    }
-}
-
-/// Holds the tiles in a hash map.
-#[derive(
-    Asset, Resource, Serialize, Deserialize, Reflect, Default, Clone, Debug,
-)]
-pub struct TileMap<T: TopDownScene> {
+    #[serde(default = "default_bounds")]
+    bounds: [i32; 4],
     /// Metadata about zones used for pathfinding.
     #[serde(default)]
     zones: TileKindMetas,
     /// There can be multiple layers of tiles on a single square.
     pub(crate) squares: HashMap<Square, SmallVec<[TileKind; 3]>>,
-    #[serde(skip)]
-    #[reflect(ignore)]
-    _phantom: PhantomData<T>,
+}
+
+/// You can change these in the .ron file of the map if you need larger map.
+/// `[left, right, bottom, top]`
+fn default_bounds() -> [i32; 4] {
+    [-1_000, 1_000, -1_000, 1_000]
 }
 
 /// Maps a tile kind to its metadata that's useful for NPC pathfinding.
@@ -218,50 +161,71 @@ pub fn ysort(Vec2 { y, .. }: Vec2) -> f32 {
     ((max - y) / size).clamp(-0.1, 1.1)
 }
 
-impl Tile for TileKind {
+impl TileKind {
     #[inline]
-    fn is_walkable(&self, by: Entity) -> bool {
+    /// Whether the tile can be stepped on by an actor with given entity.
+    pub fn is_walkable(&self, by: Entity) -> bool {
         match self {
             Self::Empty => true,
             Self::Wall => false,
             Self::Trail => true,
             Self::Actor(entity) if *entity == by => true,
             Self::Actor(_) => false, // don't walk over others
-            Self::Zone(l) => l.is_walkable(by),
+            Self::Zone(_) => true,
         }
     }
 
+    /// Returns [`None`] if not walkable, otherwise the cost of walking to the
+    /// tile.
+    /// This is useful for pathfinding.
+    /// The higher the cost, the less likely the character will want to walk
+    /// over it.
     #[inline]
-    fn walk_cost(&self, by: Entity) -> Option<TileWalkCost> {
+    pub fn walk_cost(&self, by: Entity) -> Option<TileWalkCost> {
         match self {
             Self::Wall => None,
             Self::Empty => Some(TileWalkCost::Normal),
             Self::Trail => Some(TileWalkCost::Preferred),
             Self::Actor(entity) if *entity == by => Some(TileWalkCost::Normal),
             Self::Actor(_) => None, // don't walk over others
-            Self::Zone(l) => l.walk_cost(by),
+            Self::Zone(_) => Some(TileWalkCost::Normal),
         }
     }
 
+    /// Whether a tile represents a zone.
+    /// A zone is a group of tiles that are connected to each other and entities
+    /// enter and leave them.
+    /// This is used to emit events about entering/leaving zones.
     #[inline]
-    fn is_zone(&self) -> bool {
-        match self {
-            Self::Zone(l) => l.is_zone(),
-            _ => false,
-        }
+    pub fn is_zone(&self) -> bool {
+        matches!(self, Self::Zone(_))
     }
 
+    /// Returns an iterator over all the zone tiles.
+    /// This is used to automatically construct graph of zone relationships
+    /// for pathfinding.
     #[inline]
-    fn zones_iter() -> impl Iterator<Item = Self> {
+    pub fn zones_iter() -> impl Iterator<Item = Self> {
         ZoneTileKind::iter().map(Self::Zone)
     }
 }
 
-impl<T: TopDownScene> TileMap<T> {
+impl TileMap {
+    /// Whether the given square is inside the map.
+    #[inline]
+    pub fn contains(&self, square: Square) -> bool {
+        let [min_x, max_x, min_y, max_y] = self.bounds;
+
+        square.x >= min_x
+            && square.x <= max_x
+            && square.y >= min_y
+            && square.y <= max_y
+    }
+
     /// Get the kind of a tile.
     #[inline]
     pub fn get(&self, square: Square) -> Option<&[TileKind]> {
-        if !T::contains(square) {
+        if !self.contains(square) {
             return None;
         }
 
@@ -286,7 +250,7 @@ impl<T: TopDownScene> TileMap<T> {
         if let Some(tiles) = self.squares.get(&square) {
             tiles.iter().all(|tile| tile.is_walkable(by))
         } else {
-            T::contains(square)
+            self.contains(square)
         }
     }
 
@@ -328,7 +292,7 @@ impl<T: TopDownScene> TileMap<T> {
         to: Square,
         tile: impl Into<TileKind>,
     ) -> Option<usize> {
-        if !T::contains(to) {
+        if !self.contains(to) {
             return None;
         }
 
@@ -366,7 +330,7 @@ impl<T: TopDownScene> TileMap<T> {
         layer: usize,
         kind: impl Into<TileKind>,
     ) -> Option<TileKind> {
-        if !T::contains(of) {
+        if !self.contains(of) {
             return None;
         }
 
@@ -390,7 +354,7 @@ impl<T: TopDownScene> TileMap<T> {
         layer: usize,
         map: impl FnOnce(TileKind) -> Option<TileKind>,
     ) -> Option<TileKind> {
-        if !T::contains(of) {
+        if !self.contains(of) {
             return None;
         }
 
@@ -446,7 +410,7 @@ impl<T: TopDownScene> TileMap<T> {
                     Some(tile.walk_cost(by)?.min(highest_cost_so_far))
                 },
             )
-        } else if T::contains(square) {
+        } else if self.contains(square) {
             Some(TileWalkCost::Normal)
         } else {
             None
@@ -460,7 +424,7 @@ impl<T: TopDownScene> TileMap<T> {
 }
 
 /// Pathfinding logic.
-impl<T: TopDownScene> TileMap<T> {
+impl TileMap {
     /// No matter how many layers there are, all tile kinds within a single
     /// square must belong to the same zone group.
     #[inline]
@@ -793,22 +757,6 @@ impl From<&ZoneTileKind> for TileKind {
     }
 }
 
-/// Allow implementation for unit type for convenience.
-/// Maps can use this if they have no special tiles.
-impl Tile for () {
-    fn is_walkable(&self, _: Entity) -> bool {
-        true
-    }
-
-    fn is_zone(&self) -> bool {
-        false
-    }
-
-    fn zones_iter() -> impl Iterator<Item = Self> {
-        std::iter::empty()
-    }
-}
-
 impl TileKindMetas {
     /// Returns the zone group of the tile if it's a zone.
     /// This is useful for pathfinding.
@@ -840,6 +788,16 @@ impl TileKindMetas {
     }
 }
 
+impl Default for TileMap {
+    fn default() -> Self {
+        Self {
+            bounds: default_bounds(),
+            zones: TileKindMetas::default(),
+            squares: HashMap::default(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use bevy::utils::default;
@@ -847,50 +805,6 @@ mod tests {
     use smallvec::smallvec;
 
     use super::*;
-
-    #[derive(Default, Reflect)]
-    struct TestScene;
-
-    #[derive(
-        Default,
-        Reflect,
-        Hash,
-        PartialEq,
-        Eq,
-        Debug,
-        Serialize,
-        Deserialize,
-        Clone,
-        Copy,
-    )]
-    enum TestTileKind {
-        #[default]
-        Empty,
-    }
-
-    impl Tile for TestTileKind {
-        fn is_walkable(&self, _: Entity) -> bool {
-            true
-        }
-
-        fn is_zone(&self) -> bool {
-            false
-        }
-
-        fn zones_iter() -> impl Iterator<Item = Self> {
-            std::iter::empty()
-        }
-    }
-
-    impl TopDownScene for TestScene {
-        fn bounds() -> [i32; 4] {
-            [0, 10, 0, 10]
-        }
-
-        fn name() -> &'static str {
-            unreachable!()
-        }
-    }
 
     #[test]
     fn it_converts_tile_walk_cost_to_i32() {
@@ -904,10 +818,10 @@ mod tests {
         use TileWalkCost::*;
 
         let o = sq(0, 0);
-        let mut tilemap = TileMap::<TestScene>::default();
+        let mut tilemap = TileMap::default();
 
         // out of bounds returns none
-        assert_eq!(tilemap.walk_cost(sq(-1, 0), Entity::PLACEHOLDER), None);
+        assert_eq!(tilemap.walk_cost(sq(-1001, 0), Entity::PLACEHOLDER), None);
 
         // in bounds, but no tile returns normal
         assert_eq!(tilemap.walk_cost(o, Entity::PLACEHOLDER), Some(Normal));
@@ -945,7 +859,7 @@ mod tests {
 
     #[test]
     fn it_adds_tiles_to_first_empty_layer() {
-        let mut tilemap = TileMap::<TestScene>::default();
+        let mut tilemap = TileMap::default();
         let sq = sq(0, 0);
 
         assert_eq!(
@@ -969,7 +883,7 @@ mod tests {
 
     #[test]
     fn it_sets_tile_kind_layer() {
-        let mut tilemap = TileMap::<TestScene>::default();
+        let mut tilemap = TileMap::default();
         let sq = sq(0, 0);
 
         assert_eq!(
@@ -1000,14 +914,14 @@ mod tests {
 
     #[test]
     fn it_doesnt_do_anything_outside_map_bounds() {
-        let mut tilemap = TileMap::<TestScene>::default();
+        let mut tilemap = TileMap::default();
 
         assert_eq!(
-            tilemap.add_tile_to_first_empty_layer(sq(-100, 0), TileKind::Wall),
+            tilemap.add_tile_to_first_empty_layer(sq(-1001, 0), TileKind::Wall),
             None
         );
 
-        assert_eq!(tilemap.set_tile_kind(sq(100, 0), 0, TileKind::Wall), None);
+        assert_eq!(tilemap.set_tile_kind(sq(1001, 0), 0, TileKind::Wall), None);
     }
 
     /// Useful to track to prevent regressions.
@@ -1018,19 +932,6 @@ mod tests {
         let square: SmallVec<[TileKind; 3]> =
             smallvec![default(), default(), default(), default(), default()];
         assert_eq!(std::mem::size_of_val(&square), 56);
-    }
-
-    #[derive(Default, Reflect)]
-    struct DevMapTestScene;
-
-    impl TopDownScene for DevMapTestScene {
-        fn bounds() -> [i32; 4] {
-            [-11, 0, 15, 28]
-        }
-
-        fn name() -> &'static str {
-            unreachable!()
-        }
     }
 
     /// Test map such that:
@@ -1207,8 +1108,7 @@ mod tests {
             (sq(-10, 25), sq(-5, 26), "Going from A to B", default()),
         ];
 
-        let tilemap: TileMap<DevMapTestScene> =
-            ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+        let tilemap: TileMap = ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
         for (
             from,
@@ -1247,11 +1147,10 @@ mod tests {
 
     #[test]
     fn it_finds_path_from_each_square_to_every_other() {
-        let tilemap: TileMap<DevMapTestScene> =
-            ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+        let tilemap: TileMap = ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
         let all_squares =
-            || bevy_grid_squared::shapes::rectangle(DevMapTestScene::bounds());
+            || bevy_grid_squared::shapes::rectangle([-11, 0, 15, 28]);
 
         for to in all_squares() {
             println!("Finding path from all squares to {to}");
@@ -1278,7 +1177,7 @@ mod tests {
     }
 
     fn search_for_partial_path(
-        tilemap: &TileMap<DevMapTestScene>,
+        tilemap: &TileMap,
         max_partial_steps: usize,
         from: Square,
         to: Square,

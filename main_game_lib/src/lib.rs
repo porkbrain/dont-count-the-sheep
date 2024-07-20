@@ -48,7 +48,8 @@ pub fn windowed_app() -> App {
                 main_game_lib::top_down::environmental_objects::door=debug,\
                 main_game_lib::top_down::cameras=debug,\
                 main_game_lib::top_down::layout=debug,\
-                scene_building1_player_floor=trace,\
+                main_game_lib::rscn=debug,\
+                scene_top_down=trace,\
                 "
                 .to_string(),
                 ..default()
@@ -71,10 +72,12 @@ pub fn windowed_app() -> App {
     info!("Initializing Don't Count The Sheep");
 
     app.init_state::<GlobalGameState>()
+        .add_computed_state::<WhichTopDownScene>()
+        .add_computed_state::<InTopDownScene>()
+        .init_resource::<GlobalGameStateTransition>()
         // TODO: load from save file
         .init_resource::<player_stats::PlayerStats>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
-        .init_resource::<GlobalGameStateTransition>()
         .init_asset::<crate::rscn::TscnTree>()
         .init_asset_loader::<crate::rscn::TscnLoader>()
         .init_asset_loader::<common_assets::ignore_loader::Loader>();
@@ -103,12 +106,12 @@ pub fn windowed_app() -> App {
         common_loading_screen::Plugin,
         common_store::Plugin,
         common_story::Plugin,
-        crate::top_down::Plugin,
         common_visuals::Plugin,
-        cutscene::Plugin,
-        PixelCameraPlugin,
-        crate::hud::Plugin,
+        crate::cutscene::Plugin,
         crate::dialog::Plugin,
+        crate::hud::Plugin,
+        crate::top_down::Plugin,
+        PixelCameraPlugin,
     ));
 
     info!("Plugins added");

@@ -7,7 +7,7 @@ use common_ext::QueryExt;
 use leafwing_input_manager::action_state::ActionState;
 
 use super::{Actor, ActorTarget};
-use crate::top_down::layout::{TileMap, TopDownScene};
+use crate::top_down::layout::TileMap;
 
 /// The entity that the player controls.
 /// Bound it with [`Actor`] to allow movement.
@@ -23,8 +23,8 @@ pub struct Player;
 pub struct TakeAwayPlayerControl;
 
 /// Use keyboard to move around the player.
-pub fn move_around<T: TopDownScene>(
-    map: Res<TileMap<T>>,
+pub fn move_around(
+    map: Res<TileMap>,
     controls: Res<ActionState<GlobalAction>>,
 
     mut player: Query<

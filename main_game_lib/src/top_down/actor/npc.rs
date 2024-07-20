@@ -19,7 +19,7 @@ use crate::{
     dialog::{self, StartDialogWhenLoaded},
     top_down::{
         inspect_and_interact::ReadyForInteraction, Actor, ActorTarget, Player,
-        TileMap, TopDownScene,
+        TileMap,
     },
 };
 
@@ -179,8 +179,8 @@ pub fn drive_behavior(
 /// If no path can be found, the planned path is set to an empty vector.
 ///
 /// Condition this to run only on new event.
-pub fn plan_path<T: TopDownScene>(
-    map: Res<TileMap<T>>,
+pub fn plan_path(
+    map: Res<TileMap>,
     mut events: EventReader<PlanPathEvent>,
 
     mut actors: Query<(Entity, &Actor, &mut NpcInTheMap)>,
@@ -209,8 +209,8 @@ pub fn plan_path<T: TopDownScene>(
 ///
 /// We only do this if the behavior tree is not paused.
 /// E.g. when the NPC enters a dialog, we don't want it to move.
-pub fn run_path<T: TopDownScene>(
-    map: Res<TileMap<T>>,
+pub fn run_path(
+    map: Res<TileMap>,
 
     mut actors: Query<
         (Entity, &mut Actor, &mut NpcInTheMap),

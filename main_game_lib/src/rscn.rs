@@ -43,8 +43,6 @@ pub use loader::{LoaderError, TscnLoader};
 use serde::{Deserialize, Serialize};
 pub use spawner::TscnSpawner;
 
-use crate::top_down::TopDownScene;
-
 /// A helper component that is always in an entity with
 /// [`bevy::prelude::SpatialBundle`].
 /// Translated a simple point from Godot.
@@ -171,8 +169,6 @@ pub struct SpriteFrames {
 }
 
 /// Marks scene as "can be loaded from .tscn".
-///
-/// Autoimplemented for [`TopDownScene`]s.
 pub trait TscnInBevy: Send + Sync + 'static {
     /// Asset path of the `.tscn` file associated with this scene.
     fn tscn_asset_path() -> String;
@@ -187,12 +183,6 @@ pub struct TscnTreeHandle<T> {
     /// Will be set to [`None`] once the scene is spawned.
     handle: Option<Handle<TscnTree>>,
     _phantom: std::marker::PhantomData<T>,
-}
-
-impl<T: TopDownScene> TscnInBevy for T {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", T::name())
-    }
 }
 
 /// Parses Godot's .tscn file with very strict requirements on the content.

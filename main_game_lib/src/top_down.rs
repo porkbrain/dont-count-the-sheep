@@ -23,14 +23,15 @@ use actor::{emit_movement_events, BeginDialogEvent};
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::prelude::*;
 pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
-pub use layout::{TileKind, TileMap, TopDownScene};
+pub use layout::{TileKind, TileMap};
 use leafwing_input_manager::plugin::InputManagerSystem;
 
 use self::inspect_and_interact::ChangeHighlightedInspectLabelEvent;
 use crate::{
-    cutscene::in_cutscene,
+    cutscene::in_cutscene, in_top_down_loading_state,
+    in_top_down_running_state,
     top_down::inspect_and_interact::ChangeHighlightedInspectLabelEventConsumer,
-    StandardStateSemantics, WithStandardStateSemantics,
+    InTopDownScene,
 };
 
 /// Does not add any systems, only registers generic-less types.
@@ -40,7 +41,176 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<npc::PlanPathEvent>()
             .add_event::<BeginDialogEvent>()
-            .add_event::<ChangeHighlightedInspectLabelEvent>();
+            .add_event::<ChangeHighlightedInspectLabelEvent>()
+            .add_event::<ActorMovementEvent>();
+
+        app.add_plugins(environmental_objects::Plugin);
+
+        //
+        // Assets
+        //
+
+        app.init_asset_loader::<common_assets::ron_loader::Loader<TileMap>>()
+            .init_asset::<TileMap>();
+
+        app.add_systems(
+                OnEnter(InTopDownScene::loading()),
+                common_assets::store::insert_as_resource::<common_story::StoryAssets>,
+            )
+            .add_systems(
+                OnExit(InTopDownScene::leaving()),
+                common_assets::store::remove_as_resource::<common_story::StoryAssets>,
+            );
+
+        //
+        // TileMap
+        //
+
+        app.add_systems(
+            OnExit(InTopDownScene::running()),
+            layout::systems::remove_resources,
+        )
+        .add_systems(
+            OnEnter(InTopDownScene::loading()),
+            layout::systems::start_loading_map,
+        )
+        .add_systems(
+            First,
+            layout::systems::try_insert_map_as_resource
+                .run_if(in_top_down_loading_state()),
+        )
+        .add_systems(
+            FixedUpdate,
+            actor::animate_movement.run_if(in_top_down_running_state()),
+        )
+        .add_systems(
+            Update,
+            actor::emit_movement_events
+                .run_if(in_top_down_running_state())
+                // so that we can emit this event on current frame
+                .after(actor::player::move_around),
+        )
+        .add_systems(
+            Update,
+            actor::player::move_around
+                .run_if(in_top_down_running_state())
+                .run_if(common_action::move_action_pressed())
+                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
+        )
+        .add_systems(
+            Update,
+            (
+                actor::npc::drive_behavior,
+                actor::npc::plan_path
+                    .run_if(on_event::<actor::npc::PlanPathEvent>()),
+                actor::npc::run_path,
+            )
+                .chain()
+                .run_if(in_top_down_running_state()),
+        );
+
+        //
+        // Camera
+        //
+
+        app.add_systems(
+            OnEnter(InTopDownScene::loading()),
+            common_visuals::camera::spawn,
+        )
+        .add_systems(
+            OnExit(InTopDownScene::leaving()),
+            common_visuals::camera::despawn,
+        )
+        .add_systems(
+            FixedUpdate,
+            cameras::track_player_with_main_camera
+                .after(actor::animate_movement)
+                .run_if(in_top_down_running_state())
+                .run_if(not(in_cutscene()))
+                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
+        );
+
+        //
+        // Inspect and interact systems
+        //
+
+        app.add_systems(
+            Update,
+            (
+                inspect_and_interact::highlight_what_would_be_interacted_with,
+                inspect_and_interact::change_highlighted_label
+                    .in_set(ChangeHighlightedInspectLabelEventConsumer)
+                    .run_if(on_event::<ChangeHighlightedInspectLabelEvent>()),
+                inspect_and_interact::show_all_in_vicinity
+                    .run_if(common_action::inspect_pressed()),
+            )
+                .chain() // easier to reason about
+                .run_if(in_top_down_running_state()),
+        )
+        .add_systems(
+            Update,
+            inspect_and_interact::schedule_hide_all
+                .run_if(in_top_down_running_state())
+                .run_if(common_action::inspect_just_released()),
+        );
+        app.add_systems(
+            PreUpdate,
+            inspect_and_interact::interact
+                .run_if(in_top_down_running_state())
+                .run_if(common_action::interaction_just_pressed())
+                // Without this condition, the dialog will start when the player
+                // exists the previous one because:
+                // 1. The interact system runs, interact is just pressed, and so
+                //    emits the event.
+                // 2. Player finishes the dialog by pressing interaction. This
+                //    consumes the interact action.
+                // 3. Consuming the action did fuck all because the event was
+                //    already emitted earlier. Since the commands to remove the
+                //    dialog resource were applied, the condition to not run the
+                //    begin_dialog system will not prevent rerun
+                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog()))
+                .after(InputManagerSystem::Update),
+        )
+        .add_systems(
+            Update,
+            (
+                actor::npc::mark_nearby_as_ready_for_interaction,
+                actor::npc::begin_dialog
+                    .run_if(on_event::<BeginDialogEvent>())
+                    .run_if(not(
+                        crate::dialog::fe::portrait::in_portrait_dialog(),
+                    )),
+            )
+                .run_if(in_top_down_running_state()),
+        )
+        .add_systems(
+            Update,
+            inspect_and_interact::match_interact_label_with_action_event
+                .run_if(in_top_down_running_state())
+                .run_if(on_event::<ActorMovementEvent>())
+                .after(emit_movement_events),
+        );
+
+        //
+        // HUD
+        //
+
+        app.add_systems(
+            OnEnter(InTopDownScene::running()),
+            (crate::hud::daybar::spawn, crate::hud::notification::spawn),
+        )
+        .add_systems(
+            OnExit(InTopDownScene::running()),
+            (
+                crate::hud::daybar::despawn,
+                crate::hud::notification::despawn,
+            ),
+        )
+        .add_systems(
+            Update,
+            (crate::hud::notification::update)
+                .run_if(in_top_down_running_state()),
+        );
 
         #[cfg(feature = "devtools")]
         {
@@ -56,6 +226,7 @@ impl bevy::app::Plugin for Plugin {
                 .register_type::<InspectLabelCategory>()
                 .register_type::<npc::NpcInTheMap>()
                 .register_type::<npc::PlanPathEvent>()
+                .register_type::<TileMap>()
                 .register_type::<npc::BehaviorLeaf>()
                 .register_type::<npc::BehaviorPaused>();
 
@@ -63,210 +234,34 @@ impl bevy::app::Plugin for Plugin {
                 ResourceInspectorPlugin::<Toolbar>::new()
                     .run_if(resource_exists::<Toolbar>),
             );
+
+            // You can press `Enter` to export the map.
+            // This will overwrite the RON file.
+            // We draw an overlay with tiles that you can edit with left and
+            // right mouse buttons.
+            app.add_systems(
+                OnEnter(InTopDownScene::running()),
+                layout::map_maker::spawn_debug_grid_root,
+            )
+            .add_systems(
+                Update,
+                layout::map_maker::show_tiles_around_cursor
+                    .run_if(in_top_down_running_state()),
+            )
+            .add_systems(
+                Update,
+                (
+                    layout::map_maker::change_square_kind,
+                    layout::map_maker::recolor_squares,
+                    layout::map_maker::update_ui,
+                )
+                    .run_if(in_top_down_running_state())
+                    .chain(),
+            )
+            .add_systems(
+                OnExit(InTopDownScene::leaving()),
+                layout::map_maker::destroy_map,
+            );
         }
     }
-}
-
-/// Registers unique `T` types, asset loader for the map RON file, and systems
-/// including from other packages:
-/// - [`common_assets::store::insert_as_resource`]
-/// - [`common_assets::store::remove_as_resource`]
-/// - [`crate::top_down::actor::animate_movement`]
-/// - [`crate::top_down::actor::emit_movement_events`]
-/// - [`crate::top_down::actor::npc::drive_behavior`]
-/// - [`crate::top_down::actor::npc::plan_path`]
-/// - [`crate::top_down::actor::npc::run_path`]
-/// - [`crate::top_down::actor::player::move_around`]
-pub fn default_setup_for_scene<T>(app: &mut App)
-where
-    T: TopDownScene + WithStandardStateSemantics,
-{
-    debug!("Adding assets for {}", T::type_path());
-
-    let StandardStateSemantics {
-        running,
-        loading,
-        quitting,
-        ..
-    } = T::semantics();
-
-    app.add_systems(
-        OnEnter(loading),
-        common_assets::store::insert_as_resource::<common_story::StoryAssets>,
-    )
-    .add_systems(
-        OnExit(quitting),
-        common_assets::store::remove_as_resource::<common_story::StoryAssets>,
-    );
-
-    debug!("Adding map layout for {}", T::type_path());
-
-    app.add_event::<ActorMovementEvent>()
-        .init_asset_loader::<common_assets::ron_loader::Loader<TileMap<T>>>()
-        .init_asset::<TileMap<T>>();
-
-    app.add_systems(OnEnter(loading), layout::systems::start_loading_map::<T>)
-        .add_systems(
-            First,
-            layout::systems::try_insert_map_as_resource::<T>
-                .run_if(in_state(loading)),
-        )
-        .add_systems(
-            FixedUpdate,
-            actor::animate_movement::<T>.run_if(in_state(running)),
-        )
-        .add_systems(
-            Update,
-            actor::emit_movement_events::<T>
-                .run_if(in_state(running))
-                // so that we can emit this event on current frame
-                .after(actor::player::move_around::<T>),
-        )
-        .add_systems(
-            Update,
-            actor::player::move_around::<T>
-                .run_if(in_state(running))
-                .run_if(common_action::move_action_pressed())
-                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
-        )
-        .add_systems(
-            Update,
-            (
-                actor::npc::drive_behavior,
-                actor::npc::plan_path::<T>
-                    .run_if(on_event::<actor::npc::PlanPathEvent>()),
-                actor::npc::run_path::<T>,
-            )
-                .chain()
-                .run_if(in_state(running)),
-        )
-        .add_systems(OnExit(running), layout::systems::remove_resources::<T>);
-
-    debug!("Adding inspect ability for {}", T::type_path());
-
-    app.add_systems(
-        Update,
-        (
-            inspect_and_interact::highlight_what_would_be_interacted_with,
-            inspect_and_interact::change_highlighted_label
-                .in_set(ChangeHighlightedInspectLabelEventConsumer)
-                .run_if(on_event::<ChangeHighlightedInspectLabelEvent>()),
-            inspect_and_interact::show_all_in_vicinity
-                .run_if(common_action::inspect_pressed()),
-        )
-            .chain() // easier to reason about
-            .run_if(in_state(running)),
-    )
-    .add_systems(
-        Update,
-        inspect_and_interact::schedule_hide_all
-            .run_if(in_state(running))
-            .run_if(common_action::inspect_just_released()),
-    );
-
-    debug!("Adding interaction systems for {}", T::type_path());
-
-    app.add_systems(
-        PreUpdate,
-        inspect_and_interact::interact
-            .run_if(in_state(running))
-            .run_if(common_action::interaction_just_pressed())
-            // Without this condition, the dialog will start when the player
-            // exists the previous one because:
-            // 1. The interact system runs, interact is just pressed, and so
-            //    emits the event.
-            // 2. Player finishes the dialog by pressing interaction. This
-            //    consumes the interact action.
-            // 3. Consuming the action did fuck all because the event was
-            //    already emitted earlier. Since the commands to remove the
-            //    dialog resource were applied, the condition to not run the
-            //    begin_dialog system will not prevent rerun
-            .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog()))
-            .after(InputManagerSystem::Update),
-    )
-    .add_systems(
-        Update,
-        (
-            actor::npc::mark_nearby_as_ready_for_interaction,
-            actor::npc::begin_dialog
-                .run_if(on_event::<BeginDialogEvent>())
-                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
-        )
-            .run_if(in_state(running)),
-    )
-    .add_systems(
-        Update,
-        inspect_and_interact::match_interact_label_with_action_event
-            .run_if(in_state(running))
-            .run_if(on_event::<ActorMovementEvent>())
-            .after(emit_movement_events::<T>),
-    );
-
-    debug!("Adding camera");
-
-    app.add_systems(OnEnter(loading), common_visuals::camera::spawn)
-        .add_systems(OnExit(quitting), common_visuals::camera::despawn)
-        .add_systems(
-            FixedUpdate,
-            cameras::track_player_with_main_camera
-                .after(actor::animate_movement::<T>)
-                .run_if(in_state(running))
-                .run_if(not(in_cutscene()))
-                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
-        );
-
-    debug!("Adding HUD");
-
-    app.add_systems(
-        OnEnter(running),
-        (crate::hud::daybar::spawn, crate::hud::notification::spawn),
-    )
-    .add_systems(
-        OnExit(running),
-        (
-            crate::hud::daybar::despawn,
-            crate::hud::notification::despawn,
-        ),
-    )
-    .add_systems(
-        Update,
-        (crate::hud::notification::update).run_if(in_state(running)),
-    );
-}
-
-/// You can press `Enter` to export the map.
-/// This will overwrite the RON file.
-/// We draw an overlay with tiles that you can edit with left and right mouse
-/// buttons.
-#[cfg(feature = "devtools")]
-pub fn dev_default_setup_for_scene<T>(app: &mut App)
-where
-    T: TopDownScene + WithStandardStateSemantics,
-{
-    let StandardStateSemantics {
-        running, quitting, ..
-    } = T::semantics();
-
-    app.register_type::<TileMap<T>>();
-
-    app.add_systems(
-        OnEnter(running),
-        layout::map_maker::spawn_debug_grid_root::<T>,
-    )
-    .add_systems(
-        Update,
-        layout::map_maker::show_tiles_around_cursor::<T>
-            .run_if(in_state(running)),
-    )
-    .add_systems(
-        Update,
-        (
-            layout::map_maker::change_square_kind::<T>,
-            layout::map_maker::recolor_squares::<T>,
-            layout::map_maker::update_ui::<T>,
-        )
-            .run_if(in_state(running))
-            .chain(),
-    )
-    .add_systems(OnExit(quitting), layout::map_maker::destroy_map::<T>);
 }

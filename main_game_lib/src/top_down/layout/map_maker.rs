@@ -18,7 +18,7 @@ use super::{
     build_pathfinding_graph::{GraphExt, ZoneTileKindGraph},
     TileKind, TileMap, LAYOUT,
 };
-use crate::{top_down::layout::TileKindMeta, TopDownScene};
+use crate::{top_down::layout::TileKindMeta, WhichTopDownScene};
 
 #[derive(Component)]
 pub(crate) struct SquareSprite(Square);
@@ -76,9 +76,11 @@ pub(crate) struct DebugLayoutGrid;
 /// Contains:
 /// 1. button to hide the grid with squares that show tile kinds
 /// 2. button to store the map into a file
-pub(crate) fn update_ui<T: TopDownScene>(
+pub(crate) fn update_ui(
     mut contexts: EguiContexts,
     mut toolbar: ResMut<TileMapMakerToolbar>,
+    map: Res<TileMap>,
+    scene: Res<State<WhichTopDownScene>>,
 ) {
     let ctx = contexts.ctx_mut();
     bevy_egui::egui::Window::new("Map maker")
@@ -95,12 +97,12 @@ pub(crate) fn update_ui<T: TopDownScene>(
             // 2.
             //
             if ui.button("Store map").clicked() {
-                export_map::<T>(&mut toolbar);
+                export_map(&mut toolbar, &map, **scene);
             }
         });
 }
 
-pub(crate) fn spawn_debug_grid_root<T: TopDownScene>(mut cmd: Commands) {
+pub(crate) fn spawn_debug_grid_root(mut cmd: Commands) {
     cmd.spawn((
         Name::new("Debug Layout Grid"),
         DebugLayoutGrid,
@@ -113,9 +115,9 @@ pub(crate) fn spawn_debug_grid_root<T: TopDownScene>(mut cmd: Commands) {
 
 /// We don't spawn and show all tiles because the map can be huge.
 /// So we get the cursor position and show the tiles around it only.
-pub(crate) fn show_tiles_around_cursor<T: TopDownScene>(
+pub(crate) fn show_tiles_around_cursor(
     mut cmd: Commands,
-    map: Res<TileMap<T>>,
+    map: Res<TileMap>,
     mut toolbar: ResMut<TileMapMakerToolbar>,
 
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -139,7 +141,7 @@ pub(crate) fn show_tiles_around_cursor<T: TopDownScene>(
         return;
     };
 
-    let [left, right, bottom, top] = T::bounds();
+    let [left, right, bottom, top] = map.bounds;
 
     // calculate a smaller rectangle +- 20 squares around the cursor
     let left = clicked_at.x.saturating_sub(20).clamp(left, right);
@@ -181,7 +183,7 @@ pub(crate) fn show_tiles_around_cursor<T: TopDownScene>(
     }
 }
 
-pub(crate) fn destroy_map<T: TopDownScene>(
+pub(crate) fn destroy_map(
     mut cmd: Commands,
 
     grid: Query<Entity, With<DebugLayoutGrid>>,
@@ -190,9 +192,9 @@ pub(crate) fn destroy_map<T: TopDownScene>(
     cmd.remove_resource::<TileMapMakerToolbar>();
 }
 
-pub(crate) fn change_square_kind<T: TopDownScene>(
+pub(crate) fn change_square_kind(
     mouse: Res<ButtonInput<MouseButton>>,
-    mut map: ResMut<TileMap<T>>,
+    mut map: ResMut<TileMap>,
     mut toolbar: ResMut<TileMapMakerToolbar>,
     keyboard: Res<ButtonInput<KeyCode>>,
 
@@ -251,12 +253,8 @@ pub(crate) fn change_square_kind<T: TopDownScene>(
 }
 
 /// If a square can be painted, paint it.
-fn try_paint<T: TopDownScene>(
-    toolbar: &mut TileMapMakerToolbar,
-    map: &mut TileMap<T>,
-    at: Square,
-) {
-    if !T::contains(at) {
+fn try_paint(toolbar: &mut TileMapMakerToolbar, map: &mut TileMap, at: Square) {
+    if !map.contains(at) {
         return;
     }
 
@@ -280,8 +278,8 @@ fn try_paint<T: TopDownScene>(
     copy_entry[toolbar.layer] = toolbar.paint;
 }
 
-pub(crate) fn recolor_squares<T: TopDownScene>(
-    map: ResMut<TileMap<T>>,
+pub(crate) fn recolor_squares(
+    map: ResMut<TileMap>,
     toolbar: Res<TileMapMakerToolbar>,
 
     mut squares: Query<(&SquareSprite, &mut Sprite)>,
@@ -324,14 +322,18 @@ pub(crate) fn recolor_squares<T: TopDownScene>(
     }
 }
 
-fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
+fn export_map(
+    toolbar: &mut TileMapMakerToolbar,
+    map: &TileMap,
+    scene: WhichTopDownScene,
+) {
     if !toolbar.display_grid {
         return;
     }
 
     // filter out needless squares
     toolbar.copy_of_map.retain(|sq, tiles| {
-        if !T::contains(*sq) {
+        if !map.contains(*sq) {
             return false;
         }
 
@@ -356,10 +358,10 @@ fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
         !tiles.is_empty()
     });
 
-    let g = ZoneTileKindGraph::compute_from(&TileMap::<T> {
+    let g = ZoneTileKindGraph::compute_from(&TileMap {
+        bounds: map.bounds, // copy bounds info
         squares: toolbar.copy_of_map.clone(),
         zones: default(), // this field is being computed, we don't need it
-        _phantom: default(),
     });
     // metadata for pathfinding
     let zones = g.calculate_zone_tile_metadata();
@@ -384,8 +386,9 @@ fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
     };
 
     // for internal use only so who cares about unwraps and paths
+    let scene_name = scene.snake_case();
     std::fs::write(
-        format!("main_game/assets/maps/{}.ron", T::name()),
+        format!("main_game/assets/maps/{scene_name}.ron"),
         ron::ser::to_string_pretty(
             &tilemap_but_sorted,
             PrettyConfig::default()
@@ -398,15 +401,16 @@ fn export_map<T: TopDownScene>(toolbar: &mut TileMapMakerToolbar) {
     )
     .unwrap();
 
-    let dot_g = g.as_dotgraph(T::name());
+    let dot_g = g.as_dotgraph(&scene_name);
     info!("Graphviz dot graph: \n{}", dot_g.as_dot());
 
-    let scene_path =
-        go_back_in_dir_tree_until_path_found(format!("scenes/{}", T::name()));
     match dot_g.into_svg() {
         Ok(svg) => {
-            fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg)
-                .unwrap();
+            let assets_path = go_back_in_dir_tree_until_path_found(
+                "wiki/src/assets/scene-tile-graphs".to_string(),
+            );
+
+            fs::write(format!("{assets_path}/{scene_name}.svg"), svg).unwrap();
         }
         Err(e) => {
             error!("Could not generate svg from dot graph: {e}");
