@@ -17,9 +17,11 @@ use crate::layout::LayoutEntity;
 #[derive(TypePath, Default, Debug)]
 pub struct Building1Basement1;
 
-impl TopDownScene for Building1Basement1 {
-    fn name() -> &'static str {
-        "building1_basement1"
+impl TopDownScene for Building1Basement1 {}
+
+impl main_game_lib::rscn::TscnInBevy for Building1Basement1 {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
 }
 
@@ -33,13 +35,6 @@ pub fn add(app: &mut App) {
     info!("Adding {THIS_SCENE} to app");
 
     app.add_event::<Building1Basement1Action>();
-
-    top_down::default_setup_for_scene::<Building1Basement1>(app, THIS_SCENE);
-
-    #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Building1Basement1>(
-        app, THIS_SCENE,
-    );
 
     debug!("Adding plugins");
 
@@ -82,7 +77,7 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<top_down::TileMap<Building1Basement1>>>,
+    map: Option<Res<top_down::TileMap>>,
 ) {
     if map.is_none() {
         return;

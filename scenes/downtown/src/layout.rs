@@ -40,7 +40,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
-                .run_if(resource_exists::<TileMap<Downtown>>)
+                .run_if(resource_exists::<TileMap>)
                 .run_if(any_with_component::<MainCamera>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Downtown>()),
         )

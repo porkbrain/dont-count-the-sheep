@@ -25,7 +25,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
-                .run_if(resource_exists::<TileMap<Sewers>>)
+                .run_if(resource_exists::<TileMap>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Sewers>()),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)

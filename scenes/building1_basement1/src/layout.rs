@@ -42,7 +42,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
-                .run_if(resource_exists::<TileMap<Building1Basement1>>)
+                .run_if(resource_exists::<TileMap>)
                 .run_if(
                     rscn::tscn_loaded_but_not_spawned::<Building1Basement1>(),
                 ),
@@ -50,10 +50,10 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
-            environmental_objects::door::toggle::<Building1Basement1>
+            environmental_objects::door::toggle
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(movement_event_emitted())
-                .after(actor::emit_movement_events::<Building1Basement1>),
+                .after(actor::emit_movement_events),
         )
         .add_systems(
             Update,
@@ -78,7 +78,7 @@ impl bevy::app::Plugin for Plugin {
             watch_entry_to_apartment::system
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(movement_event_emitted())
-                .after(actor::emit_movement_events::<Building1Basement1>),
+                .after(actor::emit_movement_events),
         );
     }
 }

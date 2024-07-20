@@ -24,7 +24,7 @@ const HALLWAY_FADE_OUT_TRANSITION_DURATION: Duration = from_millis(1500);
 /// When an NPC leaves the hallway, remove the hallway component.
 pub(super) fn system(
     mut cmd: Commands,
-    tilemap: Res<TileMap<Building1PlayerFloor>>,
+    tilemap: Res<TileMap>,
     mut movement_events: EventReader<ActorMovementEvent>,
     mut lerp_event: EventWriter<BeginInterpolationEvent>,
 
@@ -127,7 +127,7 @@ fn on_player_left_hallway(
 }
 
 fn on_npc_entered_hallway(
-    tilemap: &TileMap<Building1PlayerFloor>,
+    tilemap: &TileMap,
     cmd: &mut Commands,
     lerp_event: &mut EventWriter<BeginInterpolationEvent>,
     player: &Query<&Actor, With<Player>>,

@@ -1,6 +1,6 @@
 (
  zones: (
-  inner: {Zone(Exit): (zone_group: (19), zone_size: 153, zone_successors: [])},
+  inner: {Zone(Exit): (zone_group: (18), zone_size: 153, zone_successors: [])},
  ),
  squares: {
   (x: -43, y: -19): [Empty, Trail],

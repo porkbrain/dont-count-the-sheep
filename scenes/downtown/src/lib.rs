@@ -15,9 +15,11 @@ use prelude::*;
 #[derive(TypePath, Default)]
 pub(crate) struct Downtown;
 
-impl TopDownScene for Downtown {
-    fn name() -> &'static str {
-        "downtown"
+impl TopDownScene for Downtown {}
+
+impl main_game_lib::rscn::TscnInBevy for Downtown {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
 }
 
@@ -37,11 +39,6 @@ pub fn add(app: &mut App) {
     info!("Adding downtown to app");
 
     app.add_event::<DowntownAction>();
-
-    top_down::default_setup_for_scene::<Downtown>(app, THIS_SCENE);
-
-    #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Downtown>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -83,7 +80,7 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<top_down::TileMap<Downtown>>>,
+    map: Option<Res<top_down::TileMap>>,
 ) {
     if map.is_none() {
         return;

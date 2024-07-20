@@ -23,7 +23,7 @@ use serde::{Deserialize, Serialize};
 
 use self::npc::BehaviorTree;
 use crate::top_down::{
-    layout::{ysort, TileIndex, TopDownScene, LAYOUT},
+    layout::{ysort, TileIndex, LAYOUT},
     npc::NpcInTheMap,
     InspectLabelCategory, Player, TileKind, TileMap,
 };
@@ -181,16 +181,14 @@ pub enum ActorOrCharacter {
 }
 
 /// Sends events when an actor does something interesting.
-/// This system is registered on call to
-/// [`crate::top_down::default_setup_for_scene`].
 ///
 /// If you listen to this event then condition your system to run on
 /// `run_if(on_event::<ActorMovementEvent>)` and
-/// `after(actor::emit_movement_events::<T>)`.
+/// `after(actor::emit_movement_events)`.
 ///
 /// We also emit a zone left event when an actor is despawned.
-pub fn emit_movement_events<T: TopDownScene>(
-    tilemap: Res<TileMap<T>>,
+pub fn emit_movement_events(
+    tilemap: Res<TileMap>,
     mut actor_zone_map: ResMut<ActorZoneMap>,
     mut event: EventWriter<ActorMovementEvent>,
     mut removed: RemovedComponents<Actor>,
@@ -290,9 +288,9 @@ pub fn emit_movement_events<T: TopDownScene>(
 ///
 /// The z is based off y.
 /// See the [`ysort`] for more info.
-pub fn animate_movement<T: TopDownScene>(
+pub fn animate_movement(
     time: Res<Time>,
-    mut tilemap: ResMut<TileMap<T>>,
+    mut tilemap: ResMut<TileMap>,
 
     mut actors: Query<
         (Entity, &mut Actor, &mut TextureAtlas, &mut Transform),
@@ -306,7 +304,7 @@ pub fn animate_movement<T: TopDownScene>(
     for (entity, mut actor, sprite, transform) in actors.iter_mut() {
         debug_assert!(!actor.is_player());
 
-        animate_movement_for_actor::<T>(
+        animate_movement_for_actor(
             &time,
             &mut tilemap,
             entity,
@@ -323,7 +321,7 @@ pub fn animate_movement<T: TopDownScene>(
         player.get_single_mut_or_none()
     {
         debug_assert!(actor.is_player());
-        animate_movement_for_actor::<T>(
+        animate_movement_for_actor(
             &time,
             &mut tilemap,
             entity,
@@ -335,9 +333,9 @@ pub fn animate_movement<T: TopDownScene>(
 }
 
 /// Moves the actor on screen and changes frames for the sprite.
-fn animate_movement_for_actor<T: TopDownScene>(
+fn animate_movement_for_actor(
     time: &Time,
-    tilemap: &mut TileMap<T>,
+    tilemap: &mut TileMap,
     entity: Entity,
     actor: &mut Actor,
     mut sprite: Mut<TextureAtlas>,
@@ -691,7 +689,7 @@ lazy_static! {
     };
 }
 
-impl<T: TopDownScene> TileMap<T> {
+impl TileMap {
     fn replace_actor_tiles(&mut self, entity: Entity, actor: &mut Actor) {
         for (sq, layer) in actor.occupies.drain(..) {
             // we can't assume it to eq the actor's tile because in some rare
@@ -779,6 +777,55 @@ impl<T: TopDownScene> TileMap<T> {
     }
 }
 
+impl ActorMovement {
+    /// Gets mutable reference to the actor target if moving.
+    pub fn target_mut(&mut self) -> Option<&mut ActorTarget> {
+        match self {
+            Self::Target(target) => Some(target),
+            _ => None,
+        }
+    }
+
+    /// Gets reference to the actor target if moving.
+    pub fn target(&self) -> Option<&ActorTarget> {
+        match self {
+            Self::Target(target) => Some(target),
+            _ => None,
+        }
+    }
+
+    /// Whether the actor is not moving.
+    pub fn is_still(&self) -> bool {
+        matches!(self, Self::Still { .. })
+    }
+}
+
+impl Default for ActorMovement {
+    fn default() -> Self {
+        Self::Still {
+            since: Stopwatch::new(),
+        }
+    }
+}
+
+impl From<ActorTarget> for ActorMovement {
+    fn from(target: ActorTarget) -> Self {
+        Self::Target(target)
+    }
+}
+
+impl From<Entity> for ActorOrCharacter {
+    fn from(entity: Entity) -> Self {
+        Self::Actor(entity)
+    }
+}
+
+impl From<Character> for ActorOrCharacter {
+    fn from(character: Character) -> Self {
+        Self::Character(character)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use bevy::ecs::system::SystemId;
@@ -841,7 +888,7 @@ mod tests {
             ],
         );
 
-        let tilemap = w.get_resource::<TileMap<TestScene>>().unwrap();
+        let tilemap = w.get_resource::<TileMap>().unwrap();
 
         let actor_pos = |actor_entity| {
             w.get_entity(actor_entity)
@@ -893,7 +940,7 @@ mod tests {
             )],
         );
 
-        let tilemap = w.get_resource::<TileMap<TestScene>>().unwrap();
+        let tilemap = w.get_resource::<TileMap>().unwrap();
 
         let actor_pos = |actor_entity| {
             w.get_entity(actor_entity)
@@ -945,7 +992,7 @@ mod tests {
             )],
         );
 
-        let tilemap = w.get_resource::<TileMap<TestScene>>().unwrap();
+        let tilemap = w.get_resource::<TileMap>().unwrap();
 
         let actor_pos = |actor_entity| {
             w.get_entity(actor_entity)
@@ -968,21 +1015,12 @@ mod tests {
         assert!(is_actor_alone, "Winnie not alone on {winnie_pos}");
     }
 
-    #[derive(Default, Reflect, Clone, Debug)]
-    struct TestScene;
-
-    impl TopDownScene for TestScene {
-        fn name() -> &'static str {
-            unreachable!()
-        }
-    }
-
     const STEP_TIME: Duration = Duration::from_secs(1);
 
     fn prepare_world() -> (World, SystemId, Entity, Entity) {
         let mut w = World::default();
 
-        w.insert_resource(TileMap::<TestScene>::default());
+        w.insert_resource(TileMap::default());
         w.insert_resource(Time::<()>::default());
 
         // both actors start at the same square
@@ -1018,7 +1056,7 @@ mod tests {
             })
             .id();
 
-        let system_id = w.register_system(animate_movement::<TestScene>);
+        let system_id = w.register_system(animate_movement);
 
         // run it once to initialize the occupied tiles
         w.run_system(system_id).unwrap();
@@ -1055,9 +1093,8 @@ mod tests {
 
             let mut move_actor =
                 |actor_entity, directions: &[GridDirection]| {
-                    let tilemap = TileMap::<TestScene>::clone(
-                        w.get_resource::<TileMap<TestScene>>().unwrap(),
-                    );
+                    let tilemap =
+                        TileMap::clone(w.get_resource::<TileMap>().unwrap());
 
                     let mut entity_ref =
                         w.get_entity_mut(actor_entity).unwrap();
@@ -1092,54 +1129,5 @@ mod tests {
                 move_actor(*actor, *direction);
             }
         }
-    }
-}
-
-impl ActorMovement {
-    /// Gets mutable reference to the actor target if moving.
-    pub fn target_mut(&mut self) -> Option<&mut ActorTarget> {
-        match self {
-            Self::Target(target) => Some(target),
-            _ => None,
-        }
-    }
-
-    /// Gets reference to the actor target if moving.
-    pub fn target(&self) -> Option<&ActorTarget> {
-        match self {
-            Self::Target(target) => Some(target),
-            _ => None,
-        }
-    }
-
-    /// Whether the actor is not moving.
-    pub fn is_still(&self) -> bool {
-        matches!(self, Self::Still { .. })
-    }
-}
-
-impl Default for ActorMovement {
-    fn default() -> Self {
-        Self::Still {
-            since: Stopwatch::new(),
-        }
-    }
-}
-
-impl From<ActorTarget> for ActorMovement {
-    fn from(target: ActorTarget) -> Self {
-        Self::Target(target)
-    }
-}
-
-impl From<Entity> for ActorOrCharacter {
-    fn from(entity: Entity) -> Self {
-        Self::Actor(entity)
-    }
-}
-
-impl From<Character> for ActorOrCharacter {
-    fn from(character: Character) -> Self {
-        Self::Character(character)
     }
 }

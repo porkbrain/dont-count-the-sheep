@@ -367,8 +367,6 @@ pub(crate) fn highlight_what_would_be_interacted_with(
         .insert(displayed);
 }
 
-/// This is registered in [`crate::top_down::default_setup_for_scene`].
-///
 /// Any logic that listens to [`ActionEvent`]s should be ordered _after_ this.
 pub fn interact(
     mut cmd: Commands,

@@ -18,9 +18,11 @@ use crate::layout::LayoutEntity;
 #[derive(TypePath, Default, Debug)]
 pub struct Compound;
 
-impl TopDownScene for Compound {
-    fn name() -> &'static str {
-        "compound"
+impl TopDownScene for Compound {}
+
+impl main_game_lib::rscn::TscnInBevy for Compound {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
 }
 
@@ -34,11 +36,6 @@ pub fn add(app: &mut App) {
     info!("Adding {Compound:?} to app");
 
     app.add_event::<CompoundAction>();
-
-    top_down::default_setup_for_scene::<Compound>(app, THIS_SCENE);
-
-    #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<Compound>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -81,7 +78,7 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<top_down::TileMap<Compound>>>,
+    map: Option<Res<top_down::TileMap>>,
 ) {
     if map.is_none() {
         return;

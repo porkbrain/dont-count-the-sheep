@@ -17,9 +17,11 @@ use crate::layout::LayoutEntity;
 #[derive(TypePath, Default, Debug)]
 pub struct ClinicWard;
 
-impl TopDownScene for ClinicWard {
-    fn name() -> &'static str {
-        "clinic_ward"
+impl TopDownScene for ClinicWard {}
+
+impl main_game_lib::rscn::TscnInBevy for ClinicWard {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
 }
 
@@ -32,11 +34,6 @@ pub fn add(app: &mut App) {
     info!("Adding {ClinicWard:?} to app");
 
     app.add_event::<ClinicWardAction>();
-
-    top_down::default_setup_for_scene::<ClinicWard>(app, THIS_SCENE);
-
-    #[cfg(feature = "devtools")]
-    top_down::dev_default_setup_for_scene::<ClinicWard>(app, THIS_SCENE);
 
     debug!("Adding plugins");
 
@@ -79,7 +76,7 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<top_down::TileMap<ClinicWard>>>,
+    map: Option<Res<top_down::TileMap>>,
 ) {
     if map.is_none() {
         return;

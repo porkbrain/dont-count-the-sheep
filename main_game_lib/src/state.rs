@@ -184,19 +184,19 @@ pub fn in_scene_leaving_state(
 /// Helper to check if the state is in _any_ top down scene loading state.
 pub fn in_top_down_loading_state(
 ) -> impl FnMut(Option<Res<State<InTopDownScene>>>) -> bool + Clone {
-    in_state(InTopDownScene(TopDownSceneState::Loading))
+    in_state(InTopDownScene::loading())
 }
 
 /// Helper to check if the state is in _any_ top down scene running state.
 pub fn in_top_down_running_state(
 ) -> impl FnMut(Option<Res<State<InTopDownScene>>>) -> bool + Clone {
-    in_state(InTopDownScene(TopDownSceneState::Running))
+    in_state(InTopDownScene::running())
 }
 
 /// Helper to check if the state is in _any_ top down scene leaving state.
 pub fn in_top_down_leaving_state(
 ) -> impl FnMut(Option<Res<State<InTopDownScene>>>) -> bool + Clone {
-    in_state(InTopDownScene(TopDownSceneState::Leaving))
+    in_state(InTopDownScene::leaving())
 }
 
 impl GlobalGameStateTransition {
@@ -274,13 +274,13 @@ impl ComputedStates for InTopDownScene {
     fn compute(sources: Self::SourceStates) -> Option<Self> {
         match sources {
             Some(GlobalGameState::LoadingTopDownScene(_)) => {
-                Some(InTopDownScene(TopDownSceneState::Loading))
+                Some(InTopDownScene::loading())
             }
             Some(GlobalGameState::RunningTopDownScene(_)) => {
-                Some(InTopDownScene(TopDownSceneState::Running))
+                Some(InTopDownScene::running())
             }
             Some(GlobalGameState::LeavingTopDownScene(_)) => {
-                Some(InTopDownScene(TopDownSceneState::Leaving))
+                Some(InTopDownScene::leaving())
             }
             _ => None,
         }
@@ -306,6 +306,21 @@ impl InTopDownScene {
     /// Is the scene in the [`TopDownSceneState::Running`] state?
     pub fn is_running(self) -> bool {
         matches!(self.0, TopDownSceneState::Running)
+    }
+
+    /// Constructs this state in running variant.
+    pub fn running() -> Self {
+        Self(TopDownSceneState::Running)
+    }
+
+    /// Constructs this state in loading variant.
+    pub fn loading() -> Self {
+        Self(TopDownSceneState::Loading)
+    }
+
+    /// Constructs this state in leaving variant.
+    pub fn leaving() -> Self {
+        Self(TopDownSceneState::Leaving)
     }
 }
 
