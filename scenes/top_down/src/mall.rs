@@ -21,10 +21,29 @@ use top_down::{
 
 use crate::prelude::*;
 
+const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Mall;
+
+#[derive(TypePath, Default, Debug)]
+struct Mall;
+
+impl main_game_lib::rscn::TscnInBevy for Mall {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
+    }
+}
+
+#[derive(Event, Reflect, Clone, strum::EnumString)]
+enum MallAction {
+    ExitScene,
+    StartGingerCatDialog,
+}
+
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<MallAction>();
+
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Mall>,
@@ -46,11 +65,6 @@ impl bevy::app::Plugin for Plugin {
         );
     }
 }
-
-/// Assigned to the root of the scene.
-/// We then recursively despawn it on scene leave.
-#[derive(Component)]
-pub(crate) struct LayoutEntity;
 
 struct Spawner<'a> {
     white_cat_entity: Entity,

@@ -10,10 +10,14 @@ mod building1_player_floor;
 mod clinic;
 mod clinic_ward;
 mod compound;
+mod compound_tower;
+mod downtown;
 mod layout;
+mod mall;
 mod plant_shop;
 mod prelude;
 mod sewers;
+mod twinpeaks_apartment;
 
 use common_loading_screen::LoadingScreenState;
 use prelude::*;
@@ -31,9 +35,13 @@ pub fn add(app: &mut App) {
         building1_player_floor::Plugin,
         clinic_ward::Plugin,
         clinic::Plugin,
+        compound_tower::Plugin,
         compound::Plugin,
+        downtown::Plugin,
+        mall::Plugin,
         plant_shop::Plugin,
         sewers::Plugin,
+        twinpeaks_apartment::Plugin,
     ));
 
     debug!("Adding game loop");
@@ -151,6 +159,43 @@ fn exit(
 
         PlantShopToDowntown => {
             next_state.set(WhichTopDownScene::Downtown.loading());
+        }
+
+        TwinpeaksApartmentToDowntown => {
+            next_state.set(WhichTopDownScene::Downtown.loading());
+        }
+
+        TowerToCompound => {
+            next_state.set(WhichTopDownScene::Compound.loading());
+        }
+
+        MallToDowntown => {
+            next_state.set(WhichTopDownScene::Downtown.loading());
+        }
+
+        DowntownToBuilding1PlayerFloor => {
+            next_state.set(WhichTopDownScene::Building1PlayerFloor.loading());
+        }
+        DowntownToMall => {
+            next_state.set(WhichTopDownScene::Mall.loading());
+        }
+        DowntownToCompound => {
+            next_state.set(WhichTopDownScene::Compound.loading());
+        }
+        DowntownToClinic => {
+            next_state.set(WhichTopDownScene::Clinic.loading());
+        }
+        DowntownToClinicWard => {
+            next_state.set(WhichTopDownScene::ClinicWard.loading());
+        }
+        DowntownToPlantShop => {
+            next_state.set(WhichTopDownScene::PlantShop.loading());
+        }
+        DowntownToSewers => {
+            next_state.set(WhichTopDownScene::Sewers.loading());
+        }
+        DowntownToTwinpeaksApartment => {
+            next_state.set(WhichTopDownScene::TwinpeaksApartment.loading());
         }
 
         _ => {

@@ -28,10 +28,35 @@ use top_down::{
 
 use crate::prelude::*;
 
+const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Downtown;
+
+#[derive(TypePath, Default)]
+struct Downtown;
+
+impl main_game_lib::rscn::TscnInBevy for Downtown {
+    fn tscn_asset_path() -> String {
+        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
+    }
+}
+
+#[derive(Event, Reflect, Clone, strum::EnumString, Eq, PartialEq)]
+enum DowntownAction {
+    EnterBuilding1,
+    EnterTwinpeaksApartment,
+    EnterSewers,
+    EnterMall,
+    EnterCompound,
+    EnterClinic,
+    EnterClinicWard,
+    EnterPlantShop,
+}
+
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<DowntownAction>();
+
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Downtown>,
@@ -72,11 +97,6 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-/// Assigned to the root of the scene.
-/// We then recursively despawn it on scene leave.
-#[derive(Component)]
-pub(crate) struct LayoutEntity;
-
 struct Spawner<'a> {
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
@@ -96,6 +116,7 @@ struct Spawner<'a> {
 
 /// The names are stored in the scene file.
 /// See Godot scene file for details.
+#[allow(clippy::too_many_arguments)]
 fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
