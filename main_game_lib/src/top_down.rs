@@ -28,9 +28,10 @@ use leafwing_input_manager::plugin::InputManagerSystem;
 
 use self::inspect_and_interact::ChangeHighlightedInspectLabelEvent;
 use crate::{
-    cutscene::in_cutscene,
+    cutscene::in_cutscene, in_top_down_running_state,
     top_down::inspect_and_interact::ChangeHighlightedInspectLabelEventConsumer,
-    StandardStateSemantics, WithStandardStateSemantics,
+    InTopDownScene, StandardStateSemantics, TopDownSceneState,
+    WithStandardStateSemantics,
 };
 
 /// Does not add any systems, only registers generic-less types.
@@ -40,7 +41,109 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<npc::PlanPathEvent>()
             .add_event::<BeginDialogEvent>()
-            .add_event::<ChangeHighlightedInspectLabelEvent>();
+            .add_event::<ChangeHighlightedInspectLabelEvent>()
+            .add_event::<ActorMovementEvent>();
+
+        //
+        // Assets
+        //
+
+        app.add_systems(
+                OnEnter(InTopDownScene(TopDownSceneState::Loading)),
+                common_assets::store::insert_as_resource::<common_story::StoryAssets>,
+            )
+            .add_systems(
+                OnExit(InTopDownScene(TopDownSceneState::Leaving)),
+                common_assets::store::remove_as_resource::<common_story::StoryAssets>,
+            );
+
+        //
+        // Camera
+        //
+
+        app.add_systems(
+            OnEnter(InTopDownScene(TopDownSceneState::Loading)),
+            common_visuals::camera::spawn,
+        )
+        .add_systems(
+            OnExit(InTopDownScene(TopDownSceneState::Leaving)),
+            common_visuals::camera::despawn,
+        );
+
+        //
+        // Inspect and interact systems
+        //
+
+        app.add_systems(
+            Update,
+            (
+                inspect_and_interact::highlight_what_would_be_interacted_with,
+                inspect_and_interact::change_highlighted_label
+                    .in_set(ChangeHighlightedInspectLabelEventConsumer)
+                    .run_if(on_event::<ChangeHighlightedInspectLabelEvent>()),
+                inspect_and_interact::show_all_in_vicinity
+                    .run_if(common_action::inspect_pressed()),
+            )
+                .chain() // easier to reason about
+                .run_if(in_top_down_running_state()),
+        )
+        .add_systems(
+            Update,
+            inspect_and_interact::schedule_hide_all
+                .run_if(in_top_down_running_state())
+                .run_if(common_action::inspect_just_released()),
+        );
+        app.add_systems(
+            PreUpdate,
+            inspect_and_interact::interact
+                .run_if(in_top_down_running_state())
+                .run_if(common_action::interaction_just_pressed())
+                // Without this condition, the dialog will start when the player
+                // exists the previous one because:
+                // 1. The interact system runs, interact is just pressed, and so
+                //    emits the event.
+                // 2. Player finishes the dialog by pressing interaction. This
+                //    consumes the interact action.
+                // 3. Consuming the action did fuck all because the event was
+                //    already emitted earlier. Since the commands to remove the
+                //    dialog resource were applied, the condition to not run the
+                //    begin_dialog system will not prevent rerun
+                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog()))
+                .after(InputManagerSystem::Update),
+        )
+        .add_systems(
+            Update,
+            (
+                actor::npc::mark_nearby_as_ready_for_interaction,
+                actor::npc::begin_dialog
+                    .run_if(on_event::<BeginDialogEvent>())
+                    .run_if(not(
+                        crate::dialog::fe::portrait::in_portrait_dialog(),
+                    )),
+            )
+                .run_if(in_top_down_running_state()),
+        );
+
+        //
+        // HUD
+        //
+
+        app.add_systems(
+            OnEnter(InTopDownScene(TopDownSceneState::Running)),
+            (crate::hud::daybar::spawn, crate::hud::notification::spawn),
+        )
+        .add_systems(
+            OnExit(InTopDownScene(TopDownSceneState::Running)),
+            (
+                crate::hud::daybar::despawn,
+                crate::hud::notification::despawn,
+            ),
+        )
+        .add_systems(
+            Update,
+            (crate::hud::notification::update)
+                .run_if(in_top_down_running_state()),
+        );
 
         #[cfg(feature = "devtools")]
         {
@@ -69,8 +172,6 @@ impl bevy::app::Plugin for Plugin {
 
 /// Registers unique `T` types, asset loader for the map RON file, and systems
 /// including from other packages:
-/// - [`common_assets::store::insert_as_resource`]
-/// - [`common_assets::store::remove_as_resource`]
 /// - [`crate::top_down::actor::animate_movement`]
 /// - [`crate::top_down::actor::emit_movement_events`]
 /// - [`crate::top_down::actor::npc::drive_behavior`]
@@ -84,25 +185,12 @@ where
     debug!("Adding assets for {}", T::type_path());
 
     let StandardStateSemantics {
-        running,
-        loading,
-        quitting,
-        ..
+        running, loading, ..
     } = T::semantics();
-
-    app.add_systems(
-        OnEnter(loading),
-        common_assets::store::insert_as_resource::<common_story::StoryAssets>,
-    )
-    .add_systems(
-        OnExit(quitting),
-        common_assets::store::remove_as_resource::<common_story::StoryAssets>,
-    );
 
     debug!("Adding map layout for {}", T::type_path());
 
-    app.add_event::<ActorMovementEvent>()
-        .init_asset_loader::<common_assets::ron_loader::Loader<TileMap<T>>>()
+    app.init_asset_loader::<common_assets::ron_loader::Loader<TileMap<T>>>()
         .init_asset::<TileMap<T>>();
 
     app.add_systems(OnEnter(loading), layout::systems::start_loading_map::<T>)
@@ -142,59 +230,8 @@ where
         )
         .add_systems(OnExit(running), layout::systems::remove_resources::<T>);
 
-    debug!("Adding inspect ability for {}", T::type_path());
-
-    app.add_systems(
-        Update,
-        (
-            inspect_and_interact::highlight_what_would_be_interacted_with,
-            inspect_and_interact::change_highlighted_label
-                .in_set(ChangeHighlightedInspectLabelEventConsumer)
-                .run_if(on_event::<ChangeHighlightedInspectLabelEvent>()),
-            inspect_and_interact::show_all_in_vicinity
-                .run_if(common_action::inspect_pressed()),
-        )
-            .chain() // easier to reason about
-            .run_if(in_state(running)),
-    )
-    .add_systems(
-        Update,
-        inspect_and_interact::schedule_hide_all
-            .run_if(in_state(running))
-            .run_if(common_action::inspect_just_released()),
-    );
-
     debug!("Adding interaction systems for {}", T::type_path());
-
     app.add_systems(
-        PreUpdate,
-        inspect_and_interact::interact
-            .run_if(in_state(running))
-            .run_if(common_action::interaction_just_pressed())
-            // Without this condition, the dialog will start when the player
-            // exists the previous one because:
-            // 1. The interact system runs, interact is just pressed, and so
-            //    emits the event.
-            // 2. Player finishes the dialog by pressing interaction. This
-            //    consumes the interact action.
-            // 3. Consuming the action did fuck all because the event was
-            //    already emitted earlier. Since the commands to remove the
-            //    dialog resource were applied, the condition to not run the
-            //    begin_dialog system will not prevent rerun
-            .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog()))
-            .after(InputManagerSystem::Update),
-    )
-    .add_systems(
-        Update,
-        (
-            actor::npc::mark_nearby_as_ready_for_interaction,
-            actor::npc::begin_dialog
-                .run_if(on_event::<BeginDialogEvent>())
-                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
-        )
-            .run_if(in_state(running)),
-    )
-    .add_systems(
         Update,
         inspect_and_interact::match_interact_label_with_action_event
             .run_if(in_state(running))
@@ -204,33 +241,13 @@ where
 
     debug!("Adding camera");
 
-    app.add_systems(OnEnter(loading), common_visuals::camera::spawn)
-        .add_systems(OnExit(quitting), common_visuals::camera::despawn)
-        .add_systems(
-            FixedUpdate,
-            cameras::track_player_with_main_camera
-                .after(actor::animate_movement::<T>)
-                .run_if(in_state(running))
-                .run_if(not(in_cutscene()))
-                .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
-        );
-
-    debug!("Adding HUD");
-
     app.add_systems(
-        OnEnter(running),
-        (crate::hud::daybar::spawn, crate::hud::notification::spawn),
-    )
-    .add_systems(
-        OnExit(running),
-        (
-            crate::hud::daybar::despawn,
-            crate::hud::notification::despawn,
-        ),
-    )
-    .add_systems(
-        Update,
-        (crate::hud::notification::update).run_if(in_state(running)),
+        FixedUpdate,
+        cameras::track_player_with_main_camera
+            .after(actor::animate_movement::<T>)
+            .run_if(in_state(running))
+            .run_if(not(in_cutscene()))
+            .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
     );
 }
 

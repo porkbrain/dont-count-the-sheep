@@ -47,7 +47,7 @@ pub enum GlobalGameState {
 /// is our 2D game's most ubiquitous scene kind.
 /// We use [`ComputedStates`] for this.
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
-pub struct InTopDownScene(TopDownSceneState);
+pub struct InTopDownScene(pub TopDownSceneState);
 
 /// What is the current state of the top-down scene?
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
