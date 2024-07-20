@@ -153,7 +153,7 @@ impl GraphExt for Graph {
 
 impl ZoneTileKindGraph {
     /// Find all relationships between the zone tile kind variants in the
-    /// tile map `T`.
+    /// tile map.
     pub(crate) fn compute_from(tilemap: &TileMap) -> Self {
         let mut compute_step = GraphComputeStep::default();
         loop {

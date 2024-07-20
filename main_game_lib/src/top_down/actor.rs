@@ -181,8 +181,6 @@ pub enum ActorOrCharacter {
 }
 
 /// Sends events when an actor does something interesting.
-/// This system is registered on call to
-/// [`crate::top_down::default_setup_for_scene`].
 ///
 /// If you listen to this event then condition your system to run on
 /// `run_if(on_event::<ActorMovementEvent>)` and
