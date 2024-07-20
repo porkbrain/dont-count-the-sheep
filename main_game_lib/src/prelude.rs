@@ -14,7 +14,7 @@ pub use common_visuals::PRIMARY_COLOR;
 pub use crate::{
     rscn,
     state::*,
-    top_down::{self, Player, TopDownScene},
+    top_down::{self, Player},
 };
 
 /// A convenience function to create a [`Duration`] from milliseconds.

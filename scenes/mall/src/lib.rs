@@ -17,8 +17,6 @@ use crate::layout::LayoutEntity;
 #[derive(TypePath, Default, Debug)]
 pub struct Mall;
 
-impl TopDownScene for Mall {}
-
 impl main_game_lib::rscn::TscnInBevy for Mall {
     fn tscn_asset_path() -> String {
         format!("scenes/{}.tscn", THIS_SCENE.snake_case())
