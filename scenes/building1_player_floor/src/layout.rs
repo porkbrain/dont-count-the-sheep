@@ -40,7 +40,7 @@ impl bevy::app::Plugin for Plugin {
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
-                .run_if(resource_exists::<TileMap<Building1PlayerFloor>>)
+                .run_if(resource_exists::<TileMap>)
                 .run_if(rscn::tscn_loaded_but_not_spawned::<
                     Building1PlayerFloor,
                 >()),
@@ -50,11 +50,11 @@ impl bevy::app::Plugin for Plugin {
             Update,
             (
                 watch_entry_to_hallway::system,
-                environmental_objects::door::toggle::<Building1PlayerFloor>,
+                environmental_objects::door::toggle,
             )
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(movement_event_emitted())
-                .after(actor::emit_movement_events::<Building1PlayerFloor>),
+                .after(actor::emit_movement_events),
         );
     }
 }
@@ -87,7 +87,7 @@ struct Spawner<'a> {
     asset_server: &'a AssetServer,
     atlases: &'a mut Assets<TextureAtlasLayout>,
     daybar_event: &'a mut Events<UpdateDayBarEvent>,
-    tilemap: &'a mut TileMap<Building1PlayerFloor>,
+    tilemap: &'a mut TileMap,
     zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 }
 
@@ -99,7 +99,7 @@ fn spawn(
     asset_server: Res<AssetServer>,
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-    mut tilemap: ResMut<TileMap<Building1PlayerFloor>>,
+    mut tilemap: ResMut<TileMap>,
     mut daybar_event: ResMut<Events<UpdateDayBarEvent>>,
 
     mut q: Query<&mut TscnTreeHandle<Building1PlayerFloor>>,

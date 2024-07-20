@@ -48,6 +48,9 @@ impl bevy::app::Plugin for Plugin {
         // Assets
         //
 
+        app.init_asset_loader::<common_assets::ron_loader::Loader<TileMap>>()
+            .init_asset::<TileMap>();
+
         app.add_systems(
                 OnEnter(InTopDownScene(TopDownSceneState::Loading)),
                 common_assets::store::insert_as_resource::<common_story::StoryAssets>,
@@ -159,6 +162,7 @@ impl bevy::app::Plugin for Plugin {
                 .register_type::<InspectLabelCategory>()
                 .register_type::<npc::NpcInTheMap>()
                 .register_type::<npc::PlanPathEvent>()
+                .register_type::<TileMap>()
                 .register_type::<npc::BehaviorLeaf>()
                 .register_type::<npc::BehaviorPaused>();
 
@@ -184,32 +188,29 @@ where
 {
     debug!("Adding map layout for {}", T::type_path());
 
-    app.init_asset_loader::<common_assets::ron_loader::Loader<TileMap<T>>>()
-        .init_asset::<TileMap<T>>();
-
     app.add_systems(
         OnEnter(scene.loading()),
-        layout::systems::start_loading_map::<T>,
+        layout::systems::start_loading_map,
     )
     .add_systems(
         First,
-        layout::systems::try_insert_map_as_resource::<T>
+        layout::systems::try_insert_map_as_resource
             .run_if(in_scene_loading_state(scene)),
     )
     .add_systems(
         FixedUpdate,
-        actor::animate_movement::<T>.run_if(in_scene_running_state(scene)),
+        actor::animate_movement.run_if(in_scene_running_state(scene)),
     )
     .add_systems(
         Update,
-        actor::emit_movement_events::<T>
+        actor::emit_movement_events
             .run_if(in_scene_running_state(scene))
             // so that we can emit this event on current frame
-            .after(actor::player::move_around::<T>),
+            .after(actor::player::move_around),
     )
     .add_systems(
         Update,
-        actor::player::move_around::<T>
+        actor::player::move_around
             .run_if(in_scene_running_state(scene))
             .run_if(common_action::move_action_pressed())
             .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
@@ -218,17 +219,14 @@ where
         Update,
         (
             actor::npc::drive_behavior,
-            actor::npc::plan_path::<T>
+            actor::npc::plan_path
                 .run_if(on_event::<actor::npc::PlanPathEvent>()),
-            actor::npc::run_path::<T>,
+            actor::npc::run_path,
         )
             .chain()
             .run_if(in_scene_running_state(scene)),
     )
-    .add_systems(
-        OnExit(scene.running()),
-        layout::systems::remove_resources::<T>,
-    );
+    .add_systems(OnExit(scene.running()), layout::systems::remove_resources);
 
     debug!("Adding interaction systems for {}", T::type_path());
     app.add_systems(
@@ -236,7 +234,7 @@ where
         inspect_and_interact::match_interact_label_with_action_event
             .run_if(in_scene_running_state(scene))
             .run_if(on_event::<ActorMovementEvent>())
-            .after(emit_movement_events::<T>),
+            .after(emit_movement_events),
     );
 
     debug!("Adding camera");
@@ -244,7 +242,7 @@ where
     app.add_systems(
         FixedUpdate,
         cameras::track_player_with_main_camera
-            .after(actor::animate_movement::<T>)
+            .after(actor::animate_movement)
             .run_if(in_scene_running_state(scene))
             .run_if(not(in_cutscene()))
             .run_if(not(crate::dialog::fe::portrait::in_portrait_dialog())),
@@ -260,26 +258,24 @@ pub fn dev_default_setup_for_scene<T>(app: &mut App, scene: WhichTopDownScene)
 where
     T: TopDownScene,
 {
-    app.register_type::<TileMap<T>>();
-
     app.add_systems(
         OnEnter(scene.running()),
-        layout::map_maker::spawn_debug_grid_root::<T>,
+        layout::map_maker::spawn_debug_grid_root,
     )
     .add_systems(
         Update,
-        layout::map_maker::show_tiles_around_cursor::<T>
+        layout::map_maker::show_tiles_around_cursor
             .run_if(in_scene_running_state(scene)),
     )
     .add_systems(
         Update,
         (
-            layout::map_maker::change_square_kind::<T>,
-            layout::map_maker::recolor_squares::<T>,
-            layout::map_maker::update_ui::<T>,
+            layout::map_maker::change_square_kind,
+            layout::map_maker::recolor_squares,
+            layout::map_maker::update_ui,
         )
             .run_if(in_scene_running_state(scene))
             .chain(),
     )
-    .add_systems(OnExit(scene.leaving()), layout::map_maker::destroy_map::<T>);
+    .add_systems(OnExit(scene.leaving()), layout::map_maker::destroy_map);
 }

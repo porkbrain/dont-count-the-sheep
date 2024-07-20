@@ -56,7 +56,7 @@ impl bevy::app::Plugin for Plugin {
             toggle_zone_hints
                 .run_if(movement_event_emitted())
                 .run_if(in_scene_running_state(THIS_SCENE))
-                .after(emit_movement_events::<Building1PlayerFloor>),
+                .after(emit_movement_events),
         );
     }
 }

@@ -81,7 +81,7 @@ pub fn add(app: &mut App) {
 
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    map: Option<Res<top_down::TileMap<ClinicWard>>>,
+    map: Option<Res<top_down::TileMap>>,
 ) {
     if map.is_none() {
         return;

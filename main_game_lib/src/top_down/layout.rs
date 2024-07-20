@@ -8,8 +8,6 @@ mod build_pathfinding_graph;
 pub(crate) mod map_maker;
 pub(crate) mod systems;
 
-use std::marker::PhantomData;
-
 use bevy::{
     asset::Asset,
     ecs::{entity::Entity, system::Resource},
@@ -45,7 +43,7 @@ pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
 
 /// Holds the tiles in a hash map.
 #[derive(Asset, Resource, Serialize, Deserialize, Reflect, Clone, Debug)]
-pub struct TileMap<T: TopDownScene> {
+pub struct TileMap {
     /// Size in number of tiles.
     /// `[left, right, bottom, top]`
     #[serde(default = "default_bounds")]
@@ -55,9 +53,6 @@ pub struct TileMap<T: TopDownScene> {
     zones: TileKindMetas,
     /// There can be multiple layers of tiles on a single square.
     pub(crate) squares: HashMap<Square, SmallVec<[TileKind; 3]>>,
-    #[serde(skip)]
-    #[reflect(ignore)]
-    _phantom: PhantomData<T>,
 }
 
 /// You can change these in the .ron file of the map if you need larger map.
@@ -220,7 +215,7 @@ impl TileKind {
     }
 }
 
-impl<T: TopDownScene> TileMap<T> {
+impl TileMap {
     /// Whether the given square is inside the map.
     #[inline]
     pub fn contains(&self, square: Square) -> bool {
@@ -434,7 +429,7 @@ impl<T: TopDownScene> TileMap<T> {
 }
 
 /// Pathfinding logic.
-impl<T: TopDownScene> TileMap<T> {
+impl TileMap {
     /// No matter how many layers there are, all tile kinds within a single
     /// square must belong to the same zone group.
     #[inline]
@@ -798,29 +793,23 @@ impl TileKindMetas {
     }
 }
 
+impl Default for TileMap {
+    fn default() -> Self {
+        Self {
+            bounds: default_bounds(),
+            zones: TileKindMetas::default(),
+            squares: HashMap::default(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use bevy::utils::default;
     use bevy_grid_squared::sq;
     use smallvec::smallvec;
 
-    impl<T: TopDownScene> Default for TileMap<T> {
-        fn default() -> Self {
-            Self {
-                bounds: default_bounds(),
-                zones: TileKindMetas::default(),
-                squares: HashMap::default(),
-                _phantom: PhantomData,
-            }
-        }
-    }
-
     use super::*;
-
-    #[derive(Default, Reflect)]
-    struct TestScene;
-
-    impl TopDownScene for TestScene {}
 
     #[test]
     fn it_converts_tile_walk_cost_to_i32() {
@@ -834,7 +823,7 @@ mod tests {
         use TileWalkCost::*;
 
         let o = sq(0, 0);
-        let mut tilemap = TileMap::<TestScene>::default();
+        let mut tilemap = TileMap::default();
 
         // out of bounds returns none
         assert_eq!(tilemap.walk_cost(sq(-1001, 0), Entity::PLACEHOLDER), None);
@@ -875,7 +864,7 @@ mod tests {
 
     #[test]
     fn it_adds_tiles_to_first_empty_layer() {
-        let mut tilemap = TileMap::<TestScene>::default();
+        let mut tilemap = TileMap::default();
         let sq = sq(0, 0);
 
         assert_eq!(
@@ -899,7 +888,7 @@ mod tests {
 
     #[test]
     fn it_sets_tile_kind_layer() {
-        let mut tilemap = TileMap::<TestScene>::default();
+        let mut tilemap = TileMap::default();
         let sq = sq(0, 0);
 
         assert_eq!(
@@ -930,7 +919,7 @@ mod tests {
 
     #[test]
     fn it_doesnt_do_anything_outside_map_bounds() {
-        let mut tilemap = TileMap::<TestScene>::default();
+        let mut tilemap = TileMap::default();
 
         assert_eq!(
             tilemap.add_tile_to_first_empty_layer(sq(-1001, 0), TileKind::Wall),
@@ -949,11 +938,6 @@ mod tests {
             smallvec![default(), default(), default(), default(), default()];
         assert_eq!(std::mem::size_of_val(&square), 56);
     }
-
-    #[derive(Default, Reflect)]
-    struct DevMapTestScene;
-
-    impl TopDownScene for DevMapTestScene {}
 
     /// Test map such that:
     /// ```text
@@ -1129,8 +1113,7 @@ mod tests {
             (sq(-10, 25), sq(-5, 26), "Going from A to B", default()),
         ];
 
-        let tilemap: TileMap<DevMapTestScene> =
-            ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+        let tilemap: TileMap = ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
         for (
             from,
@@ -1169,8 +1152,7 @@ mod tests {
 
     #[test]
     fn it_finds_path_from_each_square_to_every_other() {
-        let tilemap: TileMap<DevMapTestScene> =
-            ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
+        let tilemap: TileMap = ron::de::from_str(DEV_MAP_TEST_RON).unwrap();
 
         let all_squares =
             || bevy_grid_squared::shapes::rectangle([-11, 0, 15, 28]);
@@ -1200,7 +1182,7 @@ mod tests {
     }
 
     fn search_for_partial_path(
-        tilemap: &TileMap<DevMapTestScene>,
+        tilemap: &TileMap,
         max_partial_steps: usize,
         from: Square,
         to: Square,
