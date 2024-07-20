@@ -18,7 +18,7 @@ use super::{
     build_pathfinding_graph::{GraphExt, ZoneTileKindGraph},
     TileKind, TileMap, LAYOUT,
 };
-use crate::{top_down::layout::TileKindMeta, TopDownScene};
+use crate::{top_down::layout::TileKindMeta, TopDownScene, WhichTopDownScene};
 
 #[derive(Component)]
 pub(crate) struct SquareSprite(Square);
@@ -80,6 +80,7 @@ pub(crate) fn update_ui<T: TopDownScene>(
     mut contexts: EguiContexts,
     mut toolbar: ResMut<TileMapMakerToolbar>,
     map: Res<TileMap<T>>,
+    scene: Res<State<WhichTopDownScene>>,
 ) {
     let ctx = contexts.ctx_mut();
     bevy_egui::egui::Window::new("Map maker")
@@ -96,7 +97,7 @@ pub(crate) fn update_ui<T: TopDownScene>(
             // 2.
             //
             if ui.button("Store map").clicked() {
-                export_map::<T>(&mut toolbar, &map);
+                export_map::<T>(&mut toolbar, &map, **scene);
             }
         });
 }
@@ -328,6 +329,7 @@ pub(crate) fn recolor_squares<T: TopDownScene>(
 fn export_map<T: TopDownScene>(
     toolbar: &mut TileMapMakerToolbar,
     map: &TileMap<T>,
+    scene: WhichTopDownScene,
 ) {
     if !toolbar.display_grid {
         return;
@@ -389,8 +391,9 @@ fn export_map<T: TopDownScene>(
     };
 
     // for internal use only so who cares about unwraps and paths
+    let scene_name = scene.snake_case();
     std::fs::write(
-        format!("main_game/assets/maps/{}.ron", T::name()),
+        format!("main_game/assets/maps/{scene_name}.ron"),
         ron::ser::to_string_pretty(
             &tilemap_but_sorted,
             PrettyConfig::default()
@@ -403,15 +406,16 @@ fn export_map<T: TopDownScene>(
     )
     .unwrap();
 
-    let dot_g = g.as_dotgraph(T::name());
+    let dot_g = g.as_dotgraph(&scene_name);
     info!("Graphviz dot graph: \n{}", dot_g.as_dot());
 
-    let scene_path =
-        go_back_in_dir_tree_until_path_found(format!("scenes/{}", T::name()));
     match dot_g.into_svg() {
         Ok(svg) => {
-            fs::write(format!("{scene_path}/docs/tile-graph.svg"), svg)
-                .unwrap();
+            let assets_path = go_back_in_dir_tree_until_path_found(
+                "wiki/src/assets/scene-tile-graphs".to_string(),
+            );
+
+            fs::write(format!("{assets_path}/{scene_name}.svg"), svg).unwrap();
         }
         Err(e) => {
             error!("Could not generate svg from dot graph: {e}");

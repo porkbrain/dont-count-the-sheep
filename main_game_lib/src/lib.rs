@@ -18,7 +18,6 @@ pub mod vec2_ext;
 use bevy::{app::AppExit, prelude::*};
 use bevy_pixel_camera::PixelCameraPlugin;
 pub use common_ext;
-use prelude::rscn::TscnInBevy;
 
 use crate::prelude::*;
 
@@ -141,10 +140,4 @@ fn begin_loading_static_assets_on_startup(
 
 fn exit(mut exit: EventWriter<AppExit>) {
     exit.send(AppExit::Success);
-}
-
-impl<T: TopDownScene> TscnInBevy for T {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", T::name())
-    }
 }

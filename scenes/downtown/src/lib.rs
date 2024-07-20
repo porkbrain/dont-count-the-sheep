@@ -15,9 +15,11 @@ use prelude::*;
 #[derive(TypePath, Default)]
 pub(crate) struct Downtown;
 
-impl TopDownScene for Downtown {
-    fn name() -> &'static str {
-        "downtown"
+impl TopDownScene for Downtown {}
+
+impl main_game_lib::rscn::TscnInBevy for Downtown {
+    fn tscn_asset_path() -> String {
+        THIS_SCENE.snake_case()
     }
 }
 

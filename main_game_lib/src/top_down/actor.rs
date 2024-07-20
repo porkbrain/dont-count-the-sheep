@@ -971,11 +971,7 @@ mod tests {
     #[derive(Default, Reflect, Clone, Debug)]
     struct TestScene;
 
-    impl TopDownScene for TestScene {
-        fn name() -> &'static str {
-            unreachable!()
-        }
-    }
+    impl TopDownScene for TestScene {}
 
     const STEP_TIME: Duration = Duration::from_secs(1);
 

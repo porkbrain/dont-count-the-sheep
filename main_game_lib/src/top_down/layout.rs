@@ -40,8 +40,7 @@ pub type TileIndex = (Square, usize);
 
 /// Some map.
 pub trait TopDownScene: 'static + Send + Sync + TypePath + Default {
-    /// Alphabetical only name of the map.
-    fn name() -> &'static str;
+    //
 }
 
 /// Holds the tiles in a hash map.
@@ -821,11 +820,7 @@ mod tests {
     #[derive(Default, Reflect)]
     struct TestScene;
 
-    impl TopDownScene for TestScene {
-        fn name() -> &'static str {
-            unreachable!()
-        }
-    }
+    impl TopDownScene for TestScene {}
 
     #[test]
     fn it_converts_tile_walk_cost_to_i32() {
@@ -958,11 +953,7 @@ mod tests {
     #[derive(Default, Reflect)]
     struct DevMapTestScene;
 
-    impl TopDownScene for DevMapTestScene {
-        fn name() -> &'static str {
-            unreachable!()
-        }
-    }
+    impl TopDownScene for DevMapTestScene {}
 
     /// Test map such that:
     /// ```text

@@ -17,9 +17,11 @@ use crate::layout::LayoutEntity;
 #[derive(TypePath, Default, Debug)]
 pub struct TwinpeaksApartment;
 
-impl TopDownScene for TwinpeaksApartment {
-    fn name() -> &'static str {
-        "twinpeaks_apartment"
+impl TopDownScene for TwinpeaksApartment {}
+
+impl main_game_lib::rscn::TscnInBevy for TwinpeaksApartment {
+    fn tscn_asset_path() -> String {
+        THIS_SCENE.snake_case()
     }
 }
 
