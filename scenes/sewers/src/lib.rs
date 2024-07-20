@@ -25,15 +25,15 @@ impl TopDownScene for Sewers {
 
 impl WithStandardStateSemantics for Sewers {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingSewers
+        WhichTopDownScene::Sewers.loading()
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtSewers
+        WhichTopDownScene::Sewers.running()
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingSewers
+        WhichTopDownScene::Sewers.leaving()
     }
 }
 
@@ -122,7 +122,7 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         SewersToDowntown => {
-            next_state.set(GlobalGameState::LoadingDowntown);
+            next_state.set(WhichTopDownScene::Downtown.loading());
         }
         _ => {
             unreachable!("Invalid {Sewers:?} transition {transition:?}");

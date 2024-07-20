@@ -25,15 +25,15 @@ impl TopDownScene for PlantShop {
 
 impl WithStandardStateSemantics for PlantShop {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingPlantShop
+        WhichTopDownScene::PlantShop.loading()
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtPlantShop
+        WhichTopDownScene::PlantShop.running()
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingPlantShop
+        WhichTopDownScene::PlantShop.leaving()
     }
 }
 
@@ -122,7 +122,7 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         PlantShopToDowntown => {
-            next_state.set(GlobalGameState::LoadingDowntown);
+            next_state.set(WhichTopDownScene::Downtown.loading());
         }
         _ => {
             unreachable!("Invalid {PlantShop:?} transition {transition:?}");

@@ -23,15 +23,15 @@ impl TopDownScene for Downtown {
 
 impl WithStandardStateSemantics for Downtown {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingDowntown
+        WhichTopDownScene::Downtown.loading()
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtDowntown
+        WhichTopDownScene::Downtown.running()
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingDowntown
+        WhichTopDownScene::Downtown.leaving()
     }
 }
 
@@ -126,28 +126,28 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         DowntownToBuilding1PlayerFloor => {
-            next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
+            next_state.set(WhichTopDownScene::Building1PlayerFloor.loading());
         }
         DowntownToMall => {
-            next_state.set(GlobalGameState::LoadingMall);
+            next_state.set(WhichTopDownScene::Mall.loading());
         }
         DowntownToCompound => {
-            next_state.set(GlobalGameState::LoadingCompound);
+            next_state.set(WhichTopDownScene::Compound.loading());
         }
         DowntownToClinic => {
-            next_state.set(GlobalGameState::LoadingClinic);
+            next_state.set(WhichTopDownScene::Clinic.loading());
         }
         DowntownToClinicWard => {
-            next_state.set(GlobalGameState::LoadingClinicWard);
+            next_state.set(WhichTopDownScene::ClinicWard.loading());
         }
         DowntownToPlantShop => {
-            next_state.set(GlobalGameState::LoadingPlantShop);
+            next_state.set(WhichTopDownScene::PlantShop.loading());
         }
         DowntownToSewers => {
-            next_state.set(GlobalGameState::LoadingSewers);
+            next_state.set(WhichTopDownScene::Sewers.loading());
         }
         DowntownToTwinpeaksApartment => {
-            next_state.set(GlobalGameState::LoadingTwinpeaksApartment);
+            next_state.set(WhichTopDownScene::TwinpeaksApartment.loading());
         }
         _ => {
             unreachable!("Invalid Downtown transition {transition:?}");

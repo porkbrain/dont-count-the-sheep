@@ -25,15 +25,15 @@ impl TopDownScene for Mall {
 
 impl WithStandardStateSemantics for Mall {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingMall
+        WhichTopDownScene::Mall.loading()
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtMall
+        WhichTopDownScene::Mall.running()
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingMall
+        WhichTopDownScene::Mall.leaving()
     }
 }
 
@@ -123,7 +123,7 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         MallToDowntown => {
-            next_state.set(GlobalGameState::LoadingDowntown);
+            next_state.set(WhichTopDownScene::Downtown.loading());
         }
         _ => {
             unreachable!("Invalid {Mall:?} transition {transition:?}");

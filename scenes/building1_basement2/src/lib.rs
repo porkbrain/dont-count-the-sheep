@@ -25,15 +25,15 @@ impl TopDownScene for Building1Basement2 {
 
 impl WithStandardStateSemantics for Building1Basement2 {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingBuilding1Basement2
+        WhichTopDownScene::Building1Basement2.loading()
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtBuilding1Basement2
+        WhichTopDownScene::Building1Basement2.running()
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingBuilding1Basement2
+        WhichTopDownScene::Building1Basement2.leaving()
     }
 }
 
@@ -122,7 +122,7 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         Building1Basement2ToBasement1 => {
-            next_state.set(GlobalGameState::LoadingBuilding1Basement1);
+            next_state.set(WhichTopDownScene::Building1Basement1.loading());
         }
         _ => {
             unreachable!(

@@ -25,15 +25,15 @@ impl TopDownScene for CompoundTower {
 
 impl WithStandardStateSemantics for CompoundTower {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingCompoundTower
+        WhichTopDownScene::CompoundTower.loading()
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtCompoundTower
+        WhichTopDownScene::CompoundTower.running()
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingCompoundTower
+        WhichTopDownScene::CompoundTower.leaving()
     }
 }
 
@@ -122,7 +122,7 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         TowerToCompound => {
-            next_state.set(GlobalGameState::LoadingCompound);
+            next_state.set(WhichTopDownScene::Compound.loading());
         }
         _ => {
             unreachable!("Invalid {CompoundTower:?} transition {transition:?}");

@@ -27,15 +27,15 @@ impl TopDownScene for Building1PlayerFloor {
 
 impl WithStandardStateSemantics for Building1PlayerFloor {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingBuilding1PlayerFloor
+        WhichTopDownScene::Building1PlayerFloor.loading()
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtBuilding1PlayerFloor
+        WhichTopDownScene::Building1PlayerFloor.running()
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingBuilding1PlayerFloor
+        WhichTopDownScene::Building1PlayerFloor.leaving()
     }
 }
 
@@ -127,16 +127,16 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         Building1PlayerFloorToBuilding1Basement1 => {
-            next_state.set(GlobalGameState::LoadingBuilding1Basement1);
+            next_state.set(WhichTopDownScene::Building1Basement1.loading());
         }
         Building1PlayerFloorToMeditation => {
-            next_state.set(GlobalGameState::LoadingMeditation);
+            next_state.set(WhichTopDownScene::Meditation.loading());
         }
         Building1PlayerFloorToDowntown => {
-            next_state.set(GlobalGameState::LoadingDowntown);
+            next_state.set(WhichTopDownScene::Downtown.loading());
         }
         Sleeping => {
-            next_state.set(GlobalGameState::LoadingBuilding1PlayerFloor);
+            next_state.set(WhichTopDownScene::Building1PlayerFloor.loading());
         }
         _ => {
             unreachable!(

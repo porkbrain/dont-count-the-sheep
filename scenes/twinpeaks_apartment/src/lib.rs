@@ -25,15 +25,15 @@ impl TopDownScene for TwinpeaksApartment {
 
 impl WithStandardStateSemantics for TwinpeaksApartment {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingTwinpeaksApartment
+        WhichTopDownScene::TwinpeaksApartment.loading()
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtTwinpeaksApartment
+        WhichTopDownScene::TwinpeaksApartment.running()
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingTwinpeaksApartment
+        WhichTopDownScene::TwinpeaksApartment.leaving()
     }
 }
 
@@ -122,7 +122,7 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         TwinpeaksApartmentToDowntown => {
-            next_state.set(GlobalGameState::LoadingDowntown);
+            next_state.set(WhichTopDownScene::Downtown.loading());
         }
         _ => {
             unreachable!(

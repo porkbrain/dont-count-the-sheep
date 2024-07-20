@@ -25,15 +25,15 @@ impl TopDownScene for Clinic {
 
 impl WithStandardStateSemantics for Clinic {
     fn loading() -> GlobalGameState {
-        GlobalGameState::LoadingClinic
+        WhichTopDownScene::Clinic.loading()
     }
 
     fn running() -> GlobalGameState {
-        GlobalGameState::AtClinic
+        WhichTopDownScene::Clinic.running()
     }
 
     fn quitting() -> GlobalGameState {
-        GlobalGameState::QuittingClinic
+        WhichTopDownScene::Clinic.leaving()
     }
 }
 
@@ -122,7 +122,7 @@ fn exit(
     use GlobalGameStateTransition::*;
     match *transition {
         ClinicToDowntown => {
-            next_state.set(GlobalGameState::LoadingDowntown);
+            next_state.set(WhichTopDownScene::Downtown.loading());
         }
         _ => {
             unreachable!("Invalid {Clinic:?} transition {transition:?}");

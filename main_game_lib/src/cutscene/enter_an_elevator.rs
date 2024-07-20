@@ -240,17 +240,16 @@ pub fn spawn(
     fn on_took_the_elevator(cmd: &mut Commands, store: &GlobalStore) {
         // get current state, from that infer quitting state
         cmd.add(|w: &mut World| {
-            let quitting_state = w
-                .get_resource::<State<GlobalGameState>>()
-                .unwrap() // SAFETY: always present
-                .state_semantics()
-                .unwrap() // SAFETY: used in topdown scenes
-                .quitting;
+            let current_top_down_scene = **w
+                .get_resource::<State<WhichTopDownScene>>()
+                .expect("Elevator can only be used in top down scenes");
 
             // SAFETY: always present
             let mut next_state =
                 w.get_resource_mut::<NextState<GlobalGameState>>().unwrap();
-            next_state.set(quitting_state);
+            next_state.set(GlobalGameState::LeavingTopDownScene(
+                current_top_down_scene,
+            ));
         });
 
         match store
@@ -307,11 +306,8 @@ pub fn start_with_open_elevator_and_close_it(
     elevator.get_mut::<TextureAtlas>().unwrap().index = last_frame;
     // start the animation as soon as we are in running state
     fn is_in_running_global_state(w: &World, _: Entity) -> bool {
-        // SAFETY: GlobalGameState always present
-        let current_state = w.get_resource::<State<GlobalGameState>>().unwrap();
-        current_state
-            .state_semantics()
-            .is_some_and(|sem| sem.running == **current_state)
+        w.get_resource::<State<InTopDownScene>>()
+            .is_some_and(|scene| scene.is_running())
     }
     elevator.insert(common_visuals::BeginAtlasAnimation::run(
         is_in_running_global_state,
