@@ -123,3 +123,8 @@ pub mod ui {
 
     pub const HEARTBEAT_ATLAS_SIZE: UVec2 = UVec2::splat(70);
 }
+
+pub mod audio {
+    pub const DOOR_OPEN: &str = "audio/door_open.oga";
+    pub const CALL_ELEVATOR: &str = "audio/call_elevator.oga";
+}

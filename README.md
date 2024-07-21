@@ -27,18 +27,19 @@ We use some external dependencies.
 It's paramount that we keep the bevy related dependencies to a minimum with the current Bevy release schedule.
 With every extra dependency that also depends on Bevy it potentially takes longer to start upgrading.
 
-- [`bevy_pixel_camera`][bevy_pixel_camera]
+- [`bevy_pixel_camera`][bevy_pixel_camera] is used to scale the game to a pixel art resolution. This plugin seems to be no longer maintained and we will vendor it soon
 - [`bevy_webp_anim`][bevy_webp_anim] is a crate we maintain so not a problem
-- [`bevy-inspector-egui`][bevy-inspector-egui]
 - [`leafwing-input-manager`][leafwing-input-manager] is maintained by a core Bevy contributor
-- [`bevy_egui`][bevy_egui]
+- [`bevy_kira_audio`][bevy_kira_audio] is used for audio. This decision was made based on some discord conversations that suggested it was better than the native Bevy audio plugin
+- [`bevy_egui`][bevy_egui] and [`bevy-inspector-egui`][bevy-inspector-egui] are used for devtools
 
+[bevy_egui]: https://github.com/mvlabat/bevy_egui
+[bevy_kira_audio]: https://github.com/NiklasEi/bevy_kira_audio
 [bevy_pixel_camera]: https://github.com/drakmaniso/bevy_pixel_camera
 [bevy_webp_anim]: https://github.com/bausano/bevy-webp-anim
 [bevy-inspector-egui]: https://github.com/jakobhellermann/bevy-inspector-egui
 [leafwing-input-manager]: https://github.com/Leafwing-Studios/leafwing-input-manager
 [original-bevy_magic_light]: https://github.com/zaycev/bevy-magic-light-2d
-[bevy_egui]: https://github.com/mvlabat/bevy_egui
 
 # Dev environment
 

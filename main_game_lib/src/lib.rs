@@ -16,6 +16,7 @@ pub mod top_down;
 pub mod vec2_ext;
 
 use bevy::{app::AppExit, prelude::*};
+use bevy_kira_audio::AudioPlugin;
 use bevy_pixel_camera::PixelCameraPlugin;
 pub use common_ext;
 
@@ -67,7 +68,8 @@ pub fn windowed_app() -> App {
                 }),
                 ..default()
             }),
-    );
+    )
+    .add_plugins(AudioPlugin);
 
     info!("Initializing Don't Count The Sheep");
 
