@@ -20,6 +20,7 @@ devtools = [
 [dependencies]
 bevy_egui = { workspace = true, optional = true }
 bevy_grid_squared.workspace = true
+bevy_kira_audio.workspace = true
 bevy_pixel_camera.workspace = true
 bevy_webp_anim.workspace = true
 bevy-inspector-egui = { workspace = true, optional = true }
@@ -47,7 +48,6 @@ strum.workspace = true
 thiserror.workspace = true
 toml.workspace = true
 untools.workspace = true
-
 
 [dev-dependencies]
 rand.workspace = true

@@ -49,6 +49,7 @@ bevy-inspector-egui = { version = "0.25", default-features = false, features = [
 ] }
 leafwing-input-manager = "0.14"
 bevy_egui = "0.28"
+bevy_kira_audio = "0.20"
 
 scene_top_down = { path = "scenes/top_down" }
 scene_meditation = { path = "scenes/meditation" }

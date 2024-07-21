@@ -5,6 +5,8 @@
 
 use bevy::prelude::*;
 use bevy_grid_squared::Square;
+use bevy_kira_audio::{Audio, AudioControl};
+use common_assets::audio::DOOR_OPEN;
 use itertools::Itertools;
 use smallvec::SmallVec;
 
@@ -74,6 +76,8 @@ pub enum DoorOpenCriteria {
 /// Run this after the [`crate::top_down::actor::emit_movement_events`] system
 /// and only if there are events.
 pub fn toggle(
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
     mut tilemap: ResMut<TileMap>,
     mut events: EventReader<ActorMovementEvent>,
 
@@ -84,6 +88,8 @@ pub fn toggle(
     for (mut door, mut sprite) in door.iter_mut() {
         for event in &events {
             apply_event_to_door_and_map(
+                &asset_server,
+                &audio,
                 &mut tilemap,
                 &mut door,
                 &mut sprite,
@@ -99,7 +105,9 @@ pub fn toggle(
 /// Optionally, the door can have an obstacle that's inserted into the map when
 /// the door is closed.
 fn apply_event_to_door_and_map(
-    tilemap: &mut ResMut<TileMap>,
+    asset_server: &AssetServer,
+    audio: &Audio,
+    tilemap: &mut TileMap,
     door: &mut Door,
     sprite: &mut Mut<'_, TextureAtlas>,
     event: &ActorMovementEvent,
@@ -126,6 +134,8 @@ fn apply_event_to_door_and_map(
             }
 
             trace!("Open door");
+
+            audio.play(asset_server.load(DOOR_OPEN));
 
             door.state = DoorState::Open;
             sprite.index = 1;

@@ -15,8 +15,12 @@ pub mod enter_dark_door;
 
 use std::sync::OnceLock;
 
-use bevy::{ecs::system::SystemId, prelude::*, render::view::RenderLayers};
+use bevy::{
+    asset::AssetPath, ecs::system::SystemId, prelude::*,
+    render::view::RenderLayers,
+};
 use bevy_grid_squared::{GridDirection, Square};
+use bevy_kira_audio::{Audio, AudioControl};
 use common_ext::QueryExt;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_store::GlobalStore;
@@ -238,6 +242,12 @@ pub enum CutsceneStep {
     /// Undoes [`Self::ClaimManualMainCameraControl`] by inserting
     /// [`ManualControl`] to the [`MainCamera`] entity.
     ReleaseManualMainCameraControl,
+    /// Plays an audio file.
+    /// Immediately transitions to the next step.
+    StartPlayingAudio {
+        /// Relative to the asset folder
+        asset_path: AssetPath<'static>,
+    },
 }
 
 /// Marks a destination.
@@ -469,6 +479,7 @@ struct CutsceneSystems {
     claim_manual_main_camera_control: SystemId,
     release_manual_main_camera_control: SystemId,
     begin_color_interpolation: SystemId,
+    start_playing_audio: SystemId,
 }
 
 impl CutsceneSystems {
@@ -503,6 +514,7 @@ impl CutsceneSystems {
                 .register_system(release_manual_main_camera_control),
             begin_color_interpolation: w
                 .register_system(begin_color_interpolation),
+            start_playing_audio: w.register_system(start_playing_audio),
         }
     }
 }
@@ -537,6 +549,7 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         ClaimManualMainCameraControl => s.claim_manual_main_camera_control,
         BeginColorInterpolation { .. } => s.begin_color_interpolation,
         ReleaseManualMainCameraControl => s.release_manual_main_camera_control,
+        StartPlayingAudio { .. } => s.start_playing_audio,
     }
 }
 
@@ -920,6 +933,22 @@ fn begin_color_interpolation(
         .over(*over)
         .with_animation_opt_curve(*animation_curve)
         .insert(&mut cmd);
+
+    cutscene.schedule_next_step_or_despawn(&mut cmd);
+}
+
+fn start_playing_audio(
+    mut cmd: Commands,
+    mut cutscene: ResMut<Cutscene>,
+    audio: Res<Audio>,
+    asset_server: Res<AssetServer>,
+) {
+    let step = &cutscene.sequence[cutscene.sequence_index];
+    let CutsceneStep::StartPlayingAudio { asset_path } = &step else {
+        panic!("Expected StartPlayingAudio step, got {step}");
+    };
+
+    audio.play(asset_server.load(asset_path));
 
     cutscene.schedule_next_step_or_despawn(&mut cmd);
 }

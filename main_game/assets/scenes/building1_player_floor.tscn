@@ -591,7 +591,7 @@ position = Vector2(132, -111)
 [node name="InspectLabel" type="Node" parent="PlayerApartment/BackwallFurniture/BrewTea"]
 metadata/zone = "Tea"
 metadata/action = "BrewTea"
-metadata/label = "Winnie  Put  the  Kettle  On"
+metadata/label = "Winnie Put the Kettle On"
 
 [node name="CandleLight" type="AnimatedSprite2D" parent="PlayerApartment/BackwallFurniture"]
 position = Vector2(-29.5, -132)

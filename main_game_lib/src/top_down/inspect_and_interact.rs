@@ -486,7 +486,7 @@ fn spawn_label_bg_and_text(
     // then using the logical size, and the impression doesn't
     // matter for such a short text
     let bg_box_width =
-        font_size + font_size / 7.0 * text_to_display.len() as f32;
+        font_size + font_size / 6.0 * text_to_display.len() as f32;
     let bg = cmd
         .spawn(InspectLabelBg)
         .insert(Name::new("InspectLabelBg"))
