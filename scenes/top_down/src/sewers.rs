@@ -2,9 +2,8 @@ use bevy::render::view::RenderLayers;
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     cutscene::in_cutscene, hud::notification::NotificationFifo,
-    player_stats::PlayerStats, top_down::scene_configs::ZoneTileKind,
+    player_stats::PlayerStats,
 };
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,

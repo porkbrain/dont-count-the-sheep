@@ -339,3 +339,12 @@ impl WhichTopDownScene {
         GlobalGameState::LeavingTopDownScene(self)
     }
 }
+
+impl WhichTopDownScene {
+    /// Returns snake case version of the scene name.
+    /// We use this name to load scene assets because the name matches names
+    /// of .ron and .tscn files.
+    pub fn snake_case(self) -> String {
+        untools::camel_to_snake(self.as_ref(), false)
+    }
+}

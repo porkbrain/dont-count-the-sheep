@@ -9,8 +9,7 @@ pub(crate) use main_game_lib::{
     prelude::*,
     top_down::{
         actor::{self, movement_event_emitted, player::TakeAwayPlayerControl},
-        scene_configs::ZoneTileKind,
-        TileKind,
+        TileKind, ZoneTileKind,
     },
 };
 pub(crate) use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};

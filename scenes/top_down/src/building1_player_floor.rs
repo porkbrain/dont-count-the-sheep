@@ -21,11 +21,9 @@ use main_game_lib::{
             ChangeHighlightedInspectLabelEventConsumer,
             SpawnLabelBgAndTextParams, LIGHT_RED,
         },
-        scene_configs::ZoneTileKind,
         ActorMovementEvent,
     },
 };
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use top_down::{
     actor::{
         self, movement_event_emitted, CharacterBundleBuilder, CharacterExt,
@@ -256,23 +254,14 @@ impl<'a> TscnSpawner for Spawner<'a> {
                     .build_and_insert_obstacle(self.tilemap);
                 cmd.entity(who).insert(door);
             }
-            "BottomLeftApartmentDoor" => {
+            "Apartment2Door" => {
                 cmd.entity(who).insert(
-                    DoorBuilder::new(ZoneTileKind::BottomLeftApartmentDoor)
-                        .build(),
+                    DoorBuilder::new(ZoneTileKind::Apartment2Door).build(),
                 );
             }
-            "BottomLeftApartmentBathroomDoor" => {
+            "Apartment2BathroomDoor" => {
                 cmd.entity(who).insert(
-                    DoorBuilder::new(
-                        ZoneTileKind::BottomLeftApartmentBathroomDoor,
-                    )
-                    .build(),
-                );
-            }
-            "BottomRightApartmentDoor" => {
-                cmd.entity(who).insert(
-                    DoorBuilder::new(ZoneTileKind::BottomRightApartmentDoor)
+                    DoorBuilder::new(ZoneTileKind::Apartment2BathroomDoor)
                         .build(),
                 );
             }

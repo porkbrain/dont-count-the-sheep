@@ -1,10 +1,7 @@
 use bevy::render::view::RenderLayers;
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
-use main_game_lib::{
-    cutscene::in_cutscene, top_down::scene_configs::ZoneTileKind,
-};
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
+use main_game_lib::cutscene::in_cutscene;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,

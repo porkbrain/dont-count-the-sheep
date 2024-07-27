@@ -1,7 +1,7 @@
 use common_visuals::BeginInterpolationEvent;
 use main_game_lib::{
     common_ext::QueryExt,
-    top_down::{actor::Who, scene_configs::ZoneTileKind, TileKind},
+    top_down::{actor::Who, TileKind},
 };
 use top_down::{Actor, ActorMovementEvent, TileMap};
 
@@ -40,10 +40,7 @@ pub(super) fn system(
                     Who {
                         is_player: true, ..
                     },
-                zone:
-                    TileKind::Zone(
-                        Hallway | BottomLeftApartment | BottomRightApartment,
-                    ),
+                zone: TileKind::Zone(Hallway | Apartment2),
             } => {
                 on_player_entered_hallway(&mut lerp_event, &hallway_entities);
             }
@@ -52,10 +49,7 @@ pub(super) fn system(
                     Who {
                         is_player: true, ..
                     },
-                zone:
-                    TileKind::Zone(
-                        Hallway | BottomLeftApartment | BottomRightApartment,
-                    ),
+                zone: TileKind::Zone(Hallway | Apartment2),
             } => {
                 on_player_left_hallway(&mut lerp_event, &hallway_entities);
             }
@@ -66,10 +60,7 @@ pub(super) fn system(
                         entity,
                         ..
                     },
-                zone:
-                    TileKind::Zone(
-                        Hallway | BottomLeftApartment | BottomRightApartment,
-                    ),
+                zone: TileKind::Zone(Hallway | Apartment2),
             } => {
                 on_npc_entered_hallway(
                     &tilemap,
@@ -86,10 +77,7 @@ pub(super) fn system(
                         entity,
                         ..
                     },
-                zone:
-                    TileKind::Zone(
-                        Hallway | BottomLeftApartment | BottomRightApartment,
-                    ),
+                zone: TileKind::Zone(Hallway | Apartment2),
             } => {
                 on_npc_left_hallway(&mut cmd, &mut lerp_event, *entity);
             }

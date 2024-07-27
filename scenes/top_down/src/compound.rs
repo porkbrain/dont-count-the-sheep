@@ -6,9 +6,8 @@ use main_game_lib::{
     cutscene::in_cutscene,
     hud::{daybar::UpdateDayBarEvent, notification::NotificationFifo},
     player_stats::PlayerStats,
-    top_down::{layout::LAYOUT, scene_configs::ZoneTileKind},
+    top_down::layout::LAYOUT,
 };
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,

@@ -7,12 +7,10 @@ use main_game_lib::{
     hud::notification::NotificationFifo,
     player_stats::PlayerStats,
     top_down::{
-        actor::BeginDialogEvent, layout::LAYOUT,
-        npc::behaviors::PatrolSequence, scene_configs::ZoneTileKind,
+        actor::BeginDialogEvent, layout::LAYOUT, npc::behaviors::PatrolSequence,
     },
 };
 use rand::prelude::SliceRandom;
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,

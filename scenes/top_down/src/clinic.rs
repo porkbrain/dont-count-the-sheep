@@ -1,12 +1,9 @@
 use bevy::render::view::RenderLayers;
 use common_visuals::camera::render_layer;
 use main_game_lib::{
-    cutscene::in_cutscene,
-    hud::notification::NotificationFifo,
+    cutscene::in_cutscene, hud::notification::NotificationFifo,
     player_stats::PlayerStats,
-    top_down::{
-        environmental_objects::door::DoorBuilder, scene_configs::ZoneTileKind,
-    },
+    top_down::environmental_objects::door::DoorBuilder,
 };
 use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use top_down::{

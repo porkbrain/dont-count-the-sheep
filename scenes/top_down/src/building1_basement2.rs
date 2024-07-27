@@ -3,9 +3,7 @@ use common_visuals::camera::render_layer;
 use main_game_lib::{
     common_ext::QueryExt,
     cutscene::{enter_dark_door::EnterDarkDoor, in_cutscene, IntoCutscene},
-    top_down::scene_configs::ZoneTileKind,
 };
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
