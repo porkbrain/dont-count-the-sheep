@@ -158,7 +158,6 @@ pub enum ZoneTileKind {
     Apartment2,
     Apartment2BathroomDoor,
     Apartment2Door,
-    Apartment2Door2,
 
     BasementDoor,
     Bed,

@@ -265,11 +265,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
                         .build(),
                 );
             }
-            "Apartment2Door2" => {
-                cmd.entity(who).insert(
-                    DoorBuilder::new(ZoneTileKind::Apartment2Door2).build(),
-                );
-            }
             "WinnieSleeping" => {
                 cmd.entity(who).insert(SleepingHint);
             }
