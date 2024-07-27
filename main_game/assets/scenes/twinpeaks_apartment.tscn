@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://qrq4qd72bkgp"]
+[gd_scene load_steps=21 format=3 uid="uid://qrq4qd72bkgp"]
 
 [ext_resource type="Texture2D" uid="uid://p2vei5la1m3i" path="res://assets/twinpeaks_apartment/twinpeaks_bg.png" id="1_cqoh4"]
 [ext_resource type="Texture2D" uid="uid://dgh7pxmg8k4yg" path="res://assets/twinpeaks_apartment/bed_plain.png" id="2_x34s0"]
@@ -19,6 +19,7 @@
 [ext_resource type="Texture2D" uid="uid://cqnnxsrlye3ol" path="res://assets/residential/indoors/bin_small.png" id="17_frvwm"]
 [ext_resource type="Texture2D" uid="uid://dpmvbx60afym1" path="res://assets/residential/indoors/toilet2.png" id="18_oa8kb"]
 [ext_resource type="Texture2D" uid="uid://rtil58tqay4m" path="res://assets/residential/indoors/wall_mirror3.png" id="19_kyk8r"]
+[ext_resource type="Texture2D" uid="uid://bijgh0xakxl6a" path="res://assets/residential/indoors/plant_leafs.png" id="20_iibpu"]
 
 [node name="TwinPeaks" type="Node2D"]
 
@@ -123,3 +124,7 @@ texture = ExtResource("18_oa8kb")
 [node name="WallMirror3" type="Sprite2D" parent="."]
 position = Vector2(205, -57)
 texture = ExtResource("19_kyk8r")
+
+[node name="PlantLeafs" type="Sprite2D" parent="."]
+position = Vector2(-32, -25)
+texture = ExtResource("20_iibpu")

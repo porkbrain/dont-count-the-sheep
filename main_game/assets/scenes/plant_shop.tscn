@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://dek7ps022pco7"]
+[gd_scene load_steps=44 format=3 uid="uid://dek7ps022pco7"]
 
 [ext_resource type="Texture2D" uid="uid://cuwfijdxd5o6e" path="res://assets/downtown/plantshop_bg.png" id="1_bruju"]
 [ext_resource type="Texture2D" uid="uid://wm712yivg1yb" path="res://assets/downtown/recycle_bin.png" id="2_gim71"]
@@ -42,6 +42,7 @@
 [ext_resource type="Texture2D" uid="uid://rjhnkkan4j1y" path="res://assets/downtown/bamboo_rooftop.png" id="40_2ygpf"]
 [ext_resource type="Texture2D" uid="uid://k2np3by6tq5r" path="res://assets/residential/indoors/plant_yellow.png" id="41_ia3bp"]
 [ext_resource type="Texture2D" uid="uid://bhjno2fr6j6yr" path="res://assets/residential/indoors/plant_pink.png" id="42_v4ulx"]
+[ext_resource type="Texture2D" uid="uid://bijgh0xakxl6a" path="res://assets/residential/indoors/plant_leafs.png" id="43_ule7o"]
 
 [node name="PlantShop" type="Node2D"]
 
@@ -195,7 +196,7 @@ texture = ExtResource("3_7v53w")
 position = Vector2(1, 14)
 
 [node name="PottedBush3" type="Sprite2D" parent="CounterWide"]
-position = Vector2(54, 5)
+position = Vector2(54, 6)
 texture = ExtResource("6_uoc65")
 
 [node name="Scissors" type="Sprite2D" parent="CounterWide"]
@@ -334,7 +335,7 @@ position = Vector2(-23, -65)
 texture = ExtResource("32_t16ue")
 
 [node name="ClinicCart" type="Sprite2D" parent="."]
-position = Vector2(164, 24)
+position = Vector2(163, 22)
 texture = ExtResource("33_h6ewb")
 
 [node name="SeedlingsSmall" type="Sprite2D" parent="ClinicCart"]
@@ -403,3 +404,12 @@ flip_h = true
 [node name="PlantPink2" type="Sprite2D" parent="."]
 position = Vector2(-173, -69)
 texture = ExtResource("42_v4ulx")
+
+[node name="PlantLeafs" type="Sprite2D" parent="."]
+position = Vector2(-97, 55)
+texture = ExtResource("43_ule7o")
+
+[node name="PlantLeafs2" type="Sprite2D" parent="."]
+position = Vector2(23, -35)
+texture = ExtResource("43_ule7o")
+flip_h = true

@@ -1,4 +1,4 @@
-[gd_scene load_steps=208 format=3 uid="uid://dtow2k2vgk8kg"]
+[gd_scene load_steps=209 format=3 uid="uid://dtow2k2vgk8kg"]
 
 [ext_resource type="Texture2D" uid="uid://5dhtpbjd5ool" path="res://assets/downtown/bg.png" id="1_ac7tb"]
 [ext_resource type="Texture2D" uid="uid://kkt2uh6il68y" path="res://assets/downtown/ac_atlas.png" id="2_vxd7e"]
@@ -125,6 +125,7 @@
 [ext_resource type="Texture2D" uid="uid://flmsi8faj5jk" path="res://assets/downtown/electric_antenna2.png" id="119_j4h0q"]
 [ext_resource type="Texture2D" uid="uid://1r1hvvyh00iu" path="res://assets/downtown/hanging_plants3.png" id="121_nkue0"]
 [ext_resource type="Texture2D" uid="uid://d3lmwm3dvtbtv" path="res://assets/environment/flipflops.png" id="125_hos4p"]
+[ext_resource type="Texture2D" uid="uid://xeeyd87wmone" path="res://assets/downtown/nadrazi.png" id="126_0x1sx"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wx86m"]
 atlas = ExtResource("4_fu7bc")
@@ -735,6 +736,18 @@ texture = ExtResource("17_5ai3x")
 position = Vector2(1.5, 1)
 texture = ExtResource("22_m6eml")
 
+[node name="UnderConstruction2" type="Sprite2D" parent="."]
+position = Vector2(1244, 408)
+texture = ExtResource("17_5ai3x")
+
+[node name="WiredFence" type="Sprite2D" parent="UnderConstruction2"]
+position = Vector2(85, 0)
+texture = ExtResource("17_5ai3x")
+
+[node name="ConstructionSiteSign" type="Sprite2D" parent="UnderConstruction2"]
+position = Vector2(1.5, 1)
+texture = ExtResource("22_m6eml")
+
 [node name="DowntownBg" type="Sprite2D" parent="."]
 z_index = -5
 position = Vector2(233, 477)
@@ -1188,7 +1201,7 @@ texture = ExtResource("14_8uy80")
 position = Vector2(0, 33)
 
 [node name="Catsino" type="Sprite2D" parent="BureauRoot"]
-position = Vector2(1409, -597)
+position = Vector2(1408, -599)
 texture = ExtResource("89_1g1r7")
 
 [node name="HangingPlants3" type="Sprite2D" parent="BureauRoot/Catsino"]
@@ -1406,22 +1419,22 @@ position = Vector2(-1, -68)
 position = Vector2(0, -12)
 
 [node name="PlainTrio" type="Sprite2D" parent="Block3Root"]
-position = Vector2(1282, 324)
+position = Vector2(-859, 620)
 texture = ExtResource("52_ri67k")
 
 [node name="HouseBig" type="Sprite2D" parent="Block3Root/PlainTrio"]
-position = Vector2(78.5, 0.5)
+position = Vector2(206, 2)
 texture = ExtResource("54_b44kc")
 
 [node name="YSort" type="Node2D" parent="Block3Root/PlainTrio"]
-position = Vector2(-1, 102)
+position = Vector2(126.5, 105.5)
 
 [node name="Bike" type="Sprite2D" parent="Block3Root/PlainTrio"]
-position = Vector2(173, 93)
+position = Vector2(300.5, 96.5)
 texture = ExtResource("62_rdvbw")
 
 [node name="AcAtlas" type="AnimatedSprite2D" parent="Block3Root/PlainTrio"]
-position = Vector2(156, -116)
+position = Vector2(283.5, -112.5)
 sprite_frames = SubResource("SpriteFrames_q1mli")
 autoplay = "default"
 frame = 2
@@ -1431,7 +1444,7 @@ frame_progress = 1.0
 position = Vector2(0, 16)
 
 [node name="PottedBush3" type="Sprite2D" parent="Block3Root/PlainTrio"]
-position = Vector2(117, 93)
+position = Vector2(244.5, 96.5)
 texture = ExtResource("113_wa5al")
 
 [node name="YSort" type="Node2D" parent="Block3Root/PlainTrio/PottedBush3"]
@@ -1595,7 +1608,7 @@ texture = ExtResource("90_gafo8")
 position = Vector2(-0.5, 103.5)
 
 [node name="PrahaBuildingPurple" type="Sprite2D" parent="Block4Root"]
-position = Vector2(433.5, 289.5)
+position = Vector2(435.5, 289.5)
 texture = ExtResource("90_gsrac")
 
 [node name="ElectricAntenna3" type="Sprite2D" parent="Block4Root/PrahaBuildingPurple"]
@@ -5576,7 +5589,7 @@ texture = ExtResource("70_mmv7u")
 position = Vector2(2, 31)
 
 [node name="HouseBigLime2" type="Sprite2D" parent="ShoreRoot"]
-position = Vector2(1064, 874)
+position = Vector2(1063, 874)
 texture = ExtResource("71_4uhpc")
 
 [node name="AcAtlas" type="AnimatedSprite2D" parent="ShoreRoot/HouseBigLime2"]
@@ -8077,16 +8090,6 @@ z_index = -6
 position = Vector2(-1206, 438)
 texture = ExtResource("82_65uwp")
 
-[node name="Dlazdicky1467" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1086, 858)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1468" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1086, 822)
-texture = ExtResource("82_65uwp")
-
 [node name="Dlazdicky1469" type="Sprite2D" parent="dlazdickyRoot"]
 z_index = -6
 position = Vector2(-1230, -66)
@@ -8482,11 +8485,6 @@ z_index = -6
 position = Vector2(-1182, 780)
 texture = ExtResource("82_65uwp")
 
-[node name="Dlazdicky1669" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1158, 762)
-texture = ExtResource("82_65uwp")
-
 [node name="Dlazdicky1670" type="Sprite2D" parent="dlazdickyRoot"]
 z_index = -6
 position = Vector2(-1182, 762)
@@ -8507,11 +8505,6 @@ z_index = -6
 position = Vector2(-1254, 852)
 texture = ExtResource("82_65uwp")
 
-[node name="Dlazdicky1512" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1158, 852)
-texture = ExtResource("82_65uwp")
-
 [node name="Dlazdicky1513" type="Sprite2D" parent="dlazdickyRoot"]
 z_index = -6
 position = Vector2(-1158, 888)
@@ -8522,64 +8515,14 @@ z_index = -6
 position = Vector2(-1182, 852)
 texture = ExtResource("82_65uwp")
 
-[node name="Dlazdicky1515" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1110, 822)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1516" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1110, 858)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1517" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1134, 822)
-texture = ExtResource("82_65uwp")
-
 [node name="Dlazdicky1540" type="Sprite2D" parent="dlazdickyRoot"]
 z_index = -6
 position = Vector2(-1086, 786)
 texture = ExtResource("82_65uwp")
 
-[node name="Dlazdicky1541" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1110, 786)
-texture = ExtResource("82_65uwp")
-
 [node name="Dlazdicky1542" type="Sprite2D" parent="dlazdickyRoot"]
 z_index = -6
 position = Vector2(-1134, 786)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1518" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1134, 858)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1543" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1014, 858)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1544" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1014, 822)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1545" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1038, 822)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1546" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1038, 858)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1547" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1062, 822)
 texture = ExtResource("82_65uwp")
 
 [node name="Dlazdicky1548" type="Sprite2D" parent="dlazdickyRoot"]
@@ -8597,39 +8540,9 @@ z_index = -6
 position = Vector2(-1062, 786)
 texture = ExtResource("82_65uwp")
 
-[node name="Dlazdicky1663" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1086, 750)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1664" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1110, 750)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1665" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1134, 750)
-texture = ExtResource("82_65uwp")
-
 [node name="Dlazdicky1666" type="Sprite2D" parent="dlazdickyRoot"]
 z_index = -6
 position = Vector2(-1014, 750)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1667" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1038, 750)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1668" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1062, 750)
-texture = ExtResource("82_65uwp")
-
-[node name="Dlazdicky1551" type="Sprite2D" parent="dlazdickyRoot"]
-z_index = -6
-position = Vector2(-1062, 858)
 texture = ExtResource("82_65uwp")
 
 [node name="Dlazdicky1552" type="Sprite2D" parent="dlazdickyRoot"]
@@ -13900,7 +13813,7 @@ sprite_frames = SubResource("SpriteFrames_lnl2b")
 position = Vector2(0, 11)
 
 [node name="BinGreen4" type="AnimatedSprite2D" parent="."]
-position = Vector2(1086, 410.5)
+position = Vector2(1028, 368)
 sprite_frames = SubResource("SpriteFrames_03ayo")
 
 [node name="YSort" type="Node2D" parent="BinGreen4"]
@@ -14078,13 +13991,6 @@ texture = ExtResource("113_wa5al")
 [node name="YSort" type="Node2D" parent="PottedBush6"]
 position = Vector2(1, 15)
 
-[node name="ElectricPole6" type="Sprite2D" parent="."]
-position = Vector2(1064, 359.5)
-texture = ExtResource("114_6se48")
-
-[node name="YSort" type="Node2D" parent="ElectricPole6"]
-position = Vector2(1, 65)
-
 [node name="ElectricPole7" type="Sprite2D" parent="."]
 position = Vector2(52, 924)
 texture = ExtResource("114_6se48")
@@ -14102,3 +14008,7 @@ position = Vector2(1, 65)
 [node name="Flipflops" type="Sprite2D" parent="."]
 position = Vector2(-241, 1269)
 texture = ExtResource("125_hos4p")
+
+[node name="Nadrazi" type="Sprite2D" parent="."]
+position = Vector2(1333, 123)
+texture = ExtResource("126_0x1sx")
