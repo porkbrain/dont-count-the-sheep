@@ -17,13 +17,12 @@ pub mod cameras;
 pub mod environmental_objects;
 pub mod inspect_and_interact;
 pub mod layout;
-pub mod scene_configs;
 
 use actor::{emit_movement_events, BeginDialogEvent};
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::prelude::*;
 pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
-pub use layout::{TileKind, TileMap};
+pub use layout::{TileKind, TileMap, ZoneTileKind};
 use leafwing_input_manager::plugin::InputManagerSystem;
 
 use self::inspect_and_interact::ChangeHighlightedInspectLabelEvent;
@@ -217,18 +216,19 @@ impl bevy::app::Plugin for Plugin {
             use bevy_inspector_egui::quick::ResourceInspectorPlugin;
             use layout::map_maker::TileMapMakerToolbar as Toolbar;
 
-            app.register_type::<Toolbar>()
-                .register_type::<Actor>()
-                .register_type::<ActorTarget>()
-                .register_type::<TileKind>()
+            app.register_type::<Actor>()
                 .register_type::<ActorMovementEvent>()
+                .register_type::<ActorTarget>()
                 .register_type::<InspectLabel>()
                 .register_type::<InspectLabelCategory>()
+                .register_type::<npc::BehaviorLeaf>()
+                .register_type::<npc::BehaviorPaused>()
                 .register_type::<npc::NpcInTheMap>()
                 .register_type::<npc::PlanPathEvent>()
+                .register_type::<TileKind>()
                 .register_type::<TileMap>()
-                .register_type::<npc::BehaviorLeaf>()
-                .register_type::<npc::BehaviorPaused>();
+                .register_type::<Toolbar>()
+                .register_type::<ZoneTileKind>();
 
             app.add_plugins(
                 ResourceInspectorPlugin::<Toolbar>::new()

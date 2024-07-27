@@ -22,8 +22,6 @@ use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 use strum::IntoEnumIterator;
 
-use super::scene_configs::ZoneTileKind;
-
 /// Each scene adheres to the same layout definition.
 /// That's because the amount of space the character takes in the tile grid
 /// is constant and tailored to the square size.
@@ -121,6 +119,71 @@ pub enum TileKind {
     Actor(Entity),
     /// Specific for a given map.
     Zone(ZoneTileKind),
+}
+
+/// Named zones in the .ron files that are used in particular's scene logic to
+/// achieve some behavior specific to that scene.
+/// The zones can be re-used in multiple scenes.
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    Deserialize,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd,
+    Reflect,
+    Serialize,
+    strum::Display,
+    strum::EnumIter,
+    strum::EnumString,
+)]
+#[reflect(Default)]
+#[allow(missing_docs)]
+pub enum ZoneTileKind {
+    /// Arbitrarily the default value.
+    #[default]
+    Exit,
+
+    Aisle1,
+    Aisle2,
+    Aisle3,
+    Aisle4,
+
+    /// In interior scenes there might be multiple apartments.
+    /// This represents a second apartment in such scenes.
+    Apartment2,
+    Apartment2BathroomDoor,
+    Apartment2Door,
+    Apartment2Door2,
+
+    BasementDoor,
+    Bed,
+    Building1Entrance,
+    ClinicEntrance,
+    ClinicWardEntrance,
+    CompoundEntrance,
+    Door,
+    Elevator,
+    Fridges,
+    FruitsAndVeggies,
+    GoodWater,
+    GoToDowntown,
+    Hallway,
+    MallEntrance,
+    Meditation,
+    PlantShopEntrance,
+    PlayerApartment,
+    PlayerDoor,
+    SewersEntrance,
+    Tea,
+    TowerEntrance,
+    TwinpeaksApartmentEntrance,
+    UpperApartmentDoor,
+    UpperApartmentWallHidden,
 }
 
 /// Useful for pathfinding to prefer some tiles over others.

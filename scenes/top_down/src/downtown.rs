@@ -16,10 +16,8 @@ use main_game_lib::{
             SpawnLabelBgAndTextParams, ZoneToInspectLabelEntity, LIGHT_RED,
         },
         npc::behaviors::PatrolSequence,
-        scene_configs::ZoneTileKind,
     },
 };
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     layout::LAYOUT,

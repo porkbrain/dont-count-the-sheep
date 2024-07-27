@@ -21,11 +21,9 @@ use main_game_lib::{
             ChangeHighlightedInspectLabelEventConsumer,
             SpawnLabelBgAndTextParams, LIGHT_RED,
         },
-        scene_configs::ZoneTileKind,
         ActorMovementEvent,
     },
 };
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
 use top_down::{
     actor::{
         self, movement_event_emitted, CharacterBundleBuilder, CharacterExt,
@@ -256,24 +254,20 @@ impl<'a> TscnSpawner for Spawner<'a> {
                     .build_and_insert_obstacle(self.tilemap);
                 cmd.entity(who).insert(door);
             }
-            "BottomLeftApartmentDoor" => {
+            "Apartment2Door" => {
                 cmd.entity(who).insert(
-                    DoorBuilder::new(ZoneTileKind::BottomLeftApartmentDoor)
+                    DoorBuilder::new(ZoneTileKind::Apartment2Door).build(),
+                );
+            }
+            "Apartment2BathroomDoor" => {
+                cmd.entity(who).insert(
+                    DoorBuilder::new(ZoneTileKind::Apartment2BathroomDoor)
                         .build(),
                 );
             }
-            "BottomLeftApartmentBathroomDoor" => {
+            "Apartment2Door2" => {
                 cmd.entity(who).insert(
-                    DoorBuilder::new(
-                        ZoneTileKind::BottomLeftApartmentBathroomDoor,
-                    )
-                    .build(),
-                );
-            }
-            "BottomRightApartmentDoor" => {
-                cmd.entity(who).insert(
-                    DoorBuilder::new(ZoneTileKind::BottomRightApartmentDoor)
-                        .build(),
+                    DoorBuilder::new(ZoneTileKind::Apartment2Door2).build(),
                 );
             }
             "WinnieSleeping" => {
