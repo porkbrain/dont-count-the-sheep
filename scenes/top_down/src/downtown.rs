@@ -1,5 +1,6 @@
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::{sq, Square};
+use bevy_kira_audio::{Audio, AudioControl, AudioInstance};
 use common_story::Character;
 use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{
@@ -10,12 +11,14 @@ use main_game_lib::{
     },
     player_stats::PlayerStats,
     top_down::{
+        actor::Who,
         inspect_and_interact::{
             ChangeHighlightedInspectLabelEvent,
             ChangeHighlightedInspectLabelEventConsumer,
             SpawnLabelBgAndTextParams, ZoneToInspectLabelEntity, LIGHT_RED,
         },
         npc::behaviors::PatrolSequence,
+        ActorMovementEvent,
     },
 };
 use top_down::{
@@ -68,6 +71,12 @@ impl bevy::app::Plugin for Plugin {
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Downtown>()),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
+        .add_systems(
+            Update,
+            control_ocean_sound
+                .run_if(movement_event_emitted())
+                .run_if(in_scene_running_state(THIS_SCENE)),
+        )
         .add_systems(
             Update,
             (
@@ -396,5 +405,71 @@ fn show_label_closed(
         });
     } else {
         error!("Cannot find clinic entrance zone for {zone_kind:?}");
+    }
+}
+
+#[derive(Component)]
+struct OceanSound(Handle<AudioInstance>);
+
+fn control_ocean_sound(
+    mut cmd: Commands,
+    mut movement_events: EventReader<ActorMovementEvent>,
+    audio: Res<Audio>,
+    asset_server: Res<AssetServer>,
+
+    ocean_sound: Query<(Entity, &OceanSound)>,
+) {
+    use ZoneTileKind::NearbyOcean;
+
+    for event in movement_events.read() {
+        match event {
+            // spawn a new ocean sound if we're entering the ocean zone and
+            // there's no ocean sound playing
+            ActorMovementEvent::ZoneEntered {
+                who:
+                    Who {
+                        is_player: true, ..
+                    },
+                zone: TileKind::Zone(NearbyOcean),
+            } if ocean_sound.is_empty() => {
+                let ocean_sound_handle = audio
+                    .play(
+                        asset_server
+                            .load(common_assets::paths::audio::CALM_OCEAN_LOOP),
+                    )
+                    .looped()
+                    .handle();
+
+                cmd.spawn(OceanSound(ocean_sound_handle));
+            }
+
+            ActorMovementEvent::ZoneEntered {
+                who:
+                    Who {
+                        is_player: true, ..
+                    },
+                zone: TileKind::Zone(NearbyOcean),
+            } => {
+                // SAFETY: we just checked that this is not empty
+                let (entity, ocean_sound) =
+                    ocean_sound.get_single_or_none().unwrap();
+
+                audio.resume(instance_handle)
+            }
+
+            // TODO: we left the ocean zone, fade out the sound
+            ActorMovementEvent::ZoneLeft {
+                who:
+                    Who {
+                        is_player: true, ..
+                    },
+                zone: TileKind::Zone(NearbyOcean),
+            } if !ocean_sound.is_empty() => {
+                //
+            }
+
+            // we don't care about any other event
+            _ => {}
+        }
     }
 }

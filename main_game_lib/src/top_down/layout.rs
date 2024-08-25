@@ -148,41 +148,50 @@ pub enum ZoneTileKind {
     #[default]
     Exit,
 
-    Aisle1,
-    Aisle2,
-    Aisle3,
-    Aisle4,
-
     /// In interior scenes there might be multiple apartments.
     /// This represents a second apartment in such scenes.
     Apartment2,
     Apartment2BathroomDoor,
     Apartment2Door,
 
-    BasementDoor,
+    // Some standard zones for interior scenes.
     Bed,
+    Door,
+    Elevator,
+    Hallway,
+
+    // Entrances to places
     Building1Entrance,
     ClinicEntrance,
     ClinicWardEntrance,
     CompoundEntrance,
-    Door,
-    Elevator,
+    GoToDowntown,
+    MallEntrance,
+    PlantShopEntrance,
+    SewersEntrance,
+    TowerEntrance,
+    TwinpeaksApartmentEntrance,
+
+    // Mall zones
+    Aisle1,
+    Aisle2,
+    Aisle3,
+    Aisle4,
     Fridges,
     FruitsAndVeggies,
     GoodWater,
-    GoToDowntown,
-    Hallway,
-    MallEntrance,
-    Meditation,
-    PlantShopEntrance,
+
+    // Player apartment zones
     PlayerApartment,
+    Meditation,
     PlayerDoor,
-    SewersEntrance,
     Tea,
-    TowerEntrance,
-    TwinpeaksApartmentEntrance,
+
+    // Others
+    BasementDoor,
     UpperApartmentDoor,
     UpperApartmentWallHidden,
+    NearbyOcean,
 }
 
 /// Useful for pathfinding to prefer some tiles over others.

@@ -4560,6 +4560,8 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_grid_squared",
+ "bevy_kira_audio",
+ "common_assets",
  "common_loading_screen",
  "common_story",
  "common_visuals",

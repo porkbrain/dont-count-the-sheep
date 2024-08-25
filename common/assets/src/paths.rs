@@ -127,4 +127,5 @@ pub mod ui {
 pub mod audio {
     pub const DOOR_OPEN: &str = "audio/door_open.oga";
     pub const CALL_ELEVATOR: &str = "audio/call_elevator.oga";
+    pub const CALM_OCEAN_LOOP: &str = "audio/calm_ocean_loop.oga";
 }

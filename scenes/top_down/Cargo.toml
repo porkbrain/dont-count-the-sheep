@@ -14,7 +14,9 @@ devtools = [
 
 [dependencies]
 bevy_grid_squared.workspace = true
+bevy_kira_audio.workspace = true
 bevy.workspace = true
+common_assets.workspace = true
 common_loading_screen.workspace = true
 common_story.workspace = true
 common_visuals.workspace = true
