@@ -188,6 +188,7 @@ pub(crate) fn match_interact_label_with_action_event(
 pub struct ChangeHighlightedInspectLabelEventConsumer;
 
 /// Enables changing of the label's appearance.
+///
 /// This is only relevant for highlighted labels.
 /// Useful to give the player some extra information why the interaction
 /// is not actually possible due to some other condition, such as time (e.g.

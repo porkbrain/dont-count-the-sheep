@@ -1,4 +1,5 @@
 //! Doors that can be opened and closed.
+//!
 //! There are different [`DoorOpenCriteria`] that can be used to open the door.
 //! Optionally, the door can have an obstacle that's inserted into the map when
 //! the door is closed.

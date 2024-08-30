@@ -103,6 +103,7 @@ pub struct LoadingScreenSettings {
 }
 
 /// Set the state to this to open loading screen.
+///
 /// You must ensure that the state is [`LoadingScreenState::DoNothing`],
 /// other you break stuff.
 /// You must insert [`LoadingScreenSettings`] before you set the state.
@@ -111,7 +112,9 @@ pub fn start_state() -> LoadingScreenState {
 }
 
 /// When you are done loading, set the state to this to smoothly hide the
-/// loading screen. Your game camera should be ready to show the game.
+/// loading screen.
+///
+/// Your game camera should be ready to show the game.
 /// Make sure to call this only if the current state is
 /// [`LoadingScreenState::WaitForSignalToFinish`].
 pub fn finish_state() -> LoadingScreenState {

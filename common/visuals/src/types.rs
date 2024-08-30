@@ -131,6 +131,8 @@ pub struct Flicker {
     pub shown_for: Duration,
 }
 
+/// Starts an interpolation of some component.
+///
 /// We use events instead of inserting the component directly because there
 /// might be races such as one interpolation finishing which removes the
 /// relevant component and another starting which inserts the same component.

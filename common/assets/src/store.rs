@@ -21,6 +21,7 @@ impl AssetList for StaticScene {
 }
 
 /// When all [`StrongHandle`]s are dropped, an asset is unloaded.
+///
 /// However, we often find ourselves reusing the same asset in multiple places.
 /// This can lead to a scenario where we load and drop the same asset over and
 /// over again.

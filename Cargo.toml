@@ -20,7 +20,7 @@ members = [
 
 
 [workspace.dependencies.bevy]
-version = "=0.14.0"
+version = "=0.14.1"
 default-features = false
 features = [
     "bevy_asset",
@@ -48,7 +48,7 @@ bevy-inspector-egui = { version = "0.25", default-features = false, features = [
     "bevy_render",
 ] }
 leafwing-input-manager = "0.14"
-bevy_egui = "0.28"
+bevy_egui = "0.29"
 bevy_kira_audio = "0.20"
 
 scene_top_down = { path = "scenes/top_down" }
@@ -76,7 +76,7 @@ rusqlite = { version = "0.30", features = ["bundled", "chrono"] }
 rusqlite_migration = "1.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-serde_with = "3.7"
+serde_with = "3.9"
 smallvec = "1.13"
 strum = { version = "0.26", features = ["derive"] }
 thiserror = "1.0"
