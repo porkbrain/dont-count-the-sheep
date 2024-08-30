@@ -1,11 +1,5 @@
 # Don't Count The Sheep
 
-## Dependencies
-
-- [Rust][rust-install]
-- [Bevy][bevy-install]
-- `apt install lld clang` for [faster builds][bevy-fast-compile]
-
 ![Master CI](https://github.com/porkbrain/winnie/actions/workflows/master.yml/badge.svg?branch=master)
 
 A top down pixelart game created with [Bevy](https://bevyengine.org/).
@@ -13,6 +7,12 @@ A top down pixelart game created with [Bevy](https://bevyengine.org/).
 Run `$ ./dev/wiki` to open the game's [wiki](wiki/README.md) locally in your browser.
 
 Our primary color is `#0d0e1f`.
+
+## Dependencies
+
+- [Rust][rust-install]
+- [Bevy][bevy-install]
+- `apt install lld clang` for [faster builds][bevy-fast-compile]
 
 ## Repo organization
 
