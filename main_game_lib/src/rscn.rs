@@ -45,6 +45,7 @@ pub use spawner::TscnSpawner;
 
 /// A helper component that is always in an entity with
 /// [`bevy::prelude::SpatialBundle`].
+///
 /// Translated a simple point from Godot.
 /// To add this component, add a child Godot `Node` named `Point` to a parent
 /// Godot `Node2D`.

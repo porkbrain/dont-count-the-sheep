@@ -24,6 +24,7 @@ use crate::{
 };
 
 /// Guides the spawning process of a scene.
+///
 /// Use the [`TscnTree::spawn_into`] method to spawn the scene into a world.
 /// The implementation has some knowledge of bevy and top down scenes to provide
 /// default implementations for things like [`crate::top_down::InspectLabel`]

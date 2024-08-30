@@ -6,6 +6,7 @@ use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use crate::prelude::*;
 
 /// Provides control for the game states.
+///
 /// Each scene can add whatever state it needs to this enum.
 /// Transitions between states are controlled by the
 /// [`GlobalGameStateTransition`].

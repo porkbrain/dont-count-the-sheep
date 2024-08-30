@@ -86,6 +86,8 @@ pub struct Dialog {
     when_finished: Vec<CmdFn>,
 }
 
+/// Helps async loading of dialog assets.
+///
 /// Because dialog toml files are assets, loading them is an async process.
 /// For that reason, in this resource we store handles to the relevant
 /// [`DialogGraph`] and only spawn the dialog when all handles are loaded.
