@@ -42,11 +42,7 @@ With every extra dependency that also depends on Bevy it potentially takes longe
 
 ## Dev environment
 
-Some crates export `devtools` feature that enable additional debug and/or dev tooling functionality.
-
-```
-$ cargo run --features devtools
-```
+Some crates export `devtools` feature that enable additional debug and/or dev tooling functionality: `$ cargo run --features devtools`
 
 <!-- List of references -->
 
