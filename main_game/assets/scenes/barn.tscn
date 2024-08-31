@@ -1,17 +1,17 @@
 [gd_scene load_steps=16 format=3 uid="uid://dajava8pv8ysd"]
 
-[ext_resource type="Texture2D" uid="uid://bo4wq2i0bkr8c" path="res://assets/compound/barn_interior.png" id="1_2glsl"]
-[ext_resource type="Texture2D" uid="uid://dhbfxi5fhc2uf" path="res://assets/residential/indoors/wall_fish2.png" id="2_ukrpc"]
-[ext_resource type="Texture2D" uid="uid://vtfof2e0ei40" path="res://assets/residential/indoors/clinic_clock.png" id="4_rrsnu"]
-[ext_resource type="Texture2D" uid="uid://cnxj4juluqxlo" path="res://assets/compound/window.png" id="5_43hc4"]
-[ext_resource type="Texture2D" uid="uid://cgd4gem7h52i6" path="res://assets/residential/indoors/toilet.png" id="6_cr7wq"]
-[ext_resource type="Texture2D" uid="uid://ls84jkhn2yie" path="res://assets/compound/window_light.png" id="6_xbloy"]
-[ext_resource type="Texture2D" uid="uid://bkn08mi2q7fcx" path="res://assets/compound/table.png" id="8_h4ttt"]
-[ext_resource type="Texture2D" uid="uid://dbbu6xgobs5xu" path="res://assets/residential/indoors/sink.png" id="8_n6hoc"]
-[ext_resource type="Texture2D" uid="uid://bijgh0xakxl6a" path="res://assets/residential/indoors/plant_leafs.png" id="10_kymjx"]
-[ext_resource type="Texture2D" uid="uid://ophdkktm7yqx" path="res://assets/residential/indoors/wall_mirror2.png" id="11_7eqf2"]
-[ext_resource type="Texture2D" uid="uid://cliyigbyh2a3x" path="res://assets/compound/fridge2.png" id="12_jasvm"]
-[ext_resource type="Texture2D" uid="uid://c4phqysbg8s3" path="res://assets/residential/indoors/oven.png" id="12_um7ei"]
+[ext_resource type="Texture2D" uid="uid://bm3mpq254a1yk" path="res://assets/compound/barn_interior.png" id="1_2glsl"]
+[ext_resource type="Texture2D" uid="uid://buxspvy8ptedf" path="res://assets/residential/indoors/wall_fish2.png" id="2_ukrpc"]
+[ext_resource type="Texture2D" uid="uid://brbwnofhmovb4" path="res://assets/residential/indoors/clinic_clock.png" id="4_rrsnu"]
+[ext_resource type="Texture2D" uid="uid://vh5a2r6eq4px" path="res://assets/compound/window.png" id="5_43hc4"]
+[ext_resource type="Texture2D" uid="uid://by24m0kq2utg3" path="res://assets/residential/indoors/toilet.png" id="6_cr7wq"]
+[ext_resource type="Texture2D" uid="uid://bnbyw2emryg3t" path="res://assets/compound/window_light.png" id="6_xbloy"]
+[ext_resource type="Texture2D" uid="uid://b6qyhwhb00nj8" path="res://assets/compound/table.png" id="8_h4ttt"]
+[ext_resource type="Texture2D" uid="uid://ijl4jmivlenh" path="res://assets/residential/indoors/sink.png" id="8_n6hoc"]
+[ext_resource type="Texture2D" uid="uid://by2a60rp5vjxw" path="res://assets/residential/indoors/plant_leafs.png" id="10_kymjx"]
+[ext_resource type="Texture2D" uid="uid://dc0kwxcdeefm5" path="res://assets/residential/indoors/wall_mirror2.png" id="11_7eqf2"]
+[ext_resource type="Texture2D" uid="uid://b52rwlxjfcdkk" path="res://assets/compound/fridge2.png" id="12_jasvm"]
+[ext_resource type="Texture2D" uid="uid://dvytm3e2b1tmo" path="res://assets/residential/indoors/oven.png" id="12_um7ei"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yvafp"]
 atlas = ExtResource("12_um7ei")
@@ -38,49 +38,76 @@ animations = [{
 [node name="Barn" type="Node2D"]
 
 [node name="BarnBg" type="Sprite2D" parent="."]
+z_index = -3
 position = Vector2(-23, 14)
 texture = ExtResource("1_2glsl")
 
-[node name="WallFish3" type="Sprite2D" parent="."]
-position = Vector2(20, -56)
-texture = ExtResource("2_ukrpc")
-
-[node name="ClinicClock" type="Sprite2D" parent="."]
-position = Vector2(146, -68)
-texture = ExtResource("4_rrsnu")
+[node name="Plant" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(-135, -8)
+texture = ExtResource("10_kymjx")
 
 [node name="Window" type="Sprite2D" parent="."]
+z_index = -1
 position = Vector2(-49, -40)
 texture = ExtResource("5_43hc4")
 
 [node name="WindowLight" type="Sprite2D" parent="."]
+z_index = 1
 position = Vector2(-49, -12)
 texture = ExtResource("6_xbloy")
 
-[node name="Toilet" type="Sprite2D" parent="."]
-position = Vector2(232, 48)
-texture = ExtResource("6_cr7wq")
-
-[node name="Sink" type="Sprite2D" parent="."]
-position = Vector2(191, -11)
-texture = ExtResource("8_n6hoc")
+[node name="WallFish" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(20, -56)
+texture = ExtResource("2_ukrpc")
 
 [node name="Table" type="Sprite2D" parent="."]
 position = Vector2(-52, 39)
 texture = ExtResource("8_h4ttt")
 
-[node name="PlantLeafs" type="Sprite2D" parent="."]
-position = Vector2(-135, -8)
-texture = ExtResource("10_kymjx")
+[node name="YSort" type="Node2D" parent="Table"]
+position = Vector2(-38, 29)
 
-[node name="WallMirror2" type="Sprite2D" parent="."]
-position = Vector2(191, -41)
-texture = ExtResource("11_7eqf2")
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="Pecek" type="AnimatedSprite2D" parent="."]
+z_index = -1
 position = Vector2(66, -20)
 sprite_frames = SubResource("SpriteFrames_ns3ui")
 
-[node name="Fridge2" type="Sprite2D" parent="."]
+[node name="Clock" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(146, -68)
+texture = ExtResource("4_rrsnu")
+
+[node name="Fridge" type="Sprite2D" parent="."]
+z_index = -1
 position = Vector2(146, -22)
 texture = ExtResource("12_jasvm")
+
+[node name="Mirror" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(191, -41)
+texture = ExtResource("11_7eqf2")
+
+[node name="Sink" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(191, -11)
+texture = ExtResource("8_n6hoc")
+
+[node name="Toilet" type="Sprite2D" parent="."]
+z_index = 1
+position = Vector2(232, 48)
+texture = ExtResource("6_cr7wq")
+
+[node name="Points" type="Node2D" parent="."]
+
+[node name="Entrance" type="Node2D" parent="Points"]
+position = Vector2(-124, 111)
+
+[node name="Point" type="Node" parent="Points/Entrance"]
+
+[node name="InspectLabel" type="Node" parent="Points/Entrance"]
+metadata/zone = "Exit"
+metadata/action = "ExitScene"
+metadata/label = "Exit"
+metadata/category = "Default"

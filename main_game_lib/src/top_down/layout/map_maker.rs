@@ -413,6 +413,8 @@ fn export_map(
             fs::write(format!("{assets_path}/{scene_name}.svg"), svg).unwrap();
         }
         Err(e) => {
+            // possibly graphviz is not installed
+            // https://graphviz.org/download
             error!("Could not generate svg from dot graph: {e}");
         }
     }

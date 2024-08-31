@@ -34,6 +34,7 @@ pub fn windowed_app() -> App {
                 level: bevy::log::Level::INFO,
                 filter: "\
                 info,\
+                wgpu_hal::vulkan::instance=warn,\
                 game=trace,\
                 common_action=trace,\
                 common_assets=trace,\

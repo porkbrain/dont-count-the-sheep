@@ -13,6 +13,7 @@ Our primary color is `#0d0e1f`.
 - [Rust][rust-install]
 - [Bevy][bevy-install]
 - `apt install lld clang` for [faster builds][bevy-fast-compile]
+- [Graphviz][graphviz-install]
 
 ## Repo organization
 
@@ -43,6 +44,10 @@ With every extra dependency that also depends on Bevy it potentially takes longe
 
 Some crates export `devtools` feature that enable additional debug and/or dev tooling functionality.
 
+```
+$ cargo run --features devtools
+```
+
 <!-- List of references -->
 
 [bevy_egui]: https://github.com/mvlabat/bevy_egui
@@ -53,5 +58,6 @@ Some crates export `devtools` feature that enable additional debug and/or dev to
 [leafwing-input-manager]: https://github.com/Leafwing-Studios/leafwing-input-manager
 [original-bevy_magic_light]: https://github.com/zaycev/bevy-magic-light-2d
 [rust-install]: https://www.rust-lang.org/tools/install
-[bevy-install]: https://bevyengine.org/learn/quick-start/getting-started/setup/
+[bevy-install]: https://bevyengine.org/learn/quick-start/getting-started/setup
+[graphviz-install]: https://graphviz.org/download
 [bevy-fast-compile]: https://bevyengine.org/learn/quick-start/getting-started/setup/#enable-fast-compiles-optional
