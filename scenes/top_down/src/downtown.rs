@@ -1,6 +1,6 @@
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::{sq, Square};
-use bevy_kira_audio::{Audio, AudioControl, AudioInstance};
+use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioTween};
 use common_story::Character;
 use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{
@@ -415,9 +415,10 @@ fn control_ocean_sound(
     mut cmd: Commands,
     mut movement_events: EventReader<ActorMovementEvent>,
     audio: Res<Audio>,
+    mut audio_instances: ResMut<Assets<AudioInstance>>,
     asset_server: Res<AssetServer>,
 
-    ocean_sound: Query<(Entity, &OceanSound)>,
+    ocean_sound: Query<&OceanSound>,
 ) {
     use ZoneTileKind::NearbyOcean;
 
@@ -431,41 +432,53 @@ fn control_ocean_sound(
                         is_player: true, ..
                     },
                 zone: TileKind::Zone(NearbyOcean),
-            } if ocean_sound.is_empty() => {
-                let ocean_sound_handle = audio
-                    .play(
-                        asset_server
-                            .load(common_assets::paths::audio::CALM_OCEAN_LOOP),
-                    )
-                    .looped()
-                    .handle();
-
-                cmd.spawn(OceanSound(ocean_sound_handle));
-            }
-
-            ActorMovementEvent::ZoneEntered {
-                who:
-                    Who {
-                        is_player: true, ..
-                    },
-                zone: TileKind::Zone(NearbyOcean),
             } => {
-                // SAFETY: we just checked that this is not empty
-                let (entity, ocean_sound) =
-                    ocean_sound.get_single_or_none().unwrap();
+                if let Some(instance) = ocean_sound
+                    .get_single_or_none()
+                    // this should always be Some because we still hold the
+                    // handle to the audio instance in [OceanSound]
+                    .and_then(|OceanSound(h)| audio_instances.get_mut(h))
+                {
+                    instance.resume(AudioTween::linear(Duration::from_secs(1)));
+                } else {
+                    let ocean_sound_handle =
+                        audio
+                            .play(asset_server.load(
+                                common_assets::paths::audio::CALM_OCEAN_LOOP,
+                            ))
+                            .looped()
+                            .handle();
 
-                audio.resume(instance_handle)
+                    cmd.spawn(OceanSound(ocean_sound_handle));
+
+                    // if there was another event that wanted to work on the
+                    // ocean sound handle, it would not work
+                    // because we just spawned it
+                    //
+                    // there's a possible bug: if we enter and leave the ocean
+                    // zone within the same frame, the ocean
+                    // sound will not be paused
+                    // and will keep playing until the game is scene or location
+                    // is changed
+                    //
+                    // unlikely and non-critical though so we don't bother
+                    break;
+                }
             }
 
-            // TODO: we left the ocean zone, fade out the sound
             ActorMovementEvent::ZoneLeft {
                 who:
                     Who {
                         is_player: true, ..
                     },
                 zone: TileKind::Zone(NearbyOcean),
-            } if !ocean_sound.is_empty() => {
-                //
+            } => {
+                if let Some(instance) = ocean_sound
+                    .get_single_or_none()
+                    .and_then(|OceanSound(h)| audio_instances.get_mut(h))
+                {
+                    instance.pause(AudioTween::linear(Duration::from_secs(3)));
+                }
             }
 
             // we don't care about any other event
