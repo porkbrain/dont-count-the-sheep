@@ -236,7 +236,7 @@ position = Vector2(-241, 57)
 texture = ExtResource("17_8tma2")
 
 [node name="Bonsai1" type="Sprite2D" parent="CounterWide"]
-position = Vector2(34, -18)
+position = Vector2(34, -20)
 texture = ExtResource("20_lrmvj")
 
 [node name="Kasa" type="Sprite2D" parent="CounterWide"]

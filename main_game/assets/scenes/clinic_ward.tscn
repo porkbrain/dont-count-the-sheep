@@ -268,7 +268,7 @@ position = Vector2(133, 116)
 texture = ExtResource("35_vtaso")
 
 [node name="PlantBiggestBack" type="Sprite2D" parent="SideTable1Back"]
-position = Vector2(0, -24)
+position = Vector2(1, -23)
 texture = ExtResource("35_rwl8r")
 
 [node name="PillBox" type="Sprite2D" parent="."]
