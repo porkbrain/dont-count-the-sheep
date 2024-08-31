@@ -29,7 +29,7 @@ use crate::top_down::{
 };
 
 /// Use with [`IntoSystemConfigs::run_if`] to run a system only when an actor
-/// moves.
+/// triggers some movement event such as entering or leaving a zone.
 pub fn movement_event_emitted(
 ) -> impl FnMut(EventReader<ActorMovementEvent>) -> bool {
     on_event::<ActorMovementEvent>()

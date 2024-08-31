@@ -1,5 +1,6 @@
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::{sq, Square};
+use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioTween};
 use common_story::Character;
 use common_visuals::camera::{render_layer, MainCamera};
 use main_game_lib::{
@@ -10,12 +11,14 @@ use main_game_lib::{
     },
     player_stats::PlayerStats,
     top_down::{
+        actor::Who,
         inspect_and_interact::{
             ChangeHighlightedInspectLabelEvent,
             ChangeHighlightedInspectLabelEventConsumer,
             SpawnLabelBgAndTextParams, ZoneToInspectLabelEntity, LIGHT_RED,
         },
         npc::behaviors::PatrolSequence,
+        ActorMovementEvent,
     },
 };
 use top_down::{
@@ -68,6 +71,12 @@ impl bevy::app::Plugin for Plugin {
                 .run_if(rscn::tscn_loaded_but_not_spawned::<Downtown>()),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
+        .add_systems(
+            Update,
+            control_ocean_sound
+                .run_if(movement_event_emitted())
+                .run_if(in_scene_running_state(THIS_SCENE)),
+        )
         .add_systems(
             Update,
             (
@@ -194,11 +203,19 @@ fn spawn(
     otter_builder.insert_bundle_into(&asset_server, &mut cmd.entity(otter));
 }
 
-fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
+fn despawn(
+    mut cmd: Commands,
+    root: Query<Entity, With<LayoutEntity>>,
+    ocean_sound: Query<Entity, With<OceanSound>>,
+) {
     debug!("Despawning layout entities");
 
     let root = root.single();
     cmd.entity(root).despawn_recursive();
+
+    for entity in ocean_sound.iter() {
+        cmd.entity(entity).despawn();
+    }
 
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
@@ -396,5 +413,84 @@ fn show_label_closed(
         });
     } else {
         error!("Cannot find clinic entrance zone for {zone_kind:?}");
+    }
+}
+
+#[derive(Component)]
+struct OceanSound(Handle<AudioInstance>);
+
+fn control_ocean_sound(
+    mut cmd: Commands,
+    mut movement_events: EventReader<ActorMovementEvent>,
+    audio: Res<Audio>,
+    mut audio_instances: ResMut<Assets<AudioInstance>>,
+    asset_server: Res<AssetServer>,
+
+    ocean_sound: Query<&OceanSound>,
+) {
+    use ZoneTileKind::NearbyOcean;
+
+    for event in movement_events.read() {
+        match event {
+            // spawn a new ocean sound if we're entering the ocean zone and
+            // there's no ocean sound playing
+            ActorMovementEvent::ZoneEntered {
+                who:
+                    Who {
+                        is_player: true, ..
+                    },
+                zone: TileKind::Zone(NearbyOcean),
+            } => {
+                if let Some(instance) = ocean_sound
+                    .get_single_or_none()
+                    // this should always be Some because we still hold the
+                    // handle to the audio instance in [OceanSound]
+                    .and_then(|OceanSound(h)| audio_instances.get_mut(h))
+                {
+                    instance.resume(AudioTween::linear(Duration::from_secs(1)));
+                } else {
+                    let ocean_sound_handle =
+                        audio
+                            .play(asset_server.load(
+                                common_assets::paths::audio::CALM_OCEAN_LOOP,
+                            ))
+                            .looped()
+                            .handle();
+
+                    cmd.spawn(OceanSound(ocean_sound_handle));
+
+                    // if there was another event that wanted to work on the
+                    // ocean sound handle, it would not work
+                    // because we just spawned it
+                    //
+                    // there's a possible bug: if we enter and leave the ocean
+                    // zone within the same frame, the ocean
+                    // sound will not be paused
+                    // and will keep playing until the game is scene or location
+                    // is changed
+                    //
+                    // unlikely and non-critical though so we don't bother
+                    break;
+                }
+            }
+
+            ActorMovementEvent::ZoneLeft {
+                who:
+                    Who {
+                        is_player: true, ..
+                    },
+                zone: TileKind::Zone(NearbyOcean),
+            } => {
+                if let Some(instance) = ocean_sound
+                    .get_single_or_none()
+                    .and_then(|OceanSound(h)| audio_instances.get_mut(h))
+                {
+                    instance.pause(AudioTween::linear(Duration::from_secs(3)));
+                }
+            }
+
+            // we don't care about any other event
+            _ => {}
+        }
     }
 }
