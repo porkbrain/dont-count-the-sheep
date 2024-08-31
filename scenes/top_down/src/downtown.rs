@@ -203,11 +203,19 @@ fn spawn(
     otter_builder.insert_bundle_into(&asset_server, &mut cmd.entity(otter));
 }
 
-fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
+fn despawn(
+    mut cmd: Commands,
+    root: Query<Entity, With<LayoutEntity>>,
+    ocean_sound: Query<Entity, With<OceanSound>>,
+) {
     debug!("Despawning layout entities");
 
     let root = root.single();
     cmd.entity(root).despawn_recursive();
+
+    for entity in ocean_sound.iter() {
+        cmd.entity(entity).despawn();
+    }
 
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
