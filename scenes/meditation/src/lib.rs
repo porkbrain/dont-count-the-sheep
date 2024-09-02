@@ -5,22 +5,15 @@
 
 mod background;
 mod cameras;
-mod climate;
 mod consts;
-mod gravity;
 mod hoshi;
-mod path;
-mod polpos;
 mod prelude;
 mod ui;
 mod zindex;
 
 use bevy::utils::Instant;
-use bevy_webp_anim::WebpAnimator;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_physics::PoissonsEquation;
-use gravity::Gravity;
 use prelude::*;
 
 /// Important scene struct.
@@ -35,8 +28,6 @@ pub fn add(app: &mut App) {
 
     app.add_plugins((
         ui::Plugin,
-        climate::Plugin,
-        polpos::Plugin,
         hoshi::Plugin,
         cameras::Plugin,
         background::Plugin,
@@ -57,14 +48,6 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         Update,
-        (
-            bevy_webp_anim::systems::start_loaded_videos::<()>,
-            bevy_webp_anim::systems::load_next_frame,
-        )
-            .run_if(in_state(GlobalGameState::InGameMeditation)),
-    );
-    app.add_systems(
-        Update,
         common_visuals::systems::flicker
             .run_if(in_state(GlobalGameState::MeditationInMenu)),
     );
@@ -75,10 +58,6 @@ pub fn add(app: &mut App) {
         FixedUpdate,
         common_physics::systems::apply_velocity
             .run_if(in_state(GlobalGameState::InGameMeditation)),
-    );
-    common_physics::poissons_equation::register::<gravity::Gravity, _>(
-        app,
-        GlobalGameState::InGameMeditation,
     );
 
     debug!("Adding game loop");
@@ -105,39 +84,15 @@ pub fn add(app: &mut App) {
         all_cleaned_up.run_if(in_state(GlobalGameState::QuittingMeditation)),
     );
 
-    #[cfg(feature = "devtools")]
-    {
-        debug!("Adding devtools");
-
-        app.add_systems(
-            Last,
-            path::visualize.run_if(in_state(GlobalGameState::InGameMeditation)),
-        );
-
-        #[cfg(feature = "devtools-poissons")]
-        common_physics::poissons_equation::register_visualization::<
-            gravity::Gravity,
-            gravity::ChangeOfBasis,
-            gravity::ChangeOfBasis,
-            _,
-        >(app, GlobalGameState::InGameMeditation);
-    }
-
     info!("Added meditation to app");
 }
 
 fn spawn(mut cmd: Commands) {
     debug!("Spawning resources");
-
-    cmd.insert_resource(gravity::field());
-    cmd.init_resource::<WebpAnimator>();
 }
 
 fn despawn(mut cmd: Commands) {
     debug!("Despawning resources");
-
-    cmd.remove_resource::<PoissonsEquation<Gravity>>();
-    cmd.remove_resource::<WebpAnimator>();
 }
 
 fn finish_when_everything_loaded(

@@ -9,7 +9,6 @@ mod sprite;
 
 use bevy::{math::uvec2, render::view::RenderLayers};
 use common_visuals::camera::render_layer;
-pub(crate) use controls::loading_special;
 
 use self::consts::*;
 use crate::prelude::*;

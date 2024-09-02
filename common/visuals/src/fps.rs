@@ -4,6 +4,7 @@ use bevy::{
     diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
+use common_assets::fonts;
 
 /// Marker to find the container entity so we can show/hide the FPS counter
 #[derive(Component)]
@@ -13,7 +14,7 @@ pub(crate) struct FpsRoot;
 #[derive(Component)]
 pub(crate) struct FpsText;
 
-pub(crate) fn spawn(mut cmd: Commands) {
+pub(crate) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
     // create our UI root node
     // this is the wrapper/container for the text
     let root = cmd
@@ -55,6 +56,7 @@ pub(crate) fn spawn(mut cmd: Commands) {
                     TextSection {
                         value: "FPS: ".into(),
                         style: TextStyle {
+                            font: asset_server.load(fonts::TINY_PIXEL1),
                             font_size: 16.0,
                             color: Color::WHITE,
                             ..default()
@@ -63,6 +65,7 @@ pub(crate) fn spawn(mut cmd: Commands) {
                     TextSection {
                         value: " N/A".into(),
                         style: TextStyle {
+                            font: asset_server.load(fonts::TINY_PIXEL1),
                             font_size: 16.0,
                             color: Color::WHITE,
                             ..default()

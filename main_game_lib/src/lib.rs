@@ -104,7 +104,6 @@ pub fn windowed_app() -> App {
     }
 
     app.add_plugins((
-        bevy_webp_anim::Plugin,
         common_action::Plugin,
         common_loading_screen::Plugin,
         common_store::Plugin,

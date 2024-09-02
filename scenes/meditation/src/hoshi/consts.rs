@@ -19,7 +19,7 @@ mod physics {
     /// We use a default stage gradient from 0.0 at the top to 1.0 at the
     /// bottom. This is multiplied by this constant to achieve the desired
     /// effect.
-    pub(crate) const GRAVITY_MULTIPLIER: f32 = 8000.0;
+    pub(crate) const GRAVITY_MULTIPLIER: f32 = -100.0;
 
     /// Caps gravity effect.
     /// If Hoshi is falling faster than this it slows down.

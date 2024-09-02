@@ -1,20 +1,15 @@
 use std::f32::consts::PI;
 
-use common_physics::PoissonsEquation;
 use main_game_lib::common_ext::QueryExt;
 
 use super::{anim::SparkEffect, consts::*, mode, ActionEvent};
-use crate::{
-    gravity::{ChangeOfBasis, Gravity},
-    prelude::*,
-};
+use crate::prelude::*;
 
 /// Controls when in normal mode.
 pub(super) fn normal(
     mut cmd: Commands,
     mut broadcast: EventWriter<ActionEvent>,
     controls: Res<ActionState<GlobalAction>>,
-    gravity: Res<PoissonsEquation<Gravity>>,
     time: Res<Time>,
 
     mut hoshi: Query<
@@ -69,8 +64,6 @@ pub(super) fn normal(
         movement_action.filter(|a| a.is_in_up_direction()).is_some();
 
     let dt = time.delta_seconds();
-    let gvec = gravity.gradient_at(ChangeOfBasis::from(*transform))
-        * GRAVITY_MULTIPLIER;
 
     let mut update_horizontal = |dir: MotionDirection| {
         let is_moving_in_opposite_direction = !dir.is_aligned(vel.x);
@@ -142,7 +135,7 @@ pub(super) fn normal(
     } else {
         // apply gravity
 
-        vel.y = (vel.y + gvec.y * dt).max(TERMINAL_VELOCITY);
+        vel.y = (vel.y + GRAVITY_MULTIPLIER * dt).max(TERMINAL_VELOCITY);
     }
 
     if mode.jumps >= MAX_JUMPS {
@@ -169,8 +162,6 @@ pub(super) fn normal(
         }
     }
 
-    // apply gravity to the horizontal movement
-    vel.x += gvec.x * dt;
     // apply friction to the horizontal movement
     vel.x -= vel.x * dt;
 }

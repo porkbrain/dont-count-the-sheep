@@ -48,7 +48,6 @@ features = ["bevy_render", "egui_clipboard", "egui_open_url"]
 
 [workspace.dependencies]
 bevy_pixel_camera = { git = "https://github.com/porkbrain/bevy_pixel_camera.git", branch = "bevy-v0.14" } # we will need to vendor this
-bevy_webp_anim = "0.4"
 leafwing-input-manager = "0.14"                                                                           # API has been completely rewamped
 bevy_egui = "0.28"                                                                                        # waiting for bevy-inspector-egui to update
 bevy_kira_audio = "0.20"

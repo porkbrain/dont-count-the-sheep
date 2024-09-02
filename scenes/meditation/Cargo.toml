@@ -6,7 +6,6 @@ edition.workspace = true
 
 [dependencies]
 bevy_pixel_camera.workspace = true
-bevy_webp_anim.workspace = true
 bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
@@ -22,4 +21,3 @@ rand.workspace = true
 
 [features]
 devtools = []
-devtools-poissons = ["common_physics/poissons-eq-visualization"]

@@ -6,14 +6,11 @@ use std::{
 use main_game_lib::common_ext::QueryExt;
 
 use super::consts::*;
-use crate::{climate::ClimateLightMode, prelude::*};
+use crate::prelude::*;
 
 #[derive(Component)]
 pub(crate) struct Score {
     total: usize,
-    last_deduction: Stopwatch,
-    deduction_interval: Duration,
-    deduction_per_interval: usize,
 }
 
 #[derive(Component)]
@@ -57,22 +54,10 @@ pub(super) fn despawn(
     }
 }
 
-pub(super) fn update(
-    mut score: Query<(&mut Score, &mut Text)>,
-    time: Res<Time>,
-) {
-    let Some((mut score, mut text)) = score.get_single_mut_or_none() else {
-        return;
-    };
-
-    score.last_deduction.tick(time.delta());
-
-    if score.last_deduction.elapsed() > score.deduction_interval {
-        score.total = score.total.saturating_sub(score.deduction_per_interval);
-        score.last_deduction.reset();
+pub(super) fn update(mut score: Query<(&mut Score, &mut Text)>) {
+    if let Some((score, mut text)) = score.get_single_mut_or_none() {
+        text.sections[0].value = score.to_string();
     }
-
-    text.sections[0].value = score.to_string();
 }
 
 impl AddAssign<usize> for Score {
@@ -83,28 +68,12 @@ impl AddAssign<usize> for Score {
 
 impl Default for Score {
     fn default() -> Self {
-        Self {
-            total: 0,
-            last_deduction: stopwatch_at(from_millis(0)),
-            deduction_per_interval: ClimateLightMode::default().deduction(),
-            deduction_interval: ClimateLightMode::default()
-                .deduction_interval(),
-        }
+        Self { total: 0 }
     }
 }
 
 impl Display for Score {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.total)
-    }
-}
-
-impl Score {
-    pub(crate) fn set_deduction_interval(&mut self, interval: Duration) {
-        self.deduction_interval = interval;
-    }
-
-    pub(crate) fn set_deduction(&mut self, deduction: usize) {
-        self.deduction_per_interval = deduction;
     }
 }
