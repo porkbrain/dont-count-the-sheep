@@ -161,9 +161,15 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
                     // take away player control for a moment to prevent them
                     // from interacting with the elevator while it's closing
                     cmd.entity(player).insert(TakeAwayPlayerControl);
-                    cmd.entity(who).add(move |e: EntityWorldMut| {
-                        start_with_open_elevator_and_close_it(player, e)
-                    });
+                    let elevator_description = descriptions
+                        .get_mut(&who)
+                        .expect("Missing description for {name}");
+                    start_with_open_elevator_and_close_it(
+                        cmd,
+                        player,
+                        who,
+                        elevator_description,
+                    );
                 }
             }
             "InElevator" | "BasementExit"

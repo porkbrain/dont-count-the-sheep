@@ -29,7 +29,7 @@ pub struct EntityDescription {
     pub z_index: Option<f32>,
     pub texture: Option<Handle<Image>>,
     pub sprite: Option<Sprite>,
-    pub texture_atlas: Option<Handle<TextureAtlasLayout>>,
+    pub texture_atlas: Option<TextureAtlas>,
     pub atlas_animation: Option<AtlasAnimation>,
     pub atlas_animation_timer: Option<AtlasAnimationTimer>,
 }
@@ -171,7 +171,10 @@ fn node_to_entity(
             }
 
             let layout = ctx.atlases.add(layout);
-            description.texture_atlas = Some(layout);
+            description.texture_atlas = Some(TextureAtlas {
+                index: animation.first_index,
+                layout,
+            });
             description.atlas_animation = Some(AtlasAnimation {
                 on_last_frame: if animation.should_endless_loop {
                     AtlasAnimationEnd::LoopIndefinitely
