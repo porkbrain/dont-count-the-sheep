@@ -32,7 +32,7 @@ use top_down::{
     environmental_objects::door::{DoorBuilder, DoorOpenCriteria, DoorState},
     inspect_and_interact::ZoneToInspectLabelEntity,
     layout::LAYOUT,
-    ActorTarget, TileMap, TopDownTscnSpawner,
+    ActorTarget, TileMap,
 };
 
 use crate::prelude::*;
