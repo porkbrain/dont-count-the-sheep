@@ -1,13 +1,16 @@
 //! Spawns a parsed tscn file into a bevy world.
 //!
-//! The restrictions:
 //! - a non 2D node can only be a leaf node with no children
 //! - the root node must be 2D node
+//! - user can provide hooks for custom behavior with [TscnSpawnHooks]
+//! - a plain node called "Point" will insert [Point] component to its parent
+//!   and will not be handled by the hooks
 
 use std::time::Duration;
 
 use bevy::utils::EntityHashMap;
 use common_visuals::{AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer};
+use rscn::Point;
 
 use crate::{
     prelude::*,
@@ -33,11 +36,11 @@ pub struct EntityDescription {
 
 /// Guides the spawning process of a scene.
 ///
-/// Use the [`TscnTree::spawn_into`] method to spawn the scene into a world.
+/// Use the [TscnTree::spawn_into] method to spawn the scene into a world.
 ///
 /// For scene dependent behavior, the implementation defer to the user by
-/// providing hooks [`TscnSpawnHooks::handle_plain_node`] and
-/// [`TscnSpawnHooks::handle_2d_node`].
+/// providing hooks [TscnSpawnHooks::handle_plain_node] and
+/// [TscnSpawnHooks::handle_2d_node].
 ///
 /// The implementation aggressively panics on invalid `.tscn` tree.
 /// We recommend to do the same in the hooks.
@@ -162,7 +165,7 @@ fn node_to_entity(
             let mut layout =
                 TextureAtlasLayout::new_empty(animation.size.as_uvec2());
             let frames_count = animation.frames.len();
-            assert_ne!(0, frames_count);
+            assert_ne!(0, frames_count, "Animation has no frames");
             for frame in animation.frames {
                 layout.add_texture(frame.as_urect());
             }
@@ -209,12 +212,21 @@ fn node_to_entity(
                 child_node,
             );
         } else {
-            hooks.handle_plain_node(
-                cmd,
-                &mut ctx.entity_descriptions,
-                (entity, name.clone()),
-                (child_name, child_node),
-            );
+            match child_name.as_str() {
+                "Point" => {
+                    if let Some(desc) = ctx.entity_descriptions.get(&entity) {
+                        cmd.entity(entity).insert(Point(desc.translation));
+                    }
+                }
+                _ => {
+                    hooks.handle_plain_node(
+                        cmd,
+                        &mut ctx.entity_descriptions,
+                        (entity, name.clone()),
+                        (child_name, child_node),
+                    );
+                }
+            }
         }
     }
 

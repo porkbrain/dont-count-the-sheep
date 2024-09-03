@@ -44,7 +44,7 @@ use serde::{Deserialize, Serialize};
 pub use spawner::{EntityDescription, EntityDescriptionMap, TscnSpawnHooks};
 
 /// A helper component that is always in an entity with
-/// [`bevy::prelude::SpatialBundle`].
+/// [bevy::prelude::SpatialBundle].
 ///
 /// Translated a simple point from Godot.
 /// To add this component, add a child Godot `Node` named `Point` to a parent
@@ -74,7 +74,7 @@ pub struct Config {
 /// We are very selective about what we support.
 /// We panic on unsupported content aggressively.
 ///
-/// See [`parse`] and [`TscnTree::spawn_into`].
+/// See [parse] and [TscnTree::spawn_into].
 #[derive(Asset, TypePath, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TscnTree {
     /// The root node of the scene as defined in Godot.
@@ -246,6 +246,13 @@ impl Default for Config {
         Self {
             asset_path_prefix: "res://assets/".to_string(),
         }
+    }
+}
+
+impl NodeName {
+    /// Get the name as a [str].
+    pub fn as_str(&self) -> &str {
+        &self.0
     }
 }
 
