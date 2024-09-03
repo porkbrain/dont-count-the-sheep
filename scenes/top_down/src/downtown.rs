@@ -40,24 +40,10 @@ impl main_game_lib::rscn::TscnInBevy for Downtown {
     }
 }
 
-#[derive(Event, Reflect, Clone, strum::EnumString, Eq, PartialEq)]
-enum DowntownAction {
-    EnterBuilding1,
-    EnterTwinpeaksApartment,
-    EnterSewers,
-    EnterMall,
-    EnterCompound,
-    EnterClinic,
-    EnterClinicWard,
-    EnterPlantShop,
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<DowntownAction>();
-
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Downtown>,
@@ -81,21 +67,21 @@ impl bevy::app::Plugin for Plugin {
             Update,
             (
                 enter_building1
-                    .run_if(on_event_variant(DowntownAction::EnterBuilding1)),
+                    .run_if(on_event_variant(TopDownAction::EnterBuilding1)),
                 enter_clinic
-                    .run_if(on_event_variant(DowntownAction::EnterClinic)),
+                    .run_if(on_event_variant(TopDownAction::EnterClinic)),
                 enter_clinic_ward
-                    .run_if(on_event_variant(DowntownAction::EnterClinicWard)),
-                enter_mall.run_if(on_event_variant(DowntownAction::EnterMall)),
+                    .run_if(on_event_variant(TopDownAction::EnterClinicWard)),
+                enter_mall.run_if(on_event_variant(TopDownAction::EnterMall)),
                 enter_plant_shop
-                    .run_if(on_event_variant(DowntownAction::EnterPlantShop)),
+                    .run_if(on_event_variant(TopDownAction::EnterPlantShop)),
                 enter_sewers
-                    .run_if(on_event_variant(DowntownAction::EnterSewers)),
+                    .run_if(on_event_variant(TopDownAction::EnterSewers)),
                 enter_twinpeaks_apartment.run_if(on_event_variant(
-                    DowntownAction::EnterTwinpeaksApartment,
+                    TopDownAction::EnterTwinpeaksApartment,
                 )),
                 enter_compound
-                    .run_if(on_event_variant(DowntownAction::EnterCompound)),
+                    .run_if(on_event_variant(TopDownAction::EnterCompound)),
             )
                 .before(ChangeHighlightedInspectLabelEventConsumer)
                 .run_if(in_scene_running_state(THIS_SCENE))
@@ -105,14 +91,11 @@ impl bevy::app::Plugin for Plugin {
 }
 
 struct Spawner<'a> {
-    asset_server: &'a AssetServer,
-    atlases: &'a mut Assets<TextureAtlasLayout>,
     camera_translation: &'a mut Vec3,
     player_builder: &'a mut CharacterBundleBuilder,
     player_entity: Entity,
     transition: GlobalGameStateTransition,
     daybar_event: &'a mut Events<UpdateDayBarEvent>,
-    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 
     samizdat_entity: Entity,
     samizdat_patrol_points: &'a mut Vec<Square>,
@@ -155,24 +138,27 @@ fn spawn(
     let mut otter_patrol_points = Vec::new();
 
     tscn.spawn_into(
-        &mut Spawner {
-            asset_server: &asset_server,
-            atlases: &mut atlas_layouts,
-            camera_translation: &mut camera.single_mut().translation,
-            daybar_event: &mut daybar_event,
-            player_builder: &mut player_builder,
-            player_entity: player,
-            transition: *transition,
-            zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
-
-            samizdat_entity: samizdat,
-            samizdat_patrol_points: &mut samizdat_patrol_points,
-
-            otter_entity: otter,
-            otter_patrol_points: &mut otter_patrol_points,
-        },
         &mut cmd,
+        &mut atlas_layouts,
+        &asset_server,
+        &mut TopDownTsncSpawner::new(
+            &mut zone_to_inspect_label_entity,
+            &mut Spawner {
+                camera_translation: &mut camera.single_mut().translation,
+                daybar_event: &mut daybar_event,
+                player_builder: &mut player_builder,
+                player_entity: player,
+                transition: *transition,
+
+                samizdat_entity: samizdat,
+                samizdat_patrol_points: &mut samizdat_patrol_points,
+
+                otter_entity: otter,
+                otter_patrol_points: &mut otter_patrol_points,
+            },
+        ),
     );
+
     cmd.insert_resource(zone_to_inspect_label_entity);
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
@@ -220,22 +206,22 @@ fn despawn(
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
-    type LocalActionKind = DowntownAction;
-    type ZoneKind = ZoneTileKind;
-
-    fn on_spawned(
+impl<'a> TscnSpawnHooks for Spawner<'a> {
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        who: Entity,
-        NodeName(name): NodeName,
-        translation: Vec3,
+        descriptions: &mut EntityDescriptionMap,
+        _parent: Option<(Entity, NodeName)>,
+        (who, NodeName(name)): (Entity, NodeName),
     ) {
         use GlobalGameStateTransition::*;
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
 
-        let position = translation.truncate();
+        let position = descriptions
+            .get(&who)
+            .expect("Missing description for {name}")
+            .translation;
 
         match (name.as_str(), self.transition) {
             ("Downtown", _) => {
@@ -272,33 +258,14 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
             (s, _) if s.starts_with("SamizdatPatrolPoint") => {
                 self.samizdat_patrol_points
-                    .push(LAYOUT.world_pos_to_square(translation.truncate()));
+                    .push(LAYOUT.world_pos_to_square(position));
             }
             (s, _) if s.starts_with("OtterPatrolPoint") => {
                 self.otter_patrol_points
-                    .push(LAYOUT.world_pos_to_square(translation.truncate()));
+                    .push(LAYOUT.world_pos_to_square(position));
             }
             _ => {}
         }
-    }
-
-    fn add_texture_atlas(
-        &mut self,
-        layout: TextureAtlasLayout,
-    ) -> Handle<TextureAtlasLayout> {
-        self.atlases.add(layout)
-    }
-
-    fn load_texture(&mut self, path: &str) -> Handle<Image> {
-        self.asset_server.load(path.to_owned())
-    }
-
-    fn map_zone_to_inspect_label_entity(
-        &mut self,
-        zone: Self::ZoneKind,
-        entity: Entity,
-    ) {
-        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 

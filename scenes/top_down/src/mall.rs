@@ -30,18 +30,10 @@ impl main_game_lib::rscn::TscnInBevy for Mall {
     }
 }
 
-#[derive(Event, Reflect, Clone, strum::EnumString)]
-enum MallAction {
-    ExitScene,
-    StartGingerCatDialog,
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MallAction>();
-
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Mall>,
@@ -57,7 +49,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             (exit, talk_to_ginger_cat)
-                .run_if(on_event::<MallAction>())
+                .run_if(on_event::<TopDownAction>())
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         );
@@ -69,9 +61,6 @@ struct Spawner<'a> {
     white_cat_patrol_points: &'a mut Vec<Square>,
     player_entity: Entity,
     player_builder: &'a mut CharacterBundleBuilder,
-    asset_server: &'a AssetServer,
-    atlases: &'a mut Assets<TextureAtlasLayout>,
-    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 }
 
 /// The names are stored in the scene file.
@@ -100,16 +89,18 @@ fn spawn(
     let mut white_cat_patrol_points = Vec::new();
 
     tscn.spawn_into(
-        &mut Spawner {
-            player_entity: player,
-            white_cat_patrol_points: &mut white_cat_patrol_points,
-            player_builder: &mut player_builder,
-            white_cat_entity: white_cat,
-            asset_server: &asset_server,
-            atlases: &mut atlas_layouts,
-            zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
-        },
         &mut cmd,
+        &mut atlas_layouts,
+        &asset_server,
+        &mut TopDownTsncSpawner::new(
+            &mut zone_to_inspect_label_entity,
+            &mut Spawner {
+                player_entity: player,
+                white_cat_patrol_points: &mut white_cat_patrol_points,
+                player_builder: &mut player_builder,
+                white_cat_entity: white_cat,
+            },
+        ),
     );
 
     cmd.insert_resource(zone_to_inspect_label_entity);
@@ -151,16 +142,13 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
-    type LocalActionKind = MallAction;
-    type ZoneKind = ZoneTileKind;
-
-    fn on_spawned(
+impl<'a> TscnSpawnHooks for Spawner<'a> {
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        who: Entity,
-        NodeName(name): NodeName,
-        translation: Vec3,
+        descriptions: &mut EntityDescriptionMap,
+        _parent: Option<(Entity, NodeName)>,
+        (who, NodeName(name)): (Entity, NodeName),
     ) {
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
@@ -172,43 +160,32 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 cmd.entity(who).add_child(self.white_cat_entity);
             }
             "Entrance" => {
-                self.player_builder.initial_position(translation.truncate());
+                let translation = descriptions
+                    .get(&who)
+                    .expect("Missing description for {name}")
+                    .translation;
+                self.player_builder.initial_position(translation);
             }
             s if s.starts_with("WhiteCatPatrolPoint") => {
+                let translation = descriptions
+                    .get(&who)
+                    .expect("Missing description for {name}")
+                    .translation;
                 self.white_cat_patrol_points
-                    .push(LAYOUT.world_pos_to_square(translation.truncate()));
+                    .push(LAYOUT.world_pos_to_square(translation));
             }
             _ => {}
         }
-    }
-
-    fn add_texture_atlas(
-        &mut self,
-        layout: TextureAtlasLayout,
-    ) -> Handle<TextureAtlasLayout> {
-        self.atlases.add(layout)
-    }
-
-    fn load_texture(&mut self, path: &str) -> Handle<Image> {
-        self.asset_server.load(path.to_owned())
-    }
-
-    fn map_zone_to_inspect_label_entity(
-        &mut self,
-        zone: Self::ZoneKind,
-        entity: Entity,
-    ) {
-        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 
 fn exit(
     mut transition_params: TransitionParams,
-    mut action_events: EventReader<MallAction>,
+    mut action_events: EventReader<TopDownAction>,
 ) {
     let is_triggered = action_events
         .read()
-        .any(|action| matches!(action, MallAction::ExitScene));
+        .any(|action| matches!(action, TopDownAction::Exit));
 
     if is_triggered {
         transition_params.begin(GlobalGameStateTransition::MallToDowntown);
@@ -216,12 +193,12 @@ fn exit(
 }
 
 fn talk_to_ginger_cat(
-    mut action_events: EventReader<MallAction>,
+    mut action_events: EventReader<TopDownAction>,
     mut begin_dialog_event: EventWriter<BeginDialogEvent>,
 ) {
     let is_triggered = action_events
         .read()
-        .any(|action| matches!(action, MallAction::StartGingerCatDialog));
+        .any(|action| matches!(action, TopDownAction::StartGingerCatDialog));
 
     if is_triggered {
         begin_dialog_event.send(BeginDialogEvent(Character::GingerCat.into()));

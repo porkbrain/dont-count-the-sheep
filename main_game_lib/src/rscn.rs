@@ -41,10 +41,10 @@ use bevy::{
 use common_ext::QueryExt;
 pub use loader::{LoaderError, TscnLoader};
 use serde::{Deserialize, Serialize};
-pub use spawner::TscnSpawner;
+pub use spawner::{EntityDescription, EntityDescriptionMap, TscnSpawnHooks};
 
 /// A helper component that is always in an entity with
-/// [`bevy::prelude::SpatialBundle`].
+/// [bevy::prelude::SpatialBundle].
 ///
 /// Translated a simple point from Godot.
 /// To add this component, add a child Godot `Node` named `Point` to a parent
@@ -74,13 +74,13 @@ pub struct Config {
 /// We are very selective about what we support.
 /// We panic on unsupported content aggressively.
 ///
-/// See [`parse`] and [`TscnTree::spawn_into`].
+/// See [parse] and [TscnTree::spawn_into].
 #[derive(Asset, TypePath, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TscnTree {
     /// The root node of the scene as defined in Godot.
     pub root_node_name: NodeName,
     /// Other nodes refer to it as `"."`.
-    pub root: Node,
+    pub root: RscnNode,
 }
 
 /// Node's name is stored in the parent node's children map.
@@ -88,7 +88,7 @@ pub struct TscnTree {
 /// The convention is that a 2D node is an entity while a plain node is a
 /// component.
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct Node {
+pub struct RscnNode {
     /// Positional data is relevant for
     /// - `Node2D`
     /// - `Sprite2D`
@@ -108,7 +108,7 @@ pub struct Node {
     /// data. Otherwise, they are treated as components and not entities.
     #[serde(skip_serializing_if = "HashMap::is_empty")]
     #[serde(default)]
-    pub children: HashMap<NodeName, Node>,
+    pub children: HashMap<NodeName, RscnNode>,
 }
 
 /// The name of a node is unique within its parent.
@@ -249,6 +249,13 @@ impl Default for Config {
     }
 }
 
+impl NodeName {
+    /// Get the name as a [str].
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
 impl<'a> From<NodeName> for Cow<'a, str> {
     fn from(NodeName(name): NodeName) -> Self {
         Cow::Owned(name)
@@ -258,5 +265,17 @@ impl<'a> From<NodeName> for Cow<'a, str> {
 impl std::borrow::Borrow<str> for NodeName {
     fn borrow(&self) -> &str {
         &self.0
+    }
+}
+
+impl From<NodeName> for String {
+    fn from(NodeName(name): NodeName) -> Self {
+        name
+    }
+}
+
+impl From<String> for NodeName {
+    fn from(name: String) -> Self {
+        NodeName(name)
     }
 }

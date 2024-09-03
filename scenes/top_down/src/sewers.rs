@@ -23,17 +23,10 @@ impl main_game_lib::rscn::TscnInBevy for Sewers {
     }
 }
 
-#[derive(Event, Reflect, Clone, strum::EnumString)]
-pub enum SewersAction {
-    ExitScene,
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<SewersAction>();
-
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Sewers>,
@@ -48,7 +41,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
-            exit.run_if(on_event::<SewersAction>())
+            exit.run_if(on_event::<TopDownAction>())
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         );
@@ -60,9 +53,6 @@ struct Spawner<'a> {
     cooper_builder: &'a mut CharacterBundleBuilder,
     player_entity: Entity,
     player_builder: &'a mut CharacterBundleBuilder,
-    asset_server: &'a AssetServer,
-    atlases: &'a mut Assets<TextureAtlasLayout>,
-    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 }
 
 /// The names are stored in the scene file.
@@ -89,16 +79,19 @@ fn spawn(
     let mut cooper_builder = common_story::Character::Cooper.bundle_builder();
 
     tscn.spawn_into(
-        &mut Spawner {
-            cooper_entity: cooper,
-            cooper_builder: &mut cooper_builder,
-            player_entity: player,
-            player_builder: &mut player_builder,
-            asset_server: &asset_server,
-            atlases: &mut atlas_layouts,
-            zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
-        },
         &mut cmd,
+        &mut atlas_layouts,
+        &asset_server,
+        &mut TopDownTsncSpawner::new(
+            &mut zone_to_inspect_label_entity,
+            &mut Spawner {
+                player_entity: player,
+                player_builder: &mut player_builder,
+
+                cooper_entity: cooper,
+                cooper_builder: &mut cooper_builder,
+            },
+        ),
     );
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
@@ -116,16 +109,13 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
-    type LocalActionKind = SewersAction;
-    type ZoneKind = ZoneTileKind;
-
-    fn on_spawned(
+impl<'a> TscnSpawnHooks for Spawner<'a> {
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        who: Entity,
-        NodeName(name): NodeName,
-        translation: Vec3,
+        descriptions: &mut EntityDescriptionMap,
+        _parent: Option<(Entity, NodeName)>,
+        (who, NodeName(name)): (Entity, NodeName),
     ) {
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
@@ -137,42 +127,31 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 cmd.entity(who).add_child(self.player_entity);
             }
             "Entrance" => {
-                self.player_builder.initial_position(translation.truncate());
+                let translation = descriptions
+                    .get(&who)
+                    .expect("Missing description for {name}")
+                    .translation;
+                self.player_builder.initial_position(translation);
             }
             "CooperSpawn" => {
-                self.cooper_builder.initial_position(translation.truncate());
+                let translation = descriptions
+                    .get(&who)
+                    .expect("Missing description for {name}")
+                    .translation;
+                self.cooper_builder.initial_position(translation);
             }
             _ => {}
         }
-    }
-
-    fn add_texture_atlas(
-        &mut self,
-        layout: TextureAtlasLayout,
-    ) -> Handle<TextureAtlasLayout> {
-        self.atlases.add(layout)
-    }
-
-    fn load_texture(&mut self, path: &str) -> Handle<Image> {
-        self.asset_server.load(path.to_owned())
-    }
-
-    fn map_zone_to_inspect_label_entity(
-        &mut self,
-        zone: Self::ZoneKind,
-        entity: Entity,
-    ) {
-        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 
 fn exit(
     mut transition_params: TransitionParams,
-    mut action_events: EventReader<SewersAction>,
+    mut action_events: EventReader<TopDownAction>,
 ) {
     let is_triggered = action_events
         .read()
-        .any(|action| matches!(action, SewersAction::ExitScene));
+        .any(|action| matches!(action, TopDownAction::Exit));
 
     if is_triggered {
         transition_params.begin(GlobalGameStateTransition::SewersToDowntown);

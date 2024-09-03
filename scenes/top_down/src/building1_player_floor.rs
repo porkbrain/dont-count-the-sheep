@@ -24,6 +24,7 @@ use main_game_lib::{
         ActorMovementEvent,
     },
 };
+use rscn::RscnNode;
 use top_down::{
     actor::{
         self, movement_event_emitted, CharacterBundleBuilder, CharacterExt,
@@ -58,32 +59,18 @@ impl main_game_lib::rscn::TscnInBevy for Building1PlayerFloor {
     }
 }
 
-#[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
-enum Building1PlayerFloorAction {
-    EnterElevator,
-    StartMeditation,
-    Sleep,
-    BrewTea,
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<Building1PlayerFloorAction>();
-
         app.add_systems(
             Update,
             (
-                start_meditation_minigame.run_if(on_event_variant(
-                    Building1PlayerFloorAction::StartMeditation,
-                )),
-                sleep.run_if(on_event_variant(
-                    Building1PlayerFloorAction::Sleep,
-                )),
-                enter_the_elevator.run_if(on_event_variant(
-                    Building1PlayerFloorAction::EnterElevator,
-                )),
+                start_meditation_minigame
+                    .run_if(on_event_variant(TopDownAction::StartMeditation)),
+                sleep.run_if(on_event_variant(TopDownAction::Sleep)),
+                enter_the_elevator
+                    .run_if(on_event_variant(TopDownAction::EnterElevator)),
             )
                 .before(DisplayEmojiEventConsumer)
                 .before(ChangeHighlightedInspectLabelEventConsumer)
@@ -143,11 +130,8 @@ struct Spawner<'a> {
     transition: GlobalGameStateTransition,
     player_entity: Entity,
     player_builder: &'a mut CharacterBundleBuilder,
-    asset_server: &'a AssetServer,
-    atlases: &'a mut Assets<TextureAtlasLayout>,
     daybar_event: &'a mut Events<UpdateDayBarEvent>,
     tilemap: &'a mut TileMap,
-    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 }
 
 /// The names are stored in the scene file.
@@ -172,17 +156,19 @@ fn spawn(
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
     tscn.spawn_into(
-        &mut Spawner {
-            transition: *transition,
-            player_entity: player,
-            player_builder: &mut player_builder,
-            asset_server: &asset_server,
-            daybar_event: &mut daybar_event,
-            atlases: &mut atlas_layouts,
-            tilemap: &mut tilemap,
-            zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
-        },
         &mut cmd,
+        &mut atlas_layouts,
+        &asset_server,
+        &mut TopDownTsncSpawner::new(
+            &mut zone_to_inspect_label_entity,
+            &mut Spawner {
+                player_entity: player,
+                transition: *transition,
+                player_builder: &mut player_builder,
+                daybar_event: &mut daybar_event,
+                tilemap: &mut tilemap,
+            },
+        ),
     );
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
@@ -198,16 +184,13 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
-    type LocalActionKind = Building1PlayerFloorAction;
-    type ZoneKind = ZoneTileKind;
-
-    fn on_spawned(
+impl<'a> TscnSpawnHooks for Spawner<'a> {
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        who: Entity,
-        NodeName(name): NodeName,
-        translation: Vec3,
+        descriptions: &mut EntityDescriptionMap,
+        _parent: Option<(Entity, NodeName)>,
+        (who, NodeName(name)): (Entity, NodeName),
     ) {
         use GlobalGameStateTransition::*;
 
@@ -233,9 +216,15 @@ impl<'a> TscnSpawner for Spawner<'a> {
                     // take away player control for a moment to prevent them
                     // from interacting with the elevator while it's closing
                     cmd.entity(player).insert(TakeAwayPlayerControl);
-                    cmd.entity(who).add(move |e: EntityWorldMut| {
-                        start_with_open_elevator_and_close_it(player, e)
-                    });
+                    let elevator_description = descriptions
+                        .get_mut(&who)
+                        .expect("Missing description for {name}");
+                    start_with_open_elevator_and_close_it(
+                        cmd,
+                        player,
+                        who,
+                        elevator_description,
+                    );
                 }
             }
             "PlayerApartmentDoor" => {
@@ -274,11 +263,13 @@ impl<'a> TscnSpawner for Spawner<'a> {
             "MeditationSpawn"
                 if self.transition == MeditationToBuilding1PlayerFloor =>
             {
-                self.player_builder.initial_position(translation.truncate());
+                let translation = descriptions
+                    .get(&who)
+                    .expect("Missing description for {name}")
+                    .translation;
+                self.player_builder.initial_position(translation);
                 self.player_builder.walking_to(ActorTarget::new(
-                    LAYOUT.world_pos_to_square(
-                        translation.truncate() + vec2(0.0, -20.0),
-                    ),
+                    LAYOUT.world_pos_to_square(translation + vec2(0.0, -20.0)),
                 ));
                 self.player_builder
                     .initial_step_time(STEP_TIME_ONLOAD_FROM_MEDITATION);
@@ -288,19 +279,30 @@ impl<'a> TscnSpawner for Spawner<'a> {
             "NewGameSpawn"
                 if self.transition == NewGameToBuilding1PlayerFloor =>
             {
-                self.player_builder.initial_position(translation.truncate());
+                let translation = descriptions
+                    .get(&who)
+                    .expect("Missing description for {name}")
+                    .translation;
+                self.player_builder.initial_position(translation);
             }
             "InElevator" if came_in_via_elevator => {
-                self.player_builder.initial_position(translation.truncate());
+                let translation = descriptions
+                    .get(&who)
+                    .expect("Missing description for {name}")
+                    .translation;
+                self.player_builder.initial_position(translation);
                 self.player_builder.walking_to(ActorTarget::new(
-                    LAYOUT.world_pos_to_square(translation.truncate())
-                        + sq(0, -2),
+                    LAYOUT.world_pos_to_square(translation) + sq(0, -2),
                 ));
                 self.player_builder
                     .initial_step_time(STEP_TIME_ON_EXIT_ELEVATOR);
             }
             "AfterSleepSpawn" if self.transition == Sleeping => {
-                self.player_builder.initial_position(translation.truncate());
+                let translation = descriptions
+                    .get(&who)
+                    .expect("Missing description for {name}")
+                    .translation;
+                self.player_builder.initial_position(translation);
                 self.player_builder.initial_direction(GridDirection::Top);
                 self.daybar_event.send(UpdateDayBarEvent::NewDay);
             }
@@ -311,41 +313,25 @@ impl<'a> TscnSpawner for Spawner<'a> {
     fn handle_plain_node(
         &mut self,
         cmd: &mut Commands,
-        parent: Entity,
-        name: String,
-        _: rscn::Node,
+        descriptions: &mut EntityDescriptionMap,
+        (parent_entity, _): (Entity, NodeName),
+        (NodeName(name), _): (NodeName, RscnNode),
     ) {
         match name.as_str() {
             "HallwayEntity" => {
-                cmd.entity(parent).insert(HallwayEntity);
-                cmd.entity(parent).add(|mut w: EntityWorldMut| {
-                    w.get_mut::<Sprite>().expect("Sprite").color =
-                        PRIMARY_COLOR;
-                });
+                cmd.entity(parent_entity).insert(HallwayEntity);
+                descriptions
+                    .get_mut(&parent_entity)
+                    .expect("HallwayEntity has no parent")
+                    .sprite
+                    .as_mut()
+                    .expect("HallwayEntity assigned to parent without Sprite")
+                    .color = PRIMARY_COLOR;
             }
             _ => {
                 panic!("Node {name:?} not handled");
             }
         }
-    }
-
-    fn add_texture_atlas(
-        &mut self,
-        layout: TextureAtlasLayout,
-    ) -> Handle<TextureAtlasLayout> {
-        self.atlases.add(layout)
-    }
-
-    fn load_texture(&mut self, path: &str) -> Handle<Image> {
-        self.asset_server.load(path.to_owned())
-    }
-
-    fn map_zone_to_inspect_label_entity(
-        &mut self,
-        zone: Self::ZoneKind,
-        entity: Entity,
-    ) {
-        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 
