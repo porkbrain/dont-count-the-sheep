@@ -22,10 +22,13 @@ use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
 
 use self::npc::BehaviorTree;
-use crate::top_down::{
-    layout::{ysort, TileIndex, LAYOUT},
-    npc::NpcInTheMap,
-    InspectLabelCategory, Player, TileKind, TileMap,
+use crate::{
+    top_down::{
+        layout::{TileIndex, LAYOUT},
+        npc::NpcInTheMap,
+        InspectLabelCategory, Player, TileKind, TileMap,
+    },
+    vec2_ext::Vec2Ext,
 };
 
 /// Use with [`IntoSystemConfigs::run_if`] to run a system only when an actor
@@ -390,7 +393,7 @@ fn animate_movement_for_actor(
 
         let rounded = (to * PIXEL_ZOOM as f32).round() / PIXEL_ZOOM as f32;
         // prevents fractions if camera would want to follow the player
-        transform.translation = rounded.extend(ysort(rounded));
+        transform.translation = rounded.extend(rounded.ysort());
 
         let standing_still_sprite_index = actor
             .character
@@ -433,7 +436,7 @@ fn animate_movement_for_actor(
         let precise = from.lerp(to, lerp_factor);
         // prevents fractions if camera would want to follow the player
         let rounded = (precise * PIXEL_ZOOM as f32).round() / PIXEL_ZOOM as f32;
-        transform.translation = rounded.extend(ysort(rounded));
+        transform.translation = rounded.extend(rounded.ysort());
     }
 }
 
@@ -645,7 +648,7 @@ impl CharacterBundleBuilder {
                     ..default()
                 },
                 transform: Transform::from_translation(
-                    initial_position.extend(ysort(initial_position)),
+                    initial_position.extend(initial_position.ysort()),
                 ),
                 ..default()
             },

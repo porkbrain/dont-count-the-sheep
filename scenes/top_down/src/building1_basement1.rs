@@ -11,6 +11,7 @@ use main_game_lib::{
         ActorMovementEvent,
     },
 };
+use top_down::TopDownTscnSpawner;
 
 use crate::prelude::*;
 
@@ -120,7 +121,7 @@ fn spawn(
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
     player_builder.initial_step_time(STEP_TIME_ON_EXIT_ELEVATOR);
 
-    tscn.spawn_into(
+    tscn.spawn_into_world(
         &mut Spawner {
             transition: *transition,
             player_entity: player,
@@ -147,10 +148,20 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
+impl<'a> TopDownTscnSpawner for Spawner<'a> {
     type LocalActionKind = Building1Basement1Action;
     type ZoneKind = ZoneTileKind;
 
+    fn map_zone_to_inspect_label_entity(
+        &mut self,
+        zone: Self::ZoneKind,
+        entity: Entity,
+    ) {
+        self.zone_to_inspect_label_entity.insert(zone, entity);
+    }
+}
+
+impl<'a> TscnSpawner for Spawner<'a> {
     fn on_spawned(
         &mut self,
         cmd: &mut Commands,
@@ -217,14 +228,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
     fn load_texture(&mut self, path: &str) -> Handle<Image> {
         self.asset_server.load(path.to_owned())
-    }
-
-    fn map_zone_to_inspect_label_entity(
-        &mut self,
-        zone: Self::ZoneKind,
-        entity: Entity,
-    ) {
-        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 

@@ -5,7 +5,7 @@ use main_game_lib::cutscene::in_cutscene;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
-    TileMap,
+    TileMap, TopDownTscnSpawner,
 };
 
 use crate::prelude::*;
@@ -86,7 +86,7 @@ fn spawn(
     let phoebe = cmd.spawn_empty().id();
     let mut phoebe_builder = common_story::Character::Phoebe.bundle_builder();
 
-    tscn.spawn_into(
+    tscn.spawn_into_world(
         &mut Spawner {
             player_entity: player,
             player_builder: &mut player_builder,
@@ -114,10 +114,20 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
+impl<'a> TopDownTscnSpawner for Spawner<'a> {
     type LocalActionKind = TwinpeaksApartmentAction;
     type ZoneKind = ZoneTileKind;
 
+    fn map_zone_to_inspect_label_entity(
+        &mut self,
+        zone: Self::ZoneKind,
+        entity: Entity,
+    ) {
+        self.zone_to_inspect_label_entity.insert(zone, entity);
+    }
+}
+
+impl<'a> TscnSpawner for Spawner<'a> {
     fn on_spawned(
         &mut self,
         cmd: &mut Commands,
@@ -153,14 +163,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
     fn load_texture(&mut self, path: &str) -> Handle<Image> {
         self.asset_server.load(path.to_owned())
-    }
-
-    fn map_zone_to_inspect_label_entity(
-        &mut self,
-        zone: Self::ZoneKind,
-        entity: Entity,
-    ) {
-        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 

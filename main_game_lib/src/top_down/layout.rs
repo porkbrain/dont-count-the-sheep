@@ -12,7 +12,7 @@ use bevy::{
     asset::Asset,
     ecs::{entity::Entity, system::Resource},
     log::{trace, warn},
-    math::{vec2, Vec2},
+    math::vec2,
     prelude::ReflectDefault,
     reflect::Reflect,
     utils::hashbrown::HashMap,
@@ -215,22 +215,6 @@ pub enum TileWalkCost {
     Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Reflect, Serialize,
 )]
 struct ZoneGroup(usize);
-
-/// Helper function that exports z coordinate given y coordinate.
-///
-/// It's domain in pixels is from -100_000 to 100_000.
-///
-/// It's range is from -0.1 to 1.1.
-pub fn ysort(Vec2 { y, .. }: Vec2) -> f32 {
-    // it's easier to just hardcode the range than pass around values
-    //
-    // this gives us sufficient buffer for maps of all sizes
-    let (min, max) = (-100_000.0, 100_000.0);
-    let size = max - min;
-
-    // we allow for a tiny leeway for positions outside of the bounding box
-    ((max - y) / size).clamp(-0.1, 1.1)
-}
 
 impl TileKind {
     #[inline]

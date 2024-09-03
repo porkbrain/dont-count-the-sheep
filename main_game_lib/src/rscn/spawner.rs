@@ -1,12 +1,12 @@
 //! Spawns the scene into a bevy world.
 
-use std::{str::FromStr, time::Duration};
+use std::time::Duration;
 
 use bevy::{
     asset::Handle,
     color::Color,
     core::Name,
-    ecs::{entity::Entity, event::Event, system::Commands},
+    ecs::{entity::Entity, system::Commands},
     hierarchy::BuildChildren,
     math::Vec3,
     prelude::SpatialBundle,
@@ -14,14 +14,123 @@ use bevy::{
     sprite::{Sprite, TextureAtlas, TextureAtlasLayout},
     time::TimerMode,
     transform::components::Transform,
-    utils::default,
+    utils::{default, HashMap},
 };
 use common_visuals::{AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer};
 
 use crate::{
     rscn::{In2D, Node, NodeName, Point, SpriteTexture, TscnTree},
-    top_down::{layout::ysort, InspectLabelCategory},
+    vec2_ext::Vec2Ext,
 };
+
+pub struct TscnSpawnerNew {
+    handle_2d_nodes: HashMap<String, Box<dyn Handle2DNode>>,
+    default_2d_node_handler: Option<Box<dyn Handle2DNode>>,
+    handle_plain_nodes: HashMap<String, Box<dyn HandlePlainNode>>,
+    default_plain_node_handler: Option<Box<dyn HandlePlainNode>>,
+}
+
+/// Hook for plain nodes (no 2D info).
+pub trait HandlePlainNode {
+    fn handle(
+        &mut self,
+        cmd: &mut Commands,
+        parent: (Entity, &Node),
+        name: &str,
+        node: &Node,
+    );
+}
+
+/// Hook for 2D nodes.
+pub trait Handle2DNode {
+    fn handle(
+        &mut self,
+        cmd: &mut Commands,
+        parent: (Entity, &Node),
+        name: &str,
+        node: &Node,
+    );
+}
+
+impl TscnSpawnerNew {
+    pub fn new() -> Self {
+        Self {
+            handle_2d_nodes: HashMap::default(),
+            default_2d_node_handler: None,
+            handle_plain_nodes: HashMap::default(),
+            default_plain_node_handler: None,
+        }
+    }
+
+    /// Given 2D node name, tell us what should the spawner do with it.
+    /// If the node is not recognized, the default handler will be called.
+    pub fn add_2d_node_handler(
+        &mut self,
+        name: impl Into<String>,
+        handler: impl Handle2DNode + 'static,
+    ) {
+        let name = name.into();
+        let already_inserted = self
+            .handle_2d_nodes
+            .insert(name.clone(), Box::new(handler))
+            .is_some();
+
+        assert!(!already_inserted, "2D node {name} already has a handler");
+    }
+
+    /// If provided then will be called for any 2D node that doesn't have a
+    /// handler yet.
+    pub fn set_default_2d_node_handler(
+        &mut self,
+        handler: impl Handle2DNode + 'static,
+    ) {
+        self.default_2d_node_handler = Some(Box::new(handler));
+    }
+
+    /// Given plain node name (ie. not a 2D node), tell us what should the
+    /// spawner do with it.
+    pub fn add_plain_node_handler(
+        &mut self,
+        name: impl Into<String>,
+        handler: impl HandlePlainNode + 'static,
+    ) {
+        let name = name.into();
+        let already_inserted = self
+            .handle_plain_nodes
+            .insert(name.clone(), Box::new(handler))
+            .is_some();
+
+        assert!(!already_inserted, "Plain node {name} already has a handler");
+    }
+
+    /// If provided then will be called for any plain node that doesn't have a
+    /// handler yet.
+    pub fn set_default_plain_node_handler(
+        &mut self,
+        handler: impl HandlePlainNode + 'static,
+    ) {
+        self.default_plain_node_handler = Some(Box::new(handler));
+    }
+}
+
+struct PointNodeHandler;
+impl HandlePlainNode for PointNodeHandler {
+    fn handle(
+        &mut self,
+        cmd: &mut Commands,
+        (parent_entity, parent_node): (Entity, &Node),
+        name: &str,
+        node: &Node,
+    ) {
+        cmd.entity(parent_entity).insert(Point(
+            parent_node
+                .in_2d
+                .as_ref()
+                .expect("Point must have a 2D node parent")
+                .position,
+        ));
+    }
+}
 
 /// Guides the spawning process of a scene.
 ///
@@ -36,13 +145,6 @@ use crate::{
 /// The implementation aggressively panics on invalid `.tscn` tree.
 /// We recommend to do the same in the hooks.
 pub trait TscnSpawner {
-    /// The kind of action that can be emitted by an
-    /// [`crate::top_down::InspectLabel`].
-    type LocalActionKind: FromStr + Event + Clone;
-
-    /// The kind of zone that can be entered by the player.
-    type ZoneKind: FromStr;
-
     /// Entity that has been spawned.
     /// Runs after all [`TscnSpawner::handle_plain_node`].
     /// The entity already has [`Name`], [`SpatialBundle`] and possibly
@@ -85,23 +187,34 @@ pub trait TscnSpawner {
         unimplemented!("Scene does not support texture atlases")
     }
 
-    /// When a player enters a zone, the entity with can be interacted with.
-    /// See also [`crate::top_down::inspect_and_interact::ZoneToInspectLabelEntity`].
-    fn map_zone_to_inspect_label_entity(
+    /// Some scenes that create many spawners might want to have their own
+    /// spawner trait that extends this one.
+    /// Those scenes can define some nodes that won't go into
+    /// If a node name is recognized by this function, it will be passed to
+    /// [Self::handle_extension_node] instead of [Self::handle_plain_node].
+    fn is_extension_node(&self, _name: &str) -> bool {
+        false
+    }
+
+    /// If [Self::is_extension_node] returns true for a node, this function
+    /// will be called to handle it.
+    fn handle_extension_node(
         &mut self,
-        _zone: Self::ZoneKind,
-        _entity: Entity,
+        _cmd: &mut Commands,
+        _parent: Entity,
+        _name: String,
+        _node: Node,
     ) {
-        unimplemented!("Scene does not support mapping zones to entities")
+        unimplemented!("Not a TscnSpawner extension")
     }
 }
 
 impl TscnTree {
     /// Spawns the tree of nodes into the world guided by the scene
     /// implementation.
-    pub fn spawn_into<T: TscnSpawner>(
+    pub fn spawn_into_world(
         self,
-        with_spawner: &mut T,
+        with_spawner: &mut impl TscnSpawner,
         cmd: &mut Commands,
     ) {
         let root = cmd.spawn(Name::new(self.root_node_name.clone())).id();
@@ -109,8 +222,8 @@ impl TscnTree {
     }
 }
 
-fn node_to_entity<T: TscnSpawner>(
-    spawner: &mut T,
+fn node_to_entity(
+    spawner: &mut impl TscnSpawner,
     cmd: &mut Commands,
     entity: Entity,
     name: NodeName,
@@ -186,7 +299,7 @@ fn node_to_entity<T: TscnSpawner>(
     // the position based on scene ysort impl
     let mut virtual_z_index = z_index;
 
-    for (NodeName(child_name), mut child_node) in node.children {
+    for (NodeName(child_name), child_node) in node.children {
         match (child_name.as_str(), child_node.in_2d.as_ref()) {
             // Given a position in 2D, add a z index to it.
             // This function is used for those nodes that don't have a z index
@@ -205,15 +318,14 @@ fn node_to_entity<T: TscnSpawner>(
                     virtual_z_index.is_none(),
                     "Node {name:?} has YSort child node and zindex at the same time"
                 );
-                virtual_z_index = Some(ysort(position + *child_position));
+                virtual_z_index = Some((position + *child_position).ysort());
             }
             ("YSort", None) => panic!("YSort must be a Node2D with no zindex"),
 
-            ("Point", None) => {
-                cmd.entity(entity).insert(Point(position));
-            }
-            ("Point", _) => panic!("Point must be a plain node"),
-
+            // ("Point", None) => {
+            //     cmd.entity(entity).insert(Point(position));
+            // }
+            // ("Point", _) => panic!("Point must be a plain node"),
             (_, Some(_)) => {
                 // recursively spawn children
                 let child_id = cmd.spawn(Name::new(child_name.clone())).id();
@@ -227,54 +339,8 @@ fn node_to_entity<T: TscnSpawner>(
                 );
             }
 
-            ("InspectLabel", None) => {
-                let with_label = child_node.metadata.remove("label").expect(
-                    "Label metadata must be present on InspectLabelCategory",
-                );
-
-                let mut label = child_node
-                    .metadata
-                    .remove("category")
-                    .map(|cat| {
-                        InspectLabelCategory::from_str(&cat).expect(
-                            "category must be a valid InspectLabelCategory",
-                        )
-                    })
-                    .unwrap_or_default()
-                    .into_label(with_label);
-
-                if let Some(action) = child_node.metadata.remove("action") {
-                    label.set_emit_event_on_interacted(
-                        T::LocalActionKind::from_str(&action).unwrap_or_else(
-                            |_| {
-                                panic!(
-                                    "InspectLabel action '{action}' not valid"
-                                )
-                            },
-                        ),
-                    );
-                }
-
-                cmd.entity(entity).insert(label);
-
-                if let Some(zone) = child_node.metadata.remove("zone") {
-                    spawner.map_zone_to_inspect_label_entity(
-                        T::ZoneKind::from_str(&zone).unwrap_or_else(|_| {
-                            panic!(
-                                "Zone '{zone}' not valid for \
-                                    InspectLabel of {name:?}"
-                            )
-                        }),
-                        entity,
-                    );
-                }
-
-                assert!(
-                    child_node.metadata.is_empty(),
-                    "InspectLabel node can only have \
-                    label, category, action and zone metadata"
-                );
-            }
+            (s, None) if spawner.is_extension_node(s) => spawner
+                .handle_extension_node(cmd, entity, child_name, child_node),
             (_, None) => {
                 spawner.handle_plain_node(cmd, entity, child_name, child_node)
             }
@@ -291,6 +357,7 @@ fn node_to_entity<T: TscnSpawner>(
         ..default()
     });
 
-    bevy::log::trace!("Spawning {entity:?} {name:?} from scene file",);
+    bevy::log::trace!("Spawning {entity:?} {name:?} from scene file");
+    // TODO: handle 2d node
     spawner.on_spawned(cmd, entity, name, translation);
 }

@@ -18,6 +18,8 @@ pub mod environmental_objects;
 pub mod inspect_and_interact;
 pub mod layout;
 
+use std::str::FromStr;
+
 use actor::{emit_movement_events, BeginDialogEvent};
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::prelude::*;
@@ -28,7 +30,7 @@ use leafwing_input_manager::plugin::InputManagerSystem;
 use self::inspect_and_interact::ChangeHighlightedInspectLabelEvent;
 use crate::{
     cutscene::in_cutscene, in_top_down_loading_state,
-    in_top_down_running_state,
+    in_top_down_running_state, rscn::TscnSpawner,
     top_down::inspect_and_interact::ChangeHighlightedInspectLabelEventConsumer,
     InTopDownScene,
 };
@@ -263,5 +265,84 @@ impl bevy::app::Plugin for Plugin {
                 layout::map_maker::destroy_map,
             );
         }
+    }
+}
+
+/// Trait spawner for top down .tscn scenes.
+pub trait TopDownTscnSpawner: TscnSpawner {
+    /// The kind of action that can be emitted by an
+    /// [`crate::top_down::InspectLabel`].
+    type LocalActionKind: FromStr + Event + Clone;
+
+    /// The kind of zone that can be entered by the player.
+    type ZoneKind: FromStr;
+
+    /// When a player enters a zone, the entity with can be interacted with.
+    /// See also [`crate::top_down::inspect_and_interact::ZoneToInspectLabelEntity`].
+    fn map_zone_to_inspect_label_entity(
+        &mut self,
+        _zone: Self::ZoneKind,
+        _entity: Entity,
+    ) {
+        unimplemented!("Scene does not support mapping zones to entities")
+    }
+
+    /// Don't overwrite this.
+    fn is_extension_node(&self, name: &str) -> bool {
+        name == "InspectLabel"
+    }
+
+    /// Don't overwrite this.
+    fn handle_extension_node(
+        &mut self,
+        cmd: &mut Commands,
+        entity: Entity,
+        name: String,
+        mut node: crate::rscn::Node,
+    ) {
+        assert_eq!(name, "InspectLabel");
+
+        let with_label = node
+            .metadata
+            .remove("label")
+            .expect("Label metadata must be present on InspectLabelCategory");
+
+        let mut label = node
+            .metadata
+            .remove("category")
+            .map(|cat| {
+                InspectLabelCategory::from_str(&cat)
+                    .expect("category must be a valid InspectLabelCategory")
+            })
+            .unwrap_or_default()
+            .into_label(with_label);
+
+        if let Some(action) = node.metadata.remove("action") {
+            label.set_emit_event_on_interacted(
+                Self::LocalActionKind::from_str(&action).unwrap_or_else(|_| {
+                    panic!("InspectLabel action '{action}' not valid")
+                }),
+            );
+        }
+
+        cmd.entity(entity).insert(label);
+
+        if let Some(zone) = node.metadata.remove("zone") {
+            self.map_zone_to_inspect_label_entity(
+                Self::ZoneKind::from_str(&zone).unwrap_or_else(|_| {
+                    panic!(
+                        "Zone '{zone}' not valid for \
+                            InspectLabel of {name:?}"
+                    )
+                }),
+                entity,
+            );
+        }
+
+        assert!(
+            node.metadata.is_empty(),
+            "InspectLabel node can only have \
+            label, category, action and zone metadata"
+        );
     }
 }

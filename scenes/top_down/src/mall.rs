@@ -14,7 +14,7 @@ use rand::prelude::SliceRandom;
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
-    TileMap,
+    TileMap, TopDownTscnSpawner,
 };
 
 use crate::prelude::*;
@@ -99,7 +99,7 @@ fn spawn(
         common_story::Character::WhiteCat.bundle_builder();
     let mut white_cat_patrol_points = Vec::new();
 
-    tscn.spawn_into(
+    tscn.spawn_into_world(
         &mut Spawner {
             player_entity: player,
             white_cat_patrol_points: &mut white_cat_patrol_points,
@@ -151,10 +151,20 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
+impl<'a> TopDownTscnSpawner for Spawner<'a> {
     type LocalActionKind = MallAction;
     type ZoneKind = ZoneTileKind;
 
+    fn map_zone_to_inspect_label_entity(
+        &mut self,
+        zone: Self::ZoneKind,
+        entity: Entity,
+    ) {
+        self.zone_to_inspect_label_entity.insert(zone, entity);
+    }
+}
+
+impl<'a> TscnSpawner for Spawner<'a> {
     fn on_spawned(
         &mut self,
         cmd: &mut Commands,
@@ -191,14 +201,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
     fn load_texture(&mut self, path: &str) -> Handle<Image> {
         self.asset_server.load(path.to_owned())
-    }
-
-    fn map_zone_to_inspect_label_entity(
-        &mut self,
-        zone: Self::ZoneKind,
-        entity: Entity,
-    ) {
-        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 

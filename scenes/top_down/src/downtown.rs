@@ -24,7 +24,7 @@ use main_game_lib::{
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     layout::LAYOUT,
-    TileMap,
+    TileMap, TopDownTscnSpawner,
 };
 
 use crate::prelude::*;
@@ -154,7 +154,7 @@ fn spawn(
     let mut otter_builder = common_story::Character::Otter.bundle_builder();
     let mut otter_patrol_points = Vec::new();
 
-    tscn.spawn_into(
+    tscn.spawn_into_world(
         &mut Spawner {
             asset_server: &asset_server,
             atlases: &mut atlas_layouts,
@@ -220,10 +220,20 @@ fn despawn(
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
+impl<'a> TopDownTscnSpawner for Spawner<'a> {
     type LocalActionKind = DowntownAction;
     type ZoneKind = ZoneTileKind;
 
+    fn map_zone_to_inspect_label_entity(
+        &mut self,
+        zone: Self::ZoneKind,
+        entity: Entity,
+    ) {
+        self.zone_to_inspect_label_entity.insert(zone, entity);
+    }
+}
+
+impl<'a> TscnSpawner for Spawner<'a> {
     fn on_spawned(
         &mut self,
         cmd: &mut Commands,
@@ -291,14 +301,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
     fn load_texture(&mut self, path: &str) -> Handle<Image> {
         self.asset_server.load(path.to_owned())
-    }
-
-    fn map_zone_to_inspect_label_entity(
-        &mut self,
-        zone: Self::ZoneKind,
-        entity: Entity,
-    ) {
-        self.zone_to_inspect_label_entity.insert(zone, entity);
     }
 }
 
