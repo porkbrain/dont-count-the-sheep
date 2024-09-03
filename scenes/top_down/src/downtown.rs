@@ -24,7 +24,7 @@ use main_game_lib::{
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     layout::LAYOUT,
-    TileMap, TopDownTscnSpawner,
+    TileMap,
 };
 
 use crate::prelude::*;

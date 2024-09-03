@@ -11,7 +11,6 @@ use main_game_lib::{
         ActorMovementEvent,
     },
 };
-use top_down::TopDownTscnSpawner;
 
 use crate::prelude::*;
 

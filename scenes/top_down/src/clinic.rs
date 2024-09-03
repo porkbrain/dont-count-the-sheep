@@ -9,7 +9,7 @@ use rscn::{NodeName, TscnSpawnHooks, TscnTree, TscnTreeHandle};
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
-    TileMap, TopDownTscnSpawner,
+    TileMap,
 };
 
 use crate::prelude::*;
