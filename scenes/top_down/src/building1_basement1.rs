@@ -46,7 +46,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(
             Update,
             enter_the_elevator
-                .run_if(on_top_down_action(TopDownAction::EnterElevator))
+                .run_if(on_event_variant(TopDownAction::EnterElevator))
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         )

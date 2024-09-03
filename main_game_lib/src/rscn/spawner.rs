@@ -36,8 +36,8 @@ pub struct EntityDescription {
 /// Use the [`TscnTree::spawn_into`] method to spawn the scene into a world.
 ///
 /// For scene dependent behavior, the implementation defer to the user by
-/// providing hooks [`TscnSpawner::handle_plain_node`] and
-/// [`TscnSpawner::handle_2d_node`].
+/// providing hooks [`TscnSpawnHooks::handle_plain_node`] and
+/// [`TscnSpawnHooks::handle_2d_node`].
 ///
 /// The implementation aggressively panics on invalid `.tscn` tree.
 /// We recommend to do the same in the hooks.

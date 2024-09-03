@@ -18,7 +18,7 @@ pub(crate) use rscn::{
 pub(crate) use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
-    on_top_down_action, TileMap, TopDownAction, TopDownTsncSpawner,
+    TileMap, TopDownAction, TopDownTsncSpawner,
 };
 
 pub(crate) use crate::layout::LayoutEntity;
