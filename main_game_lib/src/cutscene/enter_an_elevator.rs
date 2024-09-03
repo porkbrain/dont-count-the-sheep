@@ -12,6 +12,7 @@ use common_visuals::{
     AtlasAnimation, AtlasAnimationEnd, AtlasAnimationStep, AtlasAnimationTimer,
     BeginAtlasAnimation, EASE_IN_OUT,
 };
+use rscn::EntityDescription;
 use top_down::layout::LAYOUT;
 
 use crate::{
@@ -295,31 +296,40 @@ pub fn spawn(
 /// Make sure to insert it, otherwise the player could interact with the
 /// elevator and it'd be a mess.
 pub fn start_with_open_elevator_and_close_it(
+    cmd: &mut Commands,
     player: Entity,
-    mut elevator: EntityWorldMut,
+    elevator_entity: Entity,
+    elevator: &mut EntityDescription,
 ) {
-    // get the last frame index
-    let layout = elevator.get::<TextureAtlas>().unwrap().layout.clone();
-    let layouts = elevator
-        .world()
-        .get_resource::<Assets<TextureAtlasLayout>>()
-        .unwrap();
-    let last_frame = layouts.get(&layout).unwrap().textures.len() - 1;
     trace!("Setting elevator to last frame");
+    let last_frame = elevator
+        .atlas_animation
+        .as_ref()
+        .expect("Elevator must have AtlasAnimation")
+        .last;
     // set the last frame as the current index
-    elevator.get_mut::<TextureAtlas>().unwrap().index = last_frame;
+    elevator
+        .texture_atlas
+        .as_mut()
+        .expect("Elevator must have TextureAtlas")
+        .index = last_frame;
     // start the animation as soon as we are in running state
     fn is_in_running_global_state(w: &World, _: Entity) -> bool {
         w.get_resource::<State<InTopDownScene>>()
             .is_some_and(|scene| scene.is_running())
     }
-    elevator.insert(common_visuals::BeginAtlasAnimation::run(
-        is_in_running_global_state,
-        from_millis(150),
-        Some(from_millis(1500)),
-    ));
+    cmd.entity(elevator_entity).insert(
+        common_visuals::BeginAtlasAnimation::run(
+            is_in_running_global_state,
+            from_millis(150),
+            Some(from_millis(1500)),
+        ),
+    );
 
-    let mut a = elevator.get_mut::<AtlasAnimation>().unwrap();
+    let a = elevator
+        .atlas_animation
+        .as_mut()
+        .expect("Elevator must have AtlasAnimation");
     // animation runs in reverse
     a.play = AtlasAnimationStep::Backward;
     // on last frame, put everything back to normal

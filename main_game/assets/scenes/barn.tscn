@@ -108,6 +108,6 @@ position = Vector2(-124, 111)
 
 [node name="InspectLabel" type="Node" parent="Points/Entrance"]
 metadata/zone = "Exit"
-metadata/action = "ExitScene"
+metadata/action = "Exit"
 metadata/label = "Exit"
 metadata/category = "Default"

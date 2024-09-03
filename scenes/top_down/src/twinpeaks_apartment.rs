@@ -21,17 +21,10 @@ impl main_game_lib::rscn::TscnInBevy for TwinpeaksApartment {
     }
 }
 
-#[derive(Event, Reflect, Clone, strum::EnumString)]
-enum TwinpeaksApartmentAction {
-    ExitScene,
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<TwinpeaksApartmentAction>();
-
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<TwinpeaksApartment>,
@@ -48,7 +41,7 @@ impl bevy::app::Plugin for Plugin {
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
             Update,
-            exit.run_if(on_event::<TwinpeaksApartmentAction>())
+            exit.run_if(on_event::<TopDownAction>())
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
         );
@@ -58,9 +51,6 @@ impl bevy::app::Plugin for Plugin {
 struct Spawner<'a> {
     player_entity: Entity,
     player_builder: &'a mut CharacterBundleBuilder,
-    asset_server: &'a AssetServer,
-    atlases: &'a mut Assets<TextureAtlasLayout>,
-    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
 
     phoebe_entity: Entity,
     phoebe_builder: &'a mut CharacterBundleBuilder,
@@ -86,17 +76,20 @@ fn spawn(
     let phoebe = cmd.spawn_empty().id();
     let mut phoebe_builder = common_story::Character::Phoebe.bundle_builder();
 
-    tscn.spawn_into_world(
-        &mut Spawner {
-            player_entity: player,
-            player_builder: &mut player_builder,
-            asset_server: &asset_server,
-            atlases: &mut atlas_layouts,
-            zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
-            phoebe_entity: phoebe,
-            phoebe_builder: &mut phoebe_builder,
-        },
+    tscn.spawn_into(
         &mut cmd,
+        &mut atlas_layouts,
+        &asset_server,
+        &mut TopDownTsncSpawner::new(
+            &mut zone_to_inspect_label_entity,
+            &mut Spawner {
+                player_entity: player,
+                player_builder: &mut player_builder,
+
+                phoebe_entity: phoebe,
+                phoebe_builder: &mut phoebe_builder,
+            },
+        ),
     );
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
@@ -114,26 +107,13 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TopDownTscnSpawner for Spawner<'a> {
-    type LocalActionKind = TwinpeaksApartmentAction;
-    type ZoneKind = ZoneTileKind;
-
-    fn map_zone_to_inspect_label_entity(
-        &mut self,
-        zone: Self::ZoneKind,
-        entity: Entity,
-    ) {
-        self.zone_to_inspect_label_entity.insert(zone, entity);
-    }
-}
-
-impl<'a> TscnSpawner for Spawner<'a> {
-    fn on_spawned(
+impl<'a> TscnSpawnHooks for Spawner<'a> {
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        who: Entity,
-        NodeName(name): NodeName,
-        translation: Vec3,
+        descriptions: &mut EntityDescriptionMap,
+        _parent: Option<(Entity, NodeName)>,
+        (who, NodeName(name)): (Entity, NodeName),
     ) {
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
@@ -145,37 +125,34 @@ impl<'a> TscnSpawner for Spawner<'a> {
                 cmd.entity(who).add_child(self.phoebe_entity);
             }
             "Entrance" => {
-                self.player_builder.initial_position(translation.truncate());
+                let translation = descriptions
+                    .get(&who)
+                    .expect("Missing description for {name}")
+                    .translation;
+                self.player_builder.initial_position(translation);
             }
             "PhoebeSpawn" => {
-                self.phoebe_builder.initial_position(translation.truncate());
+                let translation = descriptions
+                    .get(&who)
+                    .expect("Missing description for {name}")
+                    .translation;
+                self.phoebe_builder.initial_position(translation);
             }
             _ => {}
         }
-    }
-
-    fn add_texture_atlas(
-        &mut self,
-        layout: TextureAtlasLayout,
-    ) -> Handle<TextureAtlasLayout> {
-        self.atlases.add(layout)
-    }
-
-    fn load_texture(&mut self, path: &str) -> Handle<Image> {
-        self.asset_server.load(path.to_owned())
     }
 }
 
 fn exit(
     mut cmd: Commands,
-    mut action_events: EventReader<TwinpeaksApartmentAction>,
+    mut action_events: EventReader<TopDownAction>,
     mut transition: ResMut<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut next_loading_screen_state: ResMut<NextState<LoadingScreenState>>,
 ) {
     let is_triggered = action_events
         .read()
-        .any(|action| matches!(action, TwinpeaksApartmentAction::ExitScene));
+        .any(|action| matches!(action, TopDownAction::Exit));
 
     if is_triggered {
         cmd.insert_resource(LoadingScreenSettings {

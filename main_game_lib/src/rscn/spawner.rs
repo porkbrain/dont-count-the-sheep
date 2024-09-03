@@ -1,233 +1,131 @@
-//! Spawns the scene into a bevy world.
+//! Spawns a parsed tscn file into a bevy world.
+//!
+//! - a non 2D node can only be a leaf node with no children
+//! - the root node must be 2D node
+//! - user can provide hooks for custom behavior with [TscnSpawnHooks]
+//! - a plain node called "Point" will insert [Point] component to its parent
+//!   and will not be handled by the hooks
 
 use std::time::Duration;
 
-use bevy::{
-    asset::Handle,
-    color::Color,
-    core::Name,
-    ecs::{entity::Entity, system::Commands},
-    hierarchy::BuildChildren,
-    math::Vec3,
-    prelude::SpatialBundle,
-    render::{texture::Image, view::Visibility},
-    sprite::{Sprite, TextureAtlas, TextureAtlasLayout},
-    time::TimerMode,
-    transform::components::Transform,
-    utils::{default, HashMap},
-};
+use bevy::utils::EntityHashMap;
 use common_visuals::{AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer};
+use rscn::Point;
 
 use crate::{
-    rscn::{In2D, Node, NodeName, Point, SpriteTexture, TscnTree},
-    vec2_ext::Vec2Ext,
+    prelude::*,
+    rscn::{In2D, NodeName, RscnNode, SpriteTexture, TscnTree},
 };
 
-pub struct TscnSpawnerNew {
-    handle_2d_nodes: HashMap<String, Box<dyn Handle2DNode>>,
-    default_2d_node_handler: Option<Box<dyn Handle2DNode>>,
-    handle_plain_nodes: HashMap<String, Box<dyn HandlePlainNode>>,
-    default_plain_node_handler: Option<Box<dyn HandlePlainNode>>,
-}
+/// Maps entity to its component description.
+pub type EntityDescriptionMap = EntityHashMap<Entity, EntityDescription>;
 
-/// Hook for plain nodes (no 2D info).
-pub trait HandlePlainNode {
-    fn handle(
-        &mut self,
-        cmd: &mut Commands,
-        parent: (Entity, &Node),
-        name: &str,
-        node: &Node,
-    );
-}
-
-/// Hook for 2D nodes.
-pub trait Handle2DNode {
-    fn handle(
-        &mut self,
-        cmd: &mut Commands,
-        parent: (Entity, &Node),
-        name: &str,
-        node: &Node,
-    );
-}
-
-impl TscnSpawnerNew {
-    pub fn new() -> Self {
-        Self {
-            handle_2d_nodes: HashMap::default(),
-            default_2d_node_handler: None,
-            handle_plain_nodes: HashMap::default(),
-            default_plain_node_handler: None,
-        }
-    }
-
-    /// Given 2D node name, tell us what should the spawner do with it.
-    /// If the node is not recognized, the default handler will be called.
-    pub fn add_2d_node_handler(
-        &mut self,
-        name: impl Into<String>,
-        handler: impl Handle2DNode + 'static,
-    ) {
-        let name = name.into();
-        let already_inserted = self
-            .handle_2d_nodes
-            .insert(name.clone(), Box::new(handler))
-            .is_some();
-
-        assert!(!already_inserted, "2D node {name} already has a handler");
-    }
-
-    /// If provided then will be called for any 2D node that doesn't have a
-    /// handler yet.
-    pub fn set_default_2d_node_handler(
-        &mut self,
-        handler: impl Handle2DNode + 'static,
-    ) {
-        self.default_2d_node_handler = Some(Box::new(handler));
-    }
-
-    /// Given plain node name (ie. not a 2D node), tell us what should the
-    /// spawner do with it.
-    pub fn add_plain_node_handler(
-        &mut self,
-        name: impl Into<String>,
-        handler: impl HandlePlainNode + 'static,
-    ) {
-        let name = name.into();
-        let already_inserted = self
-            .handle_plain_nodes
-            .insert(name.clone(), Box::new(handler))
-            .is_some();
-
-        assert!(!already_inserted, "Plain node {name} already has a handler");
-    }
-
-    /// If provided then will be called for any plain node that doesn't have a
-    /// handler yet.
-    pub fn set_default_plain_node_handler(
-        &mut self,
-        handler: impl HandlePlainNode + 'static,
-    ) {
-        self.default_plain_node_handler = Some(Box::new(handler));
-    }
-}
-
-struct PointNodeHandler;
-impl HandlePlainNode for PointNodeHandler {
-    fn handle(
-        &mut self,
-        cmd: &mut Commands,
-        (parent_entity, parent_node): (Entity, &Node),
-        name: &str,
-        node: &Node,
-    ) {
-        cmd.entity(parent_entity).insert(Point(
-            parent_node
-                .in_2d
-                .as_ref()
-                .expect("Point must have a 2D node parent")
-                .position,
-        ));
-    }
+/// All components that are managed by the scene spawner implementation.
+#[derive(Default)]
+#[allow(missing_docs)]
+pub struct EntityDescription {
+    pub visibility: Visibility,
+    pub translation: Vec2,
+    pub z_index: Option<f32>,
+    pub texture: Option<Handle<Image>>,
+    pub sprite: Option<Sprite>,
+    pub texture_atlas: Option<TextureAtlas>,
+    pub atlas_animation: Option<AtlasAnimation>,
+    pub atlas_animation_timer: Option<AtlasAnimationTimer>,
 }
 
 /// Guides the spawning process of a scene.
 ///
-/// Use the [`TscnTree::spawn_into`] method to spawn the scene into a world.
-/// The implementation has some knowledge of bevy and top down scenes to provide
-/// default implementations for things like [`crate::top_down::InspectLabel`]
-/// and Y sorting.
+/// Use the [TscnTree::spawn_into] method to spawn the scene into a world.
 ///
 /// For scene dependent behavior, the implementation defer to the user by
-/// providing hooks like [`TscnSpawner::handle_plain_node`].
+/// providing hooks [TscnSpawnHooks::handle_plain_node] and
+/// [TscnSpawnHooks::handle_2d_node].
 ///
 /// The implementation aggressively panics on invalid `.tscn` tree.
 /// We recommend to do the same in the hooks.
-pub trait TscnSpawner {
-    /// Entity that has been spawned.
-    /// Runs after all [`TscnSpawner::handle_plain_node`].
-    /// The entity already has [`Name`], [`SpatialBundle`] and possibly
-    /// [`Sprite`] and [`TextureAtlas`] components.
-    fn on_spawned(
+pub trait TscnSpawnHooks {
+    /// Called just before all components from the entity description are
+    /// inserted into the entity.
+    ///
+    /// If you remove any entity from the descriptions map, it will not be
+    /// spawned and neither will its children.
+    /// You may not insert any new descriptions into the map, only remove them
+    /// or modify them.
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        who: Entity,
-        name: NodeName,
-        translation: Vec3,
+        descriptions: &mut EntityDescriptionMap,
+        parent: Option<(Entity, NodeName)>,
+        this: (Entity, NodeName),
     );
 
-    /// Any plain node (no 2D info) that is not handled by the default
-    /// implementation will be passed to this function.
-    /// Runs before [`TscnSpawner::on_spawned`] of the parent.
-    /// The parent is already scheduled to spawn and has some components
-    /// like [`Name`], [`Sprite`] and [`Handle<Image>`] if applicable.
-    /// It does not have a [`SpatialBundle`] yet.
+    /// Called when a node is not a 2D node.
+    /// Plain nodes are leaf nodes, we don't walk their children.
+    ///
+    /// If you remove any entity from the descriptions map, it will not be
+    /// spawned and neither will its children.
+    /// You may not insert any new descriptions into the map, only remove them
+    /// or modify them.
     fn handle_plain_node(
         &mut self,
         _cmd: &mut Commands,
-        _parent: Entity,
-        _name: String,
-        _node: Node,
+        _descriptions: &mut EntityDescriptionMap,
+        _parent: (Entity, NodeName),
+        this: (NodeName, RscnNode),
     ) {
-        unimplemented!("Scene does not support plain nodes")
-    }
-
-    /// Load a texture from a path.
-    /// Pretty much an access to the asset server.
-    fn load_texture(&mut self, _path: &str) -> Handle<Image> {
-        unimplemented!("Scene does not support loading textures")
-    }
-
-    /// Add a texture atlas to the assets resource.
-    fn add_texture_atlas(
-        &mut self,
-        _layout: TextureAtlasLayout,
-    ) -> Handle<TextureAtlasLayout> {
-        unimplemented!("Scene does not support texture atlases")
-    }
-
-    /// Some scenes that create many spawners might want to have their own
-    /// spawner trait that extends this one.
-    /// Those scenes can define some nodes that won't go into
-    /// If a node name is recognized by this function, it will be passed to
-    /// [Self::handle_extension_node] instead of [Self::handle_plain_node].
-    fn is_extension_node(&self, _name: &str) -> bool {
-        false
-    }
-
-    /// If [Self::is_extension_node] returns true for a node, this function
-    /// will be called to handle it.
-    fn handle_extension_node(
-        &mut self,
-        _cmd: &mut Commands,
-        _parent: Entity,
-        _name: String,
-        _node: Node,
-    ) {
-        unimplemented!("Not a TscnSpawner extension")
+        unimplemented!("Scene does not support plain nodes, found {this:?}");
     }
 }
 
 impl TscnTree {
     /// Spawns the tree of nodes into the world guided by the scene
     /// implementation.
-    pub fn spawn_into_world(
+    pub fn spawn_into(
         self,
-        with_spawner: &mut impl TscnSpawner,
         cmd: &mut Commands,
+        atlases: &mut Assets<TextureAtlasLayout>,
+        asset_server: &AssetServer,
+        hooks: &mut impl TscnSpawnHooks,
     ) {
+        let mut ctx = Context {
+            atlases,
+            asset_server,
+            entity_descriptions: Default::default(),
+        };
         let root = cmd.spawn(Name::new(self.root_node_name.clone())).id();
-        node_to_entity(with_spawner, cmd, root, self.root_node_name, self.root);
+        node_to_entity(
+            &mut ctx,
+            hooks,
+            cmd,
+            None, // no parent
+            (root, self.root_node_name),
+            self.root,
+        );
+
+        if !ctx.entity_descriptions.is_empty() {
+            error!(
+                "There are {} improperly spawned entities",
+                ctx.entity_descriptions.len()
+            );
+        }
     }
 }
 
+/// Context data to the tree walk in [node_to_entity].
+struct Context<'a> {
+    atlases: &'a mut Assets<TextureAtlasLayout>,
+    asset_server: &'a AssetServer,
+    entity_descriptions: EntityDescriptionMap,
+}
+
 fn node_to_entity(
-    spawner: &mut impl TscnSpawner,
+    ctx: &mut Context<'_>,
+    hooks: &mut impl TscnSpawnHooks,
     cmd: &mut Commands,
-    entity: Entity,
-    name: NodeName,
-    node: Node,
+    parent: Option<(Entity, NodeName)>,
+    (entity, name): (Entity, NodeName),
+    node: RscnNode,
 ) {
     let In2D {
         position,
@@ -235,7 +133,12 @@ fn node_to_entity(
         texture,
     } = node.in_2d.expect("only 2D nodes represent entities");
 
-    let mut visibility = Visibility::default();
+    let mut description = EntityDescription {
+        translation: position,
+        z_index,
+        ..Default::default()
+    };
+
     if let Some(SpriteTexture {
         path,
         animation,
@@ -245,8 +148,9 @@ fn node_to_entity(
         flip_vertically,
     }) = texture
     {
-        let texture = spawner.load_texture(&path);
-        cmd.entity(entity).insert(texture).insert(Sprite {
+        let texture = ctx.asset_server.load(&path);
+        description.texture = Some(texture);
+        description.sprite = Some(Sprite {
             color: color.unwrap_or(Color::WHITE),
             flip_x: flip_horizontally,
             flip_y: flip_vertically,
@@ -254,110 +158,129 @@ fn node_to_entity(
         });
 
         if !visible {
-            visibility = Visibility::Hidden;
+            description.visibility = Visibility::Hidden;
         }
 
         if let Some(animation) = animation {
             let mut layout =
                 TextureAtlasLayout::new_empty(animation.size.as_uvec2());
             let frames_count = animation.frames.len();
-            assert_ne!(0, frames_count);
+            assert_ne!(0, frames_count, "Animation has no frames");
             for frame in animation.frames {
                 layout.add_texture(frame.as_urect());
             }
 
-            let layout = spawner.add_texture_atlas(layout);
-            cmd.entity(entity)
-                .insert(TextureAtlas {
-                    index: animation.first_index,
-                    layout,
-                })
-                .insert(AtlasAnimation {
-                    on_last_frame: if animation.should_endless_loop {
-                        AtlasAnimationEnd::LoopIndefinitely
-                    } else {
-                        AtlasAnimationEnd::RemoveTimer
-                    },
-                    // This asks: "what's the first frame" when animation
-                    // resets. Even though the first frame
-                    // that's shown is the first_index.
-                    first: 0,
-                    last: frames_count - 1,
-                    ..default()
-                });
+            let layout = ctx.atlases.add(layout);
+            description.texture_atlas = Some(TextureAtlas {
+                index: animation.first_index,
+                layout,
+            });
+            description.atlas_animation = Some(AtlasAnimation {
+                on_last_frame: if animation.should_endless_loop {
+                    AtlasAnimationEnd::LoopIndefinitely
+                } else {
+                    AtlasAnimationEnd::RemoveTimer
+                },
+                // When animation resets this answers: "What's the first frame?"
+                // Even though the first frame that's shown is the first_index.
+                first: 0,
+                last: frames_count - 1,
+                ..default()
+            });
 
             if animation.should_autoload {
-                cmd.entity(entity).insert(AtlasAnimationTimer::new(
-                    Duration::from_secs_f32(1.0 / animation.fps),
-                    TimerMode::Repeating,
-                ));
+                description.atlas_animation_timer =
+                    Some(AtlasAnimationTimer::new(
+                        Duration::from_secs_f32(1.0 / animation.fps),
+                        TimerMode::Repeating,
+                    ));
             }
         }
     }
 
-    // might get populated by a YSort node, or if still None is calculated from
-    // the position based on scene ysort impl
-    let mut virtual_z_index = z_index;
+    ctx.entity_descriptions.insert(entity, description);
 
-    for (NodeName(child_name), child_node) in node.children {
-        match (child_name.as_str(), child_node.in_2d.as_ref()) {
-            // Given a position in 2D, add a z index to it.
-            // This function is used for those nodes that don't have a z index
-            // set. If a 2D node has a 2D node child called "YSort",
-            // then the position fed to this function is the global
-            // position of that "YSort" node.
-            (
-                "YSort",
-                Some(In2D {
-                    position: child_position,
-                    z_index: None,
-                    texture: None,
-                }),
-            ) => {
-                assert!(
-                    virtual_z_index.is_none(),
-                    "Node {name:?} has YSort child node and zindex at the same time"
-                );
-                virtual_z_index = Some((position + *child_position).ysort());
-            }
-            ("YSort", None) => panic!("YSort must be a Node2D with no zindex"),
+    for (child_name, child_node) in node.children {
+        if child_node.in_2d.is_some() {
+            // recursively spawn 2D children
 
-            // ("Point", None) => {
-            //     cmd.entity(entity).insert(Point(position));
-            // }
-            // ("Point", _) => panic!("Point must be a plain node"),
-            (_, Some(_)) => {
-                // recursively spawn children
-                let child_id = cmd.spawn(Name::new(child_name.clone())).id();
-                cmd.entity(entity).add_child(child_id);
-                node_to_entity(
-                    spawner,
-                    cmd,
-                    child_id,
-                    NodeName(child_name),
-                    child_node,
-                );
-            }
-
-            (s, None) if spawner.is_extension_node(s) => spawner
-                .handle_extension_node(cmd, entity, child_name, child_node),
-            (_, None) => {
-                spawner.handle_plain_node(cmd, entity, child_name, child_node)
+            let child_id = cmd.spawn(Name::new(child_name.clone())).id();
+            cmd.entity(entity).add_child(child_id);
+            node_to_entity(
+                ctx,
+                hooks,
+                cmd,
+                Some((entity, name.clone())),
+                (child_id, child_name),
+                child_node,
+            );
+        } else {
+            match child_name.as_str() {
+                "Point" => {
+                    if let Some(desc) = ctx.entity_descriptions.get(&entity) {
+                        cmd.entity(entity).insert(Point(desc.translation));
+                    }
+                }
+                _ => {
+                    hooks.handle_plain_node(
+                        cmd,
+                        &mut ctx.entity_descriptions,
+                        (entity, name.clone()),
+                        (child_name, child_node),
+                    );
+                }
             }
         }
     }
 
-    // default zindex is 0 as per Godot, but we use f32::EPSILON to avoid z
-    // fighting between nested nodes (parent vs child)
-    let translation = position.extend(virtual_z_index.unwrap_or(f32::EPSILON));
-    let transform = Transform::from_translation(translation);
-    cmd.entity(entity).insert(SpatialBundle {
-        transform,
+    trace!("Handling 2D entity {name:?}");
+    hooks.handle_2d_node(
+        cmd,
+        &mut ctx.entity_descriptions,
+        parent,
+        (entity, name),
+    );
+
+    let mut entity_cmd = cmd.entity(entity);
+
+    let Some(EntityDescription {
+        visibility,
+        translation,
+        z_index,
+        texture,
+        sprite,
+        texture_atlas,
+        atlas_animation,
+        atlas_animation_timer,
+    }) = ctx.entity_descriptions.remove(&entity)
+    else {
+        entity_cmd.despawn_recursive();
+        return;
+    };
+
+    entity_cmd.insert(SpatialBundle {
+        // default zindex is 0 as per Godot, but we use f32::EPSILON to avoid z
+        // fighting between nested nodes (parent vs child)
+        transform: Transform::from_translation(
+            translation.extend(z_index.unwrap_or(f32::EPSILON)),
+        ),
         visibility,
         ..default()
     });
 
-    bevy::log::trace!("Spawning {entity:?} {name:?} from scene file");
-    // TODO: handle 2d node
-    spawner.on_spawned(cmd, entity, name, translation);
+    if let Some(texture) = texture {
+        entity_cmd.insert(texture);
+    }
+    if let Some(sprite) = sprite {
+        entity_cmd.insert(sprite);
+    }
+    if let Some(texture_atlas) = texture_atlas {
+        entity_cmd.insert(texture_atlas);
+    }
+    if let Some(atlas_animation) = atlas_animation {
+        entity_cmd.insert(atlas_animation);
+    }
+    if let Some(atlas_animation_timer) = atlas_animation_timer {
+        entity_cmd.insert(atlas_animation_timer);
+    }
 }

@@ -27,18 +27,10 @@ impl main_game_lib::rscn::TscnInBevy for Compound {
     }
 }
 
-#[derive(Event, Reflect, Clone, strum::EnumString, PartialEq, Eq)]
-enum CompoundAction {
-    GoToDowntown,
-    EnterTower,
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<CompoundAction>();
-
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
             rscn::start_loading_tscn::<Compound>,
@@ -55,9 +47,8 @@ impl bevy::app::Plugin for Plugin {
             Update,
             (
                 go_to_downtown
-                    .run_if(on_event_variant(CompoundAction::GoToDowntown)),
-                enter_tower
-                    .run_if(on_event_variant(CompoundAction::EnterTower)),
+                    .run_if(on_event_variant(TopDownAction::GoToDowntown)),
+                enter_tower.run_if(on_event_variant(TopDownAction::EnterTower)),
             )
                 .run_if(in_scene_running_state(THIS_SCENE))
                 .run_if(not(in_cutscene())),
@@ -68,9 +59,6 @@ impl bevy::app::Plugin for Plugin {
 struct Spawner<'a> {
     player_entity: Entity,
     player_builder: &'a mut CharacterBundleBuilder,
-    asset_server: &'a AssetServer,
-    atlases: &'a mut Assets<TextureAtlasLayout>,
-    zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
     camera_translation: &'a mut Vec3,
     daybar_event: &'a mut Events<UpdateDayBarEvent>,
     transition: GlobalGameStateTransition,
@@ -100,19 +88,20 @@ fn spawn(
     let player = cmd.spawn_empty().id();
     let mut player_builder = common_story::Character::Winnie.bundle_builder();
 
-    tscn.spawn_into_world(
-        &mut Spawner {
-            player_entity: player,
-            player_builder: &mut player_builder,
-            asset_server: &asset_server,
-            atlases: &mut atlas_layouts,
-            zone_to_inspect_label_entity: &mut zone_to_inspect_label_entity,
-            camera_translation: &mut camera.single_mut().translation,
-            daybar_event: &mut daybar_event,
-
-            transition: *transition,
-        },
+    tscn.spawn_into(
         &mut cmd,
+        &mut atlas_layouts,
+        &asset_server,
+        &mut TopDownTsncSpawner::new(
+            &mut zone_to_inspect_label_entity,
+            &mut Spawner {
+                player_entity: player,
+                player_builder: &mut player_builder,
+                camera_translation: &mut camera.single_mut().translation,
+                daybar_event: &mut daybar_event,
+                transition: *transition,
+            },
+        ),
     );
 
     player_builder.insert_bundle_into(&asset_server, &mut cmd.entity(player));
@@ -129,30 +118,21 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TopDownTscnSpawner for Spawner<'a> {
-    type LocalActionKind = CompoundAction;
-    type ZoneKind = ZoneTileKind;
-
-    fn map_zone_to_inspect_label_entity(
-        &mut self,
-        zone: Self::ZoneKind,
-        entity: Entity,
-    ) {
-        self.zone_to_inspect_label_entity.insert(zone, entity);
-    }
-}
-
-impl<'a> TscnSpawner for Spawner<'a> {
-    fn on_spawned(
+impl<'a> TscnSpawnHooks for Spawner<'a> {
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        who: Entity,
-        NodeName(name): NodeName,
-        translation: Vec3,
+        descriptions: &mut EntityDescriptionMap,
+        _parent: Option<(Entity, NodeName)>,
+        (who, NodeName(name)): (Entity, NodeName),
     ) {
         use GlobalGameStateTransition::*;
 
-        let position = translation.truncate();
+        let position = descriptions
+            .get(&who)
+            .expect("Missing description for {name}")
+            .translation;
+
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
 
@@ -185,17 +165,6 @@ impl<'a> TscnSpawner for Spawner<'a> {
 
             _ => {}
         }
-    }
-
-    fn add_texture_atlas(
-        &mut self,
-        layout: TextureAtlasLayout,
-    ) -> Handle<TextureAtlasLayout> {
-        self.atlases.add(layout)
-    }
-
-    fn load_texture(&mut self, path: &str) -> Handle<Image> {
-        self.asset_server.load(path.to_owned())
     }
 }
 
