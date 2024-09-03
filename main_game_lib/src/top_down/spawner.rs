@@ -5,11 +5,11 @@ use std::str::FromStr;
 use bevy::utils::EntityHashMap;
 use rscn::{EntityDescription, NodeName, RscnNode, TscnSpawnHooks};
 use top_down::{
-    inspect_and_interact::ZoneToInspectLabelEntity, layout::ysort,
-    InspectLabelCategory, TopDownAction, ZoneTileKind,
+    inspect_and_interact::ZoneToInspectLabelEntity, InspectLabelCategory,
+    TopDownAction, ZoneTileKind,
 };
 
-use crate::prelude::*;
+use crate::{prelude::*, vec2_ext::Vec2Ext};
 
 /// The implementation has some knowledge of top down scenes to provide
 /// default implementations for things like [`crate::top_down::InspectLabel`]
@@ -59,10 +59,11 @@ where
                     .expect("YSort must be a 2D node with description");
                 if let Some(parent_description) = descriptions.get_mut(&parent)
                 {
-                    parent_description.z_index = Some(ysort(
-                        parent_description.translation
-                            + own_description.translation,
-                    ));
+                    parent_description.z_index = Some(
+                        (parent_description.translation
+                            + own_description.translation)
+                            .ysort(),
+                    );
                 }
             }
             _ => {
