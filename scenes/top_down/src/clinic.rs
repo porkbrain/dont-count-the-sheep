@@ -5,7 +5,7 @@ use main_game_lib::{
     player_stats::PlayerStats,
     top_down::environmental_objects::door::DoorBuilder,
 };
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
+use rscn::{NodeName, TscnSpawnHooks, TscnTree, TscnTreeHandle};
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
@@ -110,11 +110,11 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
+impl<'a> TscnSpawnHooks for Spawner<'a> {
     type LocalActionKind = ClinicAction;
     type ZoneKind = ZoneTileKind;
 
-    fn on_spawned(
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
         who: Entity,

@@ -151,11 +151,11 @@ fn despawn(mut cmd: Commands, root: Query<Entity, With<LayoutEntity>>) {
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
+impl<'a> TscnSpawnHooks for Spawner<'a> {
     type LocalActionKind = MallAction;
     type ZoneKind = ZoneTileKind;
 
-    fn on_spawned(
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
         who: Entity,

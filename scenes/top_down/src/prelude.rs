@@ -12,7 +12,7 @@ pub(crate) use main_game_lib::{
         TileKind, ZoneTileKind,
     },
 };
-pub(crate) use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
+pub(crate) use rscn::{NodeName, TscnSpawnHooks, TscnTree, TscnTreeHandle};
 pub(crate) use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,

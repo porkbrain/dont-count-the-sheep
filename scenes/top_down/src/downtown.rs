@@ -220,11 +220,11 @@ fn despawn(
     cmd.remove_resource::<ZoneToInspectLabelEntity>();
 }
 
-impl<'a> TscnSpawner for Spawner<'a> {
+impl<'a> TscnSpawnHooks for Spawner<'a> {
     type LocalActionKind = DowntownAction;
     type ZoneKind = ZoneTileKind;
 
-    fn on_spawned(
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
         who: Entity,

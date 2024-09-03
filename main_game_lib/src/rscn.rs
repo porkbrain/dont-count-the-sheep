@@ -41,7 +41,7 @@ use bevy::{
 use common_ext::QueryExt;
 pub use loader::{LoaderError, TscnLoader};
 use serde::{Deserialize, Serialize};
-pub use spawner::TscnSpawner;
+pub use spawner::{EntityDescription, TscnSpawnHooks};
 
 /// A helper component that is always in an entity with
 /// [`bevy::prelude::SpatialBundle`].
@@ -80,7 +80,7 @@ pub struct TscnTree {
     /// The root node of the scene as defined in Godot.
     pub root_node_name: NodeName,
     /// Other nodes refer to it as `"."`.
-    pub root: Node,
+    pub root: RscnNode,
 }
 
 /// Node's name is stored in the parent node's children map.
@@ -88,7 +88,7 @@ pub struct TscnTree {
 /// The convention is that a 2D node is an entity while a plain node is a
 /// component.
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct Node {
+pub struct RscnNode {
     /// Positional data is relevant for
     /// - `Node2D`
     /// - `Sprite2D`
@@ -108,7 +108,7 @@ pub struct Node {
     /// data. Otherwise, they are treated as components and not entities.
     #[serde(skip_serializing_if = "HashMap::is_empty")]
     #[serde(default)]
-    pub children: HashMap<NodeName, Node>,
+    pub children: HashMap<NodeName, RscnNode>,
 }
 
 /// The name of a node is unique within its parent.
@@ -258,5 +258,17 @@ impl<'a> From<NodeName> for Cow<'a, str> {
 impl std::borrow::Borrow<str> for NodeName {
     fn borrow(&self) -> &str {
         &self.0
+    }
+}
+
+impl From<NodeName> for String {
+    fn from(NodeName(name): NodeName) -> Self {
+        name
+    }
+}
+
+impl From<String> for NodeName {
+    fn from(name: String) -> Self {
+        NodeName(name)
     }
 }

@@ -17,6 +17,7 @@ pub mod cameras;
 pub mod environmental_objects;
 pub mod inspect_and_interact;
 pub mod layout;
+mod spawner;
 
 use actor::{emit_movement_events, BeginDialogEvent};
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
@@ -24,6 +25,7 @@ use bevy::prelude::*;
 pub use inspect_and_interact::{InspectLabel, InspectLabelCategory};
 pub use layout::{TileKind, TileMap, ZoneTileKind};
 use leafwing_input_manager::plugin::InputManagerSystem;
+pub use spawner::TopDownTsncSpawner;
 
 use self::inspect_and_interact::ChangeHighlightedInspectLabelEvent;
 use crate::{

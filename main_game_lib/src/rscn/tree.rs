@@ -6,7 +6,7 @@ use bevy::{
 
 use crate::rscn::{
     intermediate_repr::{self, ParsedNodeKind, Y},
-    Config, In2D, Node, NodeName, SpriteFrames, SpriteTexture, TscnTree,
+    Config, In2D, RscnNode, NodeName, SpriteFrames, SpriteTexture, TscnTree,
 };
 
 struct Properties {
@@ -42,7 +42,7 @@ pub(crate) fn from_state(
     );
 
     let root_node_name = parsed_root_node.name;
-    let mut root = Node {
+    let mut root = RscnNode {
         in_2d: Some(In2D {
             position: Vec2::ZERO,
             z_index: None,
@@ -151,7 +151,7 @@ pub(crate) fn from_state(
             }
         };
 
-        let node = Node {
+        let node = RscnNode {
             metadata,
             in_2d,
             children: default(),
