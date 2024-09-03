@@ -12,6 +12,7 @@
 //!
 //! Moving around the pixel world, managing NPCs and the player character.
 
+mod action;
 pub mod actor;
 pub mod cameras;
 pub mod environmental_objects;
@@ -19,6 +20,7 @@ pub mod inspect_and_interact;
 pub mod layout;
 mod spawner;
 
+pub use action::TopDownAction;
 use actor::{emit_movement_events, BeginDialogEvent};
 pub use actor::{npc, player::Player, Actor, ActorMovementEvent, ActorTarget};
 use bevy::prelude::*;
@@ -41,6 +43,7 @@ pub struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<npc::PlanPathEvent>()
+            .add_event::<TopDownAction>()
             .add_event::<BeginDialogEvent>()
             .add_event::<ChangeHighlightedInspectLabelEvent>()
             .add_event::<ActorMovementEvent>();

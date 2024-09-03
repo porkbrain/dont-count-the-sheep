@@ -41,7 +41,7 @@ use bevy::{
 use common_ext::QueryExt;
 pub use loader::{LoaderError, TscnLoader};
 use serde::{Deserialize, Serialize};
-pub use spawner::{EntityDescription, TscnSpawnHooks};
+pub use spawner::{EntityDescription, EntityDescriptionMap, TscnSpawnHooks};
 
 /// A helper component that is always in an entity with
 /// [`bevy::prelude::SpatialBundle`].

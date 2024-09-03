@@ -14,6 +14,9 @@ use crate::{
     rscn::{In2D, NodeName, RscnNode, SpriteTexture, TscnTree},
 };
 
+/// Maps entity to its component description.
+pub type EntityDescriptionMap = EntityHashMap<Entity, EntityDescription>;
+
 /// All components that are managed by the scene spawner implementation.
 #[derive(Default)]
 #[allow(missing_docs)]
@@ -49,7 +52,7 @@ pub trait TscnSpawnHooks {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityHashMap<Entity, EntityDescription>,
+        descriptions: &mut EntityDescriptionMap,
         parent: Option<(Entity, NodeName)>,
         this: (Entity, NodeName),
     );
@@ -64,7 +67,7 @@ pub trait TscnSpawnHooks {
     fn handle_plain_node(
         &mut self,
         _cmd: &mut Commands,
-        _descriptions: &mut EntityHashMap<Entity, EntityDescription>,
+        _descriptions: &mut EntityDescriptionMap,
         _parent: (Entity, NodeName),
         this: (NodeName, RscnNode),
     ) {
@@ -110,7 +113,7 @@ impl TscnTree {
 struct Context<'a> {
     atlases: &'a mut Assets<TextureAtlasLayout>,
     asset_server: &'a AssetServer,
-    entity_descriptions: EntityHashMap<Entity, EntityDescription>,
+    entity_descriptions: EntityDescriptionMap,
 }
 
 fn node_to_entity(

@@ -12,11 +12,13 @@ pub(crate) use main_game_lib::{
         TileKind, ZoneTileKind,
     },
 };
-pub(crate) use rscn::{NodeName, TscnSpawnHooks, TscnTree, TscnTreeHandle};
+pub(crate) use rscn::{
+    EntityDescriptionMap, NodeName, TscnSpawnHooks, TscnTree, TscnTreeHandle,
+};
 pub(crate) use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
-    TileMap,
+    on_top_down_action, TileMap, TopDownAction, TopDownTsncSpawner,
 };
 
 pub(crate) use crate::layout::LayoutEntity;

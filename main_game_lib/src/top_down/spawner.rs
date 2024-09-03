@@ -5,9 +5,8 @@ use std::str::FromStr;
 use bevy::utils::EntityHashMap;
 use rscn::{EntityDescription, NodeName, RscnNode, TscnSpawnHooks};
 use top_down::{
-    inspect_and_interact::{ActionEvent, ZoneToInspectLabelEntity},
-    layout::ysort,
-    InspectLabelCategory, ZoneTileKind,
+    inspect_and_interact::ZoneToInspectLabelEntity, layout::ysort,
+    InspectLabelCategory, TopDownAction, ZoneTileKind,
 };
 
 use crate::prelude::*;
@@ -17,30 +16,27 @@ use crate::prelude::*;
 /// that maps actions `A` to labels and Y sorting.
 ///
 /// Other nodes are delegated to the user implementation `T`.
-pub struct TopDownTsncSpawner<'a, T, A> {
-    inner: T,
+pub struct TopDownTsncSpawner<'a, T> {
+    inner: &'a mut T,
     zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
-    _action: std::marker::PhantomData<A>,
 }
 
-impl<'a, T, A> TopDownTsncSpawner<'a, T, A> {
+impl<'a, T> TopDownTsncSpawner<'a, T> {
     /// Create a new top down spawner with user implementation `T`.
     pub fn new(
         zone_to_inspect_label_entity: &'a mut ZoneToInspectLabelEntity,
-        inner: T,
+        inner: &'a mut T,
     ) -> Self {
         Self {
             inner,
             zone_to_inspect_label_entity,
-            _action: Default::default(),
         }
     }
 }
 
-impl<'a, T, A> TscnSpawnHooks for TopDownTsncSpawner<'a, T, A>
+impl<'a, T> TscnSpawnHooks for TopDownTsncSpawner<'a, T>
 where
     T: TscnSpawnHooks,
-    A: ActionEvent + FromStr,
 {
     fn handle_2d_node(
         &mut self,
@@ -106,7 +102,7 @@ where
 
                 if let Some(action) = plain_node.metadata.remove("action") {
                     label.set_emit_event_on_interacted(
-                        A::from_str(&action).unwrap_or_else(|_| {
+                        TopDownAction::from_str(&action).unwrap_or_else(|_| {
                             panic!("InspectLabel action '{action}' not valid")
                         }),
                     );

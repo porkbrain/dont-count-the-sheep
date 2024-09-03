@@ -1,0 +1,13 @@
+use crate::prelude::*;
+
+/// List of all possible actions the player can take in the top down scenes.
+#[derive(Event, Reflect, Clone, strum::EnumString, Eq, PartialEq)]
+#[allow(missing_docs)]
+pub enum TopDownAction {
+    BrewTea,
+    EnterBasement2,
+    EnterElevator,
+    Exit,
+    Sleep,
+    StartMeditation,
+}

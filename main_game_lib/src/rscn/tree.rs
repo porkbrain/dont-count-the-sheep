@@ -6,7 +6,7 @@ use bevy::{
 
 use crate::rscn::{
     intermediate_repr::{self, ParsedNodeKind, Y},
-    Config, In2D, RscnNode, NodeName, SpriteFrames, SpriteTexture, TscnTree,
+    Config, In2D, NodeName, RscnNode, SpriteFrames, SpriteTexture, TscnTree,
 };
 
 struct Properties {
