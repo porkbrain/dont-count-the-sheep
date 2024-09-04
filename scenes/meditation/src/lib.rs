@@ -15,7 +15,10 @@ use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
 use prelude::*;
-use rscn::{NodeName, TscnSpawner, TscnTree, TscnTreeHandle};
+use rscn::{
+    tscn_loaded_but_not_spawned, EntityDescriptionMap, NodeName,
+    TscnSpawnHooks, TscnTree, TscnTreeHandle,
+};
 
 /// Important scene struct.
 /// Identifies anything that's related to meditation.
@@ -69,7 +72,8 @@ pub fn add(app: &mut App) {
         Last,
         finish_when_everything_loaded
             .run_if(in_state(GlobalGameState::LoadingMeditation))
-            .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
+            .run_if(in_state(LoadingScreenState::WaitForSignalToFinish))
+            .run_if(tscn_loaded_but_not_spawned::<LevelOne>()),
     );
     // 3. ready to enter the game when the loading screen is completely gone
     app.add_systems(
@@ -90,22 +94,19 @@ struct LevelOne;
 
 impl main_game_lib::rscn::TscnInBevy for LevelOne {
     fn tscn_asset_path() -> String {
-        format!("scenes/meditation_lvl1.tscn")
+        format!("scenes/meditation_lvl_1.tscn")
     }
 }
 
-struct Spawner<'a> {
-    asset_server: &'a AssetServer,
-    atlases: &'a mut Assets<TextureAtlasLayout>,
-}
+struct Spawner;
 
-impl<'a> TscnSpawner for Spawner<'a> {
-    fn on_spawned(
+impl TscnSpawnHooks for Spawner {
+    fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        who: Entity,
-        NodeName(name): NodeName,
-        translation: Vec3,
+        _descriptions: &mut EntityDescriptionMap,
+        _parent: Option<(Entity, NodeName)>,
+        (who, NodeName(name)): (Entity, NodeName),
     ) {
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
@@ -117,21 +118,12 @@ impl<'a> TscnSpawner for Spawner<'a> {
             _ => {}
         }
     }
-
-    fn add_texture_atlas(
-        &mut self,
-        layout: TextureAtlasLayout,
-    ) -> Handle<TextureAtlasLayout> {
-        self.atlases.add(layout)
-    }
-
-    fn load_texture(&mut self, path: &str) -> Handle<Image> {
-        self.asset_server.load(path.to_owned())
-    }
 }
 
 fn despawn(mut cmd: Commands) {
     debug!("Despawning resources");
+
+    // TODO
 }
 
 fn finish_when_everything_loaded(
@@ -151,13 +143,7 @@ fn finish_when_everything_loaded(
     debug!("All assets loaded");
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
-    tscn.spawn_into_world(
-        &mut Spawner {
-            asset_server: &asset_server,
-            atlases: &mut atlas_layouts,
-        },
-        &mut cmd,
-    );
+    tscn.spawn_into(&mut cmd, &mut atlas_layouts, &asset_server, &mut Spawner);
 
     next_loading_state.set(common_loading_screen::finish_state());
 }
