@@ -12,6 +12,8 @@ texture = ExtResource("1_s73x4")
 [node name="HoshiSpawn" type="Node2D" parent="."]
 position = Vector2(-239, -447)
 
+[node name="Point" type="Node" parent="HoshiSpawn"]
+
 [node name="Crystals" type="Node2D" parent="."]
 
 [node name="1" type="Sprite2D" parent="Crystals"]
