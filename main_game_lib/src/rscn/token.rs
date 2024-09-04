@@ -1,4 +1,4 @@
-//! TODO(https://github.com/porkbrain/dont-count-the-sheep/issues/235): Refactor
+//! TODO(<https://github.com/porkbrain/dont-count-the-sheep/issues/235>): Refactor
 //! parsing and lexing into separate modules.
 
 mod colon;
@@ -29,7 +29,7 @@ pub(crate) fn parse(tscn: &str) -> State {
     state
 }
 
-/// TODO(https://github.com/porkbrain/dont-count-the-sheep/issues/235): Lexing should be done separately from parsing.
+/// TODO(<https://github.com/porkbrain/dont-count-the-sheep/issues/235>): Lexing should be done separately from parsing.
 #[derive(Logos, Debug, PartialEq, Eq)]
 #[logos(skip r"[\r\t\n\f,]+")]
 enum TscnToken {

@@ -16,7 +16,7 @@
 //! See the wiki for current status of what's supported and what custom nodes
 //! are available.
 //!
-//! TODO(https://github.com/porkbrain/dont-count-the-sheep/issues/235):
+//! TODO(<https://github.com/porkbrain/dont-count-the-sheep/issues/235>):
 //! Needs further refactor: separation of concerns between stages of
 //! representations; lexing vs parsing; support for async spawning of scenes;
 //! support for a signal when all textures are loaded
