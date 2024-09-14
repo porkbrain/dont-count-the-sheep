@@ -43,7 +43,7 @@ impl AssetLoader for TscnLoader {
             reader.read_to_end(&mut bytes).await?;
             let tscn = std::str::from_utf8(&bytes)?;
 
-            Ok(crate::rscn::parse(tscn, settings))
+            Ok(crate::rscn::from_tscn(tscn, settings))
         })
     }
 

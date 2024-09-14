@@ -26,7 +26,6 @@ mod lex;
 mod loader;
 mod parse;
 mod spawner;
-// mod token;
 mod tree;
 mod value;
 
@@ -47,7 +46,9 @@ use bevy::{
     utils::HashMap,
 };
 use common_ext::QueryExt;
+use lex::lex;
 pub use loader::{LoaderError, TscnLoader};
+use parse::parse;
 use serde::{Deserialize, Serialize};
 pub use spawner::{EntityDescription, EntityDescriptionMap, TscnSpawnHooks};
 
@@ -199,9 +200,10 @@ pub struct TscnTreeHandle<T> {
 /// We panic on unsupported content aggressively.
 ///
 /// See also [`TscnTree::spawn_into`].
-pub fn parse(tscn: &str, config: &Config) -> TscnTree {
-    // TODO: better names
-    match lex::lex(tscn).and_then(|tokens| parse::parse(tscn, tokens)) {
+///
+/// Aggressively panics on unexpected format.
+pub fn from_tscn(tscn: &str, config: &Config) -> TscnTree {
+    match lex(tscn).and_then(|tokens| parse(tscn, tokens)) {
         Ok(state) => tree::from_state(state, config),
         Err(e) => {
             eprintln!("{e:?}"); // miette fancy print
