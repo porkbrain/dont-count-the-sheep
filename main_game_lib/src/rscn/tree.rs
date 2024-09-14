@@ -77,7 +77,8 @@ pub(crate) fn from_state(
         let mut properties = default();
 
         for section_key in parsed_node.section_keys {
-            apply_section_key(conf, &state, section_key, &mut properties);
+            // apply_section_key(conf, &state, section_key, &mut properties);
+            todo!()
         }
 
         let Properties {
@@ -290,100 +291,101 @@ fn apply_section_key(
                 "SpriteFrames should have exactly one animation"
             );
 
-            let SectionKey::SingleAnim(anim) = &res.section_keys[0] else {
-                panic!(
-                    "SpriteFrames should have \
-                            exactly one SingleAnim section key"
-                )
-            };
+            // let SectionKey::SingleAnim(anim) = &res.section_keys[0] else {
+            //     panic!(
+            //         "SpriteFrames should have exactly one SingleAnim section
+            // key"     )
+            // };
+            todo!();
 
-            let mut max_y = 0.0f32;
-            let mut max_x = 0.0f32;
-            let frames: Vec<_> = anim
-                .frames
-                .iter()
-                .map(|frame| {
-                    let frame = state
-                        .sub_resources
-                        .iter()
-                        .find(|res| res.id == frame.texture)
-                        .expect("sub resource should exist");
-                    assert_eq!(2, frame.section_keys.len());
+            // let mut max_y = 0.0f32;
+            // let mut max_x = 0.0f32;
+            // let frames: Vec<_> = anim
+            //     .frames
+            //     .iter()
+            //     .map(|frame| {
+            //         let frame = state
+            //             .sub_resources
+            //             .iter()
+            //             .find(|res| res.id == frame.texture)
+            //             .expect("sub resource should exist");
+            //         assert_eq!(2, frame.section_keys.len());
 
-                    let prefixless_path = frame
-                        .section_keys
-                        .iter()
-                        .find_map(|section_key| {
-                            let SectionKey::AtlasExtResource(id) = section_key
-                            else {
-                                return None;
-                            };
+            //         let prefixless_path = frame
+            //             .section_keys
+            //             .iter()
+            //             .find_map(|section_key| {
+            //                 let SectionKey::AtlasExtResource(id) =
+            // section_key                 else {
+            //                     return None;
+            //                 };
 
-                            let prefixless_path = state
-                                .ext_resources
-                                .iter()
-                                .find(|res| res.uid() == id)
-                                .map(|res| {
-                                    todo!("conf.to_prefixless_path(&res.path)")
-                                })
-                                .expect("ext resource should exist");
+            //                 let prefixless_path = state
+            //                     .ext_resources
+            //                     .iter()
+            //                     .find(|res| res.uid() == id)
+            //                     .map(|res| {
+            //                         
+            // todo!("conf.to_prefixless_path(&res.path)")
+            //                     })
+            //                     .expect("ext resource should exist");
 
-                            Some(prefixless_path)
-                        })
-                        .expect(
-                            "sub resource should have an atlas section key",
-                        );
+            //                 Some(prefixless_path)
+            //             })
+            //             .expect(
+            //                 "sub resource should have an atlas section key",
+            //             );
 
-                    if let Some(path) = path {
-                        assert_eq!(path, &prefixless_path);
-                    } else {
-                        *path = Some(prefixless_path);
-                    }
+            //         if let Some(path) = path {
+            //             assert_eq!(path, &prefixless_path);
+            //         } else {
+            //             *path = Some(prefixless_path);
+            //         }
 
-                    let rect = frame
-                        .section_keys
-                        .iter()
-                        .find_map(|section_key| {
-                            // we don't convert into bevy coords here because
-                            // bevy uses the top-left corner as the origin
-                            // for textures
-                            let SectionKey::RegionRect2(
-                                X(x1),
-                                Y(y1),
-                                X(w),
-                                Y(h),
-                            ) = section_key
-                            else {
-                                return None;
-                            };
+            //         let rect = frame
+            //             .section_keys
+            //             .iter()
+            //             .find_map(|section_key| {
+            //                 // we don't convert into bevy coords here because
+            //                 // bevy uses the top-left corner as the origin
+            //                 // for textures
+            //                 let SectionKey::RegionRect2(
+            //                     X(x1),
+            //                     Y(y1),
+            //                     X(w),
+            //                     Y(h),
+            //                 ) = section_key
+            //                 else {
+            //                     return None;
+            //                 };
 
-                            Some(Rect {
-                                min: Vec2::new(*x1, *y1),
-                                max: Vec2::new(*x1 + *w, *y1 + *h),
-                            })
-                        })
-                        .expect(
-                            "sub resource should have a region section key",
-                        );
+            //                 Some(Rect {
+            //                     min: Vec2::new(*x1, *y1),
+            //                     max: Vec2::new(*x1 + *w, *y1 + *h),
+            //                 })
+            //             })
+            //             .expect(
+            //                 "sub resource should have a region section key",
+            //             );
 
-                    max_x = max_x.max(rect.max.x);
-                    max_y = max_y.max(rect.max.y);
+            //         max_x = max_x.max(rect.max.x);
+            //         max_y = max_y.max(rect.max.y);
 
-                    rect
-                })
-                .collect();
-            assert!(frames.len() > anim.index as usize);
+            //         rect
+            //     })
+            //     .collect();
+            // assert!(frames.len() > anim.index as usize);
 
-            assert!(animation
-                .replace(SpriteFrames {
-                    should_endless_loop: anim.loop_,
-                    fps: anim.speed.into(),
-                    should_autoload: anim.autoload,
-                    first_index: anim.index as usize,
-                    frames,
-                    size: Vec2::new(max_x, max_y),
-                })
-                .is_none());
+            // assert!(animation
+            //     .replace(SpriteFrames {
+            //         should_endless_loop: anim.loop_,
+            //         fps: anim.speed.into(),
+            //         should_autoload: anim.autoload,
+            //         first_index: anim.index as usize,
+            //         frames,
+            //         size: Vec2::new(max_x, max_y),
+            //     })
+            //     .is_none());
         }
     }
 }

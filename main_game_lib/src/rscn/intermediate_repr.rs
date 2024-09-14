@@ -22,19 +22,19 @@ pub(crate) enum ParsedExtResource {
     },
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub(crate) struct ParsedSubResource {
     pub(crate) id: SubResourceId,
     pub(crate) kind: SubResourceKind,
-    pub(crate) section_keys: Vec<SectionKey>,
+    pub(crate) section_keys: Map<Value>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub(crate) struct ParsedNode {
     pub(crate) name: String,
     pub(crate) parent: Option<String>,
     pub(crate) kind: ParsedNodeKind,
-    pub(crate) section_keys: Vec<SectionKey>,
+    pub(crate) section_keys: Map<Value>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

@@ -15,7 +15,7 @@ pub(crate) struct TscnToken {
 }
 
 #[derive(Logos, Debug, PartialEq, Eq, Clone, Copy)]
-#[logos(skip r"[\r\t\f,]+")]
+#[logos(skip r"[\r\t\f]+")]
 pub(crate) enum TscnTokenKind {
     #[token("[")]
     SquareBracketOpen,
@@ -35,6 +35,10 @@ pub(crate) enum TscnTokenKind {
     Ampersand,
     #[token("=")]
     Equal,
+    #[token(",")]
+    Comma,
+    #[token("/")]
+    ForwardSlash,
     #[token(" ")]
     Space,
     #[token("\n")]
@@ -94,6 +98,8 @@ impl std::fmt::Display for TscnTokenKind {
             TscnTokenKind::False => write!(f, "false"),
             TscnTokenKind::Number => write!(f, "number"),
             TscnTokenKind::String => write!(f, "string"),
+            TscnTokenKind::ForwardSlash => write!(f, "/"),
+            TscnTokenKind::Comma => write!(f, ","),
         }
     }
 }

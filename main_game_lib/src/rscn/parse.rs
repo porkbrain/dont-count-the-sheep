@@ -4,7 +4,7 @@ mod ext_resource;
 mod node;
 mod sub_resource;
 
-use std::ops::Range;
+use std::{iter::Peekable, ops::Range};
 
 use miette::{Context, LabeledSpan};
 
@@ -49,7 +49,7 @@ pub(crate) fn parse(
 
     let mut parser = Parser {
         source: tscn,
-        tokens: tokens.into_iter(),
+        tokens: tokens.into_iter().peekable(),
         state: State::default(),
         open_section: OpenSection::default(),
         last_token_end: 0,
@@ -75,7 +75,7 @@ enum IsParsingDone {
 
 impl<'a, I> Parser<'a, I>
 where
-    I: Iterator<Item = TscnToken>,
+    I: PeekableExt + Iterator<Item = TscnToken>,
 {
     /// Each tscn file must start with a `gd_scene` heading.
     /// There must be exactly one `gd_scene` heading per tscn.
@@ -154,12 +154,82 @@ where
                 kind: TscnTokenKind::Identifier,
                 span,
             }) => {
-                let key = &self.source[span.clone()];
+                let key = self.source[span.clone()].to_owned();
                 self.expect_exact(TscnTokenKind::Equal).with_context(|| {
                     format!("Section key must be in format '{key} = value'")
                 })?;
 
-                // TODO
+                // tscn supports keys with forward slashes to create nested
+                // dictionaries
+                // e.g. `key/subkey = value`
+                let nested_key = if let Some(TscnToken {
+                    kind: TscnTokenKind::ForwardSlash,
+                    ..
+                }) = self.peek_next_token_swallow_spaces()
+                {
+                    self.tokens.next(); // skip '/'
+                    let nested_key_range =
+                        self.expect_exact(TscnTokenKind::Identifier)?;
+                    let nested_key =
+                        self.source[nested_key_range.clone()].to_owned();
+                    Some((nested_key_range, nested_key))
+                } else {
+                    None
+                };
+
+                let value = self.expect_value()?;
+
+                match &mut self.open_section {
+                    OpenSection::None => {
+                        miette::bail! {
+                            labels = vec![
+                                LabeledSpan::at(span, "this key"),
+                            ],
+                            "Unexpected section key '{key}'",
+                        }
+                    }
+                    OpenSection::SubResource(ParsedSubResource {
+                        section_keys,
+                        ..
+                    })
+                    | OpenSection::Node(ParsedNode { section_keys, .. }) => {
+                        if let Some((nested_key_range, nested_key)) = nested_key
+                        {
+                            let nested_dict =
+                                section_keys.entry(key).or_insert_with(|| {
+                                    Value::Object(Default::default())
+                                });
+
+                            if let Value::Object(nested_dict) = nested_dict {
+                                if nested_dict
+                                    .insert(nested_key, value)
+                                    .is_some()
+                                {
+                                    miette::bail! {
+                                        labels = vec![
+                                            LabeledSpan::at(nested_key_range, "this key"),
+                                        ],
+                                        "Duplicate nested key",
+                                    }
+                                }
+                            } else {
+                                miette::bail! {
+                                    labels = vec![
+                                        LabeledSpan::at(span.start..nested_key_range.end, "this key"),
+                                    ],
+                                    "Expected object value for nested key",
+                                }
+                            }
+                        } else if section_keys.insert(key, value).is_some() {
+                            miette::bail! {
+                                labels = vec![
+                                    LabeledSpan::at(span, "this key"),
+                                ],
+                                "Duplicate key'",
+                            }
+                        }
+                    }
+                }
 
                 Ok(IsParsingDone::No)
             }
@@ -222,6 +292,23 @@ where
         Ok(span)
     }
 
+    /// Returns the next token without consuming it, so that [Iterator::next]
+    /// called on [Self::tokens] will return the same token.
+    ///
+    /// Exception for [TscnTokenKind::Space] which is consumed.
+    fn peek_next_token_swallow_spaces(&mut self) -> Option<&TscnToken> {
+        if let Some(TscnToken {
+            kind: TscnTokenKind::Space,
+            ..
+        }) = self.tokens.peek()
+        {
+            self.tokens.next();
+            self.peek_next_token_swallow_spaces()
+        } else {
+            self.tokens.peek()
+        }
+    }
+
     /// Looks at the next token and errors if there is none or if it is not the
     /// expected one.
     ///
@@ -254,35 +341,7 @@ where
     /// - False
     fn expect_primitive(&mut self) -> miette::Result<Value> {
         let token = self.next_token_no_eof_ignore_spaces()?;
-        match token.kind {
-            TscnTokenKind::Number => {
-                let number = self.source[token.span.clone()]
-                    .parse()
-                    .map_err(|err| {
-                        miette::miette! {
-                            labels = vec![
-                                LabeledSpan::at(token.span.clone(), "this number"),
-                            ],
-                            "Failed to parse number: {err}",
-                        }
-                    })?;
-                Ok(Value::Number(number))
-            }
-            TscnTokenKind::String => {
-                let string = self.source[token.span.clone()].to_owned();
-                Ok(Value::String(string))
-            }
-            TscnTokenKind::True => Ok(Value::Bool(true)),
-            TscnTokenKind::False => Ok(Value::Bool(false)),
-            got => {
-                miette::bail! {
-                    labels = vec![
-                        LabeledSpan::at(token.span, "this token"),
-                    ],
-                    "Expected primitive value, got {got}",
-                }
-            }
-        }
+        Value::try_from_token(self.source, token)
     }
 
     /// Expects a dictionary of attributes to follow in the token iterator.
@@ -318,6 +377,137 @@ where
                         ],
                         "Expected attribute identifier, got {got}",
                     }
+                }
+            }
+        }
+    }
+
+    fn expect_value(&mut self) -> miette::Result<Value> {
+        let first_token = self.next_token_no_eof_ignore_spaces()?;
+
+        match first_token {
+            // we found a class!
+            // e.g. Vector2(20, -56)
+            TscnToken {
+                kind: TscnTokenKind::Identifier,
+                span,
+            } => {
+                let class_name = &self.source[span.clone()];
+                self.expect_exact(TscnTokenKind::ParenOpen)?;
+
+                let mut values = Vec::new();
+                loop {
+                    let value = self.expect_value()?;
+                    values.push(value);
+
+                    match self.next_token_no_eof_ignore_spaces()? {
+                        TscnToken {
+                            kind: TscnTokenKind::ParenClose,
+                            ..
+                        } => break,
+                        TscnToken {
+                            kind: TscnTokenKind::Comma,
+                            ..
+                        } => continue,
+                        TscnToken { kind, span } => {
+                            miette::bail! {
+                                labels = vec![
+                                    LabeledSpan::at(span, "this token"),
+                                ],
+                                "Expected ',' or ')', got {kind}",
+                            }
+                        }
+                    }
+                }
+
+                self.expect_exact(TscnTokenKind::ParenClose)?;
+
+                Ok(Value::Class(class_name.to_owned(), values))
+            }
+            // we found an array!
+            TscnToken {
+                kind: TscnTokenKind::SquareBracketOpen,
+                ..
+            } => {
+                let mut values = vec![];
+                let mut is_first_el = true;
+                loop {
+                    match self.peek_next_token_swallow_spaces() {
+                        None => {
+                            miette::bail! {
+                                labels = vec![
+                                    LabeledSpan::at(self.last_token_end..self.source.len() - 1, "this input"),
+                                ],
+                                "Unexpected end of file",
+                            }
+                        }
+                        Some(TscnToken {
+                            kind: TscnTokenKind::NewLine,
+                            ..
+                        }) => {
+                            self.tokens.next(); // skip '\n'
+                        }
+                        Some(TscnToken {
+                            kind: TscnTokenKind::SquareBracketClose,
+                            ..
+                        }) => {
+                            self.tokens.next(); // skip ']'
+                            break;
+                        }
+                        Some(TscnToken {
+                            kind: TscnTokenKind::Comma,
+                            span,
+                        }) => {
+                            if is_first_el {
+                                miette::bail! {
+                                    labels = vec![
+                                        LabeledSpan::at(span.clone(), "this input"),
+                                    ],
+                                    "Unexpected ','",
+                                }
+                            }
+
+                            self.tokens.next(); // skip ','
+                            values.push(self.expect_value()?);
+                        }
+                        _ => {
+                            is_first_el = false;
+                            values.push(self.expect_value()?);
+                        }
+                    }
+                }
+
+                Ok(Value::Array(values))
+            }
+            // we found an object!
+            TscnToken {
+                kind: TscnTokenKind::CurlyBracketOpen,
+                span,
+            } => {
+                // TODO
+                miette::bail! {
+                    labels = vec![
+                        LabeledSpan::at(span, "todo"),
+                    ],
+                    "Object parsing not implemented yet",
+                }
+            }
+            // we found a primitive!
+            token @ TscnToken {
+                kind:
+                    TscnTokenKind::Number
+                    | TscnTokenKind::String
+                    | TscnTokenKind::True
+                    | TscnTokenKind::False,
+                ..
+            } => Value::try_from_token(self.source, token),
+            // we found something we shouldn't have
+            TscnToken { kind: got, span } => {
+                miette::bail! {
+                    labels = vec![
+                        LabeledSpan::at(span, "this token"),
+                    ],
+                    "Expected value, got {got}",
                 }
             }
         }
@@ -360,6 +550,19 @@ mod tscn_identifiers {
     pub(super) const EXT_RESOURCE: &str = "ext_resource";
     pub(super) const SUB_RESOURCE: &str = "sub_resource";
     pub(super) const NODE: &str = "node";
+}
+
+trait PeekableExt {
+    fn peek(&mut self) -> Option<&TscnToken>;
+}
+
+impl<I> PeekableExt for Peekable<I>
+where
+    I: Iterator<Item = TscnToken>,
+{
+    fn peek(&mut self) -> Option<&TscnToken> {
+        self.peek()
+    }
 }
 
 #[cfg(test)]
