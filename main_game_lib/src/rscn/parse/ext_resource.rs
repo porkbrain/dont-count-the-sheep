@@ -5,7 +5,6 @@ use miette::LabeledSpan;
 use super::{
     tscn_identifiers::EXT_RESOURCE, Map, ParsedExtResource, State, Value,
 };
-use crate::rscn::intermediate_repr::ExtResourceId;
 
 const EXT_RESOURCE_TYPE: &str = "type";
 const EXT_RESOURCE_TYPE_TEXTURE_2D: &str = "Texture2D";

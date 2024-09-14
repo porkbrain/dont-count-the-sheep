@@ -6,7 +6,7 @@ mod sub_resource;
 
 use std::ops::Range;
 
-use miette::LabeledSpan;
+use miette::{Context, LabeledSpan};
 
 use super::{
     lex::{TscnToken, TscnTokenKind},
@@ -19,8 +19,17 @@ struct Parser<'a, I> {
     tokens: I,
     state: State,
     open_section: OpenSection,
-    // TODO: remember position of last token to give better errors on
-    // unexpected EOF
+    /// We assert that the tscn string is not empty.
+    /// This value starts on 0 which is going to be a valid index.
+    ///
+    /// Every time call [Self::next_token_no_eof_ignore_spaces] we update this
+    /// value to the end of the read token.
+    ///
+    /// If we reach the end of the all tokens (EOF) but we are in an open state
+    /// that's not ready to be closed, we error.
+    /// This index is used to give better error messages because it can print
+    /// the text where we expected more tokens to be.
+    last_token_end: usize,
 }
 
 /// Wraps an expression that can error and adds source code to the miette error.
@@ -34,13 +43,16 @@ pub(crate) fn parse(
     tscn: &str,
     tokens: impl IntoIterator<Item = TscnToken>,
 ) -> miette::Result<State> {
-    // TODO: forbid empty tscn
+    if tscn.is_empty() {
+        miette::bail!("Empty .tscn source");
+    }
 
     let mut parser = Parser {
         source: tscn,
         tokens: tokens.into_iter(),
         state: State::default(),
         open_section: OpenSection::default(),
+        last_token_end: 0,
     };
 
     error_with_source_code!(tscn, parser.parse_headers());
@@ -72,8 +84,8 @@ where
     fn parse_headers(&mut self) -> miette::Result<()> {
         // [gd_scene opt_attr1=... opt_attr2=... ... ]
 
-        self.expect_exact_token(TscnTokenKind::SquareBracketOpen)?;
-        self.expect_exact_token_with_content(
+        self.expect_exact(TscnTokenKind::SquareBracketOpen)?;
+        self.expect_exact_with_content(
             TscnTokenKind::Identifier,
             tscn_identifiers::GD_SCENE,
         )?;
@@ -93,11 +105,12 @@ where
         match self.tokens.next() {
             Some(TscnToken {
                 kind: TscnTokenKind::SquareBracketOpen,
-                span,
+                ..
             }) => {
                 // we are starting a new section!
                 self.close_section();
 
+                let span = self.expect_exact(TscnTokenKind::Identifier)?;
                 let new_section_kind = &self.source[span.clone()];
                 match new_section_kind {
                     tscn_identifiers::EXT_RESOURCE => {
@@ -110,29 +123,27 @@ where
                     }
                     tscn_identifiers::SUB_RESOURCE => {
                         let (ends_at, ext_attrs) = self.expect_attributes()?;
-                        let sub_resource = sub_resource::parse_attributes(
-                            &mut self.state,
-                            span.start..ends_at,
-                            ext_attrs,
-                        )?;
-                        self.open_section =
-                            OpenSection::SubResource(sub_resource);
+                        self.open_section = OpenSection::SubResource(
+                            sub_resource::parse_attributes(
+                                span.start..ends_at,
+                                ext_attrs,
+                            )?,
+                        );
                     }
                     tscn_identifiers::NODE => {
                         let (ends_at, ext_attrs) = self.expect_attributes()?;
-                        let node = node::parse_attributes(
-                            &mut self.state,
-                            span.start..ends_at,
-                            ext_attrs,
-                        )?;
-                        self.open_section = OpenSection::Node(node);
+                        self.open_section =
+                            OpenSection::Node(node::parse_attributes(
+                                span.start..ends_at,
+                                ext_attrs,
+                            )?);
                     }
-                    _ => {
+                    unknown_section => {
                         miette::bail! {
                             labels = vec![
                                 LabeledSpan::at(span, "this section"),
                             ],
-                            "Unknown section '{new_section_kind}'",
+                            "Unknown section '{unknown_section}'",
                         }
                     }
                 }
@@ -143,7 +154,13 @@ where
                 kind: TscnTokenKind::Identifier,
                 span,
             }) => {
+                let key = &self.source[span.clone()];
+                self.expect_exact(TscnTokenKind::Equal).with_context(|| {
+                    format!("Section key must be in format '{key} = value'")
+                })?;
+
                 // TODO
+
                 Ok(IsParsingDone::No)
             }
             // ignore new lines and spaces
@@ -184,11 +201,14 @@ where
 
     /// Looks at the next token and errors if there is none or if it is not the
     /// expected one.
-    fn expect_exact_token(
+    ///
+    /// Ignores spaces.
+    fn expect_exact(
         &mut self,
         expected: TscnTokenKind,
     ) -> miette::Result<Range<usize>> {
-        let TscnToken { kind: got, span } = self.next_token_no_eof()?;
+        let TscnToken { kind: got, span } =
+            self.next_token_no_eof_ignore_spaces()?;
 
         if got != expected {
             miette::bail! {
@@ -206,12 +226,12 @@ where
     /// expected one.
     ///
     /// Then, it checks if the token's content is equal to the expected one.
-    fn expect_exact_token_with_content(
+    fn expect_exact_with_content(
         &mut self,
         expected_token: TscnTokenKind,
         expected_content: &str,
     ) -> miette::Result<()> {
-        let range = self.expect_exact_token(expected_token)?;
+        let range = self.expect_exact(expected_token)?;
 
         let got_content = &self.source[range.clone()];
 
@@ -233,7 +253,7 @@ where
     /// - True
     /// - False
     fn expect_primitive(&mut self) -> miette::Result<Value> {
-        let token = self.next_token_no_eof()?;
+        let token = self.next_token_no_eof_ignore_spaces()?;
         match token.kind {
             TscnTokenKind::Number => {
                 let number = self.source[token.span.clone()]
@@ -273,13 +293,7 @@ where
         let mut map = Map::default();
 
         loop {
-            match self.next_token_no_eof()? {
-                TscnToken {
-                    kind: TscnTokenKind::Space,
-                    ..
-                } => {
-                    // ignore spaces
-                }
+            match self.next_token_no_eof_ignore_spaces()? {
                 TscnToken {
                     kind: TscnTokenKind::SquareBracketClose,
                     span,
@@ -293,7 +307,7 @@ where
                 } => {
                     // we have an attribute
                     let attribute_name = &self.source[span.clone()];
-                    self.expect_exact_token(TscnTokenKind::Equal)?;
+                    self.expect_exact(TscnTokenKind::Equal)?;
                     let attribute_value = self.expect_primitive()?;
                     map.insert(attribute_name.to_owned(), attribute_value);
                 }
@@ -310,16 +324,26 @@ where
     }
 
     /// Returns the next token or an error if there is none.
-    fn next_token_no_eof(&mut self) -> miette::Result<TscnToken> {
-        self.tokens.next().ok_or_else(|| {
-            // TODO
-            miette::miette! {
-                labels = vec![
-                    LabeledSpan::at(0..self.source.len() - 1, "this input"),
-                ],
-                "Unexpected end of file",
+    ///
+    /// If the next token is a space, ignore it.
+    fn next_token_no_eof_ignore_spaces(&mut self) -> miette::Result<TscnToken> {
+        loop {
+            let token = self.tokens.next().ok_or_else(|| {
+                miette::miette! {
+                    // SAFETY: we have checked that source is not empty
+                    labels = vec![
+                        LabeledSpan::at(self.last_token_end..self.source.len() - 1, "this input"),
+                    ],
+                    "Unexpected end of file",
+                }
+            })?;
+
+            self.last_token_end = token.span.end;
+
+            if token.kind != TscnTokenKind::Space {
+                break Ok(token);
             }
-        })
+        }
     }
 }
 

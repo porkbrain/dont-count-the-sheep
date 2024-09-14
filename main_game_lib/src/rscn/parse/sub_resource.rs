@@ -2,17 +2,13 @@ use std::ops::Range;
 
 use miette::LabeledSpan;
 
-use super::{
-    tscn_identifiers::SUB_RESOURCE, Map, ParsedSubResource, State,
-    SubResourceId, Value,
-};
+use super::{tscn_identifiers::SUB_RESOURCE, Map, ParsedSubResource, Value};
 
 const SUB_RESOURCE_TYPE: &str = "type";
 const SUB_RESOURCE_ID: &str = "id";
 
 /// Subresources can have section keys.
 pub(super) fn parse_attributes(
-    state: &mut State,
     span: Range<usize>,
     mut attrs: Map<Value>,
 ) -> miette::Result<ParsedSubResource> {

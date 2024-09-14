@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use miette::LabeledSpan;
 
-use super::{tscn_identifiers::NODE, Map, ParsedNode, State, Value};
+use super::{tscn_identifiers::NODE, Map, ParsedNode, Value};
 
 const NODE_NAME: &str = "name";
 /// Optional attribute, will be none for the root node.
@@ -11,7 +11,6 @@ const NODE_KIND: &str = "type";
 
 /// Subresources can have section keys.
 pub(super) fn parse_attributes(
-    state: &mut State,
     span: Range<usize>,
     mut attrs: Map<Value>,
 ) -> miette::Result<ParsedNode> {
