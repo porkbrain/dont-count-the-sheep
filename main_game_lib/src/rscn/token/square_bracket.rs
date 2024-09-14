@@ -35,7 +35,7 @@ pub(super) fn parse_close(
             state.ext_resources.push(ParsedExtResource {
                 kind: kind
                     .expect("ExtResource 'type' attribute should be present"),
-                id: id.expect("ExtResource 'id' attribute should be present"),
+                uid: id.expect("ExtResource 'id' attribute should be present"),
                 path: path
                     .expect("ExtResource 'path' attribute should be present"),
             });

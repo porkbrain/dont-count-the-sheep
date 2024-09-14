@@ -22,10 +22,13 @@
 //! support for a signal when all textures are loaded
 
 mod intermediate_repr;
+mod lex;
 mod loader;
+mod parse;
 mod spawner;
-mod token;
+// mod token;
 mod tree;
+mod value;
 
 use std::borrow::Cow;
 
@@ -197,7 +200,8 @@ pub struct TscnTreeHandle<T> {
 ///
 /// See also [`TscnTree::spawn_into`].
 pub fn parse(tscn: &str, config: &Config) -> TscnTree {
-    tree::from_state(token::parse(tscn), config)
+    // tree::from_state(token::parse(tscn), config)
+    todo!()
 }
 
 /// Run this system on enter to a scene to start loading the `.tscn` file.

@@ -149,6 +149,9 @@ pub(crate) fn from_state(
                 assert!(animation.is_none());
                 None
             }
+            ParsedNodeKind::Other(kind) => {
+                panic!("Node kind '{kind}' is not supported")
+            }
         };
 
         let node = RscnNode {
@@ -255,8 +258,8 @@ fn apply_section_key(
             let prefixless_path = state
                 .ext_resources
                 .iter()
-                .find(|res| res.id == id)
-                .map(|res| conf.to_prefixless_path(&res.path))
+                .find(|res| res.uid() == &id)
+                .map(|res| todo!("conf.to_prefixless_path(&res.path)"))
                 .expect("ext resource should exist");
             assert!(
                 path.replace(prefixless_path).is_none(),
@@ -319,8 +322,10 @@ fn apply_section_key(
                             let prefixless_path = state
                                 .ext_resources
                                 .iter()
-                                .find(|res| res.id == *id)
-                                .map(|res| conf.to_prefixless_path(&res.path))
+                                .find(|res| res.uid() == id)
+                                .map(|res| {
+                                    todo!("conf.to_prefixless_path(&res.path)")
+                                })
                                 .expect("ext resource should exist");
 
                             Some(prefixless_path)

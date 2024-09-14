@@ -1,15 +1,25 @@
-#[derive(Default, Debug, PartialEq, Eq)]
+use super::value::{Map, Value};
+
+#[derive(Default, Debug, PartialEq)]
 pub(crate) struct State {
+    /// Headers are attributes of the initial "gd_scene" section.
+    pub(crate) headers: Map<Value>,
     pub(crate) ext_resources: Vec<ParsedExtResource>,
     pub(crate) sub_resources: Vec<ParsedSubResource>,
     pub(crate) nodes: Vec<ParsedNode>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub(crate) struct ParsedExtResource {
-    pub(crate) kind: ExtResourceKind,
-    pub(crate) path: String,
-    pub(crate) id: ExtResourceId,
+#[derive(Debug, PartialEq)]
+pub(crate) enum ParsedExtResource {
+    Texture2D {
+        uid: ExtResourceId,
+        path: String,
+    },
+    Other {
+        kind: String,
+        uid: ExtResourceId,
+        attributes: Map<Value>,
+    },
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -30,6 +40,7 @@ pub(crate) struct ParsedNode {
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum ExtResourceKind {
     Texture2D,
+    Other(String),
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -39,6 +50,7 @@ pub(crate) struct ExtResourceId(pub(crate) String);
 pub(crate) enum SubResourceKind {
     AtlasTexture,
     SpriteFrames,
+    Other(String),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -47,6 +59,7 @@ pub(crate) enum ParsedNodeKind {
     Node2D,
     Sprite2D,
     AnimatedSprite2D,
+    Other(String),
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -103,6 +116,15 @@ pub(crate) struct X(pub(crate) f32);
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) struct Y(pub(crate) f32);
 
+impl ParsedExtResource {
+    pub(crate) fn uid(&self) -> &ExtResourceId {
+        match self {
+            ParsedExtResource::Texture2D { uid, .. } => uid,
+            ParsedExtResource::Other { uid, .. } => uid,
+        }
+    }
+}
+
 impl Y {
     /// This is the conversion from godot to bevy coordinates.
     /// Note that not all Y coords should be converted.
@@ -126,6 +148,28 @@ impl From<String> for SubResourceId {
 impl From<String> for ExtResourceId {
     fn from(s: String) -> Self {
         Self(s)
+    }
+}
+
+impl From<String> for SubResourceKind {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "AtlasTexture" => Self::AtlasTexture,
+            "SpriteFrames" => Self::SpriteFrames,
+            _ => Self::Other(s),
+        }
+    }
+}
+
+impl From<String> for ParsedNodeKind {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "Node" => Self::Node,
+            "Node2D" => Self::Node2D,
+            "Sprite2D" => Self::Sprite2D,
+            "AnimatedSprite2D" => Self::AnimatedSprite2D,
+            _ => Self::Other(s),
+        }
     }
 }
 
