@@ -200,8 +200,14 @@ pub struct TscnTreeHandle<T> {
 ///
 /// See also [`TscnTree::spawn_into`].
 pub fn parse(tscn: &str, config: &Config) -> TscnTree {
-    // tree::from_state(token::parse(tscn), config)
-    todo!()
+    // TODO: better names
+    match lex::lex(tscn).and_then(|tokens| parse::parse(tscn, tokens)) {
+        Ok(state) => tree::from_state(state, config),
+        Err(e) => {
+            eprintln!("{e:?}"); // miette fancy print
+            panic!("Failed to parse .tscn file");
+        }
+    }
 }
 
 /// Run this system on enter to a scene to start loading the `.tscn` file.
