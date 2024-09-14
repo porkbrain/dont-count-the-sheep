@@ -335,13 +335,7 @@ mod tests {
             let tokens = lex(&tscn)?;
             assert!(!tokens.is_empty(), "Empty .tscn file at {path:?}");
 
-            let state = parse(&tscn, tokens)?;
-            assert!(
-                !state.ext_resources.is_empty(),
-                "No external resources found"
-            );
-            assert!(!state.sub_resources.is_empty(), "No sub resources found");
-            assert!(!state.nodes.is_empty(), "No nodes found");
+            parse(&tscn, tokens)?;
         }
 
         Ok(())

@@ -171,11 +171,11 @@ where
                 }) = self.peek_next_token_swallow_spaces()
                 {
                     self.tokens.next(); // skip '/'
-                    let nested_key_range =
+                    let nested_key_span =
                         self.expect_exact(TscnTokenKind::Identifier)?;
                     let nested_key =
-                        self.source[nested_key_range.clone()].to_owned();
-                    Some((nested_key_range, nested_key))
+                        self.source[nested_key_span.clone()].to_owned();
+                    Some((nested_key_span, nested_key))
                 } else {
                     None
                 };
@@ -196,7 +196,7 @@ where
                         ..
                     })
                     | OpenSection::Node(ParsedNode { section_keys, .. }) => {
-                        if let Some((nested_key_range, nested_key)) = nested_key
+                        if let Some((nested_key_span, nested_key)) = nested_key
                         {
                             let nested_dict =
                                 section_keys.entry(key).or_insert_with(|| {
@@ -210,7 +210,7 @@ where
                                 {
                                     miette::bail! {
                                         labels = vec![
-                                            LabeledSpan::at(nested_key_range, "this key"),
+                                            LabeledSpan::at(nested_key_span, "this key"),
                                         ],
                                         "Duplicate nested key",
                                     }
@@ -218,7 +218,7 @@ where
                             } else {
                                 miette::bail! {
                                     labels = vec![
-                                        LabeledSpan::at(span.start..nested_key_range.end, "this key"),
+                                        LabeledSpan::at(span.start..nested_key_span.end, "this key"),
                                     ],
                                     "Expected object value for nested key",
                                 }
@@ -385,6 +385,28 @@ where
         }
     }
 
+    /// A value is what follows after a section key assignment.
+    ///
+    /// Some examples of section keys and their values:
+    ///
+    /// ```tscn,no_run
+    /// z_index = -3
+    ///
+    /// position = Vector2(-23, 14)
+    ///
+    /// animations = [{
+    /// "frames": [{
+    ///     "duration": 1.0,
+    ///     "texture": SubResource("AtlasTexture_yvafp")
+    ///     }, {
+    ///     "duration": 1.0,
+    ///     "texture": SubResource("AtlasTexture_l80js")
+    ///     }],
+    ///     "loop": true,
+    ///     "name": &"default",
+    ///     "speed": 5.0
+    ///  }]
+    /// ```
     fn expect_value(&mut self) -> miette::Result<Value> {
         let first_token = self.next_token_no_eof_ignore_spaces()?;
 
@@ -435,6 +457,7 @@ where
                 loop {
                     match self.peek_next_token_swallow_spaces() {
                         None => {
+                            // TODO
                             miette::bail! {
                                 labels = vec![
                                     LabeledSpan::at(self.last_token_end..self.source.len() - 1, "this input"),
@@ -483,15 +506,116 @@ where
             // we found an object!
             TscnToken {
                 kind: TscnTokenKind::CurlyBracketOpen,
-                span,
+                ..
             } => {
-                // TODO
-                miette::bail! {
-                    labels = vec![
-                        LabeledSpan::at(span, "todo"),
-                    ],
-                    "Object parsing not implemented yet",
+                // we look for a string (key) -> a colon -> a value ->
+                // either a comma or a closing curly bracket
+
+                let mut map = Map::default();
+                let mut is_first_el = true;
+                loop {
+                    match self.peek_next_token_swallow_spaces() {
+                        None => {
+                            // TODO
+                            miette::bail! {
+                                labels = vec![
+                                    LabeledSpan::at(self.last_token_end..self.source.len() - 1, "this input"),
+                                ],
+                                "Unexpected end of file",
+                            }
+                        }
+                        Some(TscnToken {
+                            kind: TscnTokenKind::CurlyBracketClose,
+                            ..
+                        }) => {
+                            self.tokens.next(); // skip '}'
+                            break;
+                        }
+                        Some(TscnToken {
+                            kind: TscnTokenKind::NewLine,
+                            ..
+                        }) => {
+                            self.tokens.next(); // skip '\n'
+                        }
+                        Some(TscnToken {
+                            kind: TscnTokenKind::String,
+                            span,
+                        }) => {
+                            let span = span.clone();
+                            // TODO: strip quotes
+                            let key = self.source[span.clone()].to_owned();
+                            self.tokens.next(); // skip string key
+                            self.expect_exact(TscnTokenKind::Colon)?;
+
+                            let next_token = self
+                                .peek_next_token_swallow_spaces()
+                                .ok_or_else(|| {
+                                    // TODO
+                                    miette::miette! {
+                                        labels = vec![
+                                            LabeledSpan::at(span, "this input"),
+                                        ],
+                                        "Unexpected end of file",
+                                    }
+                                })?;
+
+                            if let TscnToken {
+                                kind: TscnTokenKind::Ampersand,
+                                ..
+                            } = next_token
+                            {
+                                // not sure why does tscn have string references
+                                // but so be it
+                                self.tokens.next(); // skip '&'
+
+                                let string_val_span =
+                                    self.expect_exact(TscnTokenKind::String)?;
+
+                                map.insert(
+                                    key,
+                                    Value::String(
+                                        self.source[string_val_span.clone()]
+                                            .to_owned(),
+                                    ),
+                                );
+                            } else {
+                                // any value is possible
+
+                                let value = self.expect_value()?;
+                                map.insert(key, value);
+                            }
+
+                            is_first_el = false;
+                        }
+                        Some(TscnToken {
+                            kind: TscnTokenKind::Comma,
+                            span,
+                        }) if is_first_el => {
+                            miette::bail! {
+                                labels = vec![
+                                    LabeledSpan::at(span.clone(), "this input"),
+                                ],
+                                "Unexpected ','",
+                            }
+                        }
+                        Some(TscnToken {
+                            kind: TscnTokenKind::Comma,
+                            ..
+                        }) => {
+                            self.tokens.next(); // skip ','
+                        }
+                        Some(TscnToken { kind, span }) => {
+                            miette::bail! {
+                                labels = vec![
+                                    LabeledSpan::at(span.clone(), "this token"),
+                                ],
+                                "Expected string key or '}}', got {kind}",
+                            }
+                        }
+                    }
                 }
+
+                Ok(Value::Object(map))
             }
             // we found a primitive!
             token @ TscnToken {
