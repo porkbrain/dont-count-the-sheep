@@ -420,8 +420,6 @@ where
                     }
                 }
 
-                self.expect_exact(TscnTokenKind::ParenClose)?;
-
                 Ok(Value::Class(class_name.to_owned(), values))
             }
             // we found an array!
