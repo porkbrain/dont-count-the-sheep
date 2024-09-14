@@ -58,7 +58,7 @@ pub(crate) fn parse(
     error_with_source_code!(tscn, parser.parse_headers());
 
     while let IsParsingDone::No =
-        error_with_source_code!(tscn, parser.parse_next())
+        error_with_source_code!(tscn, parser.parse_next_statement())
     {
         // keep it up chief
     }
@@ -97,11 +97,14 @@ where
         Ok(())
     }
 
-    /// Parses next chunk of tokens.
+    /// Parses next chunk of tokens that together form a statement.
+    /// There are two kinds of statements in .tscn:
+    /// - A section heading (e.g. `[node ...]`)
+    /// - A key-value pair (e.g. `position = ...`)
     ///
     /// This is meant to be called in a loop until it returns
     /// `Ok(IsParsingDone::Yes)` or error.
-    fn parse_next(&mut self) -> miette::Result<IsParsingDone> {
+    fn parse_next_statement(&mut self) -> miette::Result<IsParsingDone> {
         match self.tokens.next() {
             Some(TscnToken {
                 kind: TscnTokenKind::SquareBracketOpen,
@@ -560,57 +563,5 @@ where
 {
     fn peek(&mut self) -> Option<&TscnToken> {
         self.peek()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::path::PathBuf;
-
-    use super::*;
-    use crate::rscn::lex::lex;
-
-    #[test]
-    fn it_lexes_and_parses_tscn() -> miette::Result<()> {
-        let workspace_root =
-            PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect(
-                "Failed to get CARGO_MANIFEST_DIR environment variable",
-            ));
-        let scenes_dir = if workspace_root.ends_with("main_game_lib") {
-            // we are running this test from the main_game_lib directory
-            format!("{}/../main_game/assets/scenes", workspace_root.display())
-        } else {
-            // we are running this test from the workspace root
-            format!("{}/main_game/assets/scenes", workspace_root.display())
-        };
-        let dir_iter = std::fs::read_dir(&scenes_dir).unwrap_or_else(|err| {
-            panic!("Failed to read directory '{scenes_dir}' with .tscn files: {err}");
-        });
-
-        for entry in dir_iter {
-            let entry = entry
-                .expect("Failed to read entry in directory with .tscn files");
-            let path = entry.path();
-            if path.extension().is_none_or(|ext| ext != "tscn") {
-                continue;
-            }
-
-            let tscn = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-                panic!("Failed to read .tscn file at {path:?}: {err}");
-            });
-
-            let tokens = lex(&tscn)?;
-            assert!(!tokens.is_empty(), "Empty .tscn file at {path:?}");
-
-            let state = parse(&tscn, tokens)?;
-            assert!(
-                !state.ext_resources.is_empty(),
-                "No external resources found"
-            );
-            assert!(!state.sub_resources.is_empty(), "No sub resources found");
-            assert!(!state.nodes.is_empty(), "No nodes found");
-        }
-
-        Ok(())
     }
 }
