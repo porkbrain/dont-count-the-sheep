@@ -21,7 +21,7 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Compound;
 #[derive(TypePath, Default, Debug)]
 struct Compound;
 
-impl main_game_lib::rscn::TscnInBevy for Compound {
+impl main_game_lib::bevy_rscn::TscnInBevy for Compound {
     fn tscn_asset_path() -> String {
         format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
@@ -33,14 +33,14 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            rscn::start_loading_tscn::<Compound>,
+            bevy_rscn::start_loading_tscn::<Compound>,
         )
         .add_systems(
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap>)
-                .run_if(rscn::tscn_loaded_but_not_spawned::<Compound>()),
+                .run_if(bevy_rscn::tscn_loaded_but_not_spawned::<Compound>()),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(

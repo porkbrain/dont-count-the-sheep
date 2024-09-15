@@ -2,8 +2,8 @@ use std::ops::Range;
 
 use miette::LabeledSpan;
 
-use super::{
-    tscn_identifiers::EXT_RESOURCE, Map, ParsedExtResource, State, Value,
+use crate::parse::{
+    tscn_identifiers::EXT_RESOURCE, ExtResource, Map, Scene, Value,
 };
 
 const EXT_RESOURCE_TYPE: &str = "type";
@@ -14,7 +14,7 @@ const EXT_RESOURCE_TYPE_TEXTURE_2D_PATH: &str = "path";
 /// Ext resources don't have any section keys, therefore we can insert the
 /// section in the state directly.
 pub(super) fn parse_attributes_into_state(
-    state: &mut State,
+    state: &mut Scene,
     span: Range<usize>,
     mut attrs: Map<Value>,
 ) -> miette::Result<()> {
@@ -88,10 +88,10 @@ pub(super) fn parse_attributes_into_state(
 
             state
                 .ext_resources
-                .push(ParsedExtResource::Texture2D { uid, path });
+                .push(ExtResource::Texture2D { uid, path });
         }
         _ => {
-            state.ext_resources.push(ParsedExtResource::Other {
+            state.ext_resources.push(ExtResource::Other {
                 kind,
                 uid,
                 attributes: attrs,

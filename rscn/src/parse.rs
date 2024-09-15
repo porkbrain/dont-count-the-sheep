@@ -1,4 +1,7 @@
 //! Parses a list of [TscnToken]s.
+//!
+//! We are parsing under the optimistic assumption that the .tscn file comes
+//! from Godot.
 
 mod ext_resource;
 mod node;
@@ -12,12 +15,12 @@ use super::{
     lex::{TscnToken, TscnTokenKind},
     value::*,
 };
-use crate::rscn::intermediate_repr::*;
+use crate::godot::*;
 
 struct Parser<'a, I> {
     source: &'a str,
     tokens: I,
-    state: State,
+    state: Scene,
     open_section: OpenSection,
     /// We assert that the tscn string is not empty.
     /// This value starts on 0 which is going to be a valid index.
@@ -42,7 +45,7 @@ macro_rules! error_with_source_code {
 pub(crate) fn parse(
     tscn: &str,
     tokens: impl IntoIterator<Item = TscnToken>,
-) -> miette::Result<State> {
+) -> miette::Result<Scene> {
     if tscn.is_empty() {
         miette::bail!("Empty .tscn source");
     }
@@ -50,7 +53,7 @@ pub(crate) fn parse(
     let mut parser = Parser {
         source: tscn,
         tokens: tokens.into_iter().peekable(),
-        state: State::default(),
+        state: Scene::default(),
         open_section: OpenSection::default(),
         last_token_end: 0,
     };
@@ -191,11 +194,11 @@ where
                             "Unexpected section key '{key}'",
                         }
                     }
-                    OpenSection::SubResource(ParsedSubResource {
+                    OpenSection::SubResource(SubResource {
                         section_keys,
                         ..
                     })
-                    | OpenSection::Node(ParsedNode { section_keys, .. }) => {
+                    | OpenSection::Node(Node { section_keys, .. }) => {
                         if let Some((nested_key_span, nested_key)) = nested_key
                         {
                             let nested_dict =
@@ -666,8 +669,8 @@ where
 enum OpenSection {
     #[default]
     None,
-    SubResource(ParsedSubResource),
-    Node(ParsedNode),
+    SubResource(SubResource),
+    Node(Node),
 }
 
 mod tscn_identifiers {

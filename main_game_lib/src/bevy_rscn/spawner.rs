@@ -9,12 +9,12 @@
 use std::time::Duration;
 
 use bevy::utils::EntityHashMap;
+use bevy_rscn::Point;
 use common_visuals::{AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer};
-use rscn::Point;
 
 use crate::{
+    bevy_rscn::{In2D, NodeName, RscnNode, SpriteTexture, TscnTree},
     prelude::*,
-    rscn::{In2D, NodeName, RscnNode, SpriteTexture, TscnTree},
 };
 
 /// Maps entity to its component description.

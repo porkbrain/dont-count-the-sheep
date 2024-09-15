@@ -1,20 +1,33 @@
+//! While we have [Value] enum that can represent any .tscn value, we know what
+//! specific values to expect from Godot.
+//!
+//! In this module we declare specific expectations we have for the .tscn values
+//! that Godot produces.
+
 use super::value::{Map, Value};
 
+/// Represents a parsed Godot scene.
 #[derive(Default, Debug, PartialEq)]
-pub(crate) struct State {
+pub struct Scene {
     /// Headers are attributes of the initial "gd_scene" section.
-    pub(crate) headers: Map<Value>,
-    pub(crate) ext_resources: Vec<ParsedExtResource>,
-    pub(crate) sub_resources: Vec<ParsedSubResource>,
-    pub(crate) nodes: Vec<ParsedNode>,
+    pub headers: Map<Value>,
+    /// List of `[ext_resources]`.
+    pub ext_resources: Vec<ExtResource>,
+    /// List of `[sub_resources]`.
+    pub sub_resources: Vec<SubResource>,
+    /// List of `[nodes]`.
+    pub nodes: Vec<Node>,
 }
 
+/// The kind of external resources we expect in the .tscn file.
+///
+/// `[ext_resources]`
 #[derive(Debug, PartialEq)]
-pub(crate) enum ParsedExtResource {
-    Texture2D {
-        uid: ExtResourceId,
-        path: String,
-    },
+#[allow(missing_docs)]
+pub enum ExtResource {
+    /// A 2D texture.
+    Texture2D { uid: ExtResourceId, path: String },
+    /// Catch all for any other kind of resource.
     Other {
         kind: String,
         uid: ExtResourceId,
@@ -22,48 +35,78 @@ pub(crate) enum ParsedExtResource {
     },
 }
 
+/// `[sub_resources]`
 #[derive(Debug, PartialEq)]
-pub(crate) struct ParsedSubResource {
-    pub(crate) id: SubResourceId,
-    pub(crate) kind: SubResourceKind,
-    pub(crate) section_keys: Map<Value>,
+pub struct SubResource {
+    /// The unique identifier of the sub resource.
+    pub id: SubResourceId,
+    /// If we know resource type, then we can use it to interpret the
+    /// `section_keys`.
+    pub kind: SubResourceKind,
+    /// The keys and values of the sub resource.
+    pub section_keys: Map<Value>,
 }
 
+/// Represents Godot node tree.
+///
+/// `[nodes]`
 #[derive(Debug, PartialEq)]
-pub(crate) struct ParsedNode {
-    pub(crate) name: String,
-    pub(crate) parent: Option<String>,
-    pub(crate) kind: ParsedNodeKind,
-    pub(crate) section_keys: Map<Value>,
+pub struct Node {
+    /// The name of the node as shown in the Godot editor.
+    pub name: String,
+    /// Will be [None] for the root node.
+    pub parent: Option<String>,
+    /// There are many kinds of nodes in Godot, some of them we care about in
+    /// this crate.
+    pub kind: NodeKind,
+    /// The keys and values of the node.
+    ///
+    /// Nested keys are mapped to a map value.
+    pub section_keys: Map<Value>,
 }
 
+/// The kind of external resources we expect in the .tscn file.
 #[derive(Debug, PartialEq, Eq)]
-pub(crate) enum ExtResourceKind {
+pub enum ExtResourceKind {
+    /// A 2D texture resource.
     Texture2D,
+    /// Catch all for any other kind of resource.
     Other(String),
 }
 
+/// The unique identifier of an external resource.
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub(crate) struct ExtResourceId(pub(crate) String);
+pub struct ExtResourceId(pub String);
 
+/// The kind of sub resources we expect in the .tscn file.
 #[derive(Debug, PartialEq, Eq)]
-pub(crate) enum SubResourceKind {
+pub enum SubResourceKind {
+    /// A texture atlas.
     AtlasTexture,
+    /// A sprite frames resource.
     SpriteFrames,
+    /// Catch all for any other kind of resource.
     Other(String),
 }
 
+/// The kind of node we expect in the .tscn file.
 #[derive(Debug, PartialEq, Eq)]
-pub(crate) enum ParsedNodeKind {
+pub enum NodeKind {
+    /// The top level node.
     Node,
+    /// A 2D node.
     Node2D,
+    /// A 2D node that is a sprite node.
     Sprite2D,
+    /// A 2D node that is an animated sprite node.
     AnimatedSprite2D,
+    /// Catch all for any other kind of node.
     Other(String),
 }
 
+/// The unique identifier of a sub resource.
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub(crate) struct SubResourceId(pub(crate) String);
+pub struct SubResourceId(pub String);
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum SectionKey {
@@ -116,11 +159,13 @@ pub(crate) struct X(pub(crate) f32);
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub(crate) struct Y(pub(crate) f32);
 
-impl ParsedExtResource {
-    pub(crate) fn uid(&self) -> &ExtResourceId {
+impl ExtResource {
+    /// The unique identifier of the external resource is always present,
+    /// irrelevant of the kind.
+    pub fn uid(&self) -> &ExtResourceId {
         match self {
-            ParsedExtResource::Texture2D { uid, .. } => uid,
-            ParsedExtResource::Other { uid, .. } => uid,
+            Self::Texture2D { uid, .. } => uid,
+            Self::Other { uid, .. } => uid,
         }
     }
 }
@@ -161,7 +206,7 @@ impl From<String> for SubResourceKind {
     }
 }
 
-impl From<String> for ParsedNodeKind {
+impl From<String> for NodeKind {
     fn from(s: String) -> Self {
         match s.as_str() {
             "Node" => Self::Node,

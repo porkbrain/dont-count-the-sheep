@@ -21,7 +21,7 @@ pub(crate) struct Plugin;
 #[derive(TypePath, Default, Debug)]
 struct Building1Basement1;
 
-impl main_game_lib::rscn::TscnInBevy for Building1Basement1 {
+impl main_game_lib::bevy_rscn::TscnInBevy for Building1Basement1 {
     fn tscn_asset_path() -> String {
         format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
@@ -31,16 +31,16 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            rscn::start_loading_tscn::<Building1Basement1>,
+            bevy_rscn::start_loading_tscn::<Building1Basement1>,
         )
         .add_systems(
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap>)
-                .run_if(
-                    rscn::tscn_loaded_but_not_spawned::<Building1Basement1>(),
-                ),
+                .run_if(bevy_rscn::tscn_loaded_but_not_spawned::<
+                    Building1Basement1,
+                >()),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
@@ -209,7 +209,7 @@ fn enter_the_elevator(
     player: Query<Entity, With<Player>>,
     elevator: Query<Entity, With<Elevator>>,
     camera: Query<Entity, With<MainCamera>>,
-    points: Query<(&Name, &rscn::Point)>,
+    points: Query<(&Name, &bevy_rscn::Point)>,
 ) {
     let Some(player) = player.get_single_or_none() else {
         error!("Cannot enter the elevator because the Player is missing");
@@ -217,7 +217,7 @@ fn enter_the_elevator(
     };
 
     let point_in_elevator = {
-        let (_, rscn::Point(pos)) = points
+        let (_, bevy_rscn::Point(pos)) = points
             .iter()
             .find(|(name, _)| **name == Name::new("InElevator"))
             .expect("InElevator point not found");
@@ -251,7 +251,7 @@ fn enter_basement2(
 
     player: Query<Entity, With<Player>>,
     door: Query<Entity, With<DoorToStorageBasement>>,
-    points: Query<(&Name, &rscn::Point)>,
+    points: Query<(&Name, &bevy_rscn::Point)>,
 ) {
     let Some(player) = player.get_single_or_none() else {
         return;
@@ -259,7 +259,7 @@ fn enter_basement2(
 
     let door_entrance = points
         .iter()
-        .find_map(|(name, rscn::Point(pos))| {
+        .find_map(|(name, bevy_rscn::Point(pos))| {
             if name == &Name::new("BasementExit") {
                 Some(*pos)
             } else {

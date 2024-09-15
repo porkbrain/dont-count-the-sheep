@@ -3,9 +3,9 @@ use bevy::{
     math::{Rect, Vec2},
     utils::{default, HashMap},
 };
+use rscn::{self, godot};
 
-use crate::rscn::{
-    intermediate_repr::{self, ParsedNodeKind, Y},
+use crate::bevy_rscn::{
     Config, In2D, NodeName, RscnNode, SpriteFrames, SpriteTexture, TscnTree,
 };
 
@@ -21,10 +21,7 @@ struct Properties {
     flip_vertically: bool,
 }
 
-pub(crate) fn from_state(
-    mut state: intermediate_repr::State,
-    conf: &Config,
-) -> TscnTree {
+pub(crate) fn from_state(mut state: godot::Scene, conf: &Config) -> TscnTree {
     let root_node_index = state
         .nodes
         .iter()
@@ -36,7 +33,7 @@ pub(crate) fn from_state(
         "Root node must have no extra data"
     );
     assert_eq!(
-        ParsedNodeKind::Node2D,
+        godot::NodeKind::Node2D,
         parsed_root_node.kind,
         "Root node must be of type Node2D"
     );
@@ -94,7 +91,7 @@ pub(crate) fn from_state(
         } = properties;
 
         let in_2d = match parsed_node.kind {
-            ParsedNodeKind::AnimatedSprite2D => Some(In2D {
+            godot::NodeKind::AnimatedSprite2D => Some(In2D {
                 position,
                 z_index,
                 texture: Some(SpriteTexture {
@@ -114,7 +111,7 @@ pub(crate) fn from_state(
                     flip_vertically,
                 }),
             }),
-            ParsedNodeKind::Sprite2D => Some(In2D {
+            godot::NodeKind::Sprite2D => Some(In2D {
                 position,
                 z_index,
                 texture: Some(SpriteTexture {
@@ -134,7 +131,7 @@ pub(crate) fn from_state(
                     flip_vertically,
                 }),
             }),
-            ParsedNodeKind::Node2D => Some(In2D {
+            godot::NodeKind::Node2D => Some(In2D {
                 position,
                 z_index,
                 texture: {
@@ -143,14 +140,14 @@ pub(crate) fn from_state(
                     None
                 },
             }),
-            ParsedNodeKind::Node => {
+            godot::NodeKind::Node => {
                 assert_eq!(Vec2::ZERO, position);
                 assert!(z_index.is_none());
                 assert!(path.is_none());
                 assert!(animation.is_none());
                 None
             }
-            ParsedNodeKind::Other(kind) => {
+            godot::NodeKind::Other(kind) => {
                 panic!("Node kind '{kind}' is not supported")
             }
         };
@@ -191,7 +188,7 @@ pub(crate) fn from_state(
 
 fn apply_section_key(
     conf: &Config,
-    state: &intermediate_repr::State,
+    state: &godot::Scene,
     section_key: intermediate_repr::SectionKey,
     Properties {
         z_index,
@@ -325,7 +322,7 @@ fn apply_section_key(
             //                     .iter()
             //                     .find(|res| res.uid() == id)
             //                     .map(|res| {
-            //                         
+            //
             // todo!("conf.to_prefixless_path(&res.path)")
             //                     })
             //                     .expect("ext resource should exist");

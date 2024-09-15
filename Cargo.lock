@@ -3357,6 +3357,7 @@ dependencies = [
  "pathfinding",
  "rand",
  "ron",
+ "rscn",
  "serde",
  "serde_json",
  "serde_with",
@@ -4500,6 +4501,14 @@ dependencies = [
  "bitflags 2.6.0",
  "serde",
  "serde_derive",
+]
+
+[[package]]
+name = "rscn"
+version = "0.1.0"
+dependencies = [
+ "logos",
+ "miette",
 ]
 
 [[package]]

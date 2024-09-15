@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use miette::LabeledSpan;
 
-use super::{tscn_identifiers::SUB_RESOURCE, Map, ParsedSubResource, Value};
+use crate::parse::{tscn_identifiers::SUB_RESOURCE, Map, SubResource, Value};
 
 const SUB_RESOURCE_TYPE: &str = "type";
 const SUB_RESOURCE_ID: &str = "id";
@@ -11,7 +11,7 @@ const SUB_RESOURCE_ID: &str = "id";
 pub(super) fn parse_attributes(
     span: Range<usize>,
     mut attrs: Map<Value>,
-) -> miette::Result<ParsedSubResource> {
+) -> miette::Result<SubResource> {
     let kind = attrs.remove(SUB_RESOURCE_TYPE).ok_or_else(|| {
         miette::miette! {
             labels = vec![
@@ -56,7 +56,7 @@ pub(super) fn parse_attributes(
         })
     })?;
 
-    Ok(ParsedSubResource {
+    Ok(SubResource {
         id: id.into(),
         kind: kind.into(),
         // these are yet to be populated by subsequent parsing

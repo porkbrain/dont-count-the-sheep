@@ -1,0 +1,10 @@
+[package]
+name = "rscn"
+description = "Parses Godot .tscn files"
+
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+miette.workspace = true
+logos.workspace = true

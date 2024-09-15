@@ -1,28 +1,50 @@
+//! Generic kind of values that can be contained in a tscn file.
+//!
+//! See [crate::godot] module for Godot specific declarations.
+
 use std::collections::BTreeMap;
 
 use miette::LabeledSpan;
 
 use super::lex::{TscnToken, TscnTokenKind};
 
+/// Analogical struct to serde crates' `Value`s.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum Value {
+pub enum Value {
+    /// We coerce all numbers to f64.
     Number(f64),
+    /// Good old string is captured with regex `"[A-Za-z0-9_/?:\. ]+"`.
+    ///
+    /// tscn values can have string references, which is a string with a `&`
+    /// prefix. There's no distinction between string and string reference
+    /// in this struct.
     String(String),
+    /// Boolean values are `true` or `false` in the tscn format.
     Bool(bool),
+    /// Class is a type of value that has a name and a list of values.
+    ///
+    /// Example:
+    /// ```tscn
+    /// ClassName(0, "or", "more", "values")
+    /// ```
     Class(String, Vec<Value>),
+    /// Array is a list of values.
     Array(Vec<Value>),
+    /// Dictionary is a map of string keys to values.
     Object(Map<Value>),
 }
 
 type MapImpl<V> = BTreeMap<String, V>;
 
+/// Similar to `serde_json::Map`.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Map<V> {
+pub struct Map<V> {
     map_impl: MapImpl<V>,
 }
 
 impl Value {
-    pub(crate) fn into_string(self) -> Option<String> {
+    /// Only returns [Some] for [Value::String].
+    pub fn into_string(self) -> Option<String> {
         match self {
             Self::String(s) => Some(s),
             _ => None,
@@ -31,27 +53,28 @@ impl Value {
 }
 
 impl Map<Value> {
-    pub(crate) fn insert(
-        &mut self,
-        key: String,
-        value: Value,
-    ) -> Option<Value> {
+    /// See [BTreeMap::insert].
+    pub fn insert(&mut self, key: String, value: Value) -> Option<Value> {
         self.map_impl.insert(key, value)
     }
 
-    pub(crate) fn remove(&mut self, key: &str) -> Option<Value> {
+    /// See [BTreeMap::remove].
+    pub fn remove(&mut self, key: &str) -> Option<Value> {
         self.map_impl.remove(key)
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
+    /// See [BTreeMap::is_empty].
+    pub fn is_empty(&self) -> bool {
         self.map_impl.is_empty()
     }
 
-    pub(crate) fn len(&self) -> usize {
+    /// See [BTreeMap::len].
+    pub fn len(&self) -> usize {
         self.map_impl.len()
     }
 
-    pub(crate) fn entry(
+    /// See [BTreeMap::entry].
+    pub fn entry(
         &mut self,
         key: String,
     ) -> std::collections::btree_map::Entry<String, Value> {

@@ -37,7 +37,7 @@ pub(crate) enum TscnTokenKind {
     Equal,
     #[token(",")]
     Comma,
-    #[token("/")]
+    #[token("//")]
     ForwardSlash,
     #[token(" ")]
     Space,
@@ -53,6 +53,7 @@ pub(crate) enum TscnTokenKind {
     False,
     #[regex(r#"-?\d+(\.\d+)?"#, priority = 4)]
     Number,
+    // TODO: add optional leading amprersand to string regex
     #[regex(r#""[A-Za-z0-9_/?:\. ]+""#, priority = 2)]
     String,
 }
