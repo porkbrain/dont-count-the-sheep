@@ -10,7 +10,7 @@ use super::value::{Map, Value};
 #[derive(Default, Debug, PartialEq)]
 pub struct Scene {
     /// Headers are attributes of the initial "gd_scene" section.
-    pub headers: Map<Value>,
+    pub headers: Map<String, Value>,
     /// List of `[ext_resources]`.
     pub ext_resources: Vec<ExtResource>,
     /// List of `[sub_resources]`.
@@ -31,7 +31,7 @@ pub enum ExtResource {
     Other {
         kind: String,
         uid: ExtResourceId,
-        attributes: Map<Value>,
+        attributes: Map<String, Value>,
     },
 }
 
@@ -44,7 +44,7 @@ pub struct SubResource {
     /// `section_keys`.
     pub kind: SubResourceKind,
     /// The keys and values of the sub resource.
-    pub section_keys: Map<Value>,
+    pub section_keys: Map<SubResourceSectionKey, Value>,
 }
 
 /// Represents Godot node tree.
@@ -62,7 +62,7 @@ pub struct Node {
     /// The keys and values of the node.
     ///
     /// Nested keys are mapped to a map value.
-    pub section_keys: Map<Value>,
+    pub section_keys: Map<NodeSectionKey, Value>,
 }
 
 /// The kind of external resources we expect in the .tscn file.
@@ -108,29 +108,54 @@ pub enum NodeKind {
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct SubResourceId(pub String);
 
-#[derive(Debug, PartialEq, Eq)]
-pub(crate) enum SectionKey {
-    AtlasExtResource(ExtResourceId),
-    RegionRect2(X, Y, X, Y),
-    SingleAnim(Animation),
-    ZIndex(Number),
-    TextureExtResource(ExtResourceId),
-    Position(X, Y),
-    SpriteFramesSubResource(SubResourceId),
+/// Section keys we expect in the `[sub_resources]` section.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum SubResourceSectionKey {
+    /// `AtlasExtResource(ExtResourceId)`
+    AtlasExtResource,
+    /// `RegionRect2(X, Y, X, Y)`
+    Region,
+    /// `SingleAnim(Animation)`
+    Animations,
+    /// Catch all for any other kind of key.
+    Other(String),
+}
+
+/// Section keys we expect in the `[nodes]` section.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum NodeSectionKey {
+    /// `ZIndex(Number)`
+    ZIndex,
+    /// `TextureExtResource(ExtResourceId)`
+    TextureExtResource,
+    /// `Position(X, Y)`
+    Position,
+    /// `SpriteFramesSubResource(SubResourceId)`
+    SpriteFrames,
     /// key - value metadata pair where the value is of type string
-    StringMetadata(String, String),
-    FrameIndex(usize),
+    /// (String, String)`
+    StringMetadata,
+    /// `FrameIndex(Number)`
+    FrameIndex,
     /// Whether the atlas should autoplay the animation.
     Autoplay,
     /// Whether the node is visible.
     /// If false we add a `Visibility::Hidden` component to the node.
-    Visibility(bool),
+    /// `Visibility(bool)`
+    Visible,
     /// A texture should be flipped horizontally.
-    FlipHorizontally(bool),
+    /// `FlipHorizontally(bool)`
+    FlipHorizontally,
     /// A texture should be flipped vertically.
-    FlipVertically(bool),
+    /// `FlipVertically(bool)`
+    FlipVertically,
     /// RGBa
-    SelfModulateColor(Number, Number, Number, Number),
+    /// `SelfModulateColor(Number, Number, Number, Number)`
+    SelfModulate,
+    /// `FrameProgress(Number)`
+    FrameProgress,
+    /// Catch all for any other kind of key.
+    Other(String),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -239,6 +264,37 @@ impl Default for Animation {
             index: 0,
             loop_: false,
             autoload: false,
+        }
+    }
+}
+
+impl From<String> for NodeSectionKey {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "z_index" => Self::ZIndex,
+            "texture" => Self::TextureExtResource,
+            "position" => Self::Position,
+            "sprite_frames" => Self::SpriteFrames,
+            "metadata" => Self::StringMetadata,
+            "frame" => Self::FrameIndex,
+            "frame_progress" => Self::FrameProgress,
+            "autoplay" => Self::Autoplay,
+            "visible" => Self::Visible,
+            "flip_h" => Self::FlipHorizontally,
+            "flip_v" => Self::FlipVertically,
+            "self_modulate" => Self::SelfModulate,
+            _ => Self::Other(s),
+        }
+    }
+}
+
+impl From<String> for SubResourceSectionKey {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "atlas" => Self::AtlasExtResource,
+            "region" => Self::Region,
+            "animations" => Self::Animations,
+            _ => Self::Other(s),
         }
     }
 }

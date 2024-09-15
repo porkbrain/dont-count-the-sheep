@@ -9,10 +9,10 @@ const NODE_NAME: &str = "name";
 const NODE_PARENT: &str = "parent";
 const NODE_KIND: &str = "type";
 
-/// Subresources can have section keys.
+/// Nodes can have section keys.
 pub(super) fn parse_attributes(
     span: Range<usize>,
-    mut attrs: Map<Value>,
+    mut attrs: Map<String, Value>,
 ) -> miette::Result<Node> {
     let name = attrs.remove(NODE_NAME).ok_or_else(|| {
         miette::miette! {

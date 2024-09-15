@@ -37,14 +37,14 @@ pub(crate) enum TscnTokenKind {
     Equal,
     #[token(",")]
     Comma,
-    #[token("//")]
+    #[token("/")]
     ForwardSlash,
     #[token(" ")]
     Space,
     #[token("\n")]
     NewLine,
 
-    #[regex(r#"[A-Za-z0-9_/]+"#, priority = 3)]
+    #[regex(r#"[A-Za-z0-9_]+"#, priority = 3)]
     Identifier,
 
     #[token("true")]

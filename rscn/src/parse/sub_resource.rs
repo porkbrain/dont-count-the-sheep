@@ -10,7 +10,7 @@ const SUB_RESOURCE_ID: &str = "id";
 /// Subresources can have section keys.
 pub(super) fn parse_attributes(
     span: Range<usize>,
-    mut attrs: Map<Value>,
+    mut attrs: Map<String, Value>,
 ) -> miette::Result<SubResource> {
     let kind = attrs.remove(SUB_RESOURCE_TYPE).ok_or_else(|| {
         miette::miette! {

@@ -2,7 +2,7 @@
 //!
 //! See [crate::godot] module for Godot specific declarations.
 
-use std::collections::BTreeMap;
+use std::{borrow::Borrow, collections::BTreeMap};
 
 use miette::LabeledSpan;
 
@@ -31,15 +31,15 @@ pub enum Value {
     /// Array is a list of values.
     Array(Vec<Value>),
     /// Dictionary is a map of string keys to values.
-    Object(Map<Value>),
+    Object(Map<String, Value>),
 }
 
-type MapImpl<V> = BTreeMap<String, V>;
+type MapImpl<K, V> = BTreeMap<K, V>;
 
 /// Similar to `serde_json::Map`.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Map<V> {
-    map_impl: MapImpl<V>,
+pub struct Map<K, V> {
+    map_impl: MapImpl<K, V>,
 }
 
 impl Value {
@@ -52,14 +52,19 @@ impl Value {
     }
 }
 
-impl Map<Value> {
+impl<K: Ord> Map<K, Value> {
     /// See [BTreeMap::insert].
-    pub fn insert(&mut self, key: String, value: Value) -> Option<Value> {
+    pub fn insert(&mut self, key: K, value: Value) -> Option<Value> {
         self.map_impl.insert(key, value)
     }
 
     /// See [BTreeMap::remove].
-    pub fn remove(&mut self, key: &str) -> Option<Value> {
+    pub fn remove<Q>(&mut self, key: &Q) -> Option<Value>
+    where
+        Q: ?Sized,
+        K: Borrow<Q> + Ord,
+        Q: Ord,
+    {
         self.map_impl.remove(key)
     }
 
@@ -76,13 +81,13 @@ impl Map<Value> {
     /// See [BTreeMap::entry].
     pub fn entry(
         &mut self,
-        key: String,
-    ) -> std::collections::btree_map::Entry<String, Value> {
+        key: K,
+    ) -> std::collections::btree_map::Entry<K, Value> {
         self.map_impl.entry(key)
     }
 }
 
-impl<V> Default for Map<V> {
+impl<K, V> Default for Map<K, V> {
     fn default() -> Self {
         Self {
             map_impl: MapImpl::default(),
@@ -90,9 +95,9 @@ impl<V> Default for Map<V> {
     }
 }
 
-impl IntoIterator for Map<Value> {
-    type Item = (String, Value);
-    type IntoIter = std::collections::btree_map::IntoIter<String, Value>;
+impl<K> IntoIterator for Map<K, Value> {
+    type Item = (K, Value);
+    type IntoIter = std::collections::btree_map::IntoIter<K, Value>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.map_impl.into_iter()

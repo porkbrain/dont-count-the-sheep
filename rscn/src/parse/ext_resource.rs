@@ -16,7 +16,7 @@ const EXT_RESOURCE_TYPE_TEXTURE_2D_PATH: &str = "path";
 pub(super) fn parse_attributes_into_state(
     state: &mut Scene,
     span: Range<usize>,
-    mut attrs: Map<Value>,
+    mut attrs: Map<String, Value>,
 ) -> miette::Result<()> {
     let kind = attrs.remove(EXT_RESOURCE_TYPE).ok_or_else(|| {
         miette::miette! {

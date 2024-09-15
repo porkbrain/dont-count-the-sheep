@@ -115,44 +115,7 @@ where
             }) => {
                 // we are starting a new section!
                 self.close_section();
-
-                let span = self.expect_exact(TscnTokenKind::Identifier)?;
-                let new_section_kind = &self.source[span.clone()];
-                match new_section_kind {
-                    tscn_identifiers::EXT_RESOURCE => {
-                        let (ends_at, ext_attrs) = self.expect_attributes()?;
-                        ext_resource::parse_attributes_into_state(
-                            &mut self.state,
-                            span.start..ends_at,
-                            ext_attrs,
-                        )?;
-                    }
-                    tscn_identifiers::SUB_RESOURCE => {
-                        let (ends_at, ext_attrs) = self.expect_attributes()?;
-                        self.open_section = OpenSection::SubResource(
-                            sub_resource::parse_attributes(
-                                span.start..ends_at,
-                                ext_attrs,
-                            )?,
-                        );
-                    }
-                    tscn_identifiers::NODE => {
-                        let (ends_at, ext_attrs) = self.expect_attributes()?;
-                        self.open_section =
-                            OpenSection::Node(node::parse_attributes(
-                                span.start..ends_at,
-                                ext_attrs,
-                            )?);
-                    }
-                    unknown_section => {
-                        miette::bail! {
-                            labels = vec![
-                                LabeledSpan::at(span, "this section"),
-                            ],
-                            "Unknown section '{unknown_section}'",
-                        }
-                    }
-                }
+                self.parse_section_heading()?;
 
                 Ok(IsParsingDone::No)
             }
@@ -160,82 +123,7 @@ where
                 kind: TscnTokenKind::Identifier,
                 span,
             }) => {
-                let key = self.source[span.clone()].to_owned();
-                self.expect_exact(TscnTokenKind::Equal).with_context(|| {
-                    format!("Section key must be in format '{key} = value'")
-                })?;
-
-                // tscn supports keys with forward slashes to create nested
-                // dictionaries
-                // e.g. `key/subkey = value`
-                let nested_key = if let Some(TscnToken {
-                    kind: TscnTokenKind::ForwardSlash,
-                    ..
-                }) = self.peek_next_token_swallow_spaces()
-                {
-                    self.tokens.next(); // skip '/'
-                    let nested_key_span =
-                        self.expect_exact(TscnTokenKind::Identifier)?;
-                    let nested_key =
-                        self.source[nested_key_span.clone()].to_owned();
-                    Some((nested_key_span, nested_key))
-                } else {
-                    None
-                };
-
-                let value = self.expect_value()?;
-
-                match &mut self.open_section {
-                    OpenSection::None => {
-                        miette::bail! {
-                            labels = vec![
-                                LabeledSpan::at(span, "this key"),
-                            ],
-                            "Unexpected section key '{key}'",
-                        }
-                    }
-                    OpenSection::SubResource(SubResource {
-                        section_keys,
-                        ..
-                    })
-                    | OpenSection::Node(Node { section_keys, .. }) => {
-                        if let Some((nested_key_span, nested_key)) = nested_key
-                        {
-                            let nested_dict =
-                                section_keys.entry(key).or_insert_with(|| {
-                                    Value::Object(Default::default())
-                                });
-
-                            if let Value::Object(nested_dict) = nested_dict {
-                                if nested_dict
-                                    .insert(nested_key, value)
-                                    .is_some()
-                                {
-                                    miette::bail! {
-                                        labels = vec![
-                                            LabeledSpan::at(nested_key_span, "this key"),
-                                        ],
-                                        "Duplicate nested key",
-                                    }
-                                }
-                            } else {
-                                miette::bail! {
-                                    labels = vec![
-                                        LabeledSpan::at(span.start..nested_key_span.end, "this key"),
-                                    ],
-                                    "Expected object value for nested key",
-                                }
-                            }
-                        } else if section_keys.insert(key, value).is_some() {
-                            miette::bail! {
-                                labels = vec![
-                                    LabeledSpan::at(span, "this key"),
-                                ],
-                                "Duplicate key'",
-                            }
-                        }
-                    }
-                }
+                self.parse_section_key(span)?;
 
                 Ok(IsParsingDone::No)
             }
@@ -258,6 +146,152 @@ where
             None => {
                 self.close_section();
                 Ok(IsParsingDone::Yes)
+            }
+        }
+    }
+
+    /// Just found a '[' token, so now we expect the rest of the section
+    /// heading.
+    fn parse_section_heading(&mut self) -> miette::Result<()> {
+        let span = self.expect_exact(TscnTokenKind::Identifier)?;
+        let new_section_kind = &self.source[span.clone()];
+        match new_section_kind {
+            tscn_identifiers::EXT_RESOURCE => {
+                let (ends_at, ext_attrs) = self.expect_attributes()?;
+                ext_resource::parse_attributes_into_state(
+                    &mut self.state,
+                    span.start..ends_at,
+                    ext_attrs,
+                )?;
+            }
+            tscn_identifiers::SUB_RESOURCE => {
+                let (ends_at, ext_attrs) = self.expect_attributes()?;
+                self.open_section =
+                    OpenSection::SubResource(sub_resource::parse_attributes(
+                        span.start..ends_at,
+                        ext_attrs,
+                    )?);
+            }
+            tscn_identifiers::NODE => {
+                let (ends_at, ext_attrs) = self.expect_attributes()?;
+                self.open_section = OpenSection::Node(node::parse_attributes(
+                    span.start..ends_at,
+                    ext_attrs,
+                )?);
+            }
+            unknown_section => {
+                miette::bail! {
+                    labels = vec![
+                        LabeledSpan::at(span, "this section"),
+                    ],
+                    "Unknown section '{unknown_section}'",
+                }
+            }
+        };
+
+        Ok(())
+    }
+
+    /// Parses a section key at given range and its value that should follow
+    /// in the token iterator.
+    fn parse_section_key(
+        &mut self,
+        key_span: Range<usize>,
+    ) -> miette::Result<()> {
+        let key = self.source[key_span.clone()].to_owned();
+
+        // tscn supports keys with forward slashes to create nested
+        // dictionaries
+        // e.g. `key/subkey = value`
+        let nested_key = if let Some(TscnToken {
+            kind: TscnTokenKind::ForwardSlash,
+            ..
+        }) = self.peek_next_token_swallow_spaces()
+        {
+            self.tokens.next(); // skip '/'
+            let nested_key_span =
+                self.expect_exact(TscnTokenKind::Identifier)?;
+            let nested_key = self.source[nested_key_span.clone()].to_owned();
+            Some((nested_key_span, nested_key))
+        } else {
+            None
+        };
+
+        self.expect_exact(TscnTokenKind::Equal).with_context(|| {
+            format!("Section key must be in format '{key} = value'")
+        })?;
+
+        let value = self.expect_value()?;
+
+        /// Inserts a section key into the current node or subresource,
+        /// depending on the type of `K`.
+        ///
+        /// If `nested_key` is `Some`, it inserts the value into the nested
+        /// dictionary.
+        fn insert_section_key<K: Ord>(
+            section_keys: &mut Map<K, Value>,
+            (key_span, key): (Range<usize>, K),
+            nested_key: Option<(Range<usize>, String)>,
+            value: Value,
+        ) -> miette::Result<()> {
+            if let Some((nested_key_span, nested_key)) = nested_key {
+                let nested_dict = section_keys
+                    .entry(key)
+                    .or_insert_with(|| Value::Object(Default::default()));
+
+                if let Value::Object(nested_dict) = nested_dict {
+                    if nested_dict.insert(nested_key, value).is_some() {
+                        miette::bail! {
+                            labels = vec![
+                                LabeledSpan::at(nested_key_span, "this key"),
+                            ],
+                            "Duplicate nested key",
+                        }
+                    }
+
+                    Ok(())
+                } else {
+                    miette::bail! {
+                        labels = vec![
+                            LabeledSpan::at(key_span.start..nested_key_span.end, "this key"),
+                        ],
+                        "Expected object value for nested key",
+                    }
+                }
+            } else if section_keys.insert(key, value).is_some() {
+                miette::bail! {
+                    labels = vec![
+                        LabeledSpan::at(key_span, "this key"),
+                    ],
+                    "Duplicate key'",
+                }
+            } else {
+                Ok(())
+            }
+        }
+
+        match &mut self.open_section {
+            OpenSection::None => {
+                miette::bail! {
+                    labels = vec![
+                        LabeledSpan::at(key_span, "this key"),
+                    ],
+                    "Unexpected section key '{key}'",
+                }
+            }
+            OpenSection::Node(Node { section_keys, .. }) => insert_section_key(
+                section_keys,
+                (key_span, From::from(key)),
+                nested_key,
+                value,
+            ),
+            OpenSection::SubResource(SubResource { section_keys, .. }) => {
+                insert_section_key(
+                    section_keys,
+                    (key_span, From::from(key)),
+                    nested_key,
+                    value,
+                )
             }
         }
     }
@@ -354,7 +388,9 @@ where
     /// Returns the position of the closing square bracket and the attributes.
     ///
     /// Ignores spaces.
-    fn expect_attributes(&mut self) -> miette::Result<(usize, Map<Value>)> {
+    fn expect_attributes(
+        &mut self,
+    ) -> miette::Result<(usize, Map<String, Value>)> {
         let mut map = Map::default();
 
         loop {
