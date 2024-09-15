@@ -586,43 +586,8 @@ where
                             self.tokens.next(); // skip string key
                             self.expect_exact(TscnTokenKind::Colon)?;
 
-                            let next_token = self
-                                .peek_next_token_swallow_spaces()
-                                .ok_or_else(|| {
-                                    // TODO
-                                    miette::miette! {
-                                        labels = vec![
-                                            LabeledSpan::at(span, "this input"),
-                                        ],
-                                        "Unexpected end of file",
-                                    }
-                                })?;
-
-                            if let TscnToken {
-                                kind: TscnTokenKind::Ampersand,
-                                ..
-                            } = next_token
-                            {
-                                // not sure why does tscn have string references
-                                // but so be it
-                                self.tokens.next(); // skip '&'
-
-                                let string_val_span =
-                                    self.expect_exact(TscnTokenKind::String)?;
-
-                                map.insert(
-                                    key,
-                                    Value::String(
-                                        self.source[string_val_span.clone()]
-                                            .to_owned(),
-                                    ),
-                                );
-                            } else {
-                                // any value is possible
-
-                                let value = self.expect_value()?;
-                                map.insert(key, value);
-                            }
+                            let value = self.expect_value()?;
+                            map.insert(key, value);
 
                             is_first_el = false;
                         }

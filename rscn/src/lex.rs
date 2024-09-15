@@ -31,8 +31,6 @@ pub(crate) enum TscnTokenKind {
     CurlyBracketClose,
     #[token(":")]
     Colon,
-    #[token("&")]
-    Ampersand,
     #[token("=")]
     Equal,
     #[token(",")]
@@ -53,8 +51,7 @@ pub(crate) enum TscnTokenKind {
     False,
     #[regex(r#"-?\d+(\.\d+)?"#, priority = 4)]
     Number,
-    // TODO: add optional leading amprersand to string regex
-    #[regex(r#""[A-Za-z0-9_/?:\. ]+""#, priority = 2)]
+    #[regex(r#"&?"[A-Za-z0-9_/?:\. ]+""#, priority = 2)]
     String,
 }
 
@@ -90,7 +87,6 @@ impl std::fmt::Display for TscnTokenKind {
             TscnTokenKind::CurlyBracketOpen => write!(f, "{{"),
             TscnTokenKind::CurlyBracketClose => write!(f, "}}"),
             TscnTokenKind::Colon => write!(f, ":"),
-            TscnTokenKind::Ampersand => write!(f, "&"),
             TscnTokenKind::Equal => write!(f, "="),
             TscnTokenKind::Space => write!(f, "space"),
             TscnTokenKind::NewLine => write!(f, "new line"),
