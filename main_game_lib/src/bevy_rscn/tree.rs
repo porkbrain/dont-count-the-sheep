@@ -270,7 +270,7 @@ fn apply_section(
             let prefixless_path = scene
                 .ext_resources
                 .iter()
-                .find(|res| res.uid() == &id)
+                .find(|res| res.id() == &id)
                 .map(|res| {
                     if let ExtResource::Texture2D {
                         path: texture_path, ..
@@ -278,10 +278,15 @@ fn apply_section(
                     {
                         conf.to_prefixless_path(&texture_path)
                     } else {
-                        panic!("ext resource should be a texture")
+                        panic!("ext resource should be a texture: {res:?}")
                     }
                 })
-                .expect("ext resource should exist");
+                .unwrap_or_else(|| {
+                    panic!(
+                        "ext resource {id:?} should exist in {:?}",
+                        scene.ext_resources
+                    )
+                });
             assert!(
                 path.replace(prefixless_path).is_none(),
                 "Node should not have more than one texture"
@@ -436,7 +441,7 @@ fn map_texture_to_atlas_rect(
             let path = scene
                 .ext_resources
                 .iter()
-                .find(|res| res.uid() == &id)
+                .find(|res| res.id() == &id)
                 .map(|res| {
                     if let ExtResource::Texture2D {
                         path: texture_path, ..

@@ -30,11 +30,11 @@ pub struct Scene {
 #[allow(missing_docs)]
 pub enum ExtResource {
     /// A 2D texture.
-    Texture2D { uid: ExtResourceId, path: String },
+    Texture2D { id: ExtResourceId, path: String },
     /// Catch all for any other kind of resource.
     Other {
         kind: String,
-        uid: ExtResourceId,
+        id: ExtResourceId,
         attributes: BTreeMap<String, SpannedValue>,
     },
 }
@@ -213,10 +213,10 @@ pub struct SpriteFramesAnimation {
 impl ExtResource {
     /// The unique identifier of the external resource is always present,
     /// irrelevant of the kind.
-    pub fn uid(&self) -> &ExtResourceId {
+    pub fn id(&self) -> &ExtResourceId {
         match self {
-            Self::Texture2D { uid, .. } => uid,
-            Self::Other { uid, .. } => uid,
+            Self::Texture2D { id, .. } => id,
+            Self::Other { id, .. } => id,
         }
     }
 }
