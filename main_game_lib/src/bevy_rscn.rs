@@ -198,7 +198,7 @@ pub struct TscnTreeHandle<T> {
 /// Aggressively panics on unexpected format.
 pub fn from_tscn(tscn: &str, config: &Config) -> TscnTree {
     rscn::from_tscn(tscn)
-        .and_then(|state| tree::from_scene(state, config))
+        .and_then(|scene| tree::from_scene(scene, config))
         .map_err(|e| e.with_source_code(tscn.to_string()))
         .inspect_err(|e| eprintln!("{e:?}")) // miette fancy error printing
         .expect("Failed to process .tscn file")
