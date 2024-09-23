@@ -1,9 +1,13 @@
 use bevy::{
     color::Color,
+    log::warn,
     math::{Rect, Vec2},
     utils::{default, HashMap},
 };
-use rscn::{self, godot};
+use rscn::{
+    self,
+    godot::{self, ExtResource, SubResourceId, SubResourceSectionKey},
+};
 
 use crate::bevy_rscn::{
     Config, In2D, NodeName, RscnNode, SpriteFrames, SpriteTexture, TscnTree,
@@ -21,15 +25,18 @@ struct Properties {
     flip_vertically: bool,
 }
 
-pub(crate) fn from_state(mut state: godot::Scene, conf: &Config) -> TscnTree {
-    let root_node_index = state
+pub(crate) fn from_scene(
+    mut scene: godot::Scene,
+    conf: &Config,
+) -> miette::Result<TscnTree> {
+    let root_node_index = scene
         .nodes
         .iter()
         .position(|node| node.parent.is_none())
         .expect("there should be a node with no parent");
-    let parsed_root_node = state.nodes.remove(root_node_index);
+    let parsed_root_node = scene.nodes.remove(root_node_index);
     assert!(
-        parsed_root_node.section_keys.is_empty(),
+        parsed_root_node.section.is_empty(),
         "Root node must have no extra data"
     );
     assert_eq!(
@@ -52,7 +59,7 @@ pub(crate) fn from_state(mut state: godot::Scene, conf: &Config) -> TscnTree {
     // sort the nodes by their parent path:
     // "." is 1, "JustAName" is 2, and each "/" in the string adds 1 to the
     // so that e.g. "JustAName/Child" is 3
-    state.nodes.sort_by_key(|node| {
+    scene.nodes.sort_by_key(|node| {
         let p = node
             .parent
             .as_ref()
@@ -69,18 +76,18 @@ pub(crate) fn from_state(mut state: godot::Scene, conf: &Config) -> TscnTree {
     // guaranteed that a parent is always added before its children
 
     let mut nodes = vec![];
-    std::mem::swap(&mut nodes, &mut state.nodes); // to avoid borrow checker
+    std::mem::swap(&mut nodes, &mut scene.nodes); // to avoid borrow checker
     for parsed_node in nodes {
         let mut properties = default();
 
-        for (section_key, section_value) in parsed_node.section_keys {
+        for (section_key, section_value) in parsed_node.section {
             apply_section(
                 conf,
-                &state,
+                &scene,
                 &mut properties,
                 section_key,
                 section_value,
-            );
+            )?;
         }
 
         let Properties {
@@ -185,15 +192,15 @@ pub(crate) fn from_state(mut state: godot::Scene, conf: &Config) -> TscnTree {
         }
     }
 
-    TscnTree {
+    Ok(TscnTree {
         root,
         root_node_name: NodeName(root_node_name),
-    }
+    })
 }
 
 fn apply_section(
     conf: &Config,
-    state: &godot::Scene,
+    scene: &godot::Scene,
     Properties {
         z_index,
         position,
@@ -258,12 +265,22 @@ fn apply_section(
                 );
             }
         }
-        SectionKey::TextureExtResource(id) => {
-            let prefixless_path = state
+        NodeSectionKey::TextureExtResource => {
+            let id = section_value.try_into_ext_resource()?;
+            let prefixless_path = scene
                 .ext_resources
                 .iter()
                 .find(|res| res.uid() == &id)
-                .map(|res| todo!("conf.to_prefixless_path(&res.path)"))
+                .map(|res| {
+                    if let ExtResource::Texture2D {
+                        path: texture_path, ..
+                    } = res
+                    {
+                        conf.to_prefixless_path(&texture_path)
+                    } else {
+                        panic!("ext resource should be a texture")
+                    }
+                })
                 .expect("ext resource should exist");
             assert!(
                 path.replace(prefixless_path).is_none(),
@@ -277,118 +294,85 @@ fn apply_section(
                 .expect("Frame index always comes after sprite_frames")
                 .first_index = index as _;
         }
-        SectionKey::Autoplay => {
+        NodeSectionKey::Autoplay => {
+            let (_, autoplay_anim_name) = section_value.try_into_string()?;
+            assert!(
+                autoplay_anim_name == "default",
+                "For now we only support autoplaying the default animation"
+            );
             animation
                 .as_mut()
                 .expect("Autoplay always comes after sprite_frames")
                 .should_autoload = true;
         }
-        SectionKey::SpriteFramesSubResource(id) => {
-            let res = state
+        NodeSectionKey::FrameProgress => {
+            warn!("Godot's FrameProgress is not supported yet");
+        }
+        NodeSectionKey::SpriteFrames => {
+            let id = section_value.try_into_sub_resource()?;
+
+            let res = scene
                 .sub_resources
                 .iter()
                 .find(|res| res.id == id)
                 .expect("sub resource should exist");
             assert_eq!(
                 1,
-                res.section_keys.len(),
+                res.section.len(),
                 "SpriteFrames should have exactly one animation"
             );
 
-            let SectionKey::SingleAnim(anim) = &res.section_keys[0] else {
+            let Some(section_value) =
+                &res.section.get(&SubResourceSectionKey::Animations)
+            else {
                 panic!(
-                    "SpriteFrames should have exactly one SingleAnim section
-            key"
+                    "SpriteFrames should have exactly one SingleAnim section key"
                 )
             };
 
+            let anim = (*section_value)
+                .clone()
+                .try_into_sprite_frames_animations()?;
+
+            assert!(
+                anim.len() == 1,
+                "We currently support only a single animation"
+            );
+            let anim = anim.into_iter().next().unwrap();
+
             let mut max_y = 0.0f32;
             let mut max_x = 0.0f32;
-            let frames: Vec<_> = anim
+
+            let frames = anim
                 .frames
-                .iter()
-                .map(|frame| {
-                    let frame = state
-                        .sub_resources
-                        .iter()
-                        .find(|res| res.id == frame.texture)
-                        .expect("sub resource should exist");
-                    assert_eq!(2, frame.section_keys.len());
+                .into_iter()
+                .map(|(texture_id, duration)| {
+                    assert!(
+                        duration == 1.0,
+                        "We don't support frame durations"
+                    );
 
-                    let prefixless_path = frame
-                        .section_keys
-                        .iter()
-                        .find_map(|section_key| {
-                            let SectionKey::AtlasExtResource(id) = section_key
-                            else {
-                                return None;
-                            };
-
-                            let prefixless_path = state
-                                .ext_resources
-                                .iter()
-                                .find(|res| res.uid() == id)
-                                .map(|res| {
-                                    todo!("conf.to_prefixless_path(&res.path)")
-                                })
-                                .expect("ext resource should exist");
-
-                            Some(prefixless_path)
-                        })
-                        .expect(
-                            "sub resource should have an atlas section key",
-                        );
-
-                    if let Some(path) = path {
-                        assert_eq!(path, &prefixless_path);
-                    } else {
-                        *path = Some(prefixless_path);
-                    }
-
-                    let rect = frame
-                        .section_keys
-                        .iter()
-                        .find_map(|section_key| {
-                            // we don't convert into bevy coords here because
-                            // bevy uses the top-left corner as the origin
-                            // for textures
-                            let SectionKey::RegionRect2(
-                                X(x1),
-                                Y(y1),
-                                X(w),
-                                Y(h),
-                            ) = section_key
-                            else {
-                                return None;
-                            };
-
-                            Some(Rect {
-                                min: Vec2::new(*x1, *y1),
-                                max: Vec2::new(*x1 + *w, *y1 + *h),
-                            })
-                        })
-                        .expect(
-                            "sub resource should have a region section key",
-                        );
-
-                    max_x = max_x.max(rect.max.x);
-                    max_y = max_y.max(rect.max.y);
-
-                    rect
+                    map_texture_to_atlas_rect(
+                        conf, scene, path, &mut max_x, &mut max_y, texture_id,
+                    )
                 })
-                .collect();
-            assert!(frames.len() > anim.index as usize);
+                .collect::<miette::Result<Vec<_>>>()?;
 
             assert!(animation
                 .replace(SpriteFrames {
                     should_endless_loop: anim.loop_,
                     fps: anim.speed.into(),
-                    should_autoload: anim.autoload,
-                    first_index: anim.index as usize,
                     frames,
                     size: Vec2::new(max_x, max_y),
+                    // Can be set by [NodeSectionKey::Autoplay]
+                    should_autoload: false,
+                    // Can be set by [NodeSectionKey::FrameIndex]
+                    first_index: 0,
                 })
                 .is_none());
+        }
+        NodeSectionKey::Other(key) => {
+            warn!("Node section key '{key}' is not supported");
         }
     };
 
@@ -416,4 +400,94 @@ impl Default for Properties {
             flip_vertically: false,
         }
     }
+}
+
+/// Also updates the texture path, max_x, and max_y.
+fn map_texture_to_atlas_rect(
+    conf: &Config,
+    scene: &godot::Scene,
+    path: &mut Option<String>,
+    max_x: &mut f32,
+    max_y: &mut f32,
+    texture_id: SubResourceId,
+) -> miette::Result<Rect> {
+    let frame = scene
+        .sub_resources
+        .iter()
+        .find(|res| res.id == texture_id)
+        .expect("sub resource should exist");
+    assert_eq!(2, frame.section.len());
+
+    let prefixless_path = frame
+        .section
+        .iter()
+        .find_map(|(section_key, section_value)| {
+            let SubResourceSectionKey::AtlasExtResource = section_key else {
+                return None;
+            };
+
+            let id = match section_value.clone().try_into_ext_resource() {
+                Ok(id) => id,
+                Err(err) => {
+                    panic!("ext resource should be a texture: {err}")
+                }
+            };
+
+            let path = scene
+                .ext_resources
+                .iter()
+                .find(|res| res.uid() == &id)
+                .map(|res| {
+                    if let ExtResource::Texture2D {
+                        path: texture_path, ..
+                    } = res
+                    {
+                        conf.to_prefixless_path(&texture_path)
+                    } else {
+                        panic!("ext resource should be a texture")
+                    }
+                })
+                .expect("ext resource should exist");
+
+            Some(path)
+        })
+        .expect("sub resource should have an atlas section key");
+
+    if let Some(path) = path {
+        assert_eq!(path, &prefixless_path);
+    } else {
+        *path = Some(prefixless_path);
+    }
+
+    let rect = frame
+        .section
+        .iter()
+        .find_map(|(section_key, section_value)| {
+            let SubResourceSectionKey::Region = section_key else {
+                return None;
+            };
+
+            let res = section_value.clone().try_into_rect2().and_then(
+                |(x1, y1, w, h)| {
+                    // we don't convert into bevy coords here
+                    // because
+                    // bevy uses the top-left corner as the
+                    // origin
+                    // for textures
+                    let (x1, y1, w, h) = (x1 as _, y1 as _, w as f32, h as f32);
+                    Ok(Rect {
+                        min: Vec2::new(x1, y1),
+                        max: Vec2::new(x1 + w, y1 + h),
+                    })
+                },
+            );
+
+            Some(res)
+        })
+        .expect("sub resource should have a region section key")?;
+
+    *max_x = max_x.max(rect.max.x);
+    *max_y = max_y.max(rect.max.y);
+
+    Ok(rect)
 }

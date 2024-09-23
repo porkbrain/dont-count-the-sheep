@@ -1,8 +1,8 @@
-use std::ops::Range;
+use std::{collections::BTreeMap, ops::Range};
 
 use miette::LabeledSpan;
 
-use crate::parse::{tscn_identifiers::NODE, Map, Node, SpannedValue};
+use crate::parse::{tscn_identifiers::NODE, Node, SpannedValue};
 
 const NODE_NAME: &str = "name";
 /// Optional attribute, will be none for the root node.
@@ -12,7 +12,7 @@ const NODE_KIND: &str = "type";
 /// Nodes can have section keys.
 pub(super) fn parse_attributes(
     span: Range<usize>,
-    mut attrs: Map<String, SpannedValue>,
+    mut attrs: BTreeMap<String, SpannedValue>,
 ) -> miette::Result<Node> {
     let name = attrs.remove(NODE_NAME).ok_or_else(|| {
         miette::miette! {
@@ -76,6 +76,6 @@ pub(super) fn parse_attributes(
         parent,
         kind: kind.into(),
         // these are yet to be populated by subsequent parsing
-        section_keys: Default::default(),
+        section: Default::default(),
     })
 }

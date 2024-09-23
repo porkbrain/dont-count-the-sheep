@@ -55,6 +55,11 @@ pub(crate) enum TscnTokenKind {
     String,
 }
 
+/// Lexes the input string into tscn tokens.
+///
+/// # Errors
+/// Does not append source code to the error message, that's the caller's
+/// responsibility.
 pub(crate) fn lex(tscn: &str) -> miette::Result<Vec<TscnToken>> {
     TscnTokenKind::lexer(tscn)
         .spanned()
@@ -71,7 +76,6 @@ pub(crate) fn lex(tscn: &str) -> miette::Result<Vec<TscnToken>> {
                         ],
                         "Unexpected input {}", &tscn[span.clone()],
                     }
-                    .with_source_code(tscn.to_string())
                 })
         })
         .collect()

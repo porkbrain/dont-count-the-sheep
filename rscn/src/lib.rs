@@ -10,6 +10,10 @@ use lex::lex;
 use parse::parse;
 
 /// Parses Godot's .tscn file.
+///
+/// # Errors
+/// Does not append source code to the error message, that's the caller's
+/// responsibility.
 pub fn from_tscn(tscn: &str) -> miette::Result<godot::Scene> {
     lex(tscn).and_then(|tokens| parse(tscn, tokens))
 }
@@ -49,10 +53,12 @@ mod tests {
                 panic!("Failed to read .tscn file at {path:?}: {err}");
             });
 
-            let tokens = lex(&tscn)?;
+            let tokens =
+                lex(&tscn).map_err(|e| e.with_source_code(tscn.clone()))?;
             assert!(!tokens.is_empty(), "Empty .tscn file at {path:?}");
 
-            parse(&tscn, tokens)?;
+            parse(&tscn, tokens)
+                .map_err(|e| e.with_source_code(tscn.clone()))?;
         }
 
         Ok(())

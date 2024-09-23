@@ -1,8 +1,8 @@
-use std::ops::Range;
+use std::{collections::BTreeMap, ops::Range};
 
 use miette::LabeledSpan;
 
-use crate::parse::{tscn_identifiers::SUB_RESOURCE, Map, SubResource, SpannedValue};
+use crate::parse::{tscn_identifiers::SUB_RESOURCE, SpannedValue, SubResource};
 
 const SUB_RESOURCE_TYPE: &str = "type";
 const SUB_RESOURCE_ID: &str = "id";
@@ -10,7 +10,7 @@ const SUB_RESOURCE_ID: &str = "id";
 /// Subresources can have section keys.
 pub(super) fn parse_attributes(
     span: Range<usize>,
-    mut attrs: Map<String, SpannedValue>,
+    mut attrs: BTreeMap<String, SpannedValue>,
 ) -> miette::Result<SubResource> {
     let kind = attrs.remove(SUB_RESOURCE_TYPE).ok_or_else(|| {
         miette::miette! {
@@ -60,6 +60,6 @@ pub(super) fn parse_attributes(
         id: id.into(),
         kind: kind.into(),
         // these are yet to be populated by subsequent parsing
-        section_keys: Default::default(),
+        section: Default::default(),
     })
 }

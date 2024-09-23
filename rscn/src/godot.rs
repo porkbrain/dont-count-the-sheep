@@ -4,13 +4,17 @@
 //! In this module we declare specific expectations we have for the .tscn values
 //! that Godot produces.
 
-use super::value::{Map, SpannedValue};
+use std::collections::BTreeMap;
+
+use miette::LabeledSpan;
+
+use super::value::SpannedValue;
 
 /// Represents a parsed Godot scene.
-#[derive(Default, Debug, PartialEq)]
+#[derive(Default, Debug)]
 pub struct Scene {
     /// Headers are attributes of the initial "gd_scene" section.
-    pub headers: Map<String, SpannedValue>,
+    pub headers: BTreeMap<String, SpannedValue>,
     /// List of `[ext_resources]`.
     pub ext_resources: Vec<ExtResource>,
     /// List of `[sub_resources]`.
@@ -31,7 +35,7 @@ pub enum ExtResource {
     Other {
         kind: String,
         uid: ExtResourceId,
-        attributes: Map<String, SpannedValue>,
+        attributes: BTreeMap<String, SpannedValue>,
     },
 }
 
@@ -44,7 +48,7 @@ pub struct SubResource {
     /// `section_keys`.
     pub kind: SubResourceKind,
     /// The keys and values of the sub resource.
-    pub section_keys: Map<SubResourceSectionKey, SpannedValue>,
+    pub section: BTreeMap<SubResourceSectionKey, SpannedValue>,
 }
 
 /// Represents Godot node tree.
@@ -62,7 +66,7 @@ pub struct Node {
     /// The keys and values of the node.
     ///
     /// Nested keys are mapped to a map value.
-    pub section_keys: Map<NodeSectionKey, SpannedValue>,
+    pub section: BTreeMap<NodeSectionKey, SpannedValue>,
 }
 
 /// The kind of external resources we expect in the .tscn file.
@@ -111,11 +115,25 @@ pub struct SubResourceId(pub String);
 /// Section keys we expect in the `[sub_resources]` section.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SubResourceSectionKey {
-    /// `AtlasExtResource(ExtResourceId)`
+    /// e.g. `atlas = ExtResource("12_um7ei")`
     AtlasExtResource,
-    /// `RegionRect2(X, Y, X, Y)`
+    /// e.g. `region = Rect2(0, 0, 32, 62)`
     Region,
-    /// `SingleAnim(Animation)`
+    /// e.g.
+    /// ```text
+    /// animations = [{
+    ///     "frames": [{
+    ///         "duration": 1.0,
+    ///         "texture": SubResource("AtlasTexture_yvafp")
+    ///     }, {
+    ///         "duration": 1.0,
+    ///         "texture": SubResource("AtlasTexture_l80js")
+    ///     }],
+    ///     "loop": true,
+    ///     "name": &"default",
+    ///     "speed": 5.0
+    /// }]
+    /// ```
     Animations,
     /// Catch all for any other kind of key.
     Other(String),
@@ -124,54 +142,72 @@ pub enum SubResourceSectionKey {
 /// Section keys we expect in the `[nodes]` section.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum NodeSectionKey {
-    /// `ZIndex(Number)`
+    /// e.g. `z_index = -3`
     ZIndex,
-    /// `TextureExtResource(ExtResourceId)`
+    /// e.g. `texture = ExtResource("10_kymjx")`
     TextureExtResource,
-    /// `Position(X, Y)`
+    /// e.g. `position = Vector2(-23, 14)`
     Position,
-    /// `SpriteFramesSubResource(SubResourceId)`
+    /// e.g. `sprite_frames = SubResource("SpriteFrames_ns3ui")`
     SpriteFrames,
-    /// key - value metadata pair where the value is of type string
-    /// (String, String)`
+    /// e.g.
+    /// ```
+    /// metadata/key1 = "A"
+    /// metadata/key2 = "B"
+    /// metadata/anotherkey = "C"
+    /// ```
     StringMetadata,
-    /// `FrameIndex(Number)`
+    /// e.g. `frame = 17`
     FrameIndex,
-    /// Whether the atlas should autoplay the animation.
+    /// e.g. `autoplay = "default"`
     Autoplay,
-    /// Whether the node is visible.
-    /// If false we add a `Visibility::Hidden` component to the node.
-    /// `Visibility(bool)`
+    /// `e.g. visible = false`
     Visible,
-    /// A texture should be flipped horizontally.
-    /// `FlipHorizontally(bool)`
+    /// e.g. `flip_h = true`
     FlipHorizontally,
-    /// A texture should be flipped vertically.
-    /// `FlipVertically(bool)`
+    /// e.g. `flip_v = true`
     FlipVertically,
-    /// RGBa
-    /// `SelfModulateColor(Number, Number, Number, Number)`
+    /// e.g. `self_modulate = Color(1, 1, 1, 0.823529)`
     SelfModulate,
-    /// `FrameProgress(Number)`
+    /// e.g. `frame_progress = 0.00329857`
     FrameProgress,
     /// Catch all for any other kind of key.
     Other(String),
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub(crate) struct Animation {
-    pub(crate) frames: Vec<AnimationFrame>,
-    pub(crate) loop_: bool,
-    pub(crate) name: String,
-    /// FPS
-    // pub(crate) speed: Number,
-    pub(crate) autoload: bool,
-    pub(crate) index: u32,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub(crate) struct AnimationFrame {
-    pub(crate) texture: SubResourceId,
+/// Represents an animation in a sprite frames resource.
+#[derive(Debug)]
+pub struct SpriteFramesAnimation {
+    /// Each frame is presented by some texture resource and duration of the
+    /// frame in parts of the speed.
+    /// Ie. you need to sum up all durations of the frames to get `SUM`, then
+    /// the duration of the frame is `duration / SUM * speed`.
+    /// E.g.
+    /// ```text
+    /// frames = [{
+    ///    "duration": 2.0,
+    ///   "texture": SubResource("A")
+    /// }, {
+    ///   "duration": 1.0,
+    ///  "texture": SubResource("B")
+    /// }, {
+    ///   "duration": 1.0,
+    ///  "texture": SubResource("C")
+    /// }]
+    ///
+    /// and speed = 5.0, then
+    ///
+    /// frame 1: 2.0 / 4.0 * 5.0 = 2.5
+    /// frame 2: 1.0 / 4.0 * 5.0 = 1.25
+    /// frame 3: 1.0 / 4.0 * 5.0 = 1.25
+    /// ```
+    pub frames: Vec<(SubResourceId, f32)>,
+    /// Whether the animation should loop indefinitely.
+    pub loop_: bool,
+    /// The name of the animation, defaults to "default".
+    pub name: String,
+    /// The speed of the animation.
+    pub speed: f32,
 }
 
 impl ExtResource {
@@ -187,8 +223,6 @@ impl ExtResource {
 
 impl SpannedValue {
     /// Interprets the value as a "Color" class.
-    ///
-    /// This could be achieved more modularly by some sort of generic system.
     pub fn into_self_modulate_color_rgba(
         self,
     ) -> miette::Result<(f64, f64, f64, f64)> {
@@ -203,8 +237,6 @@ impl SpannedValue {
     }
 
     /// Interprets the value as a "Vector2" class.
-    ///
-    /// This could be achieved more modularly by some sort of generic system.
     pub fn into_vector2(self) -> miette::Result<(f64, f64)> {
         let [x, y] = self.try_into_this_class_of_len("Vector2")?;
 
@@ -212,6 +244,109 @@ impl SpannedValue {
         let (_, y) = y.try_into_number()?;
 
         Ok((x, y))
+    }
+
+    /// Interprets the value as a "ExtResource" class.
+    pub fn try_into_ext_resource(self) -> miette::Result<ExtResourceId> {
+        let [id] = self.try_into_this_class_of_len("ExtResource")?;
+        let (_, id) = id.try_into_string()?;
+        Ok(ExtResourceId(id))
+    }
+
+    /// Interprets the value as a "SubResource" class.
+    pub fn try_into_sub_resource(self) -> miette::Result<SubResourceId> {
+        let [id] = self.try_into_this_class_of_len("SubResource")?;
+        let (_, id) = id.try_into_string()?;
+        Ok(SubResourceId(id))
+    }
+
+    /// Interprets the value as a "Rect2" class as a tuple of `(x, y, w, h)`.
+    pub fn try_into_rect2(self) -> miette::Result<(f64, f64, f64, f64)> {
+        let [x, y, w, h] = self.try_into_this_class_of_len("Rect2")?;
+
+        let (_, x) = x.try_into_number()?;
+        let (_, y) = y.try_into_number()?;
+        let (_, w) = w.try_into_number()?;
+        let (_, h) = h.try_into_number()?;
+
+        Ok((x, y, w, h))
+    }
+
+    /// Interprets the value as an array of sprite frame animations.
+    /// Value part of [SubResourceSectionKey::Animations].
+    pub fn try_into_sprite_frames_animations(
+        self,
+    ) -> miette::Result<Vec<SpriteFramesAnimation>> {
+        let (_, animations) = self.try_into_array()?;
+
+        animations
+            .into_iter()
+            .map(|v| {
+                let (span, mut v) = v.try_into_object()?;
+
+                let name = v
+                    .remove("name")
+                    .map(|n| n.try_into_string().map(|(_, s)| s))
+                    .transpose()?
+                    .unwrap_or_else(|| "default".to_owned());
+                let speed = v
+                    .remove("speed")
+                    .map(|s| s.try_into_number().map(|(_, n)| n as _))
+                    .transpose()?
+                    .unwrap_or(1.0);
+                let loop_ = v
+                    .remove("loop")
+                    .map(|l| l.try_into_bool().map(|(_, b)| b))
+                    .transpose()?
+                    .unwrap_or_default();
+                let (_, frames) = v
+                    .remove("frames")
+                    .ok_or_else(|| {
+                        miette::miette! {
+                            labels = vec![
+                                LabeledSpan::at(span.clone(), "in this object"),
+                            ],
+                            "Expected key 'frames'",
+                        }
+                    })?
+                    .try_into_array()?;
+                let frames = frames.into_iter().map(|f| {
+                    let (span, mut f) = f.try_into_object()?;
+                    let texture = f
+                        .remove("texture")
+                        .map(|t| t.try_into_sub_resource())
+                        .transpose()?
+                        .ok_or_else(|| {
+                            miette::miette! {
+                                labels = vec![
+                                    LabeledSpan::at(span.clone(), "in this object"),
+                                ],
+                                "Expected key 'texture'",
+                            }
+                        })?;
+                    let duration = f
+                        .remove("duration")
+                        .map(|d| d.try_into_number().map(|(_, n)| n))
+                        .transpose()?
+                        .ok_or_else(|| {
+                            miette::miette! {
+                                labels = vec![
+                                    LabeledSpan::at(span.clone(), "in this object"),
+                                ],
+                                "Expected key 'duration'",
+                            }
+                        })?;
+                    Ok((texture, duration as _))
+                }).collect::<miette::Result<Vec<_>>>()?;
+
+                Ok(SpriteFramesAnimation {
+                    name,
+                    speed,
+                    loop_,
+                    frames,
+                })
+            })
+            .collect()
     }
 }
 
@@ -248,19 +383,6 @@ impl From<String> for NodeKind {
         }
     }
 }
-
-// impl Default for Animation {
-//     fn default() -> Self {
-//         Animation {
-//             name: "default".to_string(),
-//             speed: Number(0.0),
-//             frames: vec![],
-//             index: 0,
-//             loop_: false,
-//             autoload: false,
-//         }
-//     }
-// }
 
 impl From<String> for NodeSectionKey {
     fn from(s: String) -> Self {

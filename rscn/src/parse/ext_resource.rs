@@ -1,9 +1,9 @@
-use std::ops::Range;
+use std::{collections::BTreeMap, ops::Range};
 
 use miette::LabeledSpan;
 
 use crate::parse::{
-    tscn_identifiers::EXT_RESOURCE, ExtResource, Map, Scene, SpannedValue,
+    tscn_identifiers::EXT_RESOURCE, ExtResource, Scene, SpannedValue,
 };
 
 const EXT_RESOURCE_TYPE: &str = "type";
@@ -16,7 +16,7 @@ const EXT_RESOURCE_TYPE_TEXTURE_2D_PATH: &str = "path";
 pub(super) fn parse_attributes_into_state(
     state: &mut Scene,
     span: Range<usize>,
-    mut attrs: Map<String, SpannedValue>,
+    mut attrs: BTreeMap<String, SpannedValue>,
 ) -> miette::Result<()> {
     let kind = attrs.remove(EXT_RESOURCE_TYPE).ok_or_else(|| {
         miette::miette! {

@@ -7,7 +7,7 @@ mod ext_resource;
 mod node;
 mod sub_resource;
 
-use std::{iter::Peekable, ops::Range};
+use std::{collections::BTreeMap, iter::Peekable, ops::Range};
 
 use miette::{Context, LabeledSpan};
 
@@ -35,13 +35,12 @@ struct Parser<'a, I> {
     last_token_end: usize,
 }
 
-/// Wraps an expression that can error and adds source code to the miette error.
-macro_rules! error_with_source_code {
-    ($source:expr, $expr:expr) => {
-        $expr.map_err(|err| err.with_source_code($source.to_owned()))?
-    };
-}
-
+/// Parses the input tokens into a [Scene].
+/// Second step after lexing.
+///
+/// # Errors
+/// Does not append source code to the error message, that's the caller's
+/// responsibility.
 pub(crate) fn parse(
     tscn: &str,
     tokens: impl IntoIterator<Item = TscnToken>,
@@ -58,11 +57,9 @@ pub(crate) fn parse(
         last_token_end: 0,
     };
 
-    error_with_source_code!(tscn, parser.parse_headers());
+    parser.parse_headers()?;
 
-    while let IsParsingDone::No =
-        error_with_source_code!(tscn, parser.parse_next_statement())
-    {
+    while let IsParsingDone::No = parser.parse_next_statement()? {
         // keep it up chief
     }
 
@@ -229,7 +226,7 @@ where
         /// If `nested_key` is `Some`, it inserts the value into the nested
         /// dictionary.
         fn insert_section_key<K: Ord>(
-            section_keys: &mut Map<K, SpannedValue>,
+            section_keys: &mut BTreeMap<K, SpannedValue>,
             (key_span, key): (Range<usize>, K),
             nested_key: Option<(Range<usize>, String)>,
             value: SpannedValue,
@@ -285,20 +282,24 @@ where
                     "Unexpected section key '{key}'",
                 }
             }
-            OpenSection::Node(Node { section_keys, .. }) => insert_section_key(
+            OpenSection::Node(Node {
+                section: section_keys,
+                ..
+            }) => insert_section_key(
                 section_keys,
                 (key_span, From::from(key)),
                 nested_key,
                 value,
             ),
-            OpenSection::SubResource(SubResource { section_keys, .. }) => {
-                insert_section_key(
-                    section_keys,
-                    (key_span, From::from(key)),
-                    nested_key,
-                    value,
-                )
-            }
+            OpenSection::SubResource(SubResource {
+                section: section_keys,
+                ..
+            }) => insert_section_key(
+                section_keys,
+                (key_span, From::from(key)),
+                nested_key,
+                value,
+            ),
         }
     }
 
@@ -396,8 +397,8 @@ where
     /// Ignores spaces.
     fn expect_attributes(
         &mut self,
-    ) -> miette::Result<(usize, Map<String, SpannedValue>)> {
-        let mut map = Map::default();
+    ) -> miette::Result<(usize, BTreeMap<String, SpannedValue>)> {
+        let mut map = BTreeMap::default();
 
         loop {
             match self.next_token_no_eof_ignore_spaces()? {
@@ -564,7 +565,7 @@ where
                 // either a comma or a closing curly bracket
 
                 let object_starts_at = span.start;
-                let mut map = Map::default();
+                let mut map = BTreeMap::default();
                 let mut is_first_el = true;
                 let object_ends_at = loop {
                     match self.peek_next_token_swallow_spaces() {

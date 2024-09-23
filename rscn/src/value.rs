@@ -2,7 +2,7 @@
 //!
 //! See [crate::godot] module for Godot specific declarations.
 
-use std::{borrow::Borrow, collections::BTreeMap, ops::Range};
+use std::{collections::BTreeMap, ops::Range};
 
 use miette::LabeledSpan;
 
@@ -41,15 +41,7 @@ pub enum SpannedValue {
     /// Span contains length from the opening curly brace to the closing curly
     /// brace if dictionary, or from the first nested key char to the last
     /// nested key's value char if a nested key.
-    Object(Range<usize>, Map<String, SpannedValue>),
-}
-
-type MapImpl<K, V> = BTreeMap<K, V>;
-
-/// Similar to `serde_json::Map`.
-#[derive(Debug, Clone, PartialEq)]
-pub struct Map<K, V> {
-    map_impl: MapImpl<K, V>,
+    Object(Range<usize>, BTreeMap<String, SpannedValue>),
 }
 
 impl SpannedValue {
@@ -161,7 +153,7 @@ impl SpannedValue {
     /// Returns an error with labelled span if the value is not an object.
     pub fn try_into_object(
         self,
-    ) -> miette::Result<(Range<usize>, Map<String, SpannedValue>)> {
+    ) -> miette::Result<(Range<usize>, BTreeMap<String, SpannedValue>)> {
         let got = self.variant_name();
         let expected = "object";
         match self {
@@ -251,62 +243,6 @@ impl SpannedValue {
             Self::Bool(_, _) => "boolean",
             Self::Object(_, _) => "object",
         }
-    }
-}
-
-impl<K: Ord> Map<K, SpannedValue> {
-    /// See [BTreeMap::insert].
-    pub fn insert(
-        &mut self,
-        key: K,
-        value: SpannedValue,
-    ) -> Option<SpannedValue> {
-        self.map_impl.insert(key, value)
-    }
-
-    /// See [BTreeMap::remove].
-    pub fn remove<Q>(&mut self, key: &Q) -> Option<SpannedValue>
-    where
-        Q: ?Sized,
-        K: Borrow<Q> + Ord,
-        Q: Ord,
-    {
-        self.map_impl.remove(key)
-    }
-
-    /// See [BTreeMap::is_empty].
-    pub fn is_empty(&self) -> bool {
-        self.map_impl.is_empty()
-    }
-
-    /// See [BTreeMap::len].
-    pub fn len(&self) -> usize {
-        self.map_impl.len()
-    }
-
-    /// See [BTreeMap::entry].
-    pub fn entry(
-        &mut self,
-        key: K,
-    ) -> std::collections::btree_map::Entry<K, SpannedValue> {
-        self.map_impl.entry(key)
-    }
-}
-
-impl<K, V> Default for Map<K, V> {
-    fn default() -> Self {
-        Self {
-            map_impl: MapImpl::default(),
-        }
-    }
-}
-
-impl<K> IntoIterator for Map<K, SpannedValue> {
-    type Item = (K, SpannedValue);
-    type IntoIter = std::collections::btree_map::IntoIter<K, SpannedValue>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.map_impl.into_iter()
     }
 }
 
