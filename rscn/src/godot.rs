@@ -4,13 +4,13 @@
 //! In this module we declare specific expectations we have for the .tscn values
 //! that Godot produces.
 
-use super::value::{Map, Value};
+use super::value::{Map, SpannedValue};
 
 /// Represents a parsed Godot scene.
 #[derive(Default, Debug, PartialEq)]
 pub struct Scene {
     /// Headers are attributes of the initial "gd_scene" section.
-    pub headers: Map<String, Value>,
+    pub headers: Map<String, SpannedValue>,
     /// List of `[ext_resources]`.
     pub ext_resources: Vec<ExtResource>,
     /// List of `[sub_resources]`.
@@ -31,7 +31,7 @@ pub enum ExtResource {
     Other {
         kind: String,
         uid: ExtResourceId,
-        attributes: Map<String, Value>,
+        attributes: Map<String, SpannedValue>,
     },
 }
 
@@ -44,7 +44,7 @@ pub struct SubResource {
     /// `section_keys`.
     pub kind: SubResourceKind,
     /// The keys and values of the sub resource.
-    pub section_keys: Map<SubResourceSectionKey, Value>,
+    pub section_keys: Map<SubResourceSectionKey, SpannedValue>,
 }
 
 /// Represents Godot node tree.
@@ -62,7 +62,7 @@ pub struct Node {
     /// The keys and values of the node.
     ///
     /// Nested keys are mapped to a map value.
-    pub section_keys: Map<NodeSectionKey, Value>,
+    pub section_keys: Map<NodeSectionKey, SpannedValue>,
 }
 
 /// The kind of external resources we expect in the .tscn file.
@@ -164,7 +164,7 @@ pub(crate) struct Animation {
     pub(crate) loop_: bool,
     pub(crate) name: String,
     /// FPS
-    pub(crate) speed: Number,
+    // pub(crate) speed: Number,
     pub(crate) autoload: bool,
     pub(crate) index: u32,
 }
@@ -173,16 +173,6 @@ pub(crate) struct Animation {
 pub(crate) struct AnimationFrame {
     pub(crate) texture: SubResourceId,
 }
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub(crate) struct Number(pub(crate) f32);
-
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub(crate) struct X(pub(crate) f32);
-
-/// The Y coordinate in godot increases as it goes down.
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub(crate) struct Y(pub(crate) f32);
 
 impl ExtResource {
     /// The unique identifier of the external resource is always present,
@@ -195,19 +185,35 @@ impl ExtResource {
     }
 }
 
-impl Y {
-    /// This is the conversion from godot to bevy coordinates.
-    /// Note that not all Y coords should be converted.
-    /// For example sprite atlas positions into textures in bevy follow the
-    /// image processing convention where the origin is at the top left.
-    pub(crate) fn into_bevy_position_coords(self) -> f32 {
-        -self.0
+impl SpannedValue {
+    /// Interprets the value as a "Color" class.
+    ///
+    /// This could be achieved more modularly by some sort of generic system.
+    pub fn into_self_modulate_color_rgba(
+        self,
+    ) -> miette::Result<(f64, f64, f64, f64)> {
+        let [r, g, b, a] = self.try_into_this_class_of_len("Color")?;
+
+        let (_, r) = r.try_into_number()?;
+        let (_, g) = g.try_into_number()?;
+        let (_, b) = b.try_into_number()?;
+        let (_, a) = a.try_into_number()?;
+
+        Ok((r, g, b, a))
+    }
+
+    /// Interprets the value as a "Vector2" class.
+    ///
+    /// This could be achieved more modularly by some sort of generic system.
+    pub fn into_vector2(self) -> miette::Result<(f64, f64)> {
+        let [x, y] = self.try_into_this_class_of_len("Vector2")?;
+
+        let (_, x) = x.try_into_number()?;
+        let (_, y) = y.try_into_number()?;
+
+        Ok((x, y))
     }
 }
-
-impl Eq for Number {}
-impl Eq for Y {}
-impl Eq for X {}
 
 impl From<String> for SubResourceId {
     fn from(s: String) -> Self {
@@ -243,30 +249,18 @@ impl From<String> for NodeKind {
     }
 }
 
-impl From<f32> for Number {
-    fn from(f: f32) -> Self {
-        Self(f)
-    }
-}
-
-impl From<Number> for f32 {
-    fn from(Number(n): Number) -> Self {
-        n
-    }
-}
-
-impl Default for Animation {
-    fn default() -> Self {
-        Animation {
-            name: "default".to_string(),
-            speed: Number(0.0),
-            frames: vec![],
-            index: 0,
-            loop_: false,
-            autoload: false,
-        }
-    }
-}
+// impl Default for Animation {
+//     fn default() -> Self {
+//         Animation {
+//             name: "default".to_string(),
+//             speed: Number(0.0),
+//             frames: vec![],
+//             index: 0,
+//             loop_: false,
+//             autoload: false,
+//         }
+//     }
+// }
 
 impl From<String> for NodeSectionKey {
     fn from(s: String) -> Self {

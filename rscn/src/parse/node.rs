@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use miette::LabeledSpan;
 
-use crate::parse::{tscn_identifiers::NODE, Map, Node, Value};
+use crate::parse::{tscn_identifiers::NODE, Map, Node, SpannedValue};
 
 const NODE_NAME: &str = "name";
 /// Optional attribute, will be none for the root node.
@@ -12,7 +12,7 @@ const NODE_KIND: &str = "type";
 /// Nodes can have section keys.
 pub(super) fn parse_attributes(
     span: Range<usize>,
-    mut attrs: Map<String, Value>,
+    mut attrs: Map<String, SpannedValue>,
 ) -> miette::Result<Node> {
     let name = attrs.remove(NODE_NAME).ok_or_else(|| {
         miette::miette! {

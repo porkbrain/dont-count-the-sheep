@@ -229,25 +229,31 @@ where
         /// If `nested_key` is `Some`, it inserts the value into the nested
         /// dictionary.
         fn insert_section_key<K: Ord>(
-            section_keys: &mut Map<K, Value>,
+            section_keys: &mut Map<K, SpannedValue>,
             (key_span, key): (Range<usize>, K),
             nested_key: Option<(Range<usize>, String)>,
-            value: Value,
+            value: SpannedValue,
         ) -> miette::Result<()> {
             if let Some((nested_key_span, nested_key)) = nested_key {
-                let nested_dict = section_keys
-                    .entry(key)
-                    .or_insert_with(|| Value::Object(Default::default()));
+                let nested_dict =
+                    section_keys.entry(key).or_insert_with(|| {
+                        SpannedValue::Object(
+                            nested_key_span.clone(),
+                            Default::default(),
+                        )
+                    });
 
-                if let Value::Object(nested_dict) = nested_dict {
+                if let SpannedValue::Object(span, nested_dict) = nested_dict {
                     if nested_dict.insert(nested_key, value).is_some() {
                         miette::bail! {
                             labels = vec![
-                                LabeledSpan::at(nested_key_span, "this key"),
+                                LabeledSpan::at(nested_key_span.clone(), "this key"),
                             ],
                             "Duplicate nested key",
                         }
                     }
+
+                    span.end = nested_key_span.end;
 
                     Ok(())
                 } else {
@@ -379,9 +385,9 @@ where
     /// - String
     /// - True
     /// - False
-    fn expect_primitive(&mut self) -> miette::Result<Value> {
+    fn expect_primitive(&mut self) -> miette::Result<SpannedValue> {
         let token = self.next_token_no_eof_ignore_spaces()?;
-        Value::try_from_token(self.source, token)
+        SpannedValue::try_from_token(self.source, token)
     }
 
     /// Expects a dictionary of attributes to follow in the token iterator.
@@ -390,7 +396,7 @@ where
     /// Ignores spaces.
     fn expect_attributes(
         &mut self,
-    ) -> miette::Result<(usize, Map<String, Value>)> {
+    ) -> miette::Result<(usize, Map<String, SpannedValue>)> {
         let mut map = Map::default();
 
         loop {
@@ -446,7 +452,7 @@ where
     ///     "speed": 5.0
     ///  }]
     /// ```
-    fn expect_value(&mut self) -> miette::Result<Value> {
+    fn expect_value(&mut self) -> miette::Result<SpannedValue> {
         let first_token = self.next_token_no_eof_ignore_spaces()?;
 
         match first_token {
@@ -456,19 +462,20 @@ where
                 kind: TscnTokenKind::Identifier,
                 span,
             } => {
+                let class_starts_at = span.start;
                 let class_name = &self.source[span.clone()];
                 self.expect_exact(TscnTokenKind::ParenOpen)?;
 
                 let mut values = Vec::new();
-                loop {
+                let class_ends_at = loop {
                     let value = self.expect_value()?;
                     values.push(value);
 
                     match self.next_token_no_eof_ignore_spaces()? {
                         TscnToken {
                             kind: TscnTokenKind::ParenClose,
-                            ..
-                        } => break,
+                            span,
+                        } => break span.end,
                         TscnToken {
                             kind: TscnTokenKind::Comma,
                             ..
@@ -482,18 +489,23 @@ where
                             }
                         }
                     }
-                }
+                };
 
-                Ok(Value::Class(class_name.to_owned(), values))
+                Ok(SpannedValue::Class(
+                    class_starts_at..class_ends_at,
+                    class_name.to_owned(),
+                    values,
+                ))
             }
             // we found an array!
             TscnToken {
                 kind: TscnTokenKind::SquareBracketOpen,
-                ..
+                span,
             } => {
+                let arr_starts_at = span.start;
                 let mut values = vec![];
                 let mut is_first_el = true;
-                loop {
+                let arr_ends_at = loop {
                     match self.peek_next_token_swallow_spaces() {
                         None => {
                             // TODO
@@ -512,10 +524,11 @@ where
                         }
                         Some(TscnToken {
                             kind: TscnTokenKind::SquareBracketClose,
-                            ..
+                            span,
                         }) => {
+                            let span_end = span.end;
                             self.tokens.next(); // skip ']'
-                            break;
+                            break span_end;
                         }
                         Some(TscnToken {
                             kind: TscnTokenKind::Comma,
@@ -538,21 +551,22 @@ where
                             values.push(self.expect_value()?);
                         }
                     }
-                }
+                };
 
-                Ok(Value::Array(values))
+                Ok(SpannedValue::Array(arr_starts_at..arr_ends_at, values))
             }
             // we found an object!
             TscnToken {
                 kind: TscnTokenKind::CurlyBracketOpen,
-                ..
+                span,
             } => {
                 // we look for a string (key) -> a colon -> a value ->
                 // either a comma or a closing curly bracket
 
+                let object_starts_at = span.start;
                 let mut map = Map::default();
                 let mut is_first_el = true;
-                loop {
+                let object_ends_at = loop {
                     match self.peek_next_token_swallow_spaces() {
                         None => {
                             // TODO
@@ -565,10 +579,11 @@ where
                         }
                         Some(TscnToken {
                             kind: TscnTokenKind::CurlyBracketClose,
-                            ..
+                            span,
                         }) => {
+                            let span_end = span.end;
                             self.tokens.next(); // skip '}'
-                            break;
+                            break span_end;
                         }
                         Some(TscnToken {
                             kind: TscnTokenKind::NewLine,
@@ -617,9 +632,9 @@ where
                             }
                         }
                     }
-                }
+                };
 
-                Ok(Value::Object(map))
+                Ok(SpannedValue::Object(object_starts_at..object_ends_at, map))
             }
             // we found a primitive!
             token @ TscnToken {
@@ -629,7 +644,7 @@ where
                     | TscnTokenKind::True
                     | TscnTokenKind::False,
                 ..
-            } => Value::try_from_token(self.source, token),
+            } => SpannedValue::try_from_token(self.source, token),
             // we found something we shouldn't have
             TscnToken { kind: got, span } => {
                 miette::bail! {
