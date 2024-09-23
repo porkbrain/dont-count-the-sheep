@@ -266,10 +266,8 @@ impl SpannedValue {
                     })?;
                 Ok(SpannedValue::Number(token.span, number))
             }
-            TscnTokenKind::String => {
-                let string = source[token.span.clone()].to_owned();
-                Ok(SpannedValue::String(token.span, string))
-            }
+            TscnTokenKind::String => parse_string(source, token.span.clone())
+                .map(|string| SpannedValue::String(token.span, string)),
             TscnTokenKind::True => Ok(SpannedValue::Bool(token.span, true)),
             TscnTokenKind::False => Ok(SpannedValue::Bool(token.span, false)),
             got => {
@@ -282,4 +280,51 @@ impl SpannedValue {
             }
         }
     }
+}
+
+/// Parses a string from the source.
+/// A string must be quoted and optionally prefixed with an ampersand.
+pub(super) fn parse_string(
+    source: &str,
+    span: Range<usize>,
+) -> Result<String, miette::Error> {
+    let does_start_with_ampersand = source[span.start..]
+        .chars()
+        .next()
+        .map(|c| c == '&')
+        .unwrap_or(false);
+
+    // check that the string is quoted
+    let expect_quote_at = |position| {
+        let c = source[position..].chars().next().ok_or_else(|| {
+            miette::miette! {
+                labels = vec![
+                    LabeledSpan::at(span.clone(), "this string"),
+                ],
+                "Expected a quoted string",
+            }
+        })?;
+
+        if c != '"' {
+            miette::bail! {
+                labels = vec![
+                    LabeledSpan::at(span.clone(), "this string"),
+                ],
+                "Expected a quoted string",
+            }
+        }
+
+        Ok(())
+    };
+
+    expect_quote_at(span.end - 1)?;
+    let span = if does_start_with_ampersand {
+        expect_quote_at(span.start + 1)?;
+        span.start + 2..span.end - 1
+    } else {
+        expect_quote_at(span.start)?;
+        span.start + 1..span.end - 1
+    };
+
+    Ok(source[span].to_owned())
 }

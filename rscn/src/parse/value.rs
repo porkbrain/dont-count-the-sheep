@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use miette::LabeledSpan;
 
-use super::{Parser, PeekableExt, SpannedValue};
+use super::{parse_string, Parser, PeekableExt, SpannedValue};
 use crate::lex::{TscnToken, TscnTokenKind};
 
 impl<'a, I> Parser<'a, I>
@@ -175,8 +175,8 @@ where
                             span,
                         }) => {
                             let span = span.clone();
-                            // TODO: strip quotes
-                            let key = self.source[span.clone()].to_owned();
+                            let key = parse_string(self.source, span)?;
+
                             self.tokens.next(); // skip string key
                             self.expect_exact(TscnTokenKind::Colon)?;
 
