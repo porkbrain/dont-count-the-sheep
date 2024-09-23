@@ -71,7 +71,7 @@ impl SpannedValue {
             | Self::Array(span, _) => {
                 miette::bail! {
                     labels = vec![
-                        LabeledSpan::at(span, "this {got}"),
+                        LabeledSpan::at(span, format!("this {got}")),
                     ],
                     "Expected {expected}, got {got}",
                 }
@@ -94,7 +94,7 @@ impl SpannedValue {
             | Self::Array(span, _) => {
                 miette::bail! {
                     labels = vec![
-                        LabeledSpan::at(span, "this {got}"),
+                        LabeledSpan::at(span, format!("this {got}")),
                     ],
                     "Expected {expected}, got {got}",
                 }
@@ -117,7 +117,7 @@ impl SpannedValue {
             | Self::Array(span, _) => {
                 miette::bail! {
                     labels = vec![
-                        LabeledSpan::at(span, "this {got}"),
+                        LabeledSpan::at(span, format!("this {got}")),
                     ],
                     "Expected {expected}, got {got}",
                 }
@@ -140,7 +140,7 @@ impl SpannedValue {
             | Self::Array(span, _) => {
                 miette::bail! {
                     labels = vec![
-                        LabeledSpan::at(span, "this {got}"),
+                        LabeledSpan::at(span, format!("this {got}")),
                     ],
                     "Expected {expected}, got {got}",
                 }
@@ -165,7 +165,7 @@ impl SpannedValue {
             | Self::Array(span, _) => {
                 miette::bail! {
                     labels = vec![
-                        LabeledSpan::at(span, "this {got}"),
+                        LabeledSpan::at(span, format!("this {got}")),
                     ],
                     "Expected {expected}, got {got}",
                 }
@@ -190,7 +190,7 @@ impl SpannedValue {
             | Self::Object(span, _) => {
                 miette::bail! {
                     labels = vec![
-                        LabeledSpan::at(span, "this {got}"),
+                        LabeledSpan::at(span, format!("this {got}")),
                     ],
                     "Expected {expected}, got {got}",
                 }
