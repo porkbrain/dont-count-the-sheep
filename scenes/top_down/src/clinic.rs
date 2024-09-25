@@ -1,11 +1,11 @@
 use bevy::render::view::RenderLayers;
+use bevy_rscn::{NodeName, TscnSpawnHooks, TscnTree, TscnTreeHandle};
 use common_visuals::camera::render_layer;
 use main_game_lib::{
     cutscene::in_cutscene, hud::notification::NotificationFifo,
     player_stats::PlayerStats,
     top_down::environmental_objects::door::DoorBuilder,
 };
-use rscn::{NodeName, TscnSpawnHooks, TscnTree, TscnTreeHandle};
 use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
     inspect_and_interact::ZoneToInspectLabelEntity,
@@ -19,7 +19,7 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Clinic;
 #[derive(TypePath, Default, Debug)]
 struct Clinic;
 
-impl main_game_lib::rscn::TscnInBevy for Clinic {
+impl main_game_lib::bevy_rscn::TscnInBevy for Clinic {
     fn tscn_asset_path() -> String {
         format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
@@ -31,14 +31,14 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            rscn::start_loading_tscn::<Clinic>,
+            bevy_rscn::start_loading_tscn::<Clinic>,
         )
         .add_systems(
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap>)
-                .run_if(rscn::tscn_loaded_but_not_spawned::<Clinic>()),
+                .run_if(bevy_rscn::tscn_loaded_but_not_spawned::<Clinic>()),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(

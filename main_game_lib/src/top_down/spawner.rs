@@ -3,7 +3,7 @@
 use std::str::FromStr;
 
 use bevy::utils::EntityHashMap;
-use rscn::{EntityDescription, NodeName, RscnNode, TscnSpawnHooks};
+use bevy_rscn::{EntityDescription, NodeName, RscnNode, TscnSpawnHooks};
 use top_down::{
     inspect_and_interact::ZoneToInspectLabelEntity, layout::ysort,
     InspectLabelCategory, TopDownAction, ZoneTileKind,

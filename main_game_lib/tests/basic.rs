@@ -7,7 +7,7 @@ const TSCN: &str = include_str!("basic.tscn");
 
 #[test]
 fn it_does_not_panic() {
-    let state = main_game_lib::rscn::parse(TSCN, &default());
+    let state = main_game_lib::bevy_rscn::from_tscn(TSCN, &default());
 
     assert_eq!(4, state.root.children.len());
     for child_name in

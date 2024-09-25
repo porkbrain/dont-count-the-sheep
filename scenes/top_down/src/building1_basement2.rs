@@ -17,7 +17,7 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Building1Basement2;
 #[derive(TypePath, Default, Debug)]
 struct Building1Basement2;
 
-impl main_game_lib::rscn::TscnInBevy for Building1Basement2 {
+impl main_game_lib::bevy_rscn::TscnInBevy for Building1Basement2 {
     fn tscn_asset_path() -> String {
         format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
@@ -29,16 +29,16 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            rscn::start_loading_tscn::<Building1Basement2>,
+            bevy_rscn::start_loading_tscn::<Building1Basement2>,
         )
         .add_systems(
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap>)
-                .run_if(
-                    rscn::tscn_loaded_but_not_spawned::<Building1Basement2>(),
-                ),
+                .run_if(bevy_rscn::tscn_loaded_but_not_spawned::<
+                    Building1Basement2,
+                >()),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(
@@ -140,7 +140,7 @@ fn exit(
 
     player: Query<Entity, With<Player>>,
     door: Query<Entity, With<DoorToStorageBasement>>,
-    points: Query<(&Name, &rscn::Point)>,
+    points: Query<(&Name, &bevy_rscn::Point)>,
 ) {
     let is_triggered = action_events
         .read()
@@ -153,7 +153,7 @@ fn exit(
 
         let door_entrance = points
             .iter()
-            .find_map(|(name, rscn::Point(pos))| {
+            .find_map(|(name, bevy_rscn::Point(pos))| {
                 if name == &Name::new("Exit") {
                     Some(*pos)
                 } else {
