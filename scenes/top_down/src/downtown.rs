@@ -34,7 +34,7 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Downtown;
 #[derive(TypePath, Default)]
 struct Downtown;
 
-impl main_game_lib::rscn::TscnInBevy for Downtown {
+impl main_game_lib::bevy_rscn::TscnInBevy for Downtown {
     fn tscn_asset_path() -> String {
         format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
@@ -46,7 +46,7 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            rscn::start_loading_tscn::<Downtown>,
+            bevy_rscn::start_loading_tscn::<Downtown>,
         )
         .add_systems(
             Update,
@@ -54,7 +54,7 @@ impl bevy::app::Plugin for Plugin {
                 .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap>)
                 .run_if(any_with_component::<MainCamera>)
-                .run_if(rscn::tscn_loaded_but_not_spawned::<Downtown>()),
+                .run_if(bevy_rscn::tscn_loaded_but_not_spawned::<Downtown>()),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(

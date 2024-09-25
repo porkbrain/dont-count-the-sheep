@@ -17,7 +17,7 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Sewers;
 #[derive(TypePath, Default, Debug)]
 pub struct Sewers;
 
-impl main_game_lib::rscn::TscnInBevy for Sewers {
+impl main_game_lib::bevy_rscn::TscnInBevy for Sewers {
     fn tscn_asset_path() -> String {
         format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
@@ -29,14 +29,14 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            rscn::start_loading_tscn::<Sewers>,
+            bevy_rscn::start_loading_tscn::<Sewers>,
         )
         .add_systems(
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap>)
-                .run_if(rscn::tscn_loaded_but_not_spawned::<Sewers>()),
+                .run_if(bevy_rscn::tscn_loaded_but_not_spawned::<Sewers>()),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(

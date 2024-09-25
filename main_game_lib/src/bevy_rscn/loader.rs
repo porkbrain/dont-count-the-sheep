@@ -4,7 +4,7 @@ use bevy::{
 };
 use thiserror::Error;
 
-use crate::rscn::{Config, TscnTree};
+use crate::bevy_rscn::{Config, TscnTree};
 
 /// Loads .tscn files into [`TscnTree`] representation.
 #[derive(Default)]
@@ -43,7 +43,7 @@ impl AssetLoader for TscnLoader {
             reader.read_to_end(&mut bytes).await?;
             let tscn = std::str::from_utf8(&bytes)?;
 
-            Ok(crate::rscn::parse(tscn, settings))
+            Ok(crate::bevy_rscn::from_tscn(tscn, settings))
         })
     }
 

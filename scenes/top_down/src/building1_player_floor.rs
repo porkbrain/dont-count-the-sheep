@@ -2,6 +2,7 @@ mod watch_entry_to_hallway;
 
 use bevy::render::view::RenderLayers;
 use bevy_grid_squared::{sq, GridDirection};
+use bevy_rscn::RscnNode;
 use common_story::emoji::{
     DisplayEmojiEvent, DisplayEmojiEventConsumer, EmojiKind,
 };
@@ -24,7 +25,6 @@ use main_game_lib::{
         ActorMovementEvent,
     },
 };
-use rscn::RscnNode;
 use top_down::{
     actor::{
         self, movement_event_emitted, CharacterBundleBuilder, CharacterExt,
@@ -53,7 +53,7 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Building1PlayerFloor;
 #[derive(TypePath, Default, Debug)]
 struct Building1PlayerFloor;
 
-impl main_game_lib::rscn::TscnInBevy for Building1PlayerFloor {
+impl main_game_lib::bevy_rscn::TscnInBevy for Building1PlayerFloor {
     fn tscn_asset_path() -> String {
         format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
@@ -87,14 +87,14 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            rscn::start_loading_tscn::<Building1PlayerFloor>,
+            bevy_rscn::start_loading_tscn::<Building1PlayerFloor>,
         )
         .add_systems(
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap>)
-                .run_if(rscn::tscn_loaded_but_not_spawned::<
+                .run_if(bevy_rscn::tscn_loaded_but_not_spawned::<
                     Building1PlayerFloor,
                 >()),
         )
@@ -405,13 +405,13 @@ fn enter_the_elevator(
     player: Query<Entity, With<Player>>,
     elevator: Query<Entity, With<Elevator>>,
     camera: Query<Entity, With<MainCamera>>,
-    points: Query<(&Name, &rscn::Point)>,
+    points: Query<(&Name, &bevy_rscn::Point)>,
 ) {
     use GlobalGameStateTransition::*;
 
     if let Some(player) = player.get_single_or_none() {
         let point_in_elevator = {
-            let (_, rscn::Point(pos)) = points
+            let (_, bevy_rscn::Point(pos)) = points
                 .iter()
                 .find(|(name, _)| **name == Name::new("InElevator"))
                 .expect("InElevator point not found");

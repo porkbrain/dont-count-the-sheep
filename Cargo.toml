@@ -14,6 +14,7 @@ members = [
     "common/visuals",
     "main_game_lib",
     "main_game",
+    "rscn",
     "scenes/meditation",
     "scenes/top_down",
 ]
@@ -47,10 +48,10 @@ default-features = false
 features = ["bevy_render", "egui_clipboard", "egui_open_url"]
 
 [workspace.dependencies]
-bevy_pixel_camera = { git = "https://github.com/porkbrain/bevy_pixel_camera.git", branch = "bevy-v0.14" } # we will need to vendor this
-leafwing-input-manager = "0.14"                                                                           # API has been completely rewamped
 bevy_egui = "0.28"                                                                                        # waiting for bevy-inspector-egui to update
 bevy_kira_audio = "0.20"
+bevy_pixel_camera = { git = "https://github.com/porkbrain/bevy_pixel_camera.git", branch = "bevy-v0.14" } # we will need to vendor this
+leafwing-input-manager = "0.14"                                                                           # API has been completely rewamped
 
 scene_top_down = { path = "scenes/top_down" }
 scene_meditation = { path = "scenes/meditation" }
@@ -65,12 +66,14 @@ common_store = { path = "common/store" }
 common_story = { path = "common/story" }
 common_visuals = { path = "common/visuals" }
 main_game_lib = { path = "main_game_lib" }
+rscn = { path = "rscn" }
 
 graphviz-rust = "0.9"
 itertools = "0.13"
 lazy_static = "1.4"
 logos = "0.14"
-pathfinding = "4.8"
+miette = { version = "7.2", features = ["fancy"] }
+pathfinding = "4.11"
 rand = "0.8"
 ron = "0.8"
 rusqlite = { version = "0.30", features = ["bundled", "chrono"] }
@@ -83,7 +86,6 @@ strum = { version = "0.26", features = ["derive"] }
 thiserror = "1.0"
 toml = "0.8"
 untools = "1.0"
-
 
 [profile.release]
 codegen-units = 1

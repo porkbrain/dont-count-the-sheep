@@ -15,7 +15,7 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::TwinpeaksApartment;
 #[derive(TypePath, Default, Debug)]
 struct TwinpeaksApartment;
 
-impl main_game_lib::rscn::TscnInBevy for TwinpeaksApartment {
+impl main_game_lib::bevy_rscn::TscnInBevy for TwinpeaksApartment {
     fn tscn_asset_path() -> String {
         format!("scenes/{}.tscn", THIS_SCENE.snake_case())
     }
@@ -27,16 +27,16 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            rscn::start_loading_tscn::<TwinpeaksApartment>,
+            bevy_rscn::start_loading_tscn::<TwinpeaksApartment>,
         )
         .add_systems(
             Update,
             spawn
                 .run_if(in_scene_loading_state(THIS_SCENE))
                 .run_if(resource_exists::<TileMap>)
-                .run_if(
-                    rscn::tscn_loaded_but_not_spawned::<TwinpeaksApartment>(),
-                ),
+                .run_if(bevy_rscn::tscn_loaded_but_not_spawned::<
+                    TwinpeaksApartment,
+                >()),
         )
         .add_systems(OnExit(THIS_SCENE.leaving()), despawn)
         .add_systems(

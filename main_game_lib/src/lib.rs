@@ -5,12 +5,12 @@
 #![allow(clippy::type_complexity)]
 #![allow(clippy::too_many_arguments)]
 
+pub mod bevy_rscn;
 pub mod cutscene;
 pub mod dialog;
 pub mod hud;
 pub mod player_stats;
 pub mod prelude;
-pub mod rscn;
 pub mod state;
 pub mod top_down;
 pub mod vec2_ext;
@@ -81,8 +81,8 @@ pub fn windowed_app() -> App {
         // TODO: load from save file
         .init_resource::<player_stats::PlayerStats>()
         .insert_resource(ClearColor(PRIMARY_COLOR))
-        .init_asset::<crate::rscn::TscnTree>()
-        .init_asset_loader::<crate::rscn::TscnLoader>()
+        .init_asset::<crate::bevy_rscn::TscnTree>()
+        .init_asset_loader::<crate::bevy_rscn::TscnLoader>()
         .init_asset_loader::<common_assets::ignore_loader::Loader>();
 
     #[cfg(feature = "devtools")]

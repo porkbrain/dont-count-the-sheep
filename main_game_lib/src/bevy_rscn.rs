@@ -15,16 +15,9 @@
 //! relationships are preserved. Plain nodes are typically components.
 //! See the wiki for current status of what's supported and what custom nodes
 //! are available.
-//!
-//! TODO(<https://github.com/porkbrain/dont-count-the-sheep/issues/235>):
-//! Needs further refactor: separation of concerns between stages of
-//! representations; lexing vs parsing; support for async spawning of scenes;
-//! support for a signal when all textures are loaded
 
-mod intermediate_repr;
 mod loader;
 mod spawner;
-mod token;
 mod tree;
 
 use std::borrow::Cow;
@@ -79,7 +72,7 @@ pub struct Config {
 /// We are very selective about what we support.
 /// We panic on unsupported content aggressively.
 ///
-/// See [parse] and [TscnTree::spawn_into].
+/// See [TscnTree::spawn_into].
 #[derive(Asset, TypePath, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TscnTree {
     /// The root node of the scene as defined in Godot.
@@ -196,8 +189,14 @@ pub struct TscnTreeHandle<T> {
 /// We panic on unsupported content aggressively.
 ///
 /// See also [`TscnTree::spawn_into`].
-pub fn parse(tscn: &str, config: &Config) -> TscnTree {
-    tree::from_state(token::parse(tscn), config)
+///
+/// Aggressively panics on unexpected format.
+pub fn from_tscn(tscn: &str, config: &Config) -> TscnTree {
+    rscn::from_tscn(tscn)
+        .and_then(|scene| tree::from_scene(scene, config))
+        .map_err(|e| e.with_source_code(tscn.to_string()))
+        .inspect_err(|e| eprintln!("{e:?}")) // miette fancy error printing
+        .expect("Failed to process .tscn file")
 }
 
 /// Run this system on enter to a scene to start loading the `.tscn` file.

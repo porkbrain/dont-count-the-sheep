@@ -12,7 +12,7 @@ pub use common_action::{
 pub use common_visuals::PRIMARY_COLOR;
 
 pub use crate::{
-    rscn,
+    bevy_rscn,
     state::*,
     top_down::{self, Player},
 };

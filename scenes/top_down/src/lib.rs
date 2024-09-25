@@ -220,7 +220,7 @@ mod tests {
                 if path.ends_with(".tscn") {
                     let tscn = std::fs::read_to_string(path).unwrap();
                     println!("Parsing {path:?}");
-                    rscn::parse(&tscn, &default());
+                    bevy_rscn::from_tscn(&tscn, &default());
                 }
             }
         }

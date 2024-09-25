@@ -1,5 +1,8 @@
 pub(crate) use bevy::render::view::RenderLayers;
 pub(crate) use bevy_grid_squared::sq;
+pub(crate) use bevy_rscn::{
+    EntityDescriptionMap, NodeName, TscnSpawnHooks, TscnTree, TscnTreeHandle,
+};
 pub(crate) use common_loading_screen::LoadingScreenSettings;
 pub(crate) use common_visuals::camera::{render_layer, MainCamera};
 pub(crate) use main_game_lib::{
@@ -11,9 +14,6 @@ pub(crate) use main_game_lib::{
         actor::{self, movement_event_emitted, player::TakeAwayPlayerControl},
         TileKind, ZoneTileKind,
     },
-};
-pub(crate) use rscn::{
-    EntityDescriptionMap, NodeName, TscnSpawnHooks, TscnTree, TscnTreeHandle,
 };
 pub(crate) use top_down::{
     actor::{CharacterBundleBuilder, CharacterExt},
