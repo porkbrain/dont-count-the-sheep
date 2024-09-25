@@ -45,7 +45,7 @@ pub enum SpannedValue {
 }
 
 impl SpannedValue {
-    /// Only returns [Some] for [Value::String].
+    /// Only returns [Some] for [SpannedValue::String].
     pub fn into_string(self) -> Option<String> {
         match self {
             Self::String(_, s) => Some(s),

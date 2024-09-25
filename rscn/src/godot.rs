@@ -1,5 +1,5 @@
-//! While we have [Value] enum that can represent any .tscn value, we know what
-//! specific values to expect from Godot.
+//! While we have [SpannedValue] enum that can represent any .tscn value, we
+//! know what specific values to expect from Godot.
 //!
 //! In this module we declare specific expectations we have for the .tscn values
 //! that Godot produces.
@@ -151,7 +151,7 @@ pub enum NodeSectionKey {
     /// e.g. `sprite_frames = SubResource("SpriteFrames_ns3ui")`
     SpriteFrames,
     /// e.g.
-    /// ```
+    /// ```text
     /// metadata/key1 = "A"
     /// metadata/key2 = "B"
     /// metadata/anotherkey = "C"

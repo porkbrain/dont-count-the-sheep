@@ -276,7 +276,7 @@ fn apply_section(
                         path: texture_path, ..
                     } = res
                     {
-                        conf.to_prefixless_path(&texture_path)
+                        conf.to_prefixless_path(texture_path)
                     } else {
                         panic!("ext resource should be a texture: {res:?}")
                     }
@@ -366,7 +366,7 @@ fn apply_section(
             assert!(animation
                 .replace(SpriteFrames {
                     should_endless_loop: anim.loop_,
-                    fps: anim.speed.into(),
+                    fps: anim.speed,
                     frames,
                     size: Vec2::new(max_x, max_y),
                     // Can be set by [NodeSectionKey::Autoplay]
@@ -447,7 +447,7 @@ fn map_texture_to_atlas_rect(
                         path: texture_path, ..
                     } = res
                     {
-                        conf.to_prefixless_path(&texture_path)
+                        conf.to_prefixless_path(texture_path)
                     } else {
                         panic!("ext resource should be a texture")
                     }
@@ -464,32 +464,34 @@ fn map_texture_to_atlas_rect(
         *path = Some(prefixless_path);
     }
 
-    let rect = frame
-        .section
-        .iter()
-        .find_map(|(section_key, section_value)| {
-            let SubResourceSectionKey::Region = section_key else {
-                return None;
-            };
+    let rect =
+        frame
+            .section
+            .iter()
+            .find_map(|(section_key, section_value)| {
+                let SubResourceSectionKey::Region = section_key else {
+                    return None;
+                };
 
-            let res = section_value.clone().try_into_rect2().and_then(
-                |(x1, y1, w, h)| {
-                    // we don't convert into bevy coords here
-                    // because
-                    // bevy uses the top-left corner as the
-                    // origin
-                    // for textures
-                    let (x1, y1, w, h) = (x1 as _, y1 as _, w as f32, h as f32);
-                    Ok(Rect {
-                        min: Vec2::new(x1, y1),
-                        max: Vec2::new(x1 + w, y1 + h),
-                    })
-                },
-            );
+                let res = section_value.clone().try_into_rect2().map(
+                    |(x1, y1, w, h)| {
+                        // we don't convert into bevy coords here
+                        // because
+                        // bevy uses the top-left corner as the
+                        // origin
+                        // for textures
+                        let (x1, y1, w, h) =
+                            (x1 as _, y1 as _, w as f32, h as f32);
+                        Rect {
+                            min: Vec2::new(x1, y1),
+                            max: Vec2::new(x1 + w, y1 + h),
+                        }
+                    },
+                );
 
-            Some(res)
-        })
-        .expect("sub resource should have a region section key")?;
+                Some(res)
+            })
+            .expect("sub resource should have a region section key")?;
 
     *max_x = max_x.max(rect.max.x);
     *max_y = max_y.max(rect.max.y);

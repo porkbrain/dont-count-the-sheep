@@ -15,11 +15,6 @@
 //! relationships are preserved. Plain nodes are typically components.
 //! See the wiki for current status of what's supported and what custom nodes
 //! are available.
-//!
-//! TODO(<https://github.com/porkbrain/dont-count-the-sheep/issues/235>):
-//! Needs further refactor: separation of concerns between stages of
-//! representations; lexing vs parsing; support for async spawning of scenes;
-//! support for a signal when all textures are loaded
 
 mod loader;
 mod spawner;
@@ -77,7 +72,7 @@ pub struct Config {
 /// We are very selective about what we support.
 /// We panic on unsupported content aggressively.
 ///
-/// See [parse] and [TscnTree::spawn_into].
+/// See [TscnTree::spawn_into].
 #[derive(Asset, TypePath, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TscnTree {
     /// The root node of the scene as defined in Godot.

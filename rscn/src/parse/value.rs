@@ -87,12 +87,11 @@ where
                 let arr_ends_at = loop {
                     match self.peek_next_token_swallow_spaces() {
                         None => {
-                            // TODO
                             miette::bail! {
                                 labels = vec![
-                                    LabeledSpan::at(self.last_token_end..self.source.len() - 1, "this input"),
+                                    LabeledSpan::at(arr_starts_at..self.source.len() - 1, "this input"),
                                 ],
-                                "Unexpected end of file",
+                                "Unexpected end of file mid array",
                             }
                         }
                         Some(TscnToken {
@@ -148,12 +147,11 @@ where
                 let object_ends_at = loop {
                     match self.peek_next_token_swallow_spaces() {
                         None => {
-                            // TODO
                             miette::bail! {
                                 labels = vec![
-                                    LabeledSpan::at(self.last_token_end..self.source.len() - 1, "this input"),
+                                    LabeledSpan::at(object_starts_at..self.source.len() - 1, "this input"),
                                 ],
-                                "Unexpected end of file",
+                                "Unexpected end of file mid object",
                             }
                         }
                         Some(TscnToken {

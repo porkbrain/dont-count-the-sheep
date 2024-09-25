@@ -23,17 +23,6 @@ struct Parser<'a, I> {
     tokens: I,
     state: Scene,
     open_section: OpenSection,
-    /// We assert that the tscn string is not empty.
-    /// This value starts on 0 which is going to be a valid index.
-    ///
-    /// Every time call [Self::next_token_no_eof_ignore_spaces] we update this
-    /// value to the end of the read token.
-    ///
-    /// If we reach the end of the all tokens (EOF) but we are in an open state
-    /// that's not ready to be closed, we error.
-    /// This index is used to give better error messages because it can print
-    /// the text where we expected more tokens to be.
-    last_token_end: usize,
 }
 
 /// Parses the input tokens into a [Scene].
@@ -55,7 +44,6 @@ pub(crate) fn parse(
         tokens: tokens.into_iter().peekable(),
         state: Scene::default(),
         open_section: OpenSection::default(),
-        last_token_end: 0,
     };
 
     parser.parse_headers()?;
@@ -81,7 +69,7 @@ where
     /// Each tscn file must start with a `gd_scene` heading.
     /// There must be exactly one `gd_scene` heading per tscn.
     ///
-    /// Parses the attributes into [State::headers].
+    /// Parses the attributes into [Scene::headers].
     fn parse_headers(&mut self) -> miette::Result<()> {
         // [gd_scene opt_attr1=... opt_attr2=... ... ]
 
@@ -439,15 +427,9 @@ where
         loop {
             let token = self.tokens.next().ok_or_else(|| {
                 miette::miette! {
-                    // SAFETY: we have checked that source is not empty
-                    labels = vec![
-                        LabeledSpan::at(self.last_token_end..self.source.len() - 1, "this input"),
-                    ],
-                    "Unexpected end of file",
+                    "Unexpected end of .tscn file",
                 }
             })?;
-
-            self.last_token_end = token.span.end;
 
             if token.kind != TscnTokenKind::Space {
                 break Ok(token);
