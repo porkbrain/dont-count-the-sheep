@@ -5,6 +5,9 @@ use main_game_lib::common_ext::QueryExt;
 use super::{anim::SparkEffect, consts::*, mode, ActionEvent};
 use crate::prelude::*;
 
+#[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(super) struct HoshiControlsSystemSet;
+
 /// Controls when in normal mode.
 pub(super) fn normal(
     mut cmd: Commands,

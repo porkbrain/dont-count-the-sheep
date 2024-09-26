@@ -8,7 +8,7 @@ use main_game_lib::common_ext::QueryExt;
 use super::consts::*;
 use crate::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct Score {
     total: usize,
 }
@@ -63,12 +63,6 @@ pub(super) fn update(mut score: Query<(&mut Score, &mut Text)>) {
 impl AddAssign<usize> for Score {
     fn add_assign(&mut self, rhs: usize) {
         self.total += rhs;
-    }
-}
-
-impl Default for Score {
-    fn default() -> Self {
-        Self { total: 0 }
     }
 }
 

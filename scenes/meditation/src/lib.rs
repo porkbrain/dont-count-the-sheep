@@ -3,7 +3,6 @@
 #![allow(clippy::type_complexity)]
 #![allow(clippy::too_many_arguments)]
 
-mod cameras;
 mod consts;
 mod hoshi;
 mod prelude;
@@ -11,14 +10,14 @@ mod ui;
 mod zindex;
 
 use bevy::{render::view::RenderLayers, utils::Instant};
+use bevy_rscn::{
+    start_loading_tscn, tscn_loaded_but_not_spawned, NodeName, SpawnerContext,
+    TscnInBevy, TscnSpawnHooks, TscnTree, TscnTreeHandle,
+};
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use common_visuals::camera::render_layer;
 use prelude::*;
-use rscn::{
-    tscn_loaded_but_not_spawned, EntityDescriptionMap, NodeName,
-    TscnSpawnHooks, TscnTree, TscnTreeHandle,
-};
 
 /// Important scene struct.
 /// Identifies anything that's related to meditation.
@@ -30,7 +29,7 @@ pub fn add(app: &mut App) {
 
     debug!("Adding plugins");
 
-    app.add_plugins((ui::Plugin, hoshi::Plugin, cameras::Plugin));
+    app.add_plugins((ui::Plugin, hoshi::Plugin));
 
     debug!("Adding assets");
 
@@ -64,7 +63,7 @@ pub fn add(app: &mut App) {
     // 1. start the spawning process (the loading screen is already started)
     app.add_systems(
         OnEnter(GlobalGameState::LoadingMeditation),
-        rscn::start_loading_tscn::<LevelOne>,
+        start_loading_tscn::<LevelOne>,
     );
     // 2. when everything is loaded, finish the loading process by transitioning
     //    to the next loading state (this will also spawn the camera)
@@ -90,11 +89,13 @@ pub fn add(app: &mut App) {
     info!("Added meditation to app");
 }
 
+/// Marker component for the first level of meditation.
+#[derive(Component)]
 struct LevelOne;
 
-impl main_game_lib::rscn::TscnInBevy for LevelOne {
+impl TscnInBevy for LevelOne {
     fn tscn_asset_path() -> String {
-        format!("scenes/meditation_lvl_1.tscn")
+        "scenes/meditation_lvl_1.tscn".to_owned()
     }
 }
 
@@ -104,7 +105,7 @@ impl TscnSpawnHooks for Spawner {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        _descriptions: &mut EntityDescriptionMap,
+        ctx: &mut SpawnerContext,
         _parent: Option<(Entity, NodeName)>,
         (who, NodeName(name)): (Entity, NodeName),
     ) {
@@ -114,16 +115,28 @@ impl TscnSpawnHooks for Spawner {
         match name.as_str() {
             "HoshiSpawn" => {
                 info!("Hoshi spawn point");
+                let translation = ctx
+                    .descriptions
+                    .get(&who)
+                    .expect("HoshiSpawn node not present")
+                    .translation;
+
+                hoshi::spawn(cmd, ctx.asset_server, ctx.atlases, translation);
+            }
+            "MeditationLvl1" => {
+                cmd.entity(who).insert(LevelOne);
             }
             _ => {}
         }
     }
 }
 
-fn despawn(mut cmd: Commands) {
+fn despawn(mut cmd: Commands, lvl1: Query<Entity, With<LevelOne>>) {
     debug!("Despawning resources");
 
-    // TODO
+    for entity in lvl1.iter() {
+        cmd.entity(entity).despawn_recursive();
+    }
 }
 
 fn finish_when_everything_loaded(

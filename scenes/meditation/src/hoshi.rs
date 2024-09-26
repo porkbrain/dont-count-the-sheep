@@ -1,14 +1,21 @@
 //! Hoshi is an entity that is controlled by the player.
+//!
+//! While despawning is taken care of by [Plugin], spawning is done by calling
+//! the [spawn] function.
+//! That's because spawning is done via a Godot spawner.
 
 mod anim;
 mod arrow;
+mod camera;
 pub(crate) mod consts;
 mod controls;
 mod mode;
 mod sprite;
 
 use bevy::{math::uvec2, render::view::RenderLayers};
+use common_loading_screen::LoadingScreenState;
 use common_visuals::camera::render_layer;
+use controls::HoshiControlsSystemSet;
 
 use self::consts::*;
 use crate::prelude::*;
@@ -46,8 +53,13 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ActionEvent>()
             .add_systems(
+                OnExit(LoadingScreenState::WaitForSignalToFinish),
+                camera::spawn
+                    .run_if(in_state(GlobalGameState::LoadingMeditation)),
+            )
+            .add_systems(
                 OnEnter(GlobalGameState::LoadingMeditation),
-                (spawn, arrow::spawn),
+                arrow::spawn,
             )
             .add_systems(
                 OnExit(GlobalGameState::QuittingMeditation),
@@ -55,31 +67,36 @@ impl bevy::app::Plugin for Plugin {
             )
             .add_systems(
                 Update,
+                (controls::normal, controls::loading_special)
+                    .in_set(HoshiControlsSystemSet),
+            )
+            .add_systems(
+                Update,
                 (
-                    anim::rotate,
                     arrow::point_arrow,
+                    anim::rotate,
                     anim::sprite_loading_special,
-                    controls::normal,
-                    controls::loading_special,
-                    anim::update_camera_on_special.after(controls::normal),
-                    anim::sprite
-                        .after(controls::normal)
-                        .after(controls::loading_special),
+                    anim::sprite,
+                    camera::zoom_on_special,
+                    camera::follow_hoshi,
                 )
+                    .after(HoshiControlsSystemSet)
                     .run_if(in_state(GlobalGameState::InGameMeditation)),
             );
     }
 }
 
+/// Used to spawn Hoshi.
+///
 /// 1. spriteless parent which commands the movement
 /// 2. body sprite, child of parent
 /// 3. face sprite, child of parent
 /// 4. spark effect is hidden by default and shown when special is fired
-/// 5. setup camera state which is affected by going into special
-fn spawn(
-    mut cmd: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
+pub(crate) fn spawn(
+    cmd: &mut Commands,
+    asset_server: &AssetServer,
+    texture_atlases: &mut Assets<TextureAtlasLayout>,
+    translation: Vec2,
 ) {
     debug!("Spawning Hoshi entities");
 
@@ -95,7 +112,11 @@ fn spawn(
             AngularVelocity::default(), // for animation
             sprite::Transition::default(),
             SpatialBundle {
-                transform: DEFAULT_TRANSFORM,
+                transform: Transform {
+                    translation: translation.extend(zindex::HOSHI),
+                    rotation: Quat::from_array([0.0, 0.0, 0.0, 1.0]),
+                    scale: Vec3::new(1.0, 1.0, 1.0),
+                },
                 ..default()
             },
         ))
@@ -176,10 +197,6 @@ fn spawn(
             )),
         },
     ));
-    //
-    // 5.
-    //
-    cmd.spawn((HoshiEntity, anim::CameraState::default()));
 }
 
 fn despawn(mut cmd: Commands, entities: Query<Entity, With<HoshiEntity>>) {

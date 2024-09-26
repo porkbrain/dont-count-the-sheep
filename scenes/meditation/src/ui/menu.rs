@@ -1,11 +1,11 @@
 use std::time::Instant;
 
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_visuals::camera::PIXEL_ZOOM;
+use common_visuals::camera::{MainCamera, PIXEL_ZOOM};
 use main_game_lib::common_ext::QueryExt;
 
 use super::consts::*;
-use crate::{cameras::MeditationCamera, consts::*, prelude::*};
+use crate::{consts::*, prelude::*};
 
 #[derive(Component)]
 pub(super) struct Menu {
@@ -29,7 +29,7 @@ pub(super) fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
 
-    camera: Query<Entity, With<MeditationCamera>>,
+    camera: Query<Entity, With<MainCamera>>,
 ) {
     cmd.spawn(Menu {
         selection: Selection::Resume,

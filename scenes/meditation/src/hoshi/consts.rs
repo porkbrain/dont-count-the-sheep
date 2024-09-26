@@ -1,11 +1,5 @@
 use crate::prelude::*;
 
-pub(crate) const DEFAULT_TRANSFORM: Transform = Transform {
-    translation: Vec3::new(0.0, 0.0, zindex::HOSHI),
-    rotation: Quat::from_array([0.0, 0.0, 0.0, 1.0]),
-    scale: Vec3::new(1.0, 1.0, 1.0),
-};
-
 /// Cannot jump more times in a row than this before resetting
 pub(crate) const MAX_JUMPS: usize = 4;
 
