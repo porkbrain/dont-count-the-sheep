@@ -59,7 +59,6 @@ pub(crate) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
                             font: asset_server.load(fonts::TINY_PIXEL1),
                             font_size: 16.0,
                             color: Color::WHITE,
-                            ..default()
                         },
                     },
                     TextSection {
@@ -68,7 +67,6 @@ pub(crate) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
                             font: asset_server.load(fonts::TINY_PIXEL1),
                             font_size: 16.0,
                             color: Color::WHITE,
-                            ..default()
                         },
                     },
                 ]),
