@@ -146,7 +146,7 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityDescriptionMap,
+        ctx: &mut SpawnerContext,
         _parent: Option<(Entity, NodeName)>,
         (who, NodeName(name)): (Entity, NodeName),
     ) {
@@ -160,14 +160,16 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
                 cmd.entity(who).add_child(self.white_cat_entity);
             }
             "Entrance" => {
-                let translation = descriptions
+                let translation = ctx
+                    .descriptions
                     .get(&who)
                     .expect("Missing description for {name}")
                     .translation;
                 self.player_builder.initial_position(translation);
             }
             s if s.starts_with("WhiteCatPatrolPoint") => {
-                let translation = descriptions
+                let translation = ctx
+                    .descriptions
                     .get(&who)
                     .expect("Missing description for {name}")
                     .translation;

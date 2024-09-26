@@ -210,7 +210,7 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityDescriptionMap,
+        ctx: &mut SpawnerContext,
         _parent: Option<(Entity, NodeName)>,
         (who, NodeName(name)): (Entity, NodeName),
     ) {
@@ -218,7 +218,8 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
         cmd.entity(who)
             .insert(RenderLayers::layer(render_layer::BG));
 
-        let position = descriptions
+        let position = ctx
+            .descriptions
             .get(&who)
             .expect("Missing description for {name}")
             .translation;

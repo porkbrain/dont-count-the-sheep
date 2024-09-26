@@ -48,6 +48,9 @@ pub trait TscnSpawnHooks {
     /// Called just before all components from the entity description are
     /// inserted into the entity.
     ///
+    /// You can access the entity description with
+    /// [Context::entity_descriptions].
+    ///
     /// If you remove any entity from the descriptions map, it will not be
     /// spawned and neither will its children.
     /// You may not insert any new descriptions into the map, only remove them
@@ -55,7 +58,7 @@ pub trait TscnSpawnHooks {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityDescriptionMap,
+        ctx: &mut SpawnerContext,
         parent: Option<(Entity, NodeName)>,
         this: (Entity, NodeName),
     );
@@ -70,7 +73,7 @@ pub trait TscnSpawnHooks {
     fn handle_plain_node(
         &mut self,
         _cmd: &mut Commands,
-        _descriptions: &mut EntityDescriptionMap,
+        _ctx: &mut SpawnerContext,
         _parent: (Entity, NodeName),
         this: (NodeName, RscnNode),
     ) {
@@ -88,10 +91,10 @@ impl TscnTree {
         asset_server: &AssetServer,
         hooks: &mut impl TscnSpawnHooks,
     ) {
-        let mut ctx = Context {
+        let mut ctx = SpawnerContext {
             atlases,
             asset_server,
-            entity_descriptions: Default::default(),
+            descriptions: Default::default(),
         };
         let root = cmd.spawn(Name::new(self.root_node_name.clone())).id();
         node_to_entity(
@@ -103,24 +106,27 @@ impl TscnTree {
             self.root,
         );
 
-        if !ctx.entity_descriptions.is_empty() {
+        if !ctx.descriptions.is_empty() {
             error!(
                 "There are {} improperly spawned entities",
-                ctx.entity_descriptions.len()
+                ctx.descriptions.len()
             );
         }
     }
 }
 
 /// Context data to the tree walk in [node_to_entity].
-struct Context<'a> {
-    atlases: &'a mut Assets<TextureAtlasLayout>,
-    asset_server: &'a AssetServer,
-    entity_descriptions: EntityDescriptionMap,
+pub struct SpawnerContext<'a> {
+    /// Reference to the texture atlases.
+    pub atlases: &'a mut Assets<TextureAtlasLayout>,
+    /// Reference to the asset server.
+    pub asset_server: &'a AssetServer,
+    /// Maps entity to its component description.
+    pub descriptions: EntityDescriptionMap,
 }
 
 fn node_to_entity(
-    ctx: &mut Context<'_>,
+    ctx: &mut SpawnerContext<'_>,
     hooks: &mut impl TscnSpawnHooks,
     cmd: &mut Commands,
     parent: Option<(Entity, NodeName)>,
@@ -198,7 +204,7 @@ fn node_to_entity(
         }
     }
 
-    ctx.entity_descriptions.insert(entity, description);
+    ctx.descriptions.insert(entity, description);
 
     for (child_name, child_node) in node.children {
         if child_node.in_2d.is_some() {
@@ -217,14 +223,14 @@ fn node_to_entity(
         } else {
             match child_name.as_str() {
                 "Point" => {
-                    if let Some(desc) = ctx.entity_descriptions.get(&entity) {
+                    if let Some(desc) = ctx.descriptions.get(&entity) {
                         cmd.entity(entity).insert(Point(desc.translation));
                     }
                 }
                 _ => {
                     hooks.handle_plain_node(
                         cmd,
-                        &mut ctx.entity_descriptions,
+                        ctx,
                         (entity, name.clone()),
                         (child_name, child_node),
                     );
@@ -234,12 +240,7 @@ fn node_to_entity(
     }
 
     trace!("Handling 2D entity {name:?}");
-    hooks.handle_2d_node(
-        cmd,
-        &mut ctx.entity_descriptions,
-        parent,
-        (entity, name),
-    );
+    hooks.handle_2d_node(cmd, ctx, parent, (entity, name));
 
     let mut entity_cmd = cmd.entity(entity);
 
@@ -252,7 +253,7 @@ fn node_to_entity(
         texture_atlas,
         atlas_animation,
         atlas_animation_timer,
-    }) = ctx.entity_descriptions.remove(&entity)
+    }) = ctx.descriptions.remove(&entity)
     else {
         entity_cmd.despawn_recursive();
         return;
