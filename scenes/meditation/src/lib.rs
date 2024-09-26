@@ -90,6 +90,9 @@ pub fn add(app: &mut App) {
 }
 
 /// Marker component for the first level of meditation.
+///
+/// TODO: we have to extract things and load levels in a more generic way.
+/// First level is static but next ones should repeat some somehow.
 #[derive(Component)]
 struct LevelOne;
 
@@ -161,12 +164,20 @@ fn finish_when_everything_loaded(
     next_loading_state.set(common_loading_screen::finish_state());
 }
 
-fn enter_the_game(mut next_state: ResMut<NextState<GlobalGameState>>) {
+fn enter_the_game(
+    mut cmd: Commands,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+) {
     info!("Entering meditation game");
     next_state.set(GlobalGameState::InGameMeditation);
+    // #0a0d0f
+    // TODO: use a constant
+    let bg_color = Color::srgb(0.039, 0.051, 0.059);
+    cmd.insert_resource(ClearColor(bg_color));
 }
 
 fn all_cleaned_up(
+    mut cmd: Commands,
     transition: Res<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
@@ -187,6 +198,8 @@ fn all_cleaned_up(
 
     // be a good guy and don't invade other game loops with "Enter"
     controls.consume(&GlobalAction::Interact);
+
+    cmd.insert_resource(ClearColor(PRIMARY_COLOR));
 
     use GlobalGameStateTransition::*;
     match *transition {

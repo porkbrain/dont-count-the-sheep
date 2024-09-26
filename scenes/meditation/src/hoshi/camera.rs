@@ -1,12 +1,11 @@
 use bevy::{core_pipeline::bloom::BloomSettings, render::view::RenderLayers};
 use bevy_pixel_camera::{PixelViewport, PixelZoom};
-use common_visuals::camera::{
-    order, render_layer, MainCamera, PIXEL_VISIBLE_WIDTH, PIXEL_ZOOM,
-};
+use common_visuals::camera::{order, render_layer, MainCamera, PIXEL_ZOOM};
 use main_game_lib::common_ext::QueryExt;
 
 use super::{consts::*, ActionEvent};
 use crate::{
+    consts::HALF_LEVEL_WIDTH_PX,
     hoshi::{Hoshi, HoshiEntity},
     prelude::*,
 };
@@ -50,6 +49,7 @@ pub(super) fn spawn(mut cmd: Commands) {
 ///
 /// This needs to be updated to a more complex camera system.
 pub(super) fn follow_hoshi(
+    window: Query<&Window>,
     mut camera: Query<
         (&CameraState, &mut Transform),
         (With<MainCamera>, Without<Hoshi>),
@@ -64,7 +64,14 @@ pub(super) fn follow_hoshi(
 
     if let Some(hoshi) = hoshi.get_single_or_none() {
         let z = camera_transform.translation.z;
-        camera_transform.translation = hoshi.translation.truncate().extend(z);
+        let y = hoshi.translation.y;
+
+        let window_width_px = window.single().resolution.width();
+        let x_clamp = camera_x_clamp(window_width_px);
+        // camera is bounded by the screen size
+        // so we need to find the window width and figure out the bounds
+        let x = hoshi.translation.x.clamp(-x_clamp, x_clamp);
+        camera_transform.translation = Vec3::new(x, y, z);
     }
 }
 
@@ -77,18 +84,30 @@ pub(super) fn zoom_on_special(
     mut action: EventReader<ActionEvent>,
     time: Res<Time>,
 
-    mut state: Query<&mut CameraState>,
-    mut cameras: Query<
+    window: Query<&Window>,
+    hoshi: Query<&Transform, (With<Hoshi>, Without<MainCamera>)>,
+    mut camera: Query<
         (
             Entity,
+            &mut CameraState,
             &mut Transform,
             &mut OrthographicProjection,
             Option<&mut BloomSettings>,
         ),
-        With<MainCamera>,
+        (With<MainCamera>, Without<Hoshi>),
     >,
 ) {
-    let mut state = state.single_mut();
+    let Some((
+        camera_entity,
+        mut camera_state,
+        mut camera_transform,
+        mut camera_projection,
+        camera_bloom,
+    )) = camera.get_single_mut_or_none()
+    else {
+        error!("No camera found");
+        return;
+    };
 
     let just_started_loading_from_translation = action
         .read()
@@ -102,23 +121,22 @@ pub(super) fn zoom_on_special(
 
     if let Some(look_at) = just_started_loading_from_translation {
         debug!("Special started loading from {look_at}");
-        *state = CameraState::EffectOnSpecial {
+        *camera_state = CameraState::EffectOnSpecial {
             fired: Stopwatch::new(),
             look_at,
         };
 
-        for (entity, _, _, _) in cameras.iter_mut() {
-            cmd.entity(entity).insert(BloomSettings {
-                intensity: INITIAL_BLOOM_INTENSITY,
-                low_frequency_boost: INITIAL_BLOOM_LFB,
-                ..default()
-            });
-        }
+        cmd.entity(camera_entity).insert(BloomSettings {
+            intensity: INITIAL_BLOOM_INTENSITY,
+            low_frequency_boost: INITIAL_BLOOM_LFB,
+            ..default()
+        });
 
         return;
     }
 
-    let CameraState::EffectOnSpecial { fired, look_at } = &mut *state else {
+    let CameraState::EffectOnSpecial { fired, look_at } = &mut *camera_state
+    else {
         return;
     };
     fired.tick(time.delta());
@@ -132,31 +150,16 @@ pub(super) fn zoom_on_special(
     {
         debug!("Removing bloom and zoom");
 
-        for (entity, mut transform, mut projection, _) in cameras.iter_mut() {
-            cmd.entity(entity).remove::<BloomSettings>();
-            *state = CameraState::Normal;
+        cmd.entity(camera_entity).remove::<BloomSettings>();
+        *camera_state = CameraState::Normal;
 
-            projection.scale = 1.0;
-            transform.translation = default();
-        }
+        camera_projection.scale = 1.0;
+        // we don't update the translation, it will be done in follow_hoshi
 
         return;
     }
 
-    // The camera needs to be clamped horizontally.
-    // That's because this game is a vertical scroller, but the player should
-    // not see outside of the sides.
-    fn freedom_of_camera_translation(scale: f32) -> Vec3 {
-        let horizontal_freedom = {
-            if scale > 0.999 {
-                0.0
-            } else {
-                PIXEL_VISIBLE_WIDTH * (1.0 - scale) / 2.0
-            }
-        };
-
-        Vec3::new(horizontal_freedom, f32::MAX, 0.0)
-    }
+    let window_width_px = window.single().resolution.width();
 
     struct CameraUpdateArgs {
         intensity: f32,
@@ -164,12 +167,12 @@ pub(super) fn zoom_on_special(
         scale: f32,
         /// Used for lerp.
         /// Translates towards this point with some bias where
-        translate_towards: Vec3,
+        translate_towards: Vec2,
         /// Used for lerp.
         /// 1.0 means translate towards it completely.
         translate_bias: f32,
         /// We clamp the translation to this from both sides.
-        translate_freedom: Vec3,
+        translate_freedom: Vec2,
     }
 
     let CameraUpdateArgs {
@@ -194,13 +197,13 @@ pub(super) fn zoom_on_special(
 
         let new_scale = 1.0 - (1.0 - ZOOM_IN_SCALE) * animation_elapsed;
 
-        let freedom = freedom_of_camera_translation(new_scale);
+        let freedom = Vec2::new(camera_x_clamp(window_width_px), f32::MAX);
 
         CameraUpdateArgs {
             intensity: new_intensity,
             low_frequency_boost: new_lfb,
             scale: new_scale,
-            translate_towards: look_at.extend(0.0),
+            translate_towards: *look_at,
             translate_bias: animation_elapsed,
             translate_freedom: freedom,
         }
@@ -217,6 +220,8 @@ pub(super) fn zoom_on_special(
 
         let new_lfb = PEAK_BLOOM_LFB - PEAK_BLOOM_LFB * animation_elapsed;
 
+        let hoshi_position = hoshi.single().translation.truncate();
+
         if how_long_after_fired
             < FROM_ZOOMED_BACK_TO_NORMAL_WHEN_SPECIAL_IS_LOADED_IN
         {
@@ -229,13 +234,13 @@ pub(super) fn zoom_on_special(
             let new_scale =
                 ZOOM_IN_SCALE + (1.0 - ZOOM_IN_SCALE) * animation_elapsed;
 
-            let freedom = freedom_of_camera_translation(new_scale);
+            let freedom = Vec2::new(camera_x_clamp(window_width_px), f32::MAX);
 
             CameraUpdateArgs {
                 intensity: new_intensity,
                 low_frequency_boost: new_lfb,
                 scale: new_scale,
-                translate_towards: default(),
+                translate_towards: hoshi_position,
                 translate_bias: animation_elapsed,
                 translate_freedom: freedom,
             }
@@ -246,22 +251,37 @@ pub(super) fn zoom_on_special(
                 intensity: new_intensity,
                 low_frequency_boost: new_lfb,
                 scale: 1.0,
-                translate_towards: default(),
+                translate_towards: hoshi_position,
                 translate_bias: 1.0,
-                translate_freedom: default(),
+                translate_freedom: Vec2::new(
+                    camera_x_clamp(window_width_px),
+                    f32::MAX,
+                ),
             }
         }
     };
 
-    for (_, mut transform, mut projection, settings) in cameras.iter_mut() {
-        let mut settings = settings.expect("bloom settings");
-        settings.intensity = intensity;
-        settings.low_frequency_boost = low_frequency_boost;
-        projection.scale = scale;
+    let mut settings = camera_bloom.expect("bloom settings");
+    settings.intensity = intensity;
+    settings.low_frequency_boost = low_frequency_boost;
+    camera_projection.scale = scale;
 
-        transform.translation = transform
-            .translation
-            .lerp(translate_towards, translate_bias)
-            .clamp(-translate_freedom, translate_freedom);
+    let camera_z = camera_transform.translation.z;
+    camera_transform.translation = camera_transform
+        .translation
+        .truncate()
+        .lerp(translate_towards, translate_bias)
+        .clamp(-translate_freedom, translate_freedom)
+        .extend(camera_z)
+}
+
+fn camera_x_clamp(window_width_px: f32) -> f32 {
+    let half_window_width = window_width_px / 2.0 / PIXEL_ZOOM as f32;
+    if half_window_width > HALF_LEVEL_WIDTH_PX {
+        // The screen is wider than the level, camera cannot move.
+        // In fact, we might prefer decreasing the scale to fit the level.
+        0.0
+    } else {
+        HALF_LEVEL_WIDTH_PX - half_window_width
     }
 }
