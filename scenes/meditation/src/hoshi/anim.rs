@@ -101,7 +101,14 @@ pub(super) fn sprite_loading_special(
     }
 
     if let Some(mut face) = set.p2().get_single_mut_or_none() {
-        face.index = sprite::FaceKind::TryHarding.index();
+        let new_face_index = sprite::FaceKind::TryHarding.index();
+        if face.index != new_face_index {
+            trace!(
+                "Changing face on special to {new_face_index} from index {}",
+                face.index
+            );
+            face.index = new_face_index;
+        }
     }
 }
 
@@ -188,7 +195,12 @@ pub(super) fn sprite(
     }
 
     body.index = transition.current_body_index();
-    face.index = transition.current_face_index();
+
+    let face_index = transition.current_face_index();
+    if face_index != face.index {
+        trace!("Changing face from {} to {face_index}", face.index);
+        face.index = face_index;
+    }
 
     *face_visibility = if transition.current_body().should_hide_face() {
         Visibility::Hidden

@@ -29,6 +29,7 @@ pub(super) fn spawn(mut cmd: Commands) {
 
     cmd.spawn((
         MainCamera,
+        Name::new("MainCamera"),
         PixelZoom::Fixed(PIXEL_ZOOM),
         PixelViewport,
         RenderLayers::from_layers(&[0, render_layer::OBJ, render_layer::BG]),

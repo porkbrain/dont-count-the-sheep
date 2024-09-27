@@ -106,6 +106,7 @@ pub(crate) fn spawn(
     let parent = cmd
         .spawn((
             Hoshi,
+            Name::new("Hoshi root"),
             HoshiEntity,
             mode::Normal::default(),
             Velocity::default(),
@@ -127,6 +128,7 @@ pub(crate) fn spawn(
     let body = cmd
         .spawn((
             HoshiBody,
+            Name::new("Hoshi body"),
             RenderLayers::layer(render_layer::OBJ),
             SpriteBundle {
                 texture: asset_server.load(assets::BODY_ATLAS),
@@ -151,9 +153,12 @@ pub(crate) fn spawn(
     let face = cmd
         .spawn((
             HoshiFace,
+            Name::new("Hoshi face"),
             RenderLayers::layer(render_layer::OBJ),
             SpriteBundle {
                 texture: asset_server.load(assets::FACE_ATLAS),
+                // it's important to put it in front of the body
+                transform: Transform::from_translation(Vec2::ZERO.extend(1.0)),
                 ..default()
             },
             TextureAtlas {
@@ -174,6 +179,7 @@ pub(crate) fn spawn(
     //
     cmd.spawn((
         anim::SparkEffect,
+        Name::new("Hoshi spark effect"),
         HoshiEntity,
         RenderLayers::layer(render_layer::OBJ),
         AtlasAnimation {

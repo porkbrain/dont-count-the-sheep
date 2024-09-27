@@ -21,6 +21,7 @@ pub(super) struct Arrow;
 pub(super) fn spawn(mut cmd: Commands, asset_server: Res<AssetServer>) {
     cmd.spawn((
         Arrow,
+        Name::new("Hoshi Arrow"),
         SpriteBundle {
             texture: asset_server.load(assets::HOSHI_ARROW),
             transform: Transform::from_translation(Vec3::new(
