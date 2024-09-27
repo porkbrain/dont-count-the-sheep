@@ -8,8 +8,7 @@ use crate::prelude::{stopwatch_at, Radians};
 
 #[derive(Component)]
 pub(super) struct Normal {
-    /// Hoshi has a limited number of jumps before it must reset
-    /// via the [`crate::climate::Climate`]
+    /// Hoshi has a limited number of jumps before it must reset.
     pub(super) jumps: usize,
     /// there's a minimum delay between jumps
     pub(super) last_jump: Stopwatch,

@@ -49,7 +49,7 @@ pub trait TscnSpawnHooks {
     /// inserted into the entity.
     ///
     /// You can access the entity description with
-    /// [Context::entity_descriptions].
+    /// [SpawnerContext::descriptions].
     ///
     /// If you remove any entity from the descriptions map, it will not be
     /// spawned and neither will its children.
@@ -115,7 +115,7 @@ impl TscnTree {
     }
 }
 
-/// Context data to the tree walk in [node_to_entity].
+/// Context data to the tree walk.
 pub struct SpawnerContext<'a> {
     /// Reference to the texture atlases.
     pub atlases: &'a mut Assets<TextureAtlasLayout>,

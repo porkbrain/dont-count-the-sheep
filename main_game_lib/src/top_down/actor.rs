@@ -290,7 +290,7 @@ pub fn emit_movement_events(
 /// Other systems will only edit the `Actor` component to plan the movement.
 ///
 /// The z is based off y.
-/// See the [`ysort`] for more info.
+/// See the [Vec2Ext::ysort] for more info.
 pub fn animate_movement(
     time: Res<Time>,
     mut tilemap: ResMut<TileMap>,
