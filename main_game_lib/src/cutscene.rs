@@ -458,6 +458,8 @@ impl Cutscene {
 
 static CUTSCENE_SYSTEMS: OnceLock<CutsceneSystems> = OnceLock::new();
 
+// TODO: These systems need to be generated with macro to avoid all that
+// boilerplate.
 struct CutsceneSystems {
     if_true_this_else_that: SystemId,
     take_away_player_control: SystemId,
@@ -484,7 +486,7 @@ struct CutsceneSystems {
 
 impl CutsceneSystems {
     fn register_systems(w: &mut World) -> Self {
-        Self {
+        let systems = Self {
             if_true_this_else_that: w.register_system(if_true_this_else_that),
             take_away_player_control: w
                 .register_system(take_away_player_control),
@@ -515,7 +517,65 @@ impl CutsceneSystems {
             begin_color_interpolation: w
                 .register_system(begin_color_interpolation),
             start_playing_audio: w.register_system(start_playing_audio),
+        };
+
+        let names = [
+            "if_true_this_else_that",
+            "take_away_player_control",
+            "return_player_control",
+            "sleep",
+            "insert_atlas_animation_timer_to",
+            "change_global_state",
+            "start_loading_screen",
+            "wait_for_loading_screen",
+            "begin_simple_walk_to",
+            "wait_until_actor_at_rest",
+            "begin_portrait_dialog",
+            "wait_for_portrait_dialog_to_end",
+            "reverse_atlas_animation",
+            "wait_until_atlas_animation_ends",
+            "begin_moving_entity",
+            "set_actor_facing_direction",
+            "schedule_commands",
+            "claim_manual_main_camera_control",
+            "release_manual_main_camera_control",
+            "begin_color_interpolation",
+            "start_playing_audio",
+        ];
+        let entities = [
+            systems.if_true_this_else_that.entity(),
+            systems.take_away_player_control.entity(),
+            systems.return_player_control.entity(),
+            systems.sleep.entity(),
+            systems.insert_atlas_animation_timer_to.entity(),
+            systems.change_global_state.entity(),
+            systems.start_loading_screen.entity(),
+            systems.wait_for_loading_screen.entity(),
+            systems.begin_simple_walk_to.entity(),
+            systems.wait_until_actor_at_rest.entity(),
+            systems.begin_portrait_dialog.entity(),
+            systems.wait_for_portrait_dialog_to_end.entity(),
+            systems.reverse_atlas_animation.entity(),
+            systems.wait_until_atlas_animation_ends.entity(),
+            systems.begin_moving_entity.entity(),
+            systems.set_actor_facing_direction.entity(),
+            systems.schedule_commands.entity(),
+            systems.claim_manual_main_camera_control.entity(),
+            systems.release_manual_main_camera_control.entity(),
+            systems.begin_color_interpolation.entity(),
+            systems.start_playing_audio.entity(),
+        ];
+
+        for (name, entity) in names.iter().zip(entities.iter()) {
+            w.commands().entity(*entity).insert(Name::new(*name));
         }
+
+        // associates all those systems as children of one parent so that it
+        // looks nicer in the inspector
+        let mut cutscene_parent = w.spawn(Name::new("Cutscene systems"));
+        cutscene_parent.push_children(&entities);
+
+        systems
     }
 }
 
