@@ -91,10 +91,19 @@ pub fn windowed_app() -> App {
         use bevy_inspector_egui::quick::{
             ResourceInspectorPlugin, StateInspectorPlugin, WorldInspectorPlugin,
         };
+        use bevy_rscn::{
+            In2D, NodeName, RscnNode, SpriteFrames, SpriteTexture, TscnTree,
+        };
 
         app.register_type::<GlobalGameStateTransition>()
             .register_type::<GlobalGameState>()
-            .register_type::<player_stats::PlayerStats>();
+            .register_type::<player_stats::PlayerStats>()
+            .register_type::<TscnTree>()
+            .register_type::<NodeName>()
+            .register_type::<RscnNode>()
+            .register_type::<In2D>()
+            .register_type::<SpriteTexture>()
+            .register_type::<SpriteFrames>();
 
         app.add_plugins((
             bevy_egui::EguiPlugin,

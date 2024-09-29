@@ -54,22 +54,35 @@ impl bevy::app::Plugin for Plugin {
                 .run_if(in_state(GlobalGameState::InGameMeditation)),
         )
         .add_systems(OnExit(GlobalGameState::QuittingMeditation), despawn);
+
+        #[cfg(feature = "devtools")]
+        {
+            app.register_type::<RoomSpawner>()
+                .register_type::<NextToLoad>()
+                .register_type::<Room>()
+                .register_type::<RoomScene>();
+        }
     }
 }
 
 /// Marks a .tscn asset
+#[cfg_attr(feature = "devtools", derive(Reflect))]
 pub(crate) struct RoomScene;
 
 /// Marks a room entity.
 #[derive(Component)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
 struct Room;
 
-/// Marks a [TscnTreeHandle::<RoomScene>] as the next room to spawn.
+/// Marks a [`TscnTreeHandle::<RoomScene>`] as the next room to spawn.
 #[derive(Component)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
 struct NextToLoad;
 
 /// Controls spawning of rooms based on where the player is.
 #[derive(Resource, Default)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
+#[cfg_attr(feature = "devtools", reflect(Resource))]
 struct RoomSpawner {
     /// Spawned room 2D entities, ordered by how they chain.
     ///
@@ -102,7 +115,8 @@ pub(crate) fn insert_room_spawner_resource_with_entry_room(
     tscn_tree: TscnTree,
 ) {
     let mut room_spawner = RoomSpawner::default();
-    tscn_tree.spawn_into(cmd, atlas_layouts, &asset_server, &mut room_spawner);
+    tscn_tree.spawn_into(cmd, atlas_layouts, asset_server, &mut room_spawner);
+    debug_assert_eq!(room_spawner.active_rooms.len(), 1, "Only entry room");
     cmd.insert_resource(room_spawner);
 }
 
@@ -130,7 +144,7 @@ impl TscnSpawnHooks for RoomSpawner {
                 hoshi::spawn(cmd, ctx.asset_server, ctx.atlases, translation);
             }
             "MeditationRoomEntry" => {
-                assert!(
+                debug_assert!(
                     self.active_rooms.is_empty(),
                     "Entry room must be the first room"
                 );
@@ -172,12 +186,8 @@ impl TscnSpawnHooks for RoomSpawner {
 
         let random_child_pos = rand::random::<usize>() % node.children.len();
         // SAFETY: we know that the random_child is within bounds
-        let (NodeName(next_room_name_camel_case), _) = node
-            .children
-            .into_iter()
-            .skip(random_child_pos)
-            .next()
-            .unwrap();
+        let (NodeName(next_room_name_camel_case), _) =
+            node.children.into_iter().nth(random_child_pos).unwrap();
 
         let asset_path = {
             let mut s =
@@ -190,7 +200,7 @@ impl TscnSpawnHooks for RoomSpawner {
         if !self.tscn_trees.contains_key(&asset_path) {
             let (tree_handle_entity, _) = start_loading_tscn::<RoomScene>(
                 cmd,
-                &mut ctx.asset_server,
+                ctx.asset_server,
                 asset_path,
             );
 
@@ -288,8 +298,7 @@ fn garbage_collect_old_rooms_and_spawn_new_ones(
         .active_rooms
         .iter()
         .rev() // from the bottommost room
-        .skip(1) // second to last
-        .next()
+        .nth(1) // second to last
         .map(|room_entity| {
             let view_visibility = *spawned_rooms
                 .get(*room_entity)

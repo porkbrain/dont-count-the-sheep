@@ -33,7 +33,6 @@ use bevy::{
     },
     hierarchy::DespawnRecursiveExt,
     math::{Rect, Vec2},
-    reflect::TypePath,
     utils::HashMap,
 };
 use common_ext::QueryExt;
@@ -58,7 +57,9 @@ pub struct Config {
 /// We panic on unsupported content aggressively.
 ///
 /// See [TscnTree::spawn_into].
-#[derive(Asset, TypePath, Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[derive(Asset, Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
+#[cfg_attr(not(feature = "devtools"), derive(bevy::prelude::TypePath))]
 pub struct TscnTree {
     /// The root node of the scene as defined in Godot.
     pub root_node_name: NodeName,
@@ -71,6 +72,8 @@ pub struct TscnTree {
 /// The convention is that a 2D node is an entity while a plain node is a
 /// component.
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
+#[cfg_attr(feature = "devtools", reflect(no_field_bounds))]
 pub struct RscnNode {
     /// Positional data is relevant for
     /// - `Node2D`
@@ -96,10 +99,12 @@ pub struct RscnNode {
 
 /// The name of a node is unique within its parent.
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
 pub struct NodeName(pub String);
 
 /// Either a `Node2D`, `Sprite2D`, or `AnimatedSprite2D` node.
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
 pub struct In2D {
     /// in 2D
     pub position: Vec2,
@@ -115,6 +120,7 @@ pub struct In2D {
 
 /// For images and animations.
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
 pub struct SpriteTexture {
     /// The path to the asset stripped of typically the `res://assets/` prefix.
     /// E.g. `apartment/cupboard.png`.
@@ -135,6 +141,7 @@ pub struct SpriteTexture {
 
 /// Atlas animation.
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
 pub struct SpriteFrames {
     /// If set to true, once the animation starts playing it will be repeated.
     pub should_endless_loop: bool,

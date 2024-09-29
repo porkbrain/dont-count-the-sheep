@@ -25,10 +25,9 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            bevy_rscn::return_start_loading_tscn_system::<Building1Basement1>(format!(
-                "scenes/{}.tscn",
-                THIS_SCENE.snake_case()
-            )),
+            bevy_rscn::return_start_loading_tscn_system::<Building1Basement1>(
+                format!("scenes/{}.tscn", THIS_SCENE.snake_case()),
+            ),
         )
         .add_systems(
             Update,
