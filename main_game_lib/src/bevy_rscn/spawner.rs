@@ -24,6 +24,7 @@ pub type EntityDescriptionMap = EntityHashMap<Entity, EntityDescription>;
 #[derive(Default)]
 #[allow(missing_docs)]
 pub struct EntityDescription {
+    pub name: String,
     pub visibility: Visibility,
     pub translation: Vec2,
     pub z_index: Option<f32>,
@@ -154,6 +155,7 @@ fn node_to_entity(
     let mut description = EntityDescription {
         translation: position,
         z_index,
+        name: name.0.clone(),
         ..Default::default()
     };
 
@@ -222,7 +224,7 @@ fn node_to_entity(
         if child_node.in_2d.is_some() {
             // recursively spawn 2D children
 
-            let child_id = cmd.spawn(Name::new(child_name.clone())).id();
+            let child_id = cmd.spawn(()).id();
             cmd.entity(entity).add_child(child_id);
             node_to_entity(
                 ctx,
@@ -265,11 +267,14 @@ fn node_to_entity(
         texture_atlas,
         atlas_animation,
         atlas_animation_timer,
+        name,
     }) = ctx.descriptions.remove(&entity)
     else {
         entity_cmd.despawn_recursive();
         return;
     };
+
+    entity_cmd.insert(Name::new(name));
 
     entity_cmd.insert(SpatialBundle {
         // default zindex is 0 as per Godot, but we use f32::EPSILON to avoid z
