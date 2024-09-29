@@ -41,7 +41,8 @@ pub(crate) fn try_insert_map_as_resource(
     // we cannot call remove straight away because panics - the handle is
     // removed, the map is not loaded yet and asset loader expects it to exist
     if map_assets.get(map).is_some() {
-        let loaded_map = map_assets.remove(map).unwrap(); // safe ^
+        // SAFETY: the is_some check
+        let loaded_map = map_assets.remove(map).unwrap();
 
         #[cfg(feature = "devtools")]
         {

@@ -17,19 +17,16 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Sewers;
 #[derive(TypePath, Default, Debug)]
 pub struct Sewers;
 
-impl main_game_lib::bevy_rscn::TscnInBevy for Sewers {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
-    }
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            bevy_rscn::start_loading_tscn::<Sewers>,
+            bevy_rscn::return_start_loading_tscn_system::<Sewers>(format!(
+                "scenes/{}.tscn",
+                THIS_SCENE.snake_case()
+            )),
         )
         .add_systems(
             Update,

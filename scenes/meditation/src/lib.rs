@@ -6,17 +6,15 @@
 mod consts;
 mod hoshi;
 mod prelude;
+mod room;
 mod ui;
 mod zindex;
 
-use bevy::{render::view::RenderLayers, utils::Instant};
-use bevy_rscn::{
-    start_loading_tscn, tscn_loaded_but_not_spawned, NodeName, SpawnerContext,
-    TscnInBevy, TscnSpawnHooks, TscnTree, TscnTreeHandle,
-};
+use bevy::utils::Instant;
+use bevy_rscn::{tscn_loaded_but_not_spawned, TscnTree, TscnTreeHandle};
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_visuals::camera::render_layer;
+use consts::CLEAR_COLOR_BG;
 use prelude::*;
 
 /// Important scene struct.
@@ -29,7 +27,7 @@ pub fn add(app: &mut App) {
 
     debug!("Adding plugins");
 
-    app.add_plugins((ui::Plugin, hoshi::Plugin));
+    app.add_plugins((ui::Plugin, hoshi::Plugin, room::Plugin));
 
     debug!("Adding assets");
 
@@ -60,27 +58,20 @@ pub fn add(app: &mut App) {
 
     debug!("Adding game loop");
 
-    // 1. start the spawning process (the loading screen is already started)
-    app.add_systems(
-        OnEnter(GlobalGameState::LoadingMeditation),
-        start_loading_tscn::<LevelOne>,
-    );
-    // 2. when everything is loaded, finish the loading process by transitioning
-    //    to the next loading state (this will also spawn the camera)
+    // When everything is loaded, finish the loading process by hiding the
+    // loading screen and entering the game.
     app.add_systems(
         Last,
         finish_when_everything_loaded
             .run_if(in_state(GlobalGameState::LoadingMeditation))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish))
-            .run_if(tscn_loaded_but_not_spawned::<LevelOne>()),
-    );
-    // 3. ready to enter the game when the loading screen is completely gone
-    app.add_systems(
+            .run_if(tscn_loaded_but_not_spawned::<room::RoomScene>()),
+    )
+    .add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
         enter_the_game.run_if(in_state(GlobalGameState::LoadingMeditation)),
     );
 
-    app.add_systems(OnExit(GlobalGameState::QuittingMeditation), despawn);
     app.add_systems(
         Last,
         all_cleaned_up.run_if(in_state(GlobalGameState::QuittingMeditation)),
@@ -89,59 +80,12 @@ pub fn add(app: &mut App) {
     info!("Added meditation to app");
 }
 
-/// Marker component for the first level of meditation.
+/// Loading screen is being displayed.
+/// When everything is loaded, finish the loading process by transitioning
+/// to the loading screen state that means "we are ready to close the loading
+/// screen".
 ///
-/// TODO: we have to extract things and load levels in a more generic way.
-/// First level is static but next ones should repeat some somehow.
-#[derive(Component)]
-struct LevelOne;
-
-impl TscnInBevy for LevelOne {
-    fn tscn_asset_path() -> String {
-        "scenes/meditation_lvl_1.tscn".to_owned()
-    }
-}
-
-struct Spawner;
-
-impl TscnSpawnHooks for Spawner {
-    fn handle_2d_node(
-        &mut self,
-        cmd: &mut Commands,
-        ctx: &mut SpawnerContext,
-        _parent: Option<(Entity, NodeName)>,
-        (who, NodeName(name)): (Entity, NodeName),
-    ) {
-        cmd.entity(who)
-            .insert(RenderLayers::layer(render_layer::BG));
-
-        match name.as_str() {
-            "HoshiSpawn" => {
-                info!("Hoshi spawn point");
-                let translation = ctx
-                    .descriptions
-                    .get(&who)
-                    .expect("HoshiSpawn node not present")
-                    .translation;
-
-                hoshi::spawn(cmd, ctx.asset_server, ctx.atlases, translation);
-            }
-            "MeditationLvl1" => {
-                cmd.entity(who).insert(LevelOne);
-            }
-            _ => {}
-        }
-    }
-}
-
-fn despawn(mut cmd: Commands, lvl1: Query<Entity, With<LevelOne>>) {
-    debug!("Despawning resources");
-
-    for entity in lvl1.iter() {
-        cmd.entity(entity).despawn_recursive();
-    }
-}
-
+/// Once loading screen fades out, [enter_the_game] will be called.
 fn finish_when_everything_loaded(
     mut cmd: Commands,
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
@@ -150,7 +94,7 @@ fn finish_when_everything_loaded(
     mut tscn: ResMut<Assets<TscnTree>>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 
-    mut q: Query<&mut TscnTreeHandle<LevelOne>>,
+    mut q: Query<&mut TscnTreeHandle<room::RoomScene>>,
 ) {
     if !asset_store.are_all_loaded(&asset_server) {
         return;
@@ -159,7 +103,12 @@ fn finish_when_everything_loaded(
     debug!("All assets loaded");
 
     let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
-    tscn.spawn_into(&mut cmd, &mut atlas_layouts, &asset_server, &mut Spawner);
+    room::insert_room_spawner_resource_with_entry_room(
+        &mut cmd,
+        &asset_server,
+        &mut atlas_layouts,
+        tscn,
+    );
 
     next_loading_state.set(common_loading_screen::finish_state());
 }
@@ -170,10 +119,7 @@ fn enter_the_game(
 ) {
     info!("Entering meditation game");
     next_state.set(GlobalGameState::InGameMeditation);
-    // #0a0d0f
-    // TODO: use a constant
-    let bg_color = Color::srgb(0.039, 0.051, 0.059);
-    cmd.insert_resource(ClearColor(bg_color));
+    cmd.insert_resource(ClearColor(CLEAR_COLOR_BG));
 }
 
 fn all_cleaned_up(
@@ -199,6 +145,7 @@ fn all_cleaned_up(
     // be a good guy and don't invade other game loops with "Enter"
     controls.consume(&GlobalAction::Interact);
 
+    // back to the primary color
     cmd.insert_resource(ClearColor(PRIMARY_COLOR));
 
     use GlobalGameStateTransition::*;

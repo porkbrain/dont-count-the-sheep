@@ -17,6 +17,7 @@ lazy_static.workspace = true
 leafwing-input-manager.workspace = true
 main_game_lib.workspace = true
 rand.workspace = true
+untools.workspace = true
 
 
 [features]

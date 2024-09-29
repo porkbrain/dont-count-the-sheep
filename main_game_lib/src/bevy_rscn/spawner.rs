@@ -9,8 +9,8 @@
 use std::time::Duration;
 
 use bevy::utils::EntityHashMap;
-use bevy_rscn::Point;
 use common_visuals::{AtlasAnimation, AtlasAnimationEnd, AtlasAnimationTimer};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     bevy_rscn::{In2D, NodeName, RscnNode, SpriteTexture, TscnTree},
@@ -80,6 +80,24 @@ pub trait TscnSpawnHooks {
         unimplemented!("Scene does not support plain nodes, found {this:?}");
     }
 }
+
+/// A helper component that is always in an entity with
+/// [bevy::prelude::SpatialBundle].
+///
+/// Translated a simple point from Godot.
+/// To add this component, add a child Godot `Node` named `Point` to a parent
+/// Godot `Node2D`.
+#[derive(
+    Component,
+    Clone,
+    Copy,
+    Debug,
+    Deserialize,
+    PartialEq,
+    bevy::reflect::Reflect,
+    Serialize,
+)]
+pub struct Point(pub Vec2);
 
 impl TscnTree {
     /// Spawns the tree of nodes into the world guided by the scene

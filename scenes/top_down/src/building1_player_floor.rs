@@ -53,12 +53,6 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Building1PlayerFloor;
 #[derive(TypePath, Default, Debug)]
 struct Building1PlayerFloor;
 
-impl main_game_lib::bevy_rscn::TscnInBevy for Building1PlayerFloor {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
-    }
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -87,7 +81,10 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            bevy_rscn::start_loading_tscn::<Building1PlayerFloor>,
+            bevy_rscn::return_start_loading_tscn_system::<Building1PlayerFloor>(format!(
+                "scenes/{}.tscn",
+                THIS_SCENE.snake_case()
+            )),
         )
         .add_systems(
             Update,

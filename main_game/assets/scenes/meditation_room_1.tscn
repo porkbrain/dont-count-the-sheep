@@ -1,0 +1,26 @@
+[gd_scene load_steps=4 format=3 uid="uid://h80sioc8y51x"]
+
+[ext_resource type="Texture2D" uid="uid://bjq1q6j6xu2ly" path="res://assets/meditation/textures/bg/bg_scrolling.png" id="1_ro8i0"]
+[ext_resource type="Texture2D" uid="uid://dv8l0l4pjorl4" path="res://assets/meditation/textures/blue_crystal.png" id="2_vscyx"]
+[ext_resource type="Texture2D" uid="uid://bbe84c2xpswja" path="res://assets/meditation/textures/red_crystal.png" id="3_ue1pd"]
+
+[node name="MeditationRoom1" type="Node2D"]
+
+[node name="Bg" type="Sprite2D" parent="."]
+texture = ExtResource("1_ro8i0")
+
+[node name="Crystals" type="Node2D" parent="."]
+
+[node name="1" type="Sprite2D" parent="Crystals"]
+position = Vector2(-170, -302)
+texture = ExtResource("2_vscyx")
+metadata/kind = "blue"
+
+[node name="2" type="Sprite2D" parent="Crystals"]
+position = Vector2(154, 216)
+texture = ExtResource("3_ue1pd")
+metadata/kind = "red"
+
+[node name="NextRooms" type="Node" parent="."]
+
+[node name="MeditationRoom2" type="Node" parent="NextRooms"]

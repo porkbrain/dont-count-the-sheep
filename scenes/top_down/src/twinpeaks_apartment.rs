@@ -15,19 +15,15 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::TwinpeaksApartment;
 #[derive(TypePath, Default, Debug)]
 struct TwinpeaksApartment;
 
-impl main_game_lib::bevy_rscn::TscnInBevy for TwinpeaksApartment {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
-    }
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            bevy_rscn::start_loading_tscn::<TwinpeaksApartment>,
+            bevy_rscn::return_start_loading_tscn_system::<TwinpeaksApartment>(
+                format!("scenes/{}.tscn", THIS_SCENE.snake_case()),
+            ),
         )
         .add_systems(
             Update,

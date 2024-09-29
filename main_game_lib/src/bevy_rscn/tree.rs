@@ -343,6 +343,7 @@ fn apply_section(
                 anim.len() == 1,
                 "We currently support only a single animation"
             );
+            // SAFETY: we just asserted that there is exactly one animation
             let anim = anim.into_iter().next().unwrap();
 
             let mut max_y = 0.0f32;

@@ -416,7 +416,7 @@ impl Dialog {
             return AdvanceOutcome::ScheduledDespawn;
         }
 
-        match &self.graph.nodes.get(&self.current_node).unwrap().kind {
+        match &self.current_node_info().kind {
             NodeKind::Blank | NodeKind::Vocative { .. } => {
                 self.transition_or_offer_player_choice_if_all_ready(cmd, store)
             }
@@ -598,10 +598,7 @@ impl Dialog {
                 if let Some((first_choice_branch_index, _)) = choices.next() {
                     if choices.next().is_none() {
                         let first_choice_node_name = self
-                            .graph
-                            .nodes
-                            .get(&self.current_node)
-                            .unwrap()
+                            .current_node_info()
                             .next
                             .get(first_choice_branch_index)
                             .unwrap()

@@ -587,6 +587,8 @@ fn system_id(step: &CutsceneStep) -> SystemId {
         "Cutscene systems not initialized"
     );
 
+    // SAFETY: CUTSCENE_SYSTEMS is initialized in the plugin builder, and
+    // therefore it will be initialized before any system is run.
     let s = CUTSCENE_SYSTEMS.get().unwrap();
     match step {
         IfTrueThisElseThat(_, _, _) => s.if_true_this_else_that,

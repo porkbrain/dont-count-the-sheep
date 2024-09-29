@@ -17,19 +17,16 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::PlantShop;
 #[derive(TypePath, Default, Debug)]
 struct PlantShop;
 
-impl main_game_lib::bevy_rscn::TscnInBevy for PlantShop {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
-    }
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            bevy_rscn::start_loading_tscn::<PlantShop>,
+            bevy_rscn::return_start_loading_tscn_system::<PlantShop>(format!(
+                "scenes/{}.tscn",
+                THIS_SCENE.snake_case()
+            )),
         )
         .add_systems(
             Update,

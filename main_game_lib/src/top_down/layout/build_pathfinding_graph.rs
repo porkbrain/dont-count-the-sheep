@@ -336,15 +336,16 @@ impl ZoneTileKindGraph {
                         no supersets but also not a top level subgraph"
                     );
                 } else {
+                    // SAFETY: the else if above
                     let top_level_superset = own_supersets
-                        .unwrap() // safe cuz else if ^
+                        .unwrap()
                         .iter()
                         .find(|own_superset| {
                             top_level_subgraphs.contains_key(*own_superset)
                         })
-                        .unwrap();
+                        .expect("Top level superset not found");
 
-                    // safe cuz contains_key ^
+                    // SAFETY: the contains_key check above
                     top_level_subgraphs.get_mut(top_level_superset).unwrap()
                 };
 
