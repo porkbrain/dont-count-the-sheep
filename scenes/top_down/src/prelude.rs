@@ -1,7 +1,7 @@
 pub(crate) use bevy::render::view::RenderLayers;
 pub(crate) use bevy_grid_squared::sq;
 pub(crate) use bevy_rscn::{
-    EntityDescriptionMap, NodeName, TscnSpawnHooks, TscnTree, TscnTreeHandle,
+    NodeName, SpawnerContext, TscnSpawnHooks, TscnTree, TscnTreeHandle,
 };
 pub(crate) use common_loading_screen::LoadingScreenSettings;
 pub(crate) use common_visuals::camera::{render_layer, MainCamera};

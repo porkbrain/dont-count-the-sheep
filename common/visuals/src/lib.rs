@@ -3,14 +3,14 @@
 #![feature(trivial_bounds)]
 
 pub mod camera;
-#[cfg(feature = "devtools")]
 mod fps;
 pub mod systems;
 mod types;
 
 use bevy::{
-    app::{App, FixedUpdate, Last, Update},
+    app::{App, FixedUpdate, Last, Startup, Update},
     color::Color,
+    diagnostic::FrameTimeDiagnosticsPlugin,
     math::{cubic_splines::CubicSegment, Vec2},
 };
 use lazy_static::lazy_static;
@@ -31,6 +31,11 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        // FPS is always displayed
+        app.add_plugins(FrameTimeDiagnosticsPlugin)
+            .add_systems(Startup, fps::spawn)
+            .add_systems(Update, fps::update);
+
         app.add_event::<BeginInterpolationEvent>();
 
         app.add_systems(
@@ -45,8 +50,6 @@ impl bevy::app::Plugin for Plugin {
 
         #[cfg(feature = "devtools")]
         {
-            use bevy::{app::Startup, diagnostic::FrameTimeDiagnosticsPlugin};
-
             app.register_type::<AtlasAnimation>()
                 .register_type::<AtlasAnimationEnd>()
                 .register_type::<AtlasAnimationTimer>()
@@ -54,10 +57,6 @@ impl bevy::app::Plugin for Plugin {
                 .register_type::<ColorInterpolation>()
                 .register_type::<BeginAtlasAnimation>()
                 .register_type::<Flicker>();
-
-            app.add_plugins(FrameTimeDiagnosticsPlugin)
-                .add_systems(Startup, fps::spawn)
-                .add_systems(Update, fps::update);
         }
     }
 }

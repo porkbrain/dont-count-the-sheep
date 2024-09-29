@@ -17,19 +17,15 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Building1Basement2;
 #[derive(TypePath, Default, Debug)]
 struct Building1Basement2;
 
-impl main_game_lib::bevy_rscn::TscnInBevy for Building1Basement2 {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
-    }
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            bevy_rscn::start_loading_tscn::<Building1Basement2>,
+            bevy_rscn::return_start_loading_tscn_system::<Building1Basement2>(
+                format!("scenes/{}.tscn", THIS_SCENE.snake_case()),
+            ),
         )
         .add_systems(
             Update,
@@ -107,7 +103,7 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityDescriptionMap,
+        ctx: &mut SpawnerContext,
         _parent: Option<(Entity, NodeName)>,
         (who, NodeName(name)): (Entity, NodeName),
     ) {
@@ -123,7 +119,8 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
                 cmd.entity(who).insert(DoorToStorageBasement);
             }
             "Exit" => {
-                let translation = descriptions
+                let translation = ctx
+                    .descriptions
                     .get(&who)
                     .expect("Missing description for {name}")
                     .translation;

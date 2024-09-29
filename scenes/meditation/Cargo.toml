@@ -6,7 +6,6 @@ edition.workspace = true
 
 [dependencies]
 bevy_pixel_camera.workspace = true
-bevy_webp_anim.workspace = true
 bevy.workspace = true
 common_action.workspace = true
 common_assets.workspace = true
@@ -18,8 +17,8 @@ lazy_static.workspace = true
 leafwing-input-manager.workspace = true
 main_game_lib.workspace = true
 rand.workspace = true
+untools.workspace = true
 
 
 [features]
 devtools = []
-devtools-poissons = ["common_physics/poissons-eq-visualization"]

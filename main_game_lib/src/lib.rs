@@ -52,6 +52,7 @@ pub fn windowed_app() -> App {
                 main_game_lib::top_down::layout=debug,\
                 main_game_lib::rscn=debug,\
                 scene_top_down=trace,\
+                scene_meditation=trace,\
                 "
                 .to_string(),
                 ..default()
@@ -90,10 +91,20 @@ pub fn windowed_app() -> App {
         use bevy_inspector_egui::quick::{
             ResourceInspectorPlugin, StateInspectorPlugin, WorldInspectorPlugin,
         };
+        use bevy_rscn::{
+            In2D, NodeName, RscnNode, SpriteFrames, SpriteTexture, TscnTree,
+        };
 
-        app.register_type::<GlobalGameStateTransition>()
+        app.register_type::<bevy::asset::AssetPath>()
+            .register_type::<GlobalGameStateTransition>()
             .register_type::<GlobalGameState>()
-            .register_type::<player_stats::PlayerStats>();
+            .register_type::<player_stats::PlayerStats>()
+            .register_type::<TscnTree>()
+            .register_type::<NodeName>()
+            .register_type::<RscnNode>()
+            .register_type::<In2D>()
+            .register_type::<SpriteTexture>()
+            .register_type::<SpriteFrames>();
 
         app.add_plugins((
             bevy_egui::EguiPlugin,
@@ -104,7 +115,6 @@ pub fn windowed_app() -> App {
     }
 
     app.add_plugins((
-        bevy_webp_anim::Plugin,
         common_action::Plugin,
         common_loading_screen::Plugin,
         common_store::Plugin,

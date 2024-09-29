@@ -40,7 +40,6 @@ mod consts {
 
 use common_action::move_action_pressed;
 use leafwing_input_manager::common_conditions::action_just_pressed;
-pub(crate) use score::Score;
 
 use crate::prelude::*;
 

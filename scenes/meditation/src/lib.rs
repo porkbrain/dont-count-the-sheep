@@ -3,24 +3,19 @@
 #![allow(clippy::type_complexity)]
 #![allow(clippy::too_many_arguments)]
 
-mod background;
-mod cameras;
-mod climate;
 mod consts;
-mod gravity;
 mod hoshi;
-mod path;
-mod polpos;
 mod prelude;
+mod room;
 mod ui;
 mod zindex;
 
 use bevy::utils::Instant;
-use bevy_webp_anim::WebpAnimator;
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
-use common_physics::PoissonsEquation;
-use gravity::Gravity;
+use consts::CLEAR_COLOR_BG;
+use hoshi::Hoshi;
+use main_game_lib::common_ext::QueryExt;
 use prelude::*;
 
 /// Important scene struct.
@@ -33,14 +28,7 @@ pub fn add(app: &mut App) {
 
     debug!("Adding plugins");
 
-    app.add_plugins((
-        ui::Plugin,
-        climate::Plugin,
-        polpos::Plugin,
-        hoshi::Plugin,
-        cameras::Plugin,
-        background::Plugin,
-    ));
+    app.add_plugins((ui::Plugin, hoshi::Plugin, room::Plugin));
 
     debug!("Adding assets");
 
@@ -57,14 +45,6 @@ pub fn add(app: &mut App) {
 
     app.add_systems(
         Update,
-        (
-            bevy_webp_anim::systems::start_loaded_videos::<()>,
-            bevy_webp_anim::systems::load_next_frame,
-        )
-            .run_if(in_state(GlobalGameState::InGameMeditation)),
-    );
-    app.add_systems(
-        Update,
         common_visuals::systems::flicker
             .run_if(in_state(GlobalGameState::MeditationInMenu)),
     );
@@ -76,75 +56,47 @@ pub fn add(app: &mut App) {
         common_physics::systems::apply_velocity
             .run_if(in_state(GlobalGameState::InGameMeditation)),
     );
-    common_physics::poissons_equation::register::<gravity::Gravity, _>(
-        app,
-        GlobalGameState::InGameMeditation,
-    );
 
     debug!("Adding game loop");
 
-    // 1. start the spawning process (the loading screen is already started)
-    app.add_systems(OnEnter(GlobalGameState::LoadingMeditation), spawn);
-    // 2. when everything is loaded, finish the loading process by transitioning
-    //    to the next loading state (this will also spawn the camera)
+    // When everything is loaded, finish the loading process by hiding the
+    // loading screen and entering the game.
     app.add_systems(
         Last,
         finish_when_everything_loaded
             .run_if(in_state(GlobalGameState::LoadingMeditation))
             .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
-    );
-    // 3. ready to enter the game when the loading screen is completely gone
-    app.add_systems(
+    )
+    .add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
         enter_the_game.run_if(in_state(GlobalGameState::LoadingMeditation)),
     );
 
-    app.add_systems(OnExit(GlobalGameState::QuittingMeditation), despawn);
     app.add_systems(
         Last,
         all_cleaned_up.run_if(in_state(GlobalGameState::QuittingMeditation)),
     );
 
-    #[cfg(feature = "devtools")]
-    {
-        debug!("Adding devtools");
-
-        app.add_systems(
-            Last,
-            path::visualize.run_if(in_state(GlobalGameState::InGameMeditation)),
-        );
-
-        #[cfg(feature = "devtools-poissons")]
-        common_physics::poissons_equation::register_visualization::<
-            gravity::Gravity,
-            gravity::ChangeOfBasis,
-            gravity::ChangeOfBasis,
-            _,
-        >(app, GlobalGameState::InGameMeditation);
-    }
-
     info!("Added meditation to app");
 }
 
-fn spawn(mut cmd: Commands) {
-    debug!("Spawning resources");
-
-    cmd.insert_resource(gravity::field());
-    cmd.init_resource::<WebpAnimator>();
-}
-
-fn despawn(mut cmd: Commands) {
-    debug!("Despawning resources");
-
-    cmd.remove_resource::<PoissonsEquation<Gravity>>();
-    cmd.remove_resource::<WebpAnimator>();
-}
-
+/// Loading screen is being displayed.
+/// When everything is loaded, finish the loading process by transitioning
+/// to the loading screen state that means "we are ready to close the loading
+/// screen".
+///
+/// Once loading screen fades out, [enter_the_game] will be called.
 fn finish_when_everything_loaded(
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
-    asset_server: Res<AssetServer>,
     asset_store: Res<AssetStore<Meditation>>,
+    asset_server: Res<AssetServer>,
+
+    hoshi: Query<Entity, With<Hoshi>>,
 ) {
+    if hoshi.get_single_or_none().is_none() {
+        return;
+    }
+
     if !asset_store.are_all_loaded(&asset_server) {
         return;
     }
@@ -154,12 +106,17 @@ fn finish_when_everything_loaded(
     next_loading_state.set(common_loading_screen::finish_state());
 }
 
-fn enter_the_game(mut next_state: ResMut<NextState<GlobalGameState>>) {
+fn enter_the_game(
+    mut cmd: Commands,
+    mut next_state: ResMut<NextState<GlobalGameState>>,
+) {
     info!("Entering meditation game");
     next_state.set(GlobalGameState::InGameMeditation);
+    cmd.insert_resource(ClearColor(CLEAR_COLOR_BG));
 }
 
 fn all_cleaned_up(
+    mut cmd: Commands,
     transition: Res<GlobalGameStateTransition>,
     mut next_state: ResMut<NextState<GlobalGameState>>,
     mut controls: ResMut<ActionState<GlobalAction>>,
@@ -180,6 +137,9 @@ fn all_cleaned_up(
 
     // be a good guy and don't invade other game loops with "Enter"
     controls.consume(&GlobalAction::Interact);
+
+    // back to the primary color
+    cmd.insert_resource(ClearColor(PRIMARY_COLOR));
 
     use GlobalGameStateTransition::*;
     match *transition {

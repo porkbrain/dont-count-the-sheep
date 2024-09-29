@@ -185,14 +185,6 @@ impl bevy::app::Plugin for Plugin {
         {
             app.register_type::<LoadingScreenState>()
                 .register_type::<LoadingScreenSettings>();
-
-            use bevy_inspector_egui::quick::{
-                ResourceInspectorPlugin, StateInspectorPlugin,
-            };
-            app.add_plugins((
-                StateInspectorPlugin::<LoadingScreenState>::default(),
-                ResourceInspectorPlugin::<LoadingScreenSettings>::default(),
-            ));
         }
     }
 }

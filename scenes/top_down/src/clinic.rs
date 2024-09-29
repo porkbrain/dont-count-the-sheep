@@ -19,19 +19,16 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Clinic;
 #[derive(TypePath, Default, Debug)]
 struct Clinic;
 
-impl main_game_lib::bevy_rscn::TscnInBevy for Clinic {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
-    }
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            bevy_rscn::start_loading_tscn::<Clinic>,
+            bevy_rscn::return_start_loading_tscn_system::<Clinic>(format!(
+                "scenes/{}.tscn",
+                THIS_SCENE.snake_case()
+            )),
         )
         .add_systems(
             Update,
@@ -106,7 +103,7 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityDescriptionMap,
+        ctx: &mut SpawnerContext,
         _parent: Option<(Entity, NodeName)>,
         (who, NodeName(name)): (Entity, NodeName),
     ) {
@@ -119,7 +116,8 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
                 cmd.entity(who).add_child(self.player_entity);
             }
             "Entrance" => {
-                let translation = descriptions
+                let translation = ctx
+                    .descriptions
                     .get(&who)
                     .expect("Missing description for {name}")
                     .translation;

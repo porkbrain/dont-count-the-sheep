@@ -23,7 +23,7 @@ mod tree;
 use std::borrow::Cow;
 
 use bevy::{
-    asset::{Asset, AssetServer, Assets, Handle},
+    asset::{Asset, AssetId, AssetPath, AssetServer, Assets, Handle},
     color::Color,
     core::Name,
     ecs::{
@@ -33,31 +33,15 @@ use bevy::{
     },
     hierarchy::DespawnRecursiveExt,
     math::{Rect, Vec2},
-    reflect::TypePath,
     utils::HashMap,
 };
 use common_ext::QueryExt;
 pub use loader::{LoaderError, TscnLoader};
 use serde::{Deserialize, Serialize};
-pub use spawner::{EntityDescription, EntityDescriptionMap, TscnSpawnHooks};
-
-/// A helper component that is always in an entity with
-/// [bevy::prelude::SpatialBundle].
-///
-/// Translated a simple point from Godot.
-/// To add this component, add a child Godot `Node` named `Point` to a parent
-/// Godot `Node2D`.
-#[derive(
-    Component,
-    Clone,
-    Copy,
-    Debug,
-    Deserialize,
-    PartialEq,
-    bevy::reflect::Reflect,
-    Serialize,
-)]
-pub struct Point(pub Vec2);
+pub use spawner::{
+    EntityDescription, EntityDescriptionMap, Point, SpawnerContext,
+    TscnSpawnHooks,
+};
 
 /// Configure how the scene is converted from godot to bevy.
 #[derive(Serialize, Deserialize)]
@@ -73,7 +57,9 @@ pub struct Config {
 /// We panic on unsupported content aggressively.
 ///
 /// See [TscnTree::spawn_into].
-#[derive(Asset, TypePath, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Asset, Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
+#[cfg_attr(not(feature = "devtools"), derive(bevy::prelude::TypePath))]
 pub struct TscnTree {
     /// The root node of the scene as defined in Godot.
     pub root_node_name: NodeName,
@@ -85,7 +71,9 @@ pub struct TscnTree {
 ///
 /// The convention is that a 2D node is an entity while a plain node is a
 /// component.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
+#[cfg_attr(feature = "devtools", reflect(no_field_bounds))]
 pub struct RscnNode {
     /// Positional data is relevant for
     /// - `Node2D`
@@ -111,16 +99,18 @@ pub struct RscnNode {
 
 /// The name of a node is unique within its parent.
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
 pub struct NodeName(pub String);
 
 /// Either a `Node2D`, `Sprite2D`, or `AnimatedSprite2D` node.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
 pub struct In2D {
     /// in 2D
     pub position: Vec2,
     /// Or calculated from position if missing.
     /// If a 2D node has a 2D node child called "YSort", then the position
-    /// fed to the [`crate::top_down::layout::ysort`] function is the global
+    /// fed to the [crate::vec2_ext::Vec2Ext::ysort] function is the global
     /// position of that "YSort", i.e. the position of the 2D node plus the
     /// position of the "YSort".
     pub z_index: Option<f32>,
@@ -129,7 +119,8 @@ pub struct In2D {
 }
 
 /// For images and animations.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
 pub struct SpriteTexture {
     /// The path to the asset stripped of typically the `res://assets/` prefix.
     /// E.g. `apartment/cupboard.png`.
@@ -149,7 +140,8 @@ pub struct SpriteTexture {
 }
 
 /// Atlas animation.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "devtools", derive(bevy::prelude::Reflect))]
 pub struct SpriteFrames {
     /// If set to true, once the animation starts playing it will be repeated.
     pub should_endless_loop: bool,
@@ -165,12 +157,6 @@ pub struct SpriteFrames {
     pub frames: Vec<Rect>,
     /// The min size of the texture that fits all the frames.
     pub size: Vec2,
-}
-
-/// Marks scene as "can be loaded from .tscn".
-pub trait TscnInBevy: Send + Sync + 'static {
-    /// Asset path of the `.tscn` file associated with this scene.
-    fn tscn_asset_path() -> String;
 }
 
 /// Used for loading of [`TscnTree`] from a .tscn file.
@@ -199,23 +185,44 @@ pub fn from_tscn(tscn: &str, config: &Config) -> TscnTree {
         .expect("Failed to process .tscn file")
 }
 
-/// Run this system on enter to a scene to start loading the `.tscn` file.
+/// Returns a system which starts loading the `.tscn` file in the provided path.
 /// Use then [`tscn_loaded_but_not_spawned`] condition to guard the
 /// system that spawns the scene after loading is done.
-pub fn start_loading_tscn<T: TscnInBevy>(
-    mut cmd: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn return_start_loading_tscn_system<T: Send + Sync + 'static>(
+    asset_path: impl Into<AssetPath<'static>>,
+) -> impl FnMut(Commands, Res<AssetServer>) {
+    let asset_path = asset_path.into();
+    move |mut cmd: Commands, asset_server: Res<AssetServer>| {
+        start_loading_tscn::<T>(&mut cmd, &asset_server, asset_path.clone());
+    }
+}
+
+/// Starts loading the `.tscn` file in the provided path.
+///
+/// Returns the [TscnTreeHandle] entity that holds the asset handle and the
+/// asset id.
+pub fn start_loading_tscn<T: Send + Sync + 'static>(
+    cmd: &mut Commands,
+    asset_server: &AssetServer,
+    asset_path: impl Into<AssetPath<'static>>,
+) -> (Entity, AssetId<TscnTree>) {
     let mut e = cmd.spawn(Name::new(".tscn tree handle"));
-    e.insert(TscnTreeHandle::<T> {
-        entity: e.id(),
-        handle: Some(asset_server.load(T::tscn_asset_path())),
-        _phantom: Default::default(),
-    });
+    let asset_path = asset_path.into();
+    let asset_handle = asset_server.load(asset_path);
+    let asset_id = asset_handle.id();
+    let handle_entity = e
+        .insert(TscnTreeHandle::<T> {
+            entity: e.id(),
+            handle: Some(asset_handle),
+            _phantom: Default::default(),
+        })
+        .id();
+
+    (handle_entity, asset_id)
 }
 
 /// Guard condition for when spawning of the scene hasn't started but can be.
-pub fn tscn_loaded_but_not_spawned<T: TscnInBevy>(
+pub fn tscn_loaded_but_not_spawned<T: Send + Sync + 'static>(
 ) -> impl FnMut(Query<&TscnTreeHandle<T>>, Res<AssetServer>) -> bool {
     move |tscn: Query<&TscnTreeHandle<T>>, asset_server: Res<AssetServer>| {
         tscn.get_single_or_none()
@@ -242,6 +249,15 @@ impl<T> TscnTreeHandle<T> {
         let tscn = assets.remove(&handle).expect("Handle not loaded");
         cmd.entity(self.entity).despawn_recursive();
         tscn
+    }
+
+    /// Panics if the handle was already consumed.
+    pub fn is_loaded_with_dependencies(
+        &self,
+        asset_server: &AssetServer,
+    ) -> bool {
+        let handle = self.handle.as_ref().expect("Handle already consumed");
+        asset_server.is_loaded_with_dependencies(handle)
     }
 }
 

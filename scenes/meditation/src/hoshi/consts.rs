@@ -1,11 +1,5 @@
 use crate::prelude::*;
 
-pub(crate) const DEFAULT_TRANSFORM: Transform = Transform {
-    translation: Vec3::new(0.0, 0.0, zindex::HOSHI),
-    rotation: Quat::from_array([0.0, 0.0, 0.0, 1.0]),
-    scale: Vec3::new(1.0, 1.0, 1.0),
-};
-
 /// Cannot jump more times in a row than this before resetting
 pub(crate) const MAX_JUMPS: usize = 4;
 
@@ -19,7 +13,7 @@ mod physics {
     /// We use a default stage gradient from 0.0 at the top to 1.0 at the
     /// bottom. This is multiplied by this constant to achieve the desired
     /// effect.
-    pub(crate) const GRAVITY_MULTIPLIER: f32 = 8000.0;
+    pub(crate) const GRAVITY_MULTIPLIER: f32 = -100.0;
 
     /// Caps gravity effect.
     /// If Hoshi is falling faster than this it slows down.

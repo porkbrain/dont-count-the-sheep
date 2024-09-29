@@ -2,14 +2,13 @@
 
 use std::str::FromStr;
 
-use bevy::utils::EntityHashMap;
-use bevy_rscn::{EntityDescription, NodeName, RscnNode, TscnSpawnHooks};
+use bevy_rscn::{NodeName, RscnNode, SpawnerContext, TscnSpawnHooks};
 use top_down::{
-    inspect_and_interact::ZoneToInspectLabelEntity, layout::ysort,
-    InspectLabelCategory, TopDownAction, ZoneTileKind,
+    inspect_and_interact::ZoneToInspectLabelEntity, InspectLabelCategory,
+    TopDownAction, ZoneTileKind,
 };
 
-use crate::prelude::*;
+use crate::{prelude::*, vec2_ext::Vec2Ext};
 
 /// The implementation has some knowledge of top down scenes to provide
 /// default implementations for things like [`crate::top_down::InspectLabel`]
@@ -41,7 +40,7 @@ where
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityHashMap<Entity, EntityDescription>,
+        ctx: &mut SpawnerContext,
         parent: Option<(Entity, NodeName)>,
         (entity, NodeName(name)): (Entity, NodeName),
     ) {
@@ -54,21 +53,24 @@ where
             "YSort" => {
                 let (parent, _) = parent.expect("YSort must have a parent");
                 // this will despawn the YSort node
-                let own_description = descriptions
+                let own_description = ctx
+                    .descriptions
                     .remove(&entity)
                     .expect("YSort must be a 2D node with description");
-                if let Some(parent_description) = descriptions.get_mut(&parent)
+                if let Some(parent_description) =
+                    ctx.descriptions.get_mut(&parent)
                 {
-                    parent_description.z_index = Some(ysort(
-                        parent_description.translation
-                            + own_description.translation,
-                    ));
+                    parent_description.z_index = Some(
+                        (parent_description.translation
+                            + own_description.translation)
+                            .ysort(),
+                    );
                 }
             }
             _ => {
                 self.inner.handle_2d_node(
                     cmd,
-                    descriptions,
+                    ctx,
                     parent,
                     (entity, NodeName(name)),
                 );
@@ -79,7 +81,7 @@ where
     fn handle_plain_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityHashMap<Entity, EntityDescription>,
+        ctx: &mut SpawnerContext,
         (parent_entity, parent_name): (Entity, NodeName),
         (NodeName(name), mut plain_node): (NodeName, RscnNode),
     ) {
@@ -130,7 +132,7 @@ where
             _ => {
                 self.inner.handle_plain_node(
                     cmd,
-                    descriptions,
+                    ctx,
                     (parent_entity, parent_name),
                     (NodeName(name), plain_node),
                 );

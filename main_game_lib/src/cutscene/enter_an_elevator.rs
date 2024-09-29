@@ -249,7 +249,7 @@ pub fn spawn(
                 .get_resource::<State<WhichTopDownScene>>()
                 .expect("Elevator can only be used in top down scenes");
 
-            // SAFETY: always present
+            // SAFETY: this resource is always present
             let mut next_state =
                 w.get_resource_mut::<NextState<GlobalGameState>>().unwrap();
             next_state.set(GlobalGameState::LeavingTopDownScene(
@@ -347,10 +347,13 @@ pub fn start_with_open_elevator_and_close_it(
                 e.remove::<AtlasAnimationTimer>();
                 e.remove::<BeginAtlasAnimation>();
 
-                let mut a = e.get_mut::<AtlasAnimation>().unwrap();
-                // back to normal
-                a.on_last_frame = AtlasAnimationEnd::RemoveTimer;
-                a.play = AtlasAnimationStep::Forward;
+                if let Some(mut a) = e.get_mut::<AtlasAnimation>() {
+                    // back to normal
+                    a.on_last_frame = AtlasAnimationEnd::RemoveTimer;
+                    a.play = AtlasAnimationStep::Forward;
+                } else {
+                    error!("AtlasAnimation entity missing on Elevator");
+                }
             });
         }));
 }

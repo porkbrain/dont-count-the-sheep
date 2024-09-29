@@ -1,0 +1,113 @@
+[gd_scene load_steps=4 format=3 uid="uid://danc40dh2jl4b"]
+
+[ext_resource type="Texture2D" uid="uid://bjq1q6j6xu2ly" path="res://assets/meditation/textures/bg/bg_scrolling.png" id="1_u0mni"]
+[ext_resource type="Texture2D" uid="uid://dv8l0l4pjorl4" path="res://assets/meditation/textures/blue_crystal.png" id="2_vtbur"]
+[ext_resource type="Texture2D" uid="uid://bbe84c2xpswja" path="res://assets/meditation/textures/red_crystal.png" id="3_j860k"]
+
+[node name="MeditationRoomEntry" type="Node2D"]
+
+[node name="Bg" type="Sprite2D" parent="."]
+texture = ExtResource("1_u0mni")
+
+[node name="HoshiSpawn" type="Node2D" parent="."]
+position = Vector2(-72, -421)
+
+[node name="Point" type="Node" parent="HoshiSpawn"]
+
+[node name="Crystals" type="Node2D" parent="."]
+
+[node name="1" type="Sprite2D" parent="Crystals"]
+position = Vector2(-217, -302)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="2" type="Sprite2D" parent="Crystals"]
+position = Vector2(-208, -247)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="3" type="Sprite2D" parent="Crystals"]
+position = Vector2(-161, -138)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="4" type="Sprite2D" parent="Crystals"]
+position = Vector2(-125, -92)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="5" type="Sprite2D" parent="Crystals"]
+position = Vector2(-76, -93)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="6" type="Sprite2D" parent="Crystals"]
+position = Vector2(-191, -186)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="7" type="Sprite2D" parent="Crystals"]
+position = Vector2(-142, -177)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="8" type="Sprite2D" parent="Crystals"]
+position = Vector2(-176, -277)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="9" type="Sprite2D" parent="Crystals"]
+position = Vector2(-31, -46)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="10" type="Sprite2D" parent="Crystals"]
+position = Vector2(-168, -222)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="11" type="Sprite2D" parent="Crystals"]
+position = Vector2(-111, -132)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="12" type="Sprite2D" parent="Crystals"]
+position = Vector2(-73, -49)
+texture = ExtResource("2_vtbur")
+metadata/kind = "blue"
+
+[node name="13" type="Sprite2D" parent="Crystals"]
+position = Vector2(37, 40)
+texture = ExtResource("3_j860k")
+metadata/kind = "red"
+
+[node name="14" type="Sprite2D" parent="Crystals"]
+position = Vector2(78, 82)
+texture = ExtResource("3_j860k")
+metadata/kind = "red"
+
+[node name="15" type="Sprite2D" parent="Crystals"]
+position = Vector2(120, 132)
+texture = ExtResource("3_j860k")
+metadata/kind = "red"
+
+[node name="16" type="Sprite2D" parent="Crystals"]
+position = Vector2(162, 194)
+texture = ExtResource("3_j860k")
+metadata/kind = "red"
+
+[node name="17" type="Sprite2D" parent="Crystals"]
+position = Vector2(195, 251)
+texture = ExtResource("3_j860k")
+metadata/kind = "red"
+
+[node name="18" type="Sprite2D" parent="Crystals"]
+position = Vector2(224, 318)
+texture = ExtResource("3_j860k")
+metadata/kind = "red"
+
+[node name="NextRooms" type="Node" parent="."]
+
+[node name="MeditationRoom1" type="Node" parent="NextRooms"]
+
+[node name="MeditationRoom2" type="Node" parent="NextRooms"]

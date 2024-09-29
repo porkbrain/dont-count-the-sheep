@@ -21,17 +21,13 @@ pub(crate) struct Plugin;
 #[derive(TypePath, Default, Debug)]
 struct Building1Basement1;
 
-impl main_game_lib::bevy_rscn::TscnInBevy for Building1Basement1 {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
-    }
-}
-
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            bevy_rscn::start_loading_tscn::<Building1Basement1>,
+            bevy_rscn::return_start_loading_tscn_system::<Building1Basement1>(
+                format!("scenes/{}.tscn", THIS_SCENE.snake_case()),
+            ),
         )
         .add_systems(
             Update,
@@ -138,7 +134,7 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityDescriptionMap,
+        ctx: &mut SpawnerContext,
         _parent: Option<(Entity, NodeName)>,
         (who, NodeName(name)): (Entity, NodeName),
     ) {
@@ -161,7 +157,8 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
                     // take away player control for a moment to prevent them
                     // from interacting with the elevator while it's closing
                     cmd.entity(player).insert(TakeAwayPlayerControl);
-                    let elevator_description = descriptions
+                    let elevator_description = ctx
+                        .descriptions
                         .get_mut(&who)
                         .expect("Missing description for {name}");
                     start_with_open_elevator_and_close_it(
@@ -179,7 +176,8 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
                         | Building1Basement2ToBasement1
                 ) =>
             {
-                let translation = descriptions
+                let translation = ctx
+                    .descriptions
                     .get(&who)
                     .expect("Missing description for {name}")
                     .translation;

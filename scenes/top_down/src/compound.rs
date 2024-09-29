@@ -21,19 +21,16 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Compound;
 #[derive(TypePath, Default, Debug)]
 struct Compound;
 
-impl main_game_lib::bevy_rscn::TscnInBevy for Compound {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
-    }
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            bevy_rscn::start_loading_tscn::<Compound>,
+            bevy_rscn::return_start_loading_tscn_system::<Compound>(format!(
+                "scenes/{}.tscn",
+                THIS_SCENE.snake_case()
+            )),
         )
         .add_systems(
             Update,
@@ -122,13 +119,14 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityDescriptionMap,
+        ctx: &mut SpawnerContext,
         _parent: Option<(Entity, NodeName)>,
         (who, NodeName(name)): (Entity, NodeName),
     ) {
         use GlobalGameStateTransition::*;
 
-        let position = descriptions
+        let position = ctx
+            .descriptions
             .get(&who)
             .expect("Missing description for {name}")
             .translation;

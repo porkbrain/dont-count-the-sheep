@@ -1,7 +1,12 @@
 //! Hoshi is an entity that is controlled by the player.
+//!
+//! While despawning is taken care of by [Plugin], spawning is done by calling
+//! the [spawn] function.
+//! That's because spawning is done via a Godot spawner.
 
 mod anim;
 mod arrow;
+mod camera;
 pub(crate) mod consts;
 mod controls;
 mod mode;
@@ -9,7 +14,8 @@ mod sprite;
 
 use bevy::{math::uvec2, render::view::RenderLayers};
 use common_visuals::camera::render_layer;
-pub(crate) use controls::loading_special;
+use controls::HoshiControlsSystemSet;
+use main_game_lib::common_ext::QueryExt;
 
 use self::consts::*;
 use crate::prelude::*;
@@ -28,6 +34,10 @@ pub(crate) enum ActionEvent {
         towards: MotionDirection,
     },
 }
+
+/// [bevy_rscn::Point] with this component will be spawned by the spawner.
+#[derive(Component)]
+pub(crate) struct HoshiSpawn;
 
 #[derive(Component)]
 pub(crate) struct Hoshi;
@@ -48,7 +58,11 @@ impl bevy::app::Plugin for Plugin {
         app.add_event::<ActionEvent>()
             .add_systems(
                 OnEnter(GlobalGameState::LoadingMeditation),
-                (spawn, arrow::spawn),
+                arrow::spawn,
+            )
+            .add_systems(
+                Update,
+                spawn.run_if(in_state(GlobalGameState::LoadingMeditation)),
             )
             .add_systems(
                 OnExit(GlobalGameState::QuittingMeditation),
@@ -56,33 +70,59 @@ impl bevy::app::Plugin for Plugin {
             )
             .add_systems(
                 Update,
+                (controls::normal, controls::loading_special)
+                    .in_set(HoshiControlsSystemSet),
+            )
+            .add_systems(
+                Update,
                 (
-                    anim::rotate,
                     arrow::point_arrow,
+                    anim::rotate,
                     anim::sprite_loading_special,
-                    controls::normal,
-                    controls::loading_special,
-                    anim::update_camera_on_special.after(controls::normal),
-                    anim::sprite
-                        .after(controls::normal)
-                        .after(controls::loading_special),
+                    anim::sprite,
+                    camera::zoom_on_special,
+                    camera::follow_hoshi,
                 )
+                    .after(HoshiControlsSystemSet)
                     .run_if(in_state(GlobalGameState::InGameMeditation)),
             );
     }
 }
 
+/// Used to spawn Hoshi.
+///
 /// 1. spriteless parent which commands the movement
 /// 2. body sprite, child of parent
 /// 3. face sprite, child of parent
 /// 4. spark effect is hidden by default and shown when special is fired
-/// 5. setup camera state which is affected by going into special
+/// 5. camera looking at hoshi
 fn spawn(
     mut cmd: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
+
+    window: Query<&Window>,
+    at: Query<(Entity, &bevy_rscn::Point), With<HoshiSpawn>>,
 ) {
+    let Some((spawn_point_entity, bevy_rscn::Point(translation))) =
+        at.get_single_or_none()
+    else {
+        // either waiting for the spawner to finish, or we have already spawned
+        // hoshi
+        return;
+    };
+
+    // next time this system won't do anything, we're just waiting for the
+    // game to start now
+    cmd.entity(spawn_point_entity).despawn_recursive();
+
     debug!("Spawning Hoshi entities");
+
+    let hoshi_transform = Transform {
+        translation: translation.extend(zindex::HOSHI),
+        rotation: Quat::from_array([0.0, 0.0, 0.0, 1.0]),
+        scale: Vec3::new(1.0, 1.0, 1.0),
+    };
 
     //
     // 1.
@@ -90,13 +130,14 @@ fn spawn(
     let parent = cmd
         .spawn((
             Hoshi,
+            Name::new("Hoshi root"),
             HoshiEntity,
             mode::Normal::default(),
             Velocity::default(),
             AngularVelocity::default(), // for animation
             sprite::Transition::default(),
             SpatialBundle {
-                transform: DEFAULT_TRANSFORM,
+                transform: hoshi_transform,
                 ..default()
             },
         ))
@@ -107,6 +148,7 @@ fn spawn(
     let body = cmd
         .spawn((
             HoshiBody,
+            Name::new("Hoshi body"),
             RenderLayers::layer(render_layer::OBJ),
             SpriteBundle {
                 texture: asset_server.load(assets::BODY_ATLAS),
@@ -131,9 +173,12 @@ fn spawn(
     let face = cmd
         .spawn((
             HoshiFace,
+            Name::new("Hoshi face"),
             RenderLayers::layer(render_layer::OBJ),
             SpriteBundle {
                 texture: asset_server.load(assets::FACE_ATLAS),
+                // it's important to put it in front of the body
+                transform: Transform::from_translation(Vec2::ZERO.extend(1.0)),
                 ..default()
             },
             TextureAtlas {
@@ -154,6 +199,7 @@ fn spawn(
     //
     cmd.spawn((
         anim::SparkEffect,
+        Name::new("Hoshi spark effect"),
         HoshiEntity,
         RenderLayers::layer(render_layer::OBJ),
         AtlasAnimation {
@@ -180,7 +226,7 @@ fn spawn(
     //
     // 5.
     //
-    cmd.spawn((HoshiEntity, anim::CameraState::default()));
+    camera::spawn(&mut cmd, window.single(), &hoshi_transform);
 }
 
 fn despawn(mut cmd: Commands, entities: Query<Entity, With<HoshiEntity>>) {

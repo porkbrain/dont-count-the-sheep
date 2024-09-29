@@ -53,12 +53,6 @@ const THIS_SCENE: WhichTopDownScene = WhichTopDownScene::Building1PlayerFloor;
 #[derive(TypePath, Default, Debug)]
 struct Building1PlayerFloor;
 
-impl main_game_lib::bevy_rscn::TscnInBevy for Building1PlayerFloor {
-    fn tscn_asset_path() -> String {
-        format!("scenes/{}.tscn", THIS_SCENE.snake_case())
-    }
-}
-
 pub(crate) struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -87,7 +81,9 @@ impl bevy::app::Plugin for Plugin {
 
         app.add_systems(
             OnEnter(THIS_SCENE.loading()),
-            bevy_rscn::start_loading_tscn::<Building1PlayerFloor>,
+            bevy_rscn::return_start_loading_tscn_system::<Building1PlayerFloor>(
+                format!("scenes/{}.tscn", THIS_SCENE.snake_case()),
+            ),
         )
         .add_systems(
             Update,
@@ -188,7 +184,7 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityDescriptionMap,
+        ctx: &mut SpawnerContext,
         _parent: Option<(Entity, NodeName)>,
         (who, NodeName(name)): (Entity, NodeName),
     ) {
@@ -216,7 +212,8 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
                     // take away player control for a moment to prevent them
                     // from interacting with the elevator while it's closing
                     cmd.entity(player).insert(TakeAwayPlayerControl);
-                    let elevator_description = descriptions
+                    let elevator_description = ctx
+                        .descriptions
                         .get_mut(&who)
                         .expect("Missing description for {name}");
                     start_with_open_elevator_and_close_it(
@@ -263,7 +260,8 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
             "MeditationSpawn"
                 if self.transition == MeditationToBuilding1PlayerFloor =>
             {
-                let translation = descriptions
+                let translation = ctx
+                    .descriptions
                     .get(&who)
                     .expect("Missing description for {name}")
                     .translation;
@@ -279,14 +277,16 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
             "NewGameSpawn"
                 if self.transition == NewGameToBuilding1PlayerFloor =>
             {
-                let translation = descriptions
+                let translation = ctx
+                    .descriptions
                     .get(&who)
                     .expect("Missing description for {name}")
                     .translation;
                 self.player_builder.initial_position(translation);
             }
             "InElevator" if came_in_via_elevator => {
-                let translation = descriptions
+                let translation = ctx
+                    .descriptions
                     .get(&who)
                     .expect("Missing description for {name}")
                     .translation;
@@ -298,7 +298,8 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
                     .initial_step_time(STEP_TIME_ON_EXIT_ELEVATOR);
             }
             "AfterSleepSpawn" if self.transition == Sleeping => {
-                let translation = descriptions
+                let translation = ctx
+                    .descriptions
                     .get(&who)
                     .expect("Missing description for {name}")
                     .translation;
@@ -313,14 +314,14 @@ impl<'a> TscnSpawnHooks for Spawner<'a> {
     fn handle_plain_node(
         &mut self,
         cmd: &mut Commands,
-        descriptions: &mut EntityDescriptionMap,
+        ctx: &mut SpawnerContext,
         (parent_entity, _): (Entity, NodeName),
         (NodeName(name), _): (NodeName, RscnNode),
     ) {
         match name.as_str() {
             "HallwayEntity" => {
                 cmd.entity(parent_entity).insert(HallwayEntity);
-                descriptions
+                ctx.descriptions
                     .get_mut(&parent_entity)
                     .expect("HallwayEntity has no parent")
                     .sprite
