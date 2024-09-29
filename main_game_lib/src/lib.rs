@@ -95,7 +95,8 @@ pub fn windowed_app() -> App {
             In2D, NodeName, RscnNode, SpriteFrames, SpriteTexture, TscnTree,
         };
 
-        app.register_type::<GlobalGameStateTransition>()
+        app.register_type::<bevy::asset::AssetPath>()
+            .register_type::<GlobalGameStateTransition>()
             .register_type::<GlobalGameState>()
             .register_type::<player_stats::PlayerStats>()
             .register_type::<TscnTree>()

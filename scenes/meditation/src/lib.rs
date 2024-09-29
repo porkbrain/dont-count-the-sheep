@@ -11,10 +11,11 @@ mod ui;
 mod zindex;
 
 use bevy::utils::Instant;
-use bevy_rscn::{tscn_loaded_but_not_spawned, TscnTree, TscnTreeHandle};
 use common_assets::{store::AssetList, AssetStore};
 use common_loading_screen::{LoadingScreenSettings, LoadingScreenState};
 use consts::CLEAR_COLOR_BG;
+use hoshi::Hoshi;
+use main_game_lib::common_ext::QueryExt;
 use prelude::*;
 
 /// Important scene struct.
@@ -64,8 +65,7 @@ pub fn add(app: &mut App) {
         Last,
         finish_when_everything_loaded
             .run_if(in_state(GlobalGameState::LoadingMeditation))
-            .run_if(in_state(LoadingScreenState::WaitForSignalToFinish))
-            .run_if(tscn_loaded_but_not_spawned::<room::RoomScene>()),
+            .run_if(in_state(LoadingScreenState::WaitForSignalToFinish)),
     )
     .add_systems(
         OnEnter(LoadingScreenState::DespawnLoadingScreen),
@@ -87,28 +87,21 @@ pub fn add(app: &mut App) {
 ///
 /// Once loading screen fades out, [enter_the_game] will be called.
 fn finish_when_everything_loaded(
-    mut cmd: Commands,
     mut next_loading_state: ResMut<NextState<LoadingScreenState>>,
     asset_store: Res<AssetStore<Meditation>>,
     asset_server: Res<AssetServer>,
-    mut tscn: ResMut<Assets<TscnTree>>,
-    mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 
-    mut q: Query<&mut TscnTreeHandle<room::RoomScene>>,
+    hoshi: Query<Entity, With<Hoshi>>,
 ) {
+    if hoshi.get_single_or_none().is_none() {
+        return;
+    }
+
     if !asset_store.are_all_loaded(&asset_server) {
         return;
     }
 
     debug!("All assets loaded");
-
-    let tscn = q.single_mut().consume(&mut cmd, &mut tscn);
-    room::insert_room_spawner_resource_with_entry_room(
-        &mut cmd,
-        &asset_server,
-        &mut atlas_layouts,
-        tscn,
-    );
 
     next_loading_state.set(common_loading_screen::finish_state());
 }

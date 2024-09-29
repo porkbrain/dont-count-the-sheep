@@ -88,15 +88,9 @@ pub trait TscnSpawnHooks {
 /// To add this component, add a child Godot `Node` named `Point` to a parent
 /// Godot `Node2D`.
 #[derive(
-    Component,
-    Clone,
-    Copy,
-    Debug,
-    Deserialize,
-    PartialEq,
-    bevy::reflect::Reflect,
-    Serialize,
+    Clone, Component, Copy, Debug, Default, Deserialize, PartialEq, Serialize,
 )]
+#[cfg_attr(feature = "devtools", derive(bevy::reflect::Reflect))]
 pub struct Point(pub Vec2);
 
 impl TscnTree {

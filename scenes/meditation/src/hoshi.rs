@@ -13,9 +13,9 @@ mod mode;
 mod sprite;
 
 use bevy::{math::uvec2, render::view::RenderLayers};
-use common_loading_screen::LoadingScreenState;
 use common_visuals::camera::render_layer;
 use controls::HoshiControlsSystemSet;
+use main_game_lib::common_ext::QueryExt;
 
 use self::consts::*;
 use crate::prelude::*;
@@ -35,6 +35,10 @@ pub(crate) enum ActionEvent {
     },
 }
 
+/// [bevy_rscn::Point] with this component will be spawned by the spawner.
+#[derive(Component)]
+pub(crate) struct HoshiSpawn;
+
 #[derive(Component)]
 pub(crate) struct Hoshi;
 #[derive(Component)]
@@ -53,13 +57,12 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ActionEvent>()
             .add_systems(
-                OnExit(LoadingScreenState::WaitForSignalToFinish),
-                camera::spawn
-                    .run_if(in_state(GlobalGameState::LoadingMeditation)),
-            )
-            .add_systems(
                 OnEnter(GlobalGameState::LoadingMeditation),
                 arrow::spawn,
+            )
+            .add_systems(
+                Update,
+                spawn.run_if(in_state(GlobalGameState::LoadingMeditation)),
             )
             .add_systems(
                 OnExit(GlobalGameState::QuittingMeditation),
@@ -92,13 +95,34 @@ impl bevy::app::Plugin for Plugin {
 /// 2. body sprite, child of parent
 /// 3. face sprite, child of parent
 /// 4. spark effect is hidden by default and shown when special is fired
-pub(crate) fn spawn(
-    cmd: &mut Commands,
-    asset_server: &AssetServer,
-    texture_atlases: &mut Assets<TextureAtlasLayout>,
-    translation: Vec2,
+/// 5. camera looking at hoshi
+fn spawn(
+    mut cmd: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
+
+    window: Query<&Window>,
+    at: Query<(Entity, &bevy_rscn::Point), With<HoshiSpawn>>,
 ) {
+    let Some((spawn_point_entity, bevy_rscn::Point(translation))) =
+        at.get_single_or_none()
+    else {
+        // either waiting for the spawner to finish, or we have already spawned
+        // hoshi
+        return;
+    };
+
+    // next time this system won't do anything, we're just waiting for the
+    // game to start now
+    cmd.entity(spawn_point_entity).despawn_recursive();
+
     debug!("Spawning Hoshi entities");
+
+    let hoshi_transform = Transform {
+        translation: translation.extend(zindex::HOSHI),
+        rotation: Quat::from_array([0.0, 0.0, 0.0, 1.0]),
+        scale: Vec3::new(1.0, 1.0, 1.0),
+    };
 
     //
     // 1.
@@ -113,11 +137,7 @@ pub(crate) fn spawn(
             AngularVelocity::default(), // for animation
             sprite::Transition::default(),
             SpatialBundle {
-                transform: Transform {
-                    translation: translation.extend(zindex::HOSHI),
-                    rotation: Quat::from_array([0.0, 0.0, 0.0, 1.0]),
-                    scale: Vec3::new(1.0, 1.0, 1.0),
-                },
+                transform: hoshi_transform,
                 ..default()
             },
         ))
@@ -203,6 +223,10 @@ pub(crate) fn spawn(
             )),
         },
     ));
+    //
+    // 5.
+    //
+    camera::spawn(&mut cmd, window.single(), &hoshi_transform);
 }
 
 fn despawn(mut cmd: Commands, entities: Query<Entity, With<HoshiEntity>>) {

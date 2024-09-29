@@ -32,7 +32,7 @@ use main_game_lib::common_ext::QueryExt;
 
 use crate::{
     consts::{DEFAULT_ROOM_HEIGHT_PX, ENTRY_ROOM_ASSET_PATH},
-    hoshi,
+    hoshi::HoshiSpawn,
     prelude::*,
 };
 
@@ -47,6 +47,11 @@ impl bevy::app::Plugin for Plugin {
             return_start_loading_tscn_system::<RoomScene>(
                 ENTRY_ROOM_ASSET_PATH,
             ),
+        )
+        .add_systems(
+            Update,
+            insert_room_if_tree_handle_is_loaded
+                .run_if(in_state(GlobalGameState::LoadingMeditation)),
         )
         .add_systems(
             Update,
@@ -67,12 +72,23 @@ impl bevy::app::Plugin for Plugin {
 
 /// Marks a .tscn asset
 #[cfg_attr(feature = "devtools", derive(Reflect))]
-pub(crate) struct RoomScene;
+struct RoomScene;
 
 /// Marks a room entity.
 #[derive(Component)]
 #[cfg_attr(feature = "devtools", derive(Reflect))]
 struct Room;
+
+/// Marks a room background image entity.
+///
+/// This is useful to know if the room is visible or not.
+/// The [ViewVisibility] component is only added to those entities that are
+/// supposed to be rendered.
+/// Since the root [Room] entity has nothing to render, it does not have
+/// [ViewVisibility].
+#[derive(Component)]
+#[cfg_attr(feature = "devtools", derive(Reflect))]
+struct RoomBg;
 
 /// Marks a [`TscnTreeHandle::<RoomScene>`] as the next room to spawn.
 #[derive(Component)]
@@ -85,13 +101,14 @@ struct NextToLoad;
 #[cfg_attr(feature = "devtools", reflect(Resource))]
 struct RoomSpawner {
     /// Spawned room 2D entities, ordered by how they chain.
+    /// Tuples of (room root, bg) entities.
     ///
     /// The first one is the oldest still active room with the highest y
     /// coordinate.
     ///
     /// We despawn rooms that are no longer visible and above the player
     /// except for the last not visible one.
-    active_rooms: VecDeque<Entity>,
+    active_rooms: VecDeque<(Entity, Entity)>,
     /// Maps .tscn asset paths to their loaded version.
     /// This avoids reparsing assets.
     /// We could also just store the handles and let the asset server deal with
@@ -100,6 +117,7 @@ struct RoomSpawner {
     /// The next room to spawn (by its path) if we know it yet and it's loaded.
     next_to_spawn: Option<AssetPath<'static>>,
     /// Vertical scroller, therefore this is an offset.
+    /// Will be a negative number as we go down.
     ///
     /// Hopefully nobody would play long enough that float imprecision would be
     /// a concern.
@@ -107,25 +125,12 @@ struct RoomSpawner {
     y_offset_px: f32,
 }
 
-/// Given an entry room .tscn, spawns it and inserts a room spawner resource.
-pub(crate) fn insert_room_spawner_resource_with_entry_room(
-    cmd: &mut Commands,
-    asset_server: &AssetServer,
-    atlas_layouts: &mut Assets<TextureAtlasLayout>,
-    tscn_tree: TscnTree,
-) {
-    let mut room_spawner = RoomSpawner::default();
-    tscn_tree.spawn_into(cmd, atlas_layouts, asset_server, &mut room_spawner);
-    debug_assert_eq!(room_spawner.active_rooms.len(), 1, "Only entry room");
-    cmd.insert_resource(room_spawner);
-}
-
 impl TscnSpawnHooks for RoomSpawner {
     fn handle_2d_node(
         &mut self,
         cmd: &mut Commands,
         ctx: &mut SpawnerContext,
-        _parent: Option<(Entity, NodeName)>,
+        parent: Option<(Entity, NodeName)>,
         (who, NodeName(name)): (Entity, NodeName),
     ) {
         cmd.entity(who)
@@ -141,19 +146,22 @@ impl TscnSpawnHooks for RoomSpawner {
                     .expect("HoshiSpawn node not present")
                     .translation;
 
-                hoshi::spawn(cmd, ctx.asset_server, ctx.atlases, translation);
+                // Hoshi spawn system waits for this to be spawned, then
+                // it spawns Hoshi and camera
+                cmd.spawn((HoshiSpawn, bevy_rscn::Point(translation)));
             }
-            "MeditationRoomEntry" => {
-                debug_assert!(
-                    self.active_rooms.is_empty(),
-                    "Entry room must be the first room"
-                );
+            "Bg" => {
+                if let Some((parent_entity, NodeName(parent_name))) = parent {
+                    debug_assert!(
+                        parent_name.starts_with("MeditationRoom"),
+                        "'Bg' node must have parent named 'MeditationRoom*', got {parent_name}",
+                    );
 
-                // if we wanted to make rooms of different length, here's where
-                // we'd take the length into consideration
-                self.y_offset_px += DEFAULT_ROOM_HEIGHT_PX;
-                self.active_rooms.push_back(who);
-                cmd.entity(who).insert(Room);
+                    self.active_rooms.push_back((parent_entity, who));
+                    cmd.entity(who).insert(RoomBg);
+                } else {
+                    panic!("'Bg' node cannot be root");
+                }
             }
             s if s.starts_with("MeditationRoom") => {
                 // update vertical offset of the room
@@ -165,8 +173,7 @@ impl TscnSpawnHooks for RoomSpawner {
 
                 // if we wanted to make rooms of different length, here's where
                 // we'd take the length into consideration
-                self.y_offset_px += DEFAULT_ROOM_HEIGHT_PX;
-                self.active_rooms.push_back(who);
+                self.y_offset_px -= DEFAULT_ROOM_HEIGHT_PX;
                 cmd.entity(who).insert(Room);
             }
             _ => {}
@@ -190,9 +197,10 @@ impl TscnSpawnHooks for RoomSpawner {
             node.children.into_iter().nth(random_child_pos).unwrap();
 
         let asset_path = {
-            let mut s =
-                untools::camel_to_snake(&next_room_name_camel_case, false);
-            s.push_str(".tscn");
+            let s = format!(
+                "scenes/{}.tscn",
+                untools::camel_to_snake(&next_room_name_camel_case, false)
+            );
             AssetPath::parse(&s).into_owned()
         };
         self.next_to_spawn = Some(asset_path.clone());
@@ -206,6 +214,37 @@ impl TscnSpawnHooks for RoomSpawner {
 
             cmd.entity(tree_handle_entity).insert(NextToLoad);
         }
+    }
+}
+
+/// Loading screen is being displayed.
+/// We have already started loading the entry room.
+///
+/// If there's a room scene present, spawn it.
+fn insert_room_if_tree_handle_is_loaded(
+    mut cmd: Commands,
+    asset_server: Res<AssetServer>,
+    mut tscn: ResMut<Assets<TscnTree>>,
+    mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+
+    mut q: Query<&mut TscnTreeHandle<RoomScene>>,
+) {
+    if let Some(mut tscn_tree) = q.get_single_mut_or_none() {
+        if !tscn_tree.is_loaded_with_dependencies(&asset_server) {
+            return;
+        }
+
+        info!(".tscn loaded, spawning room");
+
+        let mut room_spawner = RoomSpawner::default();
+        tscn_tree.consume(&mut cmd, &mut tscn).spawn_into(
+            &mut cmd,
+            &mut atlas_layouts,
+            &asset_server,
+            &mut room_spawner,
+        );
+        debug_assert_eq!(room_spawner.active_rooms.len(), 1, "Only entry room");
+        cmd.insert_resource(room_spawner);
     }
 }
 
@@ -236,7 +275,7 @@ fn garbage_collect_old_rooms_and_spawn_new_ones(
     mut tscn_tree_assets: ResMut<Assets<TscnTree>>,
     mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 
-    spawned_rooms: Query<&ViewVisibility, With<Room>>,
+    spawned_rooms: Query<&ViewVisibility, With<RoomBg>>,
     mut tscn_tree_that_is_loading: Query<
         &mut TscnTreeHandle<RoomScene>,
         With<NextToLoad>,
@@ -266,9 +305,9 @@ fn garbage_collect_old_rooms_and_spawn_new_ones(
     // 2.
     //
     let first_visible_room =
-        room_spawner.active_rooms.iter().position(|room_entity| {
+        room_spawner.active_rooms.iter().position(|(_, bg_entity)| {
             let view_visibility = *spawned_rooms
-                .get(*room_entity)
+                .get(*bg_entity)
                 .expect("Room entities must have ViewVisibility");
             // ie. it's shown
             view_visibility != ViewVisibility::HIDDEN
@@ -282,8 +321,9 @@ fn garbage_collect_old_rooms_and_spawn_new_ones(
         // Even if, this system is called again in the next tick anyway.
         if first_visible_room > 3 {
             // SAFETY: we know there are at least 3 rooms
-            let to_despawn = room_spawner.active_rooms.pop_front().unwrap();
-            cmd.entity(to_despawn).despawn_recursive();
+            let (room_to_despawn, _) =
+                room_spawner.active_rooms.pop_front().unwrap();
+            cmd.entity(room_to_despawn).despawn_recursive();
         }
     } else {
         // not sure about bevy behavior when minimizing a window etc.
@@ -299,9 +339,9 @@ fn garbage_collect_old_rooms_and_spawn_new_ones(
         .iter()
         .rev() // from the bottommost room
         .nth(1) // second to last
-        .map(|room_entity| {
+        .map(|(_, bg_entity)| {
             let view_visibility = *spawned_rooms
-                .get(*room_entity)
+                .get(*bg_entity)
                 .expect("Room entities must have ViewVisibility");
             // ie. it's shown
             view_visibility != ViewVisibility::HIDDEN
@@ -321,6 +361,7 @@ fn garbage_collect_old_rooms_and_spawn_new_ones(
 
     let Some(tscn_tree) = room_spawner.tscn_trees.get(&next_room_path).cloned()
     else {
+        warn!("Next room not loaded yet");
         return;
     };
 

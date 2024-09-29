@@ -24,8 +24,17 @@ pub(super) enum CameraState {
     },
 }
 
-pub(super) fn spawn(mut cmd: Commands) {
+/// Will position the camera to look at Hoshi in such a way that we won't have
+/// a flicker once the camera starts following Hoshi.
+pub(super) fn spawn(
+    cmd: &mut Commands,
+    window: &Window,
+    hoshi_transform: &Transform,
+) {
     debug!("Spawning camera");
+
+    let mut camera_transform = Transform::default();
+    clamp_camera_to_screen(window, hoshi_transform, &mut camera_transform);
 
     cmd.spawn((
         MainCamera,
@@ -39,6 +48,7 @@ pub(super) fn spawn(mut cmd: Commands) {
                 order: order::DEFAULT,
                 ..default()
             },
+            transform: camera_transform,
             ..default()
         },
         CameraState::default(),
@@ -64,15 +74,7 @@ pub(super) fn follow_hoshi(
     };
 
     if let Some(hoshi) = hoshi.get_single_or_none() {
-        let z = camera_transform.translation.z;
-        let y = hoshi.translation.y;
-
-        let window_width_px = window.single().resolution.width();
-        let x_clamp = camera_x_clamp(window_width_px);
-        // camera is bounded by the screen size
-        // so we need to find the window width and figure out the bounds
-        let x = hoshi.translation.x.clamp(-x_clamp, x_clamp);
-        camera_transform.translation = Vec3::new(x, y, z);
+        clamp_camera_to_screen(window.single(), hoshi, &mut camera_transform);
     }
 }
 
@@ -274,6 +276,23 @@ pub(super) fn zoom_on_special(
         .lerp(translate_towards, translate_bias)
         .clamp(-translate_freedom, translate_freedom)
         .extend(camera_z)
+}
+
+/// Takes into account the window size and clamps the camera to the screen.
+fn clamp_camera_to_screen(
+    window: &Window,
+    hoshi_transform: &Transform,
+    camera_transform: &mut Transform,
+) {
+    let z = camera_transform.translation.z;
+    let y = hoshi_transform.translation.y;
+
+    let window_width_px = window.resolution.width();
+    let x_clamp = camera_x_clamp(window_width_px);
+    // camera is bounded by the screen size
+    // so we need to find the window width and figure out the bounds
+    let x = hoshi_transform.translation.x.clamp(-x_clamp, x_clamp);
+    camera_transform.translation = Vec3::new(x, y, z);
 }
 
 fn camera_x_clamp(window_width_px: f32) -> f32 {
