@@ -14,6 +14,9 @@ pub trait Vec2Ext {
     ///
     /// It's range is from -0.1 to 1.1.
     fn ysort(self) -> f32;
+
+    /// Square root of each element of the vector.
+    fn sqrt(self) -> Self;
 }
 
 impl Vec2Ext for Vec2 {
@@ -30,6 +33,7 @@ impl Vec2Ext for Vec2 {
     /// It's domain in pixels is from -100_000 to 100_000.
     ///
     /// It's range is from -0.1 to 1.1.
+    #[inline]
     fn ysort(self) -> f32 {
         // it's easier to just hardcode the range than pass around values
         //
@@ -39,5 +43,10 @@ impl Vec2Ext for Vec2 {
 
         // we allow for a tiny leeway for positions outside of the bounding box
         ((max - self.y) / size).clamp(-0.1, 1.1)
+    }
+
+    #[inline]
+    fn sqrt(self) -> Self {
+        Self::new(self.x.sqrt(), self.y.sqrt())
     }
 }
