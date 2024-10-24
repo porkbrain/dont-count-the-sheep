@@ -23,7 +23,9 @@ fn main() {
         // > Unstyled child in a UI entity hierarchy. You are using an entity
         // > without UI components as a child of an entity with UI components,
         // > results may be unexpected.
-        cmd.spawn(Name::new("Inactive camera (see github issue #55)"))
+        //
+        // <https://github.com/bevyengine/bevy/pull/12213/files>
+        cmd.spawn(Name::new("Inactive camera"))
             .insert(Camera2dBundle {
                 camera: Camera {
                     is_active: false,

@@ -169,7 +169,6 @@ impl Dialog {
                 BranchStatus::Stop
             }
             NodeKind::Vocative { line } => {
-                // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/95
                 BranchStatus::OfferAsChoice(line.clone())
             }
             NodeKind::Guard { .. } => {

@@ -202,6 +202,10 @@ params = { message = "This is a message" }
 
 Displays a message to the player.
 
+#### TODO
+
+- [ ] Add a dialog guard that attaches another dialog file to itself
+
 ### Emerging
 
 NPCs can have multiple dialog files attached to them.
@@ -226,6 +230,25 @@ TODO
 A frontend that pauses player movement.
 It can be employed for dialogues with NPCs or for cutscenes.
 This frontend displays the portrait of the character who is speaking.
+
+#### TODO
+
+- [ ] Dialog box looks centered right now.
+      Should be aligned to the left corner with about 260-300px space for the portraits.
+      The portraits might have to be made smaller later.
+- [ ] Try the new tiny pixel font uploaded in the fonts folder on drive.
+- [ ] change the color of highlight to #372e50 to try it out
+- [ ] Dialog could have Winnie's portrait on the right
+- [ ] Dialog choices overflow the box if the text is too long or if there are more than 5
+- [ ] Dialog with NPCs can start by them talking, not always with the player
+- [ ] Dialog vocative shortened version for player choice.
+      Sometimes we'd like to give a summary of what the player's option are.
+      One way is to use an ellipsis and then on hover show tooltip with the full text.
+      An alternative is to have a short alternative for player options hand crafted in the toml file.
+      An alternative is also that we don't actually have to do anything and we just always add two nodes.
+      Unfortunately, this is a problem if there are some conditional branches.
+      If the conditional branch stops the itself, then the player would have to click through twice the same thing.
+- [ ] When player stops to start a dialog with NPC, sometimes they face wrong direction
 
 <!-- List of References -->
 

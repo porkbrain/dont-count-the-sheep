@@ -111,6 +111,12 @@ Here's an exhaustive list of components (defined as `Node` type with their names
 
 - `HallwayEntity`: A component with no metadata in the `Building1PlayerFloor` scene.
 
+## TODO
+
+- [ ] Add a component that starts an animation when the player gets close.
+      Would be useful for bugs, my other butterfly request and also the escalator maybe.
+- [ ] We need to be able to change the frequency of animation in godot.
+
 <!-- List of References -->
 
 [godot-tscn]: https://docs.godotengine.org/en/stable/contributing/development/file_formats/tscn.html

@@ -50,7 +50,10 @@ features = ["bevy_render", "egui_clipboard", "egui_open_url"]
 [workspace.dependencies]
 bevy_egui = "0.28"                                                                                        # waiting for bevy-inspector-egui to update
 bevy_kira_audio = "0.20"
-bevy_pixel_camera = { git = "https://github.com/porkbrain/bevy_pixel_camera.git", branch = "bevy-v0.14" } # we will need to vendor this
+# TODO: This is no longer maintained. We should vendor it.
+bevy_pixel_camera = { git = "https://github.com/porkbrain/bevy_pixel_camera.git", branch = "bevy-v0.14" }
+# TODO: To update, we need to implement a complete overhaul of their API.
+# <https://github.com/Leafwing-Studios/leafwing-input-manager/blob/main/RELEASES.md#version-0150>
 leafwing-input-manager = "0.14"                                                                           # API has been completely rewamped
 
 scene_top_down = { path = "scenes/top_down" }
