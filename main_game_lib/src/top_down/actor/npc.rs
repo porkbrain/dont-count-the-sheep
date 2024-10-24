@@ -102,6 +102,13 @@ pub enum BehaviorLeaf {
     Idle,
     /// Drives the pathfinding algorithm to find a path to the given square and
     /// the NPC to move along it.
+    ///
+    /// # TODO
+    /// When pathfinding behavior cannot progress, have some escape hatch.
+    /// For example, before choosing brand new behavior, walk around for a bit,
+    /// show some emoji on top of the character. Then after some timeout try
+    /// again and if nothing happens, continue. Main thing is not to retry
+    /// every frame and not to stay on one spot as the character for ever
     FindPath {
         /// The square to find a path to.
         to: Square,

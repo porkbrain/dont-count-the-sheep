@@ -180,7 +180,6 @@ pub enum NodeKind {
     /// A node that prints a line of dialog.
     Vocative {
         /// The dialog line to print.
-        /// TODO: <https://github.com/porkbrain/dont-count-the-sheep/issues/95>
         line: String,
     },
     /// A node that does nothing.
@@ -717,10 +716,7 @@ impl BranchStatus {
 
         match &next_node.kind {
             NodeKind::Blank => Self::Stop,
-            NodeKind::Vocative { line } => {
-                //  TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/95
-                Self::OfferAsChoice(line.clone())
-            }
+            NodeKind::Vocative { line } => Self::OfferAsChoice(line.clone()),
             NodeKind::Guard { kind, .. } => {
                 if let Some(guard_system) = guard_systems.get(next_node_name) {
                     cmd.run_system_with_input(
@@ -764,10 +760,7 @@ impl BranchStatus {
 
         match &next_node.kind {
             NodeKind::Blank => Self::Stop,
-            NodeKind::Vocative { line } => {
-                //  TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/95
-                Self::OfferAsChoice(line.clone())
-            }
+            NodeKind::Vocative { line } => Self::OfferAsChoice(line.clone()),
             NodeKind::Guard { kind, .. } => {
                 trace!("Registering guard system {kind:?} for {node_name:?}");
                 cmd.push(kind.register_system_cmd(node_name.clone()));
