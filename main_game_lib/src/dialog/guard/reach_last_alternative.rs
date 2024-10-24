@@ -42,7 +42,6 @@ pub(super) fn system(
             let next_node_choice = match next_node_kind {
                 NodeKind::Blank => BranchStatus::Stop,
                 NodeKind::Vocative { line } => {
-                    // TODO: https://github.com/porkbrain/dont-count-the-sheep/issues/95
                     BranchStatus::OfferAsChoice(line.clone())
                 }
                 NodeKind::Guard { .. } => {

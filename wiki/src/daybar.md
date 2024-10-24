@@ -45,3 +45,7 @@ Shops and other establishments may have varying hours of operation:
 - The [Clinic scene](scene_clinic.md)
 
 The player can reset the day by going to sleep in [their apartment](scene_building1.md).
+
+# TODO
+
+- [ ] The daybar should do a heart beat animation when beats are being added to the day.
